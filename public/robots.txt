@@ -1,0 +1,3 @@
+# Sitemap
+Sitemap: https://minecraft-gilde.de/sitemap.xml
+
