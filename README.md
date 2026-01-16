@@ -3,9 +3,11 @@
 </p>
 
 <p align="center">
-  <!-- Ersetze SERVER_ID durch die Discord-Server-ID -->
-  <img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&logo=discord&logoColor=white" />
+  <a href="https://discord.minecraft-gilde.de" target="_blank" rel="noopener noreferrer">
+    <img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&logo=discord&logoColor=white" />
+  </a>
 </p>
+
 
 # Minecraft Gilde Web
 
