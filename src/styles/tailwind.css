@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/*
+  v2 Design Tokens (clean + subtle glass + minimal)
+  - Auto Light/Dark via prefers-color-scheme
+  - Anthrazit (nicht reines Schwarz) + Gold Accent
+*/
+
+:root {
+  /* Typography */
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, -apple-system, Segoe UI,
+    Roboto, Helvetica, Arial;
+
+  /* Light */
+  --bg: #f7f8fb;
+  --fg: #0f172a;
+  --muted: #475569;
+
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.10);
+
+  --accent: #f2c94c;
+  --accent2: #ffd56a;
+  --ring: rgba(242, 201, 76, 0.45);
+
+  --radius: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark (Obsidian / Anthrazit) */
+    --bg: #0b0f14;
+    --fg: #e5e7eb;
+    --muted: #a1a1aa;
+
+    --surface: rgba(17, 21, 27, 0.60);
+    --surface-solid: #11151b;
+    --border: rgba(255, 255, 255, 0.10);
+
+    --accent: #f2c94c;
+    --accent2: #ffd56a;
+    --ring: rgba(242, 201, 76, 0.30);
+  }
+}
+
+/* Map tokens into Tailwind v4 CSS-first theme variables */
+@theme {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-border: var(--border);
+
+  --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
+  --color-ring: var(--ring);
+
+  --radius-lg: var(--radius);
+}
+
+@layer base {
+  html {
+    /* makes built-in form controls match Light/Dark */
+    color-scheme: light dark;
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  /* smoother focus styles (we'll use ring-color via --color-ring) */
+  :focus-visible {
+    outline: none;
+  }
+}
+
+@layer utilities {
+  /* Subtle glass surface helper */
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+  }
+}

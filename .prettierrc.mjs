@@ -1,6 +1,7 @@
 /** @type {import('prettier').Config} */
 export default {
-  plugins: ['prettier-plugin-astro'],
+  // Reihenfolge wichtig: Tailwind-Plugin zuletzt, damit Klassen sortiert werden
+  plugins: ['prettier-plugin-astro', 'prettier-plugin-tailwindcss'],
 
   // Persönliche Stil-Defaults (kannst du nach Geschmack anpassen)
   singleQuote: true,

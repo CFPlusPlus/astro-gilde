@@ -1,0 +1,21 @@
+---
+export type BadgeVariant = 'neutral' | 'accent';
+
+export interface Props {
+  variant?: BadgeVariant;
+  class?: string;
+}
+
+const { variant = 'neutral', class: className = '' } = Astro.props as Props;
+
+const variants: Record<BadgeVariant, string> = {
+  neutral: 'bg-surface border border-border text-fg',
+  accent: 'bg-accent/20 border border-accent/30 text-fg',
+};
+---
+
+<span
+  class={`${variants[variant]} inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium backdrop-blur-md ${className}`.trim()}
+>
+  <slot />
+</span>

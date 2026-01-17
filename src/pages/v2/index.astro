@@ -1,0 +1,71 @@
+---
+import V2Layout from '../../layouts/V2Layout.astro';
+import Hero from '../../components/v2/Hero.astro';
+import Card from '../../components/v2/ui/Card.astro';
+import Button from '../../components/v2/ui/Button.astro';
+import { Hammer, Map, Trophy } from '@lucide/astro';
+---
+
+<V2Layout
+  title="Minecraft Gilde – v2 (Redesign Preview)"
+  canonical="https://minecraft-gilde.de/v2/"
+  description="Redesign Preview: clean + subtle glass + minimal, automatic Light/Dark, gold accent."
+>
+  <Hero />
+
+  <section class="mx-auto max-w-6xl px-4 py-10">
+    <div class="flex items-end justify-between gap-6">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight">Weniger Template. Mehr Identität.</h2>
+        <p class="mt-2 text-muted">
+          Ein ruhiges Layout, klare Typo und nur dort Glass, wo es Sinn ergibt.
+        </p>
+      </div>
+      <Button href="/" variant="ghost" class="hidden sm:inline-flex">
+        Zur aktuellen Seite
+      </Button>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <Card class="p-6">
+        <div class="flex items-start gap-3">
+          <Hammer size={20} />
+          <div>
+            <h3 class="text-base font-semibold">Erststart</h3>
+            <p class="mt-1 text-sm text-muted">Schnell rein: Schritte, Regeln, Basics.</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card class="p-6">
+        <div class="flex items-start gap-3">
+          <Trophy size={20} />
+          <div>
+            <h3 class="text-base font-semibold">Ranglisten</h3>
+            <p class="mt-1 text-sm text-muted">Stats & Player-Profile – sauber, modern, schnell.</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card class="p-6">
+        <div class="flex items-start gap-3">
+          <Map size={20} />
+          <div>
+            <h3 class="text-base font-semibold">Features</h3>
+            <p class="mt-1 text-sm text-muted">Events, Community, Serverinfos – zentral gebündelt.</p>
+          </div>
+        </div>
+      </Card>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-4 pb-16">
+    <Card class="p-6">
+      <h2 class="text-xl font-semibold tracking-tight">Nächster Schritt in v2</h2>
+      <p class="mt-2 text-muted">
+        Navbar/Hero stehen. Als nächstes bauen wir die wiederverwendbaren Komponenten (Button/Card/Badge)
+        weiter aus und migrieren dann die Startseite vollständig.
+      </p>
+    </Card>
+  </section>
+</V2Layout>
