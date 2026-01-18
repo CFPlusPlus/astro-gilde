@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const noResultsWarning = document.getElementById('no-results-warning');
   const metricFilterIn = document.getElementById('metric-filter');
   const pageSizeSel = document.getElementById('page-size');
+  const pageSizeTrigger = document.getElementById('page-size-trigger');
+  const pageSizeMenu = document.getElementById('page-size-menu');
+  const pageSizeLabel = document.getElementById('page-size-label');
 
   const kingTbody = document.querySelector('#tbl-king tbody');
   const kingWrapper = document.getElementById('wrapper-king');
@@ -108,6 +111,64 @@ document.addEventListener('DOMContentLoaded', () => {
       .replaceAll('>', '&gt;')
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#039;');
+
+  // --- Page size dropdown (custom UI, hidden <select> keeps existing behaviour) ---
+  const setPageSizeUi = (value) => {
+    const v = String(value || '10');
+    if (pageSizeLabel) pageSizeLabel.textContent = v;
+    if (!pageSizeMenu) return;
+    const opts = Array.from(pageSizeMenu.querySelectorAll('.page-size-opt'));
+    opts.forEach((b) => {
+      const active = b.dataset.value === v;
+      b.classList.toggle('bg-accent/10', active);
+      b.classList.toggle('text-accent', active);
+      b.classList.toggle('text-fg/90', !active);
+    });
+  };
+
+  const closePageSizeMenu = () => {
+    if (!pageSizeMenu) return;
+    pageSizeMenu.classList.add('hidden');
+    pageSizeTrigger?.setAttribute('aria-expanded', 'false');
+  };
+
+  const togglePageSizeMenu = () => {
+    if (!pageSizeMenu) return;
+    const nextOpen = pageSizeMenu.classList.contains('hidden');
+    pageSizeMenu.classList.toggle('hidden', !nextOpen);
+    pageSizeTrigger?.setAttribute('aria-expanded', String(nextOpen));
+  };
+
+  // init
+  if (pageSizeSel) setPageSizeUi(pageSizeSel.value || '10');
+
+  pageSizeTrigger?.addEventListener('click', (e) => {
+    e.preventDefault();
+    togglePageSizeMenu();
+  });
+
+  pageSizeMenu?.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('.page-size-opt');
+    if (!btn || !pageSizeSel) return;
+    const v = btn.dataset.value;
+    if (!v) return;
+    pageSizeSel.value = v;
+    setPageSizeUi(v);
+    closePageSizeMenu();
+    pageSizeSel.dispatchEvent(new Event('change', { bubbles: true }));
+  });
+
+  document.addEventListener('click', (e) => {
+    const within =
+      e.target &&
+      (e.target.closest?.('#page-size-trigger') || e.target.closest?.('#page-size-menu'));
+    if (!within) closePageSizeMenu();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    closePageSizeMenu();
+  });
 
   // --- User-visible Error Banner ---
   let apiErrorActive = false;
@@ -214,11 +275,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const setBtnState = (b, active) => {
       b.classList.toggle('active', active);
       b.setAttribute('aria-selected', String(active));
-      b.classList.toggle('bg-surface-solid/60', active);
-      b.classList.toggle('border-border', active);
+      // Tabs are styled as an underline-nav (no pill background).
       b.classList.toggle('text-fg', active);
+      b.classList.toggle('border-accent', active);
+      b.classList.toggle('text-muted', !active);
       b.classList.toggle('border-transparent', !active);
-      b.classList.toggle('text-fg/80', !active);
     };
 
     tabButtons.forEach((b) => setBtnState(b, b.dataset.tab === tabId));
@@ -360,6 +421,25 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Overview: KPI Skeleton + Load ---
   const renderKpiSkeleton = () => {
     if (!kpiGrid) return;
+
+    const icon = (metricId) => {
+      const base =
+        'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5"';
+
+      switch (metricId) {
+        case 'hours':
+          return `<svg ${base}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>`;
+        case 'distance':
+          return `<svg ${base}><circle cx="6" cy="6" r="2" /><circle cx="18" cy="18" r="2" /><path d="M8 6h6a4 4 0 0 1 4 4v6" /></svg>`;
+        case 'mob_kills':
+          return `<svg ${base}><circle cx="12" cy="12" r="7" /><path d="M12 3v2" /><path d="M12 19v2" /><path d="M3 12h2" /><path d="M19 12h2" /><path d="M12 10v4" /><path d="M10 12h4" /></svg>`;
+        case 'creeper':
+          return `<svg ${base}><path d="M13 2 3 14h8l-1 8 10-12h-8z" /></svg>`;
+        default:
+          return `<svg ${base}><circle cx="12" cy="12" r="9" /></svg>`;
+      }
+    };
+
     kpiGrid.innerHTML = '';
     for (const m of KPI_METRICS) {
       const card = document.createElement('div');
@@ -372,8 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="kpi-label text-muted text-xs font-medium">${escapeHtml(m)}</div>
           <div class="kpi-value text-fg mt-1 text-xl font-semibold">…</div>
         </div>
-        <div class="bg-accent/15 text-accent flex h-9 w-9 items-center justify-center rounded-xl text-sm font-semibold" aria-hidden="true">
-          #
+        <div class="bg-accent/15 text-accent flex h-9 w-9 items-center justify-center rounded-xl" aria-hidden="true">
+          ${icon(m)}
         </div>
       `;
       kpiGrid.appendChild(card);
@@ -463,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const groupEl = document.createElement('details');
       groupEl.className =
-        'metric-group bg-surface border-border rounded-[var(--radius)] border shadow-sm backdrop-blur-md open:shadow-md';
+        'metric-group bg-surface border-border rounded-[var(--radius)] border shadow-sm backdrop-blur-md open:shadow-md open:border-accent/15';
       groupEl.dataset.category = cat;
 
       const sum = document.createElement('summary');
@@ -478,24 +558,27 @@ document.addEventListener('DOMContentLoaded', () => {
       for (const { id, def } of items) {
         const metricEl = document.createElement('details');
         metricEl.className =
-          'metric-card mt-3 rounded-[var(--radius)] border border-border bg-surface shadow-sm backdrop-blur-md open:shadow-md';
+          'metric-card group mt-3 rounded-[var(--radius)] border border-border bg-surface shadow-sm backdrop-blur-md open:shadow-md open:border-accent/20';
         metricEl.dataset.metric = id;
         metricEl.dataset.search = `${id} ${def.label} ${cat}`.toLowerCase();
 
         const unitLabel = def.unit ? def.unit : 'Wert';
         const s = document.createElement('summary');
         s.className =
-          'text-fg flex cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm font-semibold select-none';
+          'text-fg flex cursor-pointer items-center justify-between gap-3 rounded-[calc(var(--radius)-1px)] px-4 py-3 text-sm font-semibold select-none transition-colors hover:bg-surface-solid/30 group-open:bg-surface-solid/30 group-open:border-b group-open:border-border';
         s.innerHTML = `
-          <span class="min-w-0 truncate">${escapeHtml(def.label)}</span>
-          <span class="bg-surface-solid/30 border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">${escapeHtml(id)} · ${escapeHtml(unitLabel)}</span>
+          <span class="min-w-0 truncate inline-flex items-center gap-2">
+            <span class="h-2 w-2 rounded-full bg-accent/70 opacity-0 group-open:opacity-100 transition-opacity" aria-hidden="true"></span>
+            ${escapeHtml(def.label)}
+          </span>
+          <span class="bg-surface-solid/30 border-border text-muted group-open:bg-accent/10 group-open:border-accent/30 group-open:text-accent inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium">${escapeHtml(id)} · ${escapeHtml(unitLabel)}</span>
         `;
         metricEl.appendChild(s);
 
         const body = document.createElement('div');
         body.className = 'metric-body px-4 pb-4';
         body.innerHTML = `
-          <div class="table-wrapper relative mt-1 overflow-x-auto rounded-[var(--radius)] border border-border bg-surface">
+          <div class="table-wrapper group-open:border-accent/20 relative mt-1 overflow-x-auto rounded-[var(--radius)] border border-border bg-surface">
             <table class="w-full min-w-[520px] text-sm">
               <thead class="bg-surface-solid/40 text-muted text-xs">
                 <tr>
@@ -614,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  const pageSize = () => Math.max(1, Math.min(100, parseInt(pageSizeSel?.value || '50', 10) || 50));
+  const pageSize = () => Math.max(1, Math.min(100, parseInt(pageSizeSel?.value || '10', 10) || 10));
 
   const fetchLeaderboardPage = async (metricId, cursor, limit) => {
     const url = cursor

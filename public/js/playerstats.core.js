@@ -72,11 +72,11 @@
   const setBtnState = (b, active) => {
     b.classList.toggle('active', active);
     b.setAttribute('aria-selected', String(active));
-    b.classList.toggle('bg-surface-solid/60', active);
-    b.classList.toggle('border-border', active);
+    // Tabs are styled as an underline-nav (no pill background).
     b.classList.toggle('text-fg', active);
+    b.classList.toggle('border-accent', active);
+    b.classList.toggle('text-muted', !active);
     b.classList.toggle('border-transparent', !active);
-    b.classList.toggle('text-fg/80', !active);
   };
 
   const activateTab = (tabId) => {

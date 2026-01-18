@@ -1,104 +1,112 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
+import Card from '../components/ui/Card.astro';
 import { ArrowLeft, Info, Languages, Search } from '@lucide/astro';
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Spielerstatistik"
   canonical="https://minecraft-gilde.de/playerstats.html"
-  description="Spielerstatistiken f\u00fcr Minecraft Gilde \u2013 Werte, Items und Kreaturen nach Spieler."
+  description="Spielerstatistiken für Minecraft Gilde – Werte, Items und Kreaturen nach Spieler."
 >
   <link slot="head" rel="modulepreload" href="/js/skin-modal.js" />
   <link slot="head" rel="preconnect" href="https://minotar.net" crossorigin />
   <link slot="head" rel="dns-prefetch" href="//minotar.net" />
 
   <!-- Header (playerstats.core.js erwartet #player-name) -->
-  <section class="mg-container pt-12 pb-6">
-    <div class="max-w-3xl">
-      <p class="text-muted text-sm">Minecraft-Gilde.de</p>
-      <h1 class="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
-        Spieler <span id="player-name" class="text-accent">Lädt…</span>
-      </h1>
-    </div>
+  <section class="mg-container pt-12 pb-8">
+    <h1 class="text-3xl font-semibold tracking-tight">
+      Spielerstatistik <span id="player-name" class="text-accent">Lädt…</span>
+    </h1>
+    <p class="text-muted mt-2 max-w-3xl">
+      Alle Werte, Items und Kreaturen eines Spielers – inklusive Filter und Sortierung.
+    </p>
   </section>
 
   <section class="mg-container pb-12">
-    <!-- Tabs -->
-    <div
-      class="bg-surface border-border flex flex-wrap gap-2 rounded-[var(--radius)] border p-2 shadow-sm backdrop-blur-md"
-      role="tablist"
-      aria-label="Spielerstatistik Tabs"
-    >
-      <button
-        aria-controls="tab-allgemein"
-        class="tab-btn text-fg/80 hover:bg-surface-solid/60 hover:border-border hover:text-fg focus-visible:ring-offset-bg active inline-flex items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-        data-tab="tab-allgemein"
-        role="tab"
-        type="button"
+    <Card class="overflow-hidden">
+      <!-- Tabs -->
+      <div
+        class="border-border flex flex-wrap items-center gap-1 border-b px-4"
+        role="tablist"
+        aria-label="Spielerstatistik Tabs"
       >
-        Allgemein
-      </button>
-      <button
-        aria-controls="tab-items"
-        class="tab-btn text-fg/80 hover:bg-surface-solid/60 hover:border-border hover:text-fg focus-visible:ring-offset-bg inline-flex items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-        data-tab="tab-items"
-        role="tab"
-        type="button"
-      >
-        Gegenstände
-      </button>
-      <button
-        aria-controls="tab-mobs"
-        class="tab-btn text-fg/80 hover:bg-surface-solid/60 hover:border-border hover:text-fg focus-visible:ring-offset-bg inline-flex items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-        data-tab="tab-mobs"
-        role="tab"
-        type="button"
-      >
-        Kreaturen
-      </button>
-    </div>
-
-    <!-- Meta row -->
-    <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div class="flex flex-wrap items-center gap-2">
-        <Button href="stats.html" variant="primary" size="sm" class="gap-2">
-          <ArrowLeft size={16} /> Zurück zur Statistik
-        </Button>
-
         <button
-          id="player-uuid"
+          aria-controls="tab-allgemein"
+          class="tab-btn text-muted hover:border-border/60 hover:text-fg focus-visible:ring-offset-bg active text-fg border-accent -mb-px inline-flex items-center justify-center border-b-2 border-transparent px-3 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+          data-tab="tab-allgemein"
+          role="tab"
           type="button"
-          title="UUID kopieren"
-          class="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors"
-        ></button>
-
-        <span id="generated-ts" class="text-muted text-xs"></span>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button
-          id="i18n-toggle"
-          type="button"
-          aria-pressed="true"
-          title="Zwischen Deutsch und Original wechseln"
-          class="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors"
         >
-          <Languages size={16} />
-          <span class="label">DE</span>
+          Allgemein
+        </button>
+        <button
+          aria-controls="tab-items"
+          class="tab-btn text-muted hover:border-border/60 hover:text-fg focus-visible:ring-offset-bg -mb-px inline-flex items-center justify-center border-b-2 border-transparent px-3 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+          data-tab="tab-items"
+          role="tab"
+          type="button"
+        >
+          Gegenstände
+        </button>
+        <button
+          aria-controls="tab-mobs"
+          class="tab-btn text-muted hover:border-border/60 hover:text-fg focus-visible:ring-offset-bg -mb-px inline-flex items-center justify-center border-b-2 border-transparent px-3 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+          data-tab="tab-mobs"
+          role="tab"
+          type="button"
+        >
+          Kreaturen
         </button>
       </div>
-    </div>
 
-    <!-- API-Fehler -->
-    <div
-      id="player-api-error"
-      class="bg-accent/10 border-accent/40 mt-4 flex hidden items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm shadow-sm"
-      role="alert"
-    >
-      <div class="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true"></div>
-      <span id="player-api-error-text" class="text-fg/90"></span>
-    </div>
+      <!-- Meta row + actions -->
+      <div class="p-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-wrap items-center gap-2">
+            <Button href="stats.html" variant="primary" size="sm" class="gap-2">
+              <ArrowLeft size={16} /> Zurück zur Statistik
+            </Button>
+
+            <button
+              id="player-uuid"
+              type="button"
+              title="UUID kopieren"
+              class="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors"
+            ></button>
+
+            <span
+              id="generated-ts"
+              class="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md"
+            ></span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              id="i18n-toggle"
+              type="button"
+              aria-pressed="true"
+              title="Zwischen Deutsch und Original wechseln"
+              class="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors"
+            >
+              <Languages size={16} />
+              <span class="label">DE</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- API-Fehler -->
+        <div
+          id="player-api-error"
+          class="bg-accent/10 border-accent/40 mt-4 flex hidden items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
+          role="alert"
+        >
+          <div class="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true"></div>
+          <span id="player-api-error-text" class="text-fg/90"></span>
+        </div>
+      </div>
+    </Card>
 
     <!-- Player skin -->
     <div class="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
