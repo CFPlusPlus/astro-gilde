@@ -111,23 +111,34 @@
   const navRoot = qs('[data-site-nav]');
   const panel = qs('[data-nav-panel]', navRoot || document);
   const toggle = qs('[data-nav-toggle]', navRoot || document);
+  const overlay = qs('[data-nav-overlay]', panel || document);
   const iconOpen = qs('[data-icon-open]', toggle || document);
   const iconClose = qs('[data-icon-close]', toggle || document);
+
+  const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
 
   const closeMenu = () => {
     if (!panel || !toggle) return;
     panel.classList.add('hidden');
+    if (overlay) overlay.classList.add('hidden');
     toggle.setAttribute('aria-expanded', 'false');
     if (iconOpen) iconOpen.classList.remove('hidden');
     if (iconClose) iconClose.classList.add('hidden');
+
+    // unlock scroll (mobile)
+    document.body.classList.remove('overflow-hidden');
   };
 
   const openMenu = () => {
     if (!panel || !toggle) return;
     panel.classList.remove('hidden');
+    if (overlay) overlay.classList.toggle('hidden', !isMobile());
     toggle.setAttribute('aria-expanded', 'true');
     if (iconOpen) iconOpen.classList.add('hidden');
     if (iconClose) iconClose.classList.remove('hidden');
+
+    // lock scroll on mobile so the menu feels like a proper overlay
+    if (isMobile()) document.body.classList.add('overflow-hidden');
   };
 
   const isMenuOpen = () => panel && !panel.classList.contains('hidden');
@@ -146,6 +157,19 @@
       if (!(target instanceof Node)) return;
       if (panel.contains(target) || toggle.contains(target)) return;
       closeMenu();
+    });
+
+    // close on overlay click
+    if (overlay) {
+      overlay.addEventListener('click', () => closeMenu());
+    }
+
+    // close when a menu link is clicked
+    panel.addEventListener('click', (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
+      const link = t.closest('a');
+      if (link) closeMenu();
     });
 
     // close on escape

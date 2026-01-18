@@ -45,8 +45,12 @@ const ip = serverIp || 'minecraft-gilde.de';
   <section class="mg-container pb-16">
     <div class="grid gap-4 lg:grid-cols-2">
       <Card class="p-6">
-        <div class="flex items-start gap-3">
-          <Book size={20} />
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <Book class="h-7 w-7" />
+          </div>
           <div>
             <h2 class="text-xl font-semibold tracking-tight">{minecraft.title}</h2>
             <ol class="mt-4 space-y-4">
@@ -64,8 +68,12 @@ const ip = serverIp || 'minecraft-gilde.de';
       </Card>
 
       <Card class="p-6">
-        <div class="flex items-start gap-3">
-          <MessageSquareText size={20} />
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <MessageSquareText class="h-7 w-7" />
+          </div>
           <div>
             <h2 class="text-xl font-semibold tracking-tight">{discord.title}</h2>
             <ol class="mt-4 space-y-4">

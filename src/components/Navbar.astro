@@ -47,8 +47,8 @@ const linkClass = (active: boolean) =>
 ---
 
 <header class="sticky top-0 z-50" data-site-nav>
-  <div class="mx-auto max-w-6xl px-4 pt-4">
-    <div class="glass rounded-[var(--radius)] px-4 py-3 shadow-sm">
+  <div class="mx-auto max-w-6xl px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
+    <div class="glass rounded-[var(--radius)] px-4 py-3 shadow-sm relative z-10">
       <div class="flex items-center justify-between gap-4">
         <a href="/" class="flex items-center gap-3" aria-label="Minecraft Gilde (Start)">
           <img
@@ -67,13 +67,11 @@ const linkClass = (active: boolean) =>
         </a>
 
         <nav class="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
-          {
-            PRIMARY_LINKS.map((item) => (
-              <a href={hrefFor(item.href)} class={linkClass(isActive(item.href, item.external))}>
-                {item.label}
-              </a>
-            ))
-          }
+          {PRIMARY_LINKS.map((item) => (
+            <a href={hrefFor(item.href)} class={linkClass(isActive(item.href, item.external))}>
+              {item.label}
+            </a>
+          ))}
         </nav>
 
         <div class="relative flex items-center gap-2">
@@ -105,43 +103,41 @@ const linkClass = (active: boolean) =>
             <X size={20} class="hidden" data-icon-close />
           </button>
 
-          <div
-            id="nav-panel"
-            class="mt-3 hidden md:absolute md:top-[calc(100%+0.75rem)] md:right-0 md:mt-0 md:w-[22rem]"
-            data-nav-panel
-          >
-            <div class="glass rounded-[var(--radius)] p-3 shadow-sm">
+          <div id="nav-panel" class="hidden" data-nav-panel>
+            <!-- Mobile overlay -->
+            <div
+              class="fixed left-0 right-0 bottom-0 top-[calc(4.75rem+env(safe-area-inset-top))] z-40 hidden bg-black/75 backdrop-blur-[28px] backdrop-saturate-150 md:hidden supports-[backdrop-filter]:bg-black/55"
+              data-nav-overlay
+            ></div>
+
+            <div
+              class="fixed left-4 right-4 top-[calc(4.75rem+env(safe-area-inset-top))] z-50 md:absolute md:top-[calc(100%+0.75rem)] md:right-0 md:left-auto md:w-[22rem]"
+            >
+              <div class="glass-strong rounded-[var(--radius)] p-3 shadow-lg">
               <div class="grid gap-1 md:hidden">
-                {
-                  PRIMARY_LINKS.map((item) => (
-                    <a
-                      href={hrefFor(item.href)}
-                      class={linkClass(isActive(item.href, item.external))}
-                    >
-                      {item.label}
-                    </a>
-                  ))
-                }
+                {PRIMARY_LINKS.map((item) => (
+                  <a href={hrefFor(item.href)} class={linkClass(isActive(item.href, item.external))}>
+                    {item.label}
+                  </a>
+                ))}
               </div>
 
               <div class="bg-border my-3 h-px md:hidden"></div>
 
               <div class="grid gap-1 sm:grid-cols-2 md:grid-cols-1">
-                {
-                  MORE_LINKS.map((item) => (
-                    <a
-                      href={hrefFor(item.href)}
-                      target={item.external ? '_blank' : undefined}
-                      rel={item.external ? 'noopener noreferrer' : undefined}
-                      class={
-                        'text-fg/90 hover:text-fg hover:bg-surface hover:border-border rounded-lg border border-transparent px-3 py-2 text-sm transition-colors'
-                      }
-                    >
-                      {item.label}
-                      {item.external ? <span class="sr-only"> (extern)</span> : null}
-                    </a>
-                  ))
-                }
+                {MORE_LINKS.map((item) => (
+                  <a
+                    href={hrefFor(item.href)}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    class={
+                      'text-fg/90 hover:text-fg hover:bg-surface hover:border-border rounded-lg border border-transparent px-3 py-2 text-sm transition-colors'
+                    }
+                  >
+                    {item.label}
+                    {item.external ? <span class="sr-only"> (extern)</span> : null}
+                  </a>
+                ))}
               </div>
 
               <div class="mt-3">
@@ -149,6 +145,7 @@ const linkClass = (active: boolean) =>
                   Discord
                   <ExternalLink size={16} />
                 </Button>
+              </div>
               </div>
             </div>
           </div>

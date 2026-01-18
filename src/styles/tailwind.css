@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /*
-  Design Tokens (clean + subtle glass + minimal)
+  v2 Design Tokens (clean + subtle glass + minimal)
   - Auto Light/Dark via prefers-color-scheme
   - Optional manual override via: html[data-theme="light|dark"]
   - Anthrazit (nicht reines Schwarz) + Gold Accent
@@ -49,7 +49,7 @@
   }
 }
 
-/* Manual override (set by theme toggle) */
+/* Manual override (set by v2 theme toggle) */
 html[data-theme='light'] {
   --bg: #f7f8fb;
   --fg: #0f172a;
@@ -100,10 +100,34 @@ html[data-theme='dark'] {
 
 @layer base {
   html {
+    /* Allow UA to render controls appropriately, but we also
+       override this in manual theme mode (see below). */
     color-scheme: light dark;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* When the user forces a theme via toggle, also force the UA color-scheme.
+     This fixes things like the search "clear" button being the wrong color. */
+  html[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      color-scheme: dark;
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme]) {
+      color-scheme: light;
+    }
   }
 
   body {
@@ -159,6 +183,14 @@ html[data-theme='dark'] {
     backdrop-filter: blur(12px);
   }
 
+  /* Stronger glass (used for overlays / mobile navigation panel) */
+  .glass-strong {
+    background: color-mix(in oklab, var(--surface-solid) 94%, transparent);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(24px);
+  }
+
+  /* Project design-system aliases ("mg" = Minecraft Gilde). */
   .mg-container {
     @apply mx-auto max-w-6xl px-4;
   }
@@ -179,23 +211,49 @@ html[data-theme='dark'] {
     line-height: 1.75;
   }
 
+  .v2-container {
+    @apply mx-auto max-w-6xl px-4;
+  }
+
+  .v2-section {
+    @apply py-10;
+  }
+
+  .v2-card {
+    @apply bg-surface border-border rounded-[var(--radius)] border shadow-sm backdrop-blur-md;
+  }
+
+  .v2-muted {
+    color: var(--muted);
+  }
+
+  .v2-prose,
+  .mg-prose {
+    line-height: 1.75;
+  }
+
+  .v2-prose h2,
   .mg-prose h2 {
     font-size: 1.25rem;
     margin-top: 1.75rem;
     margin-bottom: 0.75rem;
   }
 
+  .v2-prose h3,
   .mg-prose h3 {
     font-size: 1.05rem;
     margin-top: 1.25rem;
     margin-bottom: 0.5rem;
   }
 
+  .v2-prose p,
   .mg-prose p {
     margin: 0.75rem 0;
     color: color-mix(in oklab, var(--fg) 92%, transparent);
   }
 
+  .v2-prose ul,
+  .v2-prose ol,
   .mg-prose ul,
   .mg-prose ol {
     margin: 0.75rem 0;
@@ -203,10 +261,12 @@ html[data-theme='dark'] {
     color: color-mix(in oklab, var(--fg) 92%, transparent);
   }
 
+  .v2-prose li,
   .mg-prose li {
     margin: 0.35rem 0;
   }
 
+  .v2-prose a,
   .mg-prose a {
     color: color-mix(in oklab, var(--accent) 85%, var(--fg) 15%);
     text-decoration: underline;
@@ -214,34 +274,41 @@ html[data-theme='dark'] {
   }
 
   /* Accordion */
+  .v2-accordion,
   .mg-accordion {
     @apply bg-surface border-border rounded-[var(--radius)] border p-4 shadow-sm backdrop-blur-md;
   }
 
+  .v2-accordion summary,
   .mg-accordion summary {
     list-style: none;
     cursor: pointer;
     user-select: none;
   }
 
+  .v2-accordion summary::-webkit-details-marker,
   .mg-accordion summary::-webkit-details-marker {
     display: none;
   }
 
+  .v2-accordion[open],
   .mg-accordion[open] {
     box-shadow: 0 12px 30px color-mix(in oklab, var(--fg) 12%, transparent);
   }
 
   /* Simple "callout" */
+  .v2-callout,
   .mg-callout {
     @apply bg-surface border-border rounded-[var(--radius)] border p-4 shadow-sm backdrop-blur-md;
   }
 
+  .v2-callout[data-variant='warning'],
   .mg-callout[data-variant='warning'] {
     border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
     background: color-mix(in oklab, var(--accent) 10%, var(--surface) 90%);
   }
 
+  .v2-callout[data-variant='info'],
   .mg-callout[data-variant='info'] {
     background: color-mix(in oklab, var(--surface) 85%, transparent);
   }
