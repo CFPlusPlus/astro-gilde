@@ -103,9 +103,16 @@ html[data-theme='dark'] {
     /* Allow UA to render controls appropriately, but we also
        override this in manual theme mode (see below). */
     color-scheme: light dark;
+    scrollbar-gutter: stable;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* When the mobile menu is open, blur the page content (not the navbar) */
+  html[data-menu-open='1'] main {
+    filter: blur(12px);
+    transform: translateZ(0);
   }
 
   /* When the user forces a theme via toggle, also force the UA color-scheme.

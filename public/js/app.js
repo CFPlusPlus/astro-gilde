@@ -117,6 +117,27 @@
 
   const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
 
+  const root = document.documentElement;
+
+  const lockScroll = () => {
+    const scrollbarWidth = window.innerWidth - root.clientWidth;
+    root.dataset.menuOpen = '1';
+    root.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+    if (scrollbarWidth > 0) {
+      root.style.paddingRight = `${scrollbarWidth}px`;
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+  };
+
+  const unlockScroll = () => {
+    delete root.dataset.menuOpen;
+    root.style.overflow = '';
+    document.body.style.overflow = '';
+    root.style.paddingRight = '';
+    document.body.style.paddingRight = '';
+  };
+
   const closeMenu = () => {
     if (!panel || !toggle) return;
     panel.classList.add('hidden');
@@ -125,8 +146,7 @@
     if (iconOpen) iconOpen.classList.remove('hidden');
     if (iconClose) iconClose.classList.add('hidden');
 
-    // unlock scroll (mobile)
-    document.body.classList.remove('overflow-hidden');
+    unlockScroll();
   };
 
   const openMenu = () => {
@@ -137,8 +157,8 @@
     if (iconOpen) iconOpen.classList.add('hidden');
     if (iconClose) iconClose.classList.remove('hidden');
 
-    // lock scroll on mobile so the menu feels like a proper overlay
-    if (isMobile()) document.body.classList.add('overflow-hidden');
+    if (isMobile()) lockScroll();
+    else unlockScroll();
   };
 
   const isMenuOpen = () => panel && !panel.classList.contains('hidden');
