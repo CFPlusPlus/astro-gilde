@@ -1,4 +1,5 @@
 ---
+import { hrefFor } from '../lib/links';
 const year = new Date().getFullYear();
 
 const LINKS = [
@@ -22,7 +23,7 @@ const LINKS = [
         {
           LINKS.map((l) => (
             <a
-              href={l.href}
+              href={hrefFor(l.href)}
               target={l.external ? '_blank' : undefined}
               rel={l.external ? 'noopener noreferrer' : undefined}
               class="text-fg/80 hover:text-fg hover:decoration-accent/60 underline decoration-transparent underline-offset-4 transition-colors"

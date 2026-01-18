@@ -1,4 +1,6 @@
 ---
+import { hrefFor, isExternalHref } from '../../lib/links';
+
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 export type ButtonSize = 'sm' | 'md';
 
@@ -21,6 +23,9 @@ const {
   ...rest
 } = Astro.props as Props & Record<string, any>;
 
+const resolvedHref = href ? hrefFor(href) : undefined;
+const resolvedExternal = external || (href ? isExternalHref(href) : false);
+
 const base =
   'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
 
@@ -37,8 +42,8 @@ const variants: Record<ButtonVariant, string> = {
 
 const attrs = href
   ? {
-      href,
-      ...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+      href: resolvedHref,
+      ...(resolvedExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
       ...rest,
     }
   : { type, ...rest };
