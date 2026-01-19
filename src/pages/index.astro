@@ -1,178 +1,647 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
-import { ArrowRight, Copy, Map, ScrollText, TerminalSquare, Users } from '@lucide/astro';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import {
+  ArrowRight,
+  Book,
+  Copy,
+  Cpu,
+  Home,
+  Map,
+  ScrollText,
+  Shield,
+  Sparkles,
+  TerminalSquare,
+  Users,
+  Wand2,
+} from '@lucide/astro';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
-const DYMAP_URL = 'https://map.minecraft-gilde.de';
+const DYNMAP_URL = 'https://map.minecraft-gilde.de';
+const SERVER_IP = 'minecraft-gilde.de';
+const MC_VERSION = '1.21.x';
+
+// Build-time: collect gallery images from /public/images/Galerie
+const galleryDir = fileURLToPath(new URL('../../public/images/Galerie', import.meta.url));
+let galleryImages: string[] = [];
+
+try {
+  galleryImages = fs
+    .readdirSync(galleryDir)
+    .filter((f) => /\.(png|jpe?g|webp|avif)$/i.test(f))
+    .sort((a, b) => a.localeCompare(b, 'de', { numeric: true }));
+} catch {
+  // If the folder does not exist, we keep the fallback image.
+}
+
+const galleryUrls = galleryImages.map((f) => `/images/Galerie/${encodeURIComponent(f)}`);
+const galleryFallback = '/images/survival.webp';
+const galleryInitial = galleryUrls[0] ?? galleryFallback;
 ---
 
 <BaseLayout
-  title="Minecraft Gilde \u2013 Deutscher Minecraft Vanilla SMP Server (1.21.x)"
+  title="Minecraft Gilde – Deutscher Vanilla SMP Server (Java 1.21.x)"
   canonical="https://minecraft-gilde.de/"
-  description="Minecraft Vanilla SMP (DE) \u2013 Survival & Freebuild ohne Minigames f\u00fcr 1.21.x. Aktive Community, faire Regeln. IP: minecraft-gilde.de."
-  keywords="Minecraft Vanilla SMP Server, Vanilla Survival Server deutsch, Server ohne Minigames, Minecraft Server deutsch, Freebuild, Survival, 1.21.x, Minecraft Gilde"
+  description="Minecraft Gilde ist ein deutscher Vanilla SMP (Java 1.21.x) mit Langzeitwelt ohne Resets, fair ohne Pay-to-Win und Vanilla+ Komfort. IP: minecraft-gilde.de"
+  keywords="Minecraft Vanilla SMP Server, Minecraft Server deutsch, Vanilla Survival, Freebuild, Langzeitwelt, kein Pay2Win, Java 1.21.x, minecraft-gilde.de"
 >
-  <section class="mg-container pt-12 pb-8">
-    <div class="grid items-center gap-10 md:grid-cols-2">
-      <div>
-        <div class="flex flex-wrap items-center gap-2">
-          <Badge variant="accent">Vanilla SMP (DE)</Badge>
-          <Badge>1.21.x</Badge>
-          <Badge>Ohne Resets</Badge>
+  <!-- Hero -->
+  <section class="relative overflow-hidden pt-14 pb-10 sm:pt-16">
+    <div class="pointer-events-none absolute inset-0 -z-10">
+      <img
+        src="/images/header-background.webp"
+        alt=""
+        loading="eager"
+        decoding="async"
+        class="h-full w-full [mask-image:radial-gradient(65%_55%_at_50%_35%,black,transparent)] object-cover opacity-25"
+      />
+      <div class="from-bg/10 via-bg/70 to-bg absolute inset-0 bg-gradient-to-b"></div>
+    </div>
+
+    <div class="mg-container">
+      <div class="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <Badge variant="accent">Vanilla+</Badge>
+            <Badge>Langzeitwelt</Badge>
+            <Badge>Kein P2W</Badge>
+            <Badge>Java {MC_VERSION}</Badge>
+          </div>
+
+          <h1 class="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">Minecraft Gilde</h1>
+          <p class="text-muted mt-4 max-w-2xl text-base leading-relaxed sm:text-lg">
+            Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort – ohne das Gameplay zu
+            verbiegen.
+          </p>
+
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <Button variant="primary" class="gap-2" data-copy-ip>
+              <Copy size={18} /> IP kopieren
+            </Button>
+            <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+              Discord <ArrowRight size={18} />
+            </Button>
+            <Button href="/erststart.html" variant="ghost" class="gap-2">Erststart</Button>
+          </div>
+
+          <p class="text-muted mt-4 text-sm">
+            Keine Minigames, kein Citybuild – Fokus auf Survival & Freebuild.
+          </p>
         </div>
 
-        <h1 class="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">minecraft-gilde.de</h1>
-        <p class="text-muted mt-4 text-base leading-relaxed sm:text-lg">
-          Werde Teil einer Community, die echtes Vanilla-Minecraft liebt – ganz ohne Schnickschnack.
-          Starte dein Abenteuer noch heute!
-        </p>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-          <Button variant="primary" class="gap-2" data-copy-ip>
-            <Copy size={18} /> IP kopieren
-          </Button>
-          <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-            Discord <ArrowRight size={18} />
-          </Button>
-          <Button href="/erststart.html" variant="ghost" class="gap-2"> Erststart </Button>
-        </div>
-
-        <div class="mt-8 grid gap-3 sm:grid-cols-3">
-          <Card class="p-4">
-            <div class="text-muted text-xs">Discord</div>
-            <div class="mt-1 flex items-center gap-2">
-              <Users size={18} />
-              <span class="text-lg font-semibold" data-discord-online>Keine</span>
-              <span class="text-muted text-sm">online</span>
-            </div>
-          </Card>
-
-          <Card class="p-4">
-            <div class="text-muted text-xs">Minecraft</div>
-            <div class="mt-1 flex items-center gap-2">
-              <Users size={18} />
-              <span class="text-lg font-semibold" data-mc-online>Keine</span>
-              <span class="text-muted text-sm">online</span>
-            </div>
-          </Card>
-
-          <Card class="p-4">
-            <div class="text-muted text-xs">Hauptwelt aktiv</div>
-            <div class="mt-1 text-lg font-semibold" id="world-age">—</div>
-            <div class="text-muted text-xs">seit Feb 2024</div>
-          </Card>
-        </div>
-
-        <div class="mt-6">
-          <Card class="p-4">
-            <div class="text-muted text-xs font-medium">Live-Spieler</div>
-            <div class="mt-3" id="player-list">
-              <p class="text-muted text-sm">Lade Spieler…</p>
-            </div>
-          </Card>
+        <div class="relative">
+          <div
+            class="bg-accent/10 pointer-events-none absolute -inset-8 -z-10 rounded-[32px] blur-3xl"
+          >
+          </div>
+          <img
+            src="/images/logo-big.webp"
+            width="900"
+            height="900"
+            alt="Minecraft Gilde Logo"
+            loading="eager"
+            decoding="async"
+            class="mx-auto w-[min(520px,90%)] opacity-95 drop-shadow-[0_40px_80px_rgba(0,0,0,0.35)] select-none sm:w-[min(560px,95%)]"
+          />
+          <div
+            class="from-bg/35 to-bg/10 pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-tr via-transparent"
+          >
+          </div>
         </div>
       </div>
 
-      <div class="grid gap-4">
-        <Card class="p-5">
-          <div class="flex items-center justify-between gap-4">
-            <div>
-              <div class="text-muted text-xs">Schnellzugriff</div>
-              <h2 class="mt-1 text-base font-semibold">Alles Wichtige auf einen Klick</h2>
+      <!-- Join Bar -->
+      <div class="mt-10">
+        <div class="glass-strong rounded-2xl px-4 py-4 sm:px-5 sm:py-5">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
+              <div>
+                <div class="text-muted text-xs font-medium">Server-IP</div>
+                <div class="mt-1 flex items-center gap-2">
+                  <code class="text-sm">{SERVER_IP}</code>
+                  <button
+                    type="button"
+                    data-copy-ip
+                    class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+                    aria-label="Server-IP kopieren"
+                  >
+                    <Copy size={16} />
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div class="text-muted text-xs font-medium">Version</div>
+                <div class="mt-1 text-sm font-semibold">Java {MC_VERSION}</div>
+              </div>
+
+              <div>
+                <div class="text-muted text-xs font-medium">Live</div>
+                <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                  <span class="inline-flex items-center gap-2">
+                    <Users size={16} />
+                    <span class="font-semibold" data-mc-online>Keine</span>
+                    <span class="text-muted">Minecraft</span>
+                  </span>
+                  <span class="inline-flex items-center gap-2">
+                    <Users size={16} />
+                    <span class="font-semibold" data-discord-online>Keine</span>
+                    <span class="text-muted">Discord</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <Button href={DYNMAP_URL} external variant="secondary" size="sm" class="gap-2">
+                <Map size={16} /> Karte
+              </Button>
+              <Button href={DISCORD_URL} external variant="primary" size="sm" class="gap-2">
+                Discord <ArrowRight size={16} />
+              </Button>
             </div>
           </div>
-          <div class="mt-4 grid gap-2 sm:grid-cols-2">
-            <a
-              href="/serverinfos.html"
-              class="border-border bg-surface hover:bg-surface-solid/70 rounded-lg border px-3 py-2 text-sm transition-colors"
-            >
-              <span class="inline-flex items-center gap-2"
-                ><ScrollText size={16} /> Serverinfos</span
-              >
-            </a>
-            <a
-              href="/rules.html"
-              class="border-border bg-surface hover:bg-surface-solid/70 rounded-lg border px-3 py-2 text-sm transition-colors"
-            >
-              <span class="inline-flex items-center gap-2"><ScrollText size={16} /> Regeln</span>
-            </a>
-            <a
-              href="/befehle.html"
-              class="border-border bg-surface hover:bg-surface-solid/70 rounded-lg border px-3 py-2 text-sm transition-colors"
-            >
-              <span class="inline-flex items-center gap-2"
-                ><TerminalSquare size={16} /> Befehle</span
-              >
-            </a>
-            <a
-              href={DYMAP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="border-border bg-surface hover:bg-surface-solid/70 rounded-lg border px-3 py-2 text-sm transition-colors"
-            >
-              <span class="inline-flex items-center gap-2"><Map size={16} /> Dynmap</span>
-            </a>
-          </div>
-        </Card>
-
-        <Card class="p-5">
-          <h2 class="text-base font-semibold">Kurz erklärt</h2>
-          <div class="text-muted mt-3 space-y-3 text-sm">
-            <p>
-              Die Minecraft Gilde ist ein deutscher Vanilla-Server, der sich auf pures Survival und
-              kreatives Freebuild konzentriert. Keine Minigames, kein Citybuild.
-            </p>
-            <p>
-              Die Hauptwelt besteht seit Februar 2024 und wurde nie zurückgesetzt. Neue Spieler
-              bekommen ein kleines Starter-Kit – danach liegt alles in deiner Hand.
-            </p>
-          </div>
-        </Card>
-
-        <Card class="p-5">
-          <h2 class="text-base font-semibold">Community-Partner</h2>
-          <p class="text-muted mt-2 text-sm">
-            Seit April 2024 ist die Minecraft-Gilde Partner des ANTI-CORONA-KARTELL.
-          </p>
-          <div class="mt-4 flex flex-wrap gap-2">
-            <Button
-              href="https://www.anti-corona-kartell.de"
-              external
-              variant="secondary"
-              class="gap-2"
-            >
-              Zur Community <ArrowRight size={18} />
-            </Button>
-          </div>
-        </Card>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="mg-container pb-16">
-    <div class="grid gap-4 md:grid-cols-3">
-      <Card class="p-6">
-        <h3 class="text-base font-semibold">Survival & Freebuild</h3>
+  <!-- USP Strip -->
+  <section class="border-border border-t">
+    <div class="mg-container py-10">
+      <div class="grid gap-8 md:grid-cols-3">
+        <div class="flex items-start gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
+          >
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Langzeitwelt</h2>
+            <p class="text-muted mt-1 text-sm">Ohne Resets – deine Projekte bleiben relevant.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
+          >
+            <Shield size={18} />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Kein Pay-to-Win</h2>
+            <p class="text-muted mt-1 text-sm">Keine kaufbaren Vorteile. Fair für alle.</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
+          >
+            <Wand2 size={18} />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Vanilla+</h2>
+            <p class="text-muted mt-1 text-sm">Komfort & Schutz – echtes Survival bleibt.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="mg-container py-14 sm:py-16">
+    <div class="grid items-center gap-10 lg:grid-cols-2">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight">Worum geht’s bei uns?</h2>
+        <div class="mg-prose text-muted mt-4 max-w-2xl text-base">
+          <p>
+            Minecraft Gilde ist ein deutscher Vanilla-SMP mit Fokus auf Survival & Freebuild. Keine
+            Minigames, kein Citybuild – dafür eine ruhige Langzeitwelt, in der große Builds wirklich
+            Sinn machen.
+          </p>
+          <p>
+            Du startest entspannt, suchst dir per <code>/rtp</code> einen Platz und sicherst dein Gebiet
+            mit Claims. Danach gilt: spielen, bauen, entdecken – ohne Reset-Stress.
+          </p>
+        </div>
+        <div class="mt-6 flex flex-wrap gap-3">
+          <Button href="/serverinfos.html" variant="secondary" class="gap-2">
+            <ScrollText size={18} /> Serverinfos
+          </Button>
+          <Button href="/rules.html" variant="ghost" class="gap-2">
+            <Book size={18} /> Regeln
+          </Button>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div
+          class="bg-accent/8 pointer-events-none absolute -inset-6 -z-10 rounded-[28px] blur-3xl"
+        >
+        </div>
+        <div
+          class="glass overflow-hidden rounded-[28px]"
+          data-gallery
+          data-gallery-interval="5200"
+          data-gallery-images={JSON.stringify(galleryUrls)}
+        >
+          <div class="group relative h-[320px] w-full sm:h-[360px]">
+            <div
+              data-gallery-placeholder
+              class="from-surface/60 via-surface-solid/50 to-surface/60 absolute inset-0 bg-gradient-to-br"
+            >
+            </div>
+            <img
+              data-gallery-a
+              src={galleryInitial}
+              alt="Impressionen vom Server – Minecraft Gilde"
+              loading="eager"
+              decoding="async"
+              style="opacity:0"
+              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+            />
+
+            <noscript>
+              <img
+                src={galleryInitial}
+                alt="Impressionen vom Server – Minecraft Gilde"
+                class="absolute inset-0 h-full w-full object-cover opacity-100"
+              />
+            </noscript>
+            <img
+              data-gallery-b
+              src={galleryInitial}
+              alt=""
+              aria-hidden="true"
+              loading="lazy"
+              decoding="async"
+              style="opacity:0"
+              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+            />
+
+            <!-- controls -->
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <button
+                type="button"
+                data-gallery-prev
+                aria-label="Vorheriges Bild"
+                title="Vorheriges Bild"
+                class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M15 18l-6-6 6-6"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+              <button
+                type="button"
+                data-gallery-next
+                aria-label="Nächstes Bild"
+                title="Nächstes Bild"
+                class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  class="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M9 18l6-6-6-6"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vanilla+ -->
+  <section class="border-border border-t">
+    <div class="mg-container py-14 sm:py-16">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Vanilla+ – genau das richtige Maß</h2>
+          <p class="text-muted mt-2 max-w-2xl">
+            Komfortfunktionen, die helfen – ohne das Survival-Gefühl zu verlieren.
+          </p>
+        </div>
+        <Button href="/erststart.html" variant="secondary" class="gap-2">
+          Erststart ansehen <ArrowRight size={18} />
+        </Button>
+      </div>
+
+      <div class="mt-8 grid gap-6 md:grid-cols-2">
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Shield size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
+            <p class="text-muted mt-1 text-sm">Sicher bauen: Dein Gebiet bleibt deins.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Map size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Farmwelten</h3>
+            <p class="text-muted mt-1 text-sm">
+              Ressourcen farmen, ohne die Hauptwelt zu zerstören.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Home size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Bis zu 20 Homes</h3>
+            <p class="text-muted mt-1 text-sm">
+              Schnell zurück zu deinen Projekten – ohne Laufwege.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Wand2 size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">/RTP</h3>
+            <p class="text-muted mt-1 text-sm">In Sekunden einen Spot finden und loslegen.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Quality-of-Life</h3>
+            <p class="text-muted mt-1 text-sm">Komfort ja – aber kein modded Overkill.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Cpu size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Stabil & performant</h3>
+            <p class="text-muted mt-1 text-sm">Flüssig spielen – auch wenn mehr los ist.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to start -->
+  <section class="mg-container py-14 sm:py-16">
+    <h2 class="text-2xl font-semibold tracking-tight">So startest du in 3 Schritten</h2>
+    <div class="mt-8 grid gap-6 md:grid-cols-3">
+      <div class="glass rounded-[24px] p-6">
+        <div
+          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          1
+        </div>
+        <h3 class="mt-4 text-base font-semibold">IP kopieren & joinen</h3>
         <p class="text-muted mt-2 text-sm">
-          Baue, erkunde und gestalte frei – ohne Citybuild-Vorgaben oder künstliche Einschränkungen.
+          Server hinzufügen, verbinden, loslegen – <strong>Java {MC_VERSION}</strong>.
         </p>
-      </Card>
-      <Card class="p-6">
-        <h3 class="text-base font-semibold">Singleplayer-Feeling</h3>
+        <div class="mt-4 flex flex-wrap gap-2">
+          <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
+            <Copy size={16} /> IP kopieren
+          </Button>
+        </div>
+      </div>
+
+      <div class="glass rounded-[24px] p-6">
+        <div
+          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          2
+        </div>
+        <h3 class="mt-4 text-base font-semibold">Platz finden & claimen</h3>
         <p class="text-muted mt-2 text-sm">
-          16 Chunks Sichtweite, Vanilla-nahe Spawnraten und keine Einschränkungen bei Farmen,
-          Villagern oder Redstone.
+          Nutze <code>/rtp</code>, finde deinen Spot und sichere dein Gebiet mit Claims.
         </p>
-      </Card>
-      <Card class="p-6">
-        <h3 class="text-base font-semibold">Fair & ohne Pay2Win</h3>
+        <div class="mt-4">
+          <Button href="/erststart.html" size="sm" variant="secondary" class="gap-2">
+            Erststart <ArrowRight size={16} />
+          </Button>
+        </div>
+      </div>
+
+      <div class="glass rounded-[24px] p-6">
+        <div
+          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          3
+        </div>
+        <h3 class="mt-4 text-base font-semibold">Homes setzen & dranbleiben</h3>
         <p class="text-muted mt-2 text-sm">
-          Keine kaufbaren Ränge oder Items, kein Reset-Stress – pures Minecraft, das bleibt.
+          Bis zu 20 Homes – und auf Discord bekommst du News, Hilfe und Events.
         </p>
-      </Card>
+        <div class="mt-4">
+          <Button href={DISCORD_URL} external size="sm" variant="secondary" class="gap-2">
+            Discord <ArrowRight size={16} />
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live -->
+  <section class="border-border border-t">
+    <div class="mg-container py-14 sm:py-16">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Live auf dem Server</h2>
+          <p class="text-muted mt-2 max-w-2xl">
+            Wer ist gerade online? Und wie lange läuft die Hauptwelt bereits?
+          </p>
+        </div>
+        <div class="text-muted text-sm">
+          Hauptwelt aktiv: <span class="text-fg font-semibold" id="world-age">—</span>
+          <span class="text-muted">(seit Feb 2024)</span>
+        </div>
+      </div>
+
+      <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+        <div class="glass rounded-[24px] p-6">
+          <h3 class="text-base font-semibold">Status</h3>
+          <div class="mt-4 grid gap-3">
+            <div
+              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
+            >
+              <span class="inline-flex items-center gap-2 text-sm"
+                ><Users size={16} /> Minecraft</span
+              >
+              <span class="text-sm font-semibold" data-mc-online>Keine</span>
+            </div>
+            <div
+              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
+            >
+              <span class="inline-flex items-center gap-2 text-sm"><Users size={16} /> Discord</span
+              >
+              <span class="text-sm font-semibold" data-discord-online>Keine</span>
+            </div>
+            <div
+              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
+            >
+              <span class="inline-flex items-center gap-2 text-sm"><Map size={16} /> Karte</span>
+              <a
+                href={DYNMAP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="decoration-border hover:decoration-fg text-sm font-semibold underline"
+              >
+                Öffnen
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass rounded-[24px] p-6">
+          <h3 class="text-base font-semibold">Spieler online</h3>
+          <div class="mt-4" id="player-list">
+            <p class="text-muted text-sm">Lade Spieler…</p>
+          </div>
+          <p class="text-muted mt-4 text-xs">
+            Tipp: Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick links -->
+  <section class="mg-container py-12">
+    <h2 class="text-xl font-semibold tracking-tight">Mehr entdecken</h2>
+    <p class="text-muted mt-2 max-w-2xl text-sm">Die wichtigsten Seiten – ohne Umwege.</p>
+
+    <div class="mt-6 flex flex-wrap gap-2">
+      <a
+        href="/serverinfos.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <ScrollText size={16} /> Serverinfos
+      </a>
+      <a
+        href="/rules.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <Book size={16} /> Regeln
+      </a>
+      <a
+        href="/befehle.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <TerminalSquare size={16} /> Befehle
+      </a>
+      <a
+        href={DYNMAP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <Map size={16} /> Karte
+      </a>
+      <a
+        href="/stats.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <Sparkles size={16} /> Statistiken
+      </a>
+      <a
+        href="/admin-team.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <Users size={16} /> Team
+      </a>
+      <a
+        href="/partner.html"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <ArrowRight size={16} /> Partner
+      </a>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="border-border border-t">
+    <div class="mg-container py-14 sm:py-16">
+      <div class="glass rounded-[28px] p-7 sm:p-10">
+        <div class="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <h2 class="text-2xl font-semibold tracking-tight">Bereit für dein nächstes Projekt?</h2>
+            <p class="text-muted mt-3 max-w-2xl">
+              Join jetzt auf <strong>{SERVER_IP}</strong> und spiele echtes Vanilla-Survival – fair, stabil
+              und ohne Reset-Stress.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <Button variant="primary" class="gap-2" data-copy-ip>
+                <Copy size={18} /> IP kopieren
+              </Button>
+              <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+                Discord <ArrowRight size={18} />
+              </Button>
+            </div>
+          </div>
+
+          <div class="border-border bg-surface/60 rounded-2xl border p-5">
+            <div class="text-muted text-xs font-medium">Kurzinfo</div>
+            <dl class="mt-3 grid gap-3 text-sm">
+              <div class="flex items-center justify-between">
+                <dt class="text-muted">Edition</dt>
+                <dd class="font-semibold">Java</dd>
+              </div>
+              <div class="flex items-center justify-between">
+                <dt class="text-muted">Version</dt>
+                <dd class="font-semibold">{MC_VERSION}</dd>
+              </div>
+              <div class="flex items-center justify-between">
+                <dt class="text-muted">IP</dt>
+                <dd class="font-semibold">{SERVER_IP}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 

@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/ui/Button.astro';
+import { ArrowRight, Users } from '@lucide/astro';
+
+const PARTNER_URL = 'https://www.anti-corona-kartell.de';
+const DISCORD_URL = 'https://discord.minecraft-gilde.de';
+---
+
+<BaseLayout
+  title="Minecraft Gilde – Partner"
+  canonical="https://minecraft-gilde.de/partner.html"
+  description="Community-Partner von Minecraft Gilde – befreundete Communities und Projekte."
+>
+  <section class="mg-container pt-12 pb-10">
+    <div class="max-w-3xl">
+      <h1 class="text-3xl font-semibold tracking-tight">Partner</h1>
+      <p class="text-muted mt-3">
+        Hier findest du befreundete Communities und Projekte, mit denen wir zusammenarbeiten.
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <div class="glass overflow-hidden rounded-[28px]">
+        <img
+          src="/images/ack.webp"
+          alt="ANTI-CORONA-KARTELL"
+          loading="lazy"
+          decoding="async"
+          class="h-[260px] w-full object-cover"
+        />
+        <div class="p-6 sm:p-7">
+          <h2 class="text-xl font-semibold">ANTI-CORONA-KARTELL</h2>
+          <p class="text-muted mt-2 text-sm">
+            Seit April 2024 ist die Minecraft Gilde Partner des ANTI-CORONA-KARTELL.
+          </p>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <Button href={PARTNER_URL} external variant="primary" class="gap-2">
+              Zur Community <ArrowRight size={18} />
+            </Button>
+            <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+              Unser Discord <Users size={18} />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass rounded-[28px] p-6 sm:p-7">
+        <h2 class="text-xl font-semibold">Partner werden?</h2>
+        <p class="text-muted mt-2 text-sm">
+          Du möchtest mit uns kooperieren oder ein Projekt vorstellen? Schreib uns einfach auf
+          Discord.
+        </p>
+        <ul class="text-muted mt-4 space-y-2 text-sm">
+          <li>• Freundlicher Umgang & klare Regeln</li>
+          <li>• Community-/Projekt-Fokus (keine Werbung/Spam)</li>
+          <li>• Transparente Zusammenarbeit</li>
+        </ul>
+        <div class="mt-5">
+          <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+            Kontakt auf Discord <ArrowRight size={18} />
+          </Button>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
