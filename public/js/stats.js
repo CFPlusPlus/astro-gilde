@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clickTarget = tr.querySelector('.player-name');
     clickTarget?.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = `playerstats.html?uuid=${encodeURIComponent(uuid)}`;
+      window.location.href = `/playerstats/?uuid=${encodeURIComponent(uuid)}`;
     });
   };
 
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
       li.addEventListener('mousedown', (e) => {
         // mousedown statt click, damit input blur nicht vorher alles schließt
         e.preventDefault();
-        window.location.href = `playerstats.html?uuid=${encodeURIComponent(it.uuid)}`;
+        window.location.href = `/playerstats/?uuid=${encodeURIComponent(it.uuid)}`;
       });
       autocompleteList.appendChild(li);
     }
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fallback: wenn jemand UUID reinkopiert
         const raw = (searchInput.value || '').trim();
         if (/^[0-9a-fA-F-]{32,36}$/.test(raw)) {
-          window.location.href = `playerstats.html?uuid=${encodeURIComponent(raw)}`;
+          window.location.href = `/playerstats/?uuid=${encodeURIComponent(raw)}`;
         }
       }
       return;
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const chosen = acItems[Math.max(acSelected, 0)];
-      if (chosen) window.location.href = `playerstats.html?uuid=${encodeURIComponent(chosen.uuid)}`;
+      if (chosen) window.location.href = `/playerstats/?uuid=${encodeURIComponent(chosen.uuid)}`;
       return;
     } else {
       return;

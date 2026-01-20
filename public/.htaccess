@@ -5,8 +5,8 @@
     ExpiresActive On
 </IfModule>
 
-# 404-Seite (Astro buildt /404.html)
-ErrorDocument 404 /404.html
+# 404-Seite (Astro buildt /404/index.html bei directory output)
+ErrorDocument 404 /404/index.html
 
 # HTML nie aus dem Cache zeigen
 <IfModule mod_headers.c>
@@ -60,4 +60,18 @@ ErrorDocument 404 /404.html
 
     # Browser-Kompatibilität sicherstellen
     Header append Vary Accept-Encoding
+</IfModule>
+# Redirects / pretty URLs
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Strip .html from requests (e.g. /rules.html -> /rules/)
+  # NOTE: Exceptions for removed legacy routes (no redirect wanted)
+  RewriteCond %{REQUEST_URI} !^/(?:erststart|admin-team)\.html$ [NC]
+  RewriteCond %{THE_REQUEST} \s/+(.*)\.html[\s?] [NC]
+  RewriteRule ^ %1/ [R=301,L]
+
+  # Strip /index.html
+  RewriteCond %{THE_REQUEST} \s/+(.*)/index\.html[\s?] [NC]
+  RewriteRule ^ %1/ [R=301,L]
 </IfModule>

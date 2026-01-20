@@ -118,24 +118,44 @@
   const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
 
   const root = document.documentElement;
+  let lockedScrollY = 0;
+  let isScrollLocked = false;
 
   const lockScroll = () => {
-    const scrollbarWidth = window.innerWidth - root.clientWidth;
+    if (isScrollLocked) return;
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    isScrollLocked = true;
+
     root.dataset.menuOpen = '1';
     root.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    if (scrollbarWidth > 0) {
-      root.style.paddingRight = `${scrollbarWidth}px`;
-      document.body.style.paddingRight = `${scrollbarWidth}px`;
-    }
+
+    // iOS-safe scroll lock (prevents menu disappearing after scroll)
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${lockedScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
   };
 
   const unlockScroll = () => {
+    if (!isScrollLocked) {
+      delete root.dataset.menuOpen;
+      root.style.overflow = '';
+      return;
+    }
+
+    isScrollLocked = false;
     delete root.dataset.menuOpen;
     root.style.overflow = '';
-    document.body.style.overflow = '';
-    root.style.paddingRight = '';
-    document.body.style.paddingRight = '';
+
+    const y = lockedScrollY;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+
+    window.scrollTo(0, y);
   };
 
   const closeMenu = () => {
@@ -247,6 +267,11 @@
   // -------------------------
   // Online Counters
   // -------------------------
+  const formatInt = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toLocaleString('de-DE') : String(value);
+  };
+
   const fetchDiscordOnlineUsers = async () => {
     try {
       const guildId = config.discordGuildId;
@@ -257,6 +282,20 @@
       return data?.presence_count ? String(data.presence_count) : 'Keine';
     } catch {
       return 'Keine';
+    }
+  };
+
+  const fetchDiscordMemberCount = async () => {
+    try {
+      const code = config.discordInviteCode;
+      if (!code) return '—';
+      const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
+      const response = await fetch(apiUrl, { cache: 'no-store' });
+      const data = await response.json();
+      const count = data?.approximate_member_count;
+      return count != null ? String(count) : '—';
+    } catch {
+      return '—';
     }
   };
 
@@ -274,12 +313,19 @@
   };
 
   const discordTargets = qsa('[data-discord-online]');
+  const discordMemberTargets = qsa('[data-discord-members]');
   const mcTargets = qsa('[data-mc-online]');
 
   const updateCounters = async () => {
     if (discordTargets.length) {
       const val = await fetchDiscordOnlineUsers();
       discordTargets.forEach((el) => (el.textContent = val));
+    }
+
+    if (discordMemberTargets.length) {
+      const raw = await fetchDiscordMemberCount();
+      const val = formatInt(raw);
+      discordMemberTargets.forEach((el) => (el.textContent = val));
     }
 
     if (mcTargets.length) {
@@ -289,5 +335,5 @@
   };
 
   // only fetch if the page actually has placeholders
-  if (discordTargets.length || mcTargets.length) updateCounters();
+  if (discordTargets.length || discordMemberTargets.length || mcTargets.length) updateCounters();
 })();

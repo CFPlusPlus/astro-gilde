@@ -5,8 +5,9 @@ import tailwindcss from '@tailwindcss/vite';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
-  trailingSlash: 'never',
-  build: { format: 'file' },
+  // Directory-style output (no .html in URLs)
+  build: { format: 'directory' },
+  trailingSlash: 'always',
   vite: {
     plugins: [tailwindcss()],
   },

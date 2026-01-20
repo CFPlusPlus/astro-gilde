@@ -10,6 +10,7 @@ import {
   Book,
   Copy,
   Cpu,
+  Handshake,
   Home,
   Map,
   ScrollText,
@@ -50,7 +51,9 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
   keywords="Minecraft Vanilla SMP Server, Minecraft Server deutsch, Vanilla Survival, Freebuild, Langzeitwelt, kein Pay2Win, Java 1.21.x, minecraft-gilde.de"
 >
   <!-- Hero -->
-  <section class="relative overflow-hidden pt-14 pb-10 sm:pt-16">
+  <section
+    class="relative -mt-[calc(6rem+env(safe-area-inset-top))] overflow-hidden pt-[calc(6rem+env(safe-area-inset-top)+3.5rem)] pb-10 sm:pt-[calc(6rem+env(safe-area-inset-top)+4rem)]"
+  >
     <div class="pointer-events-none absolute inset-0 -z-10">
       <img
         src="/images/header-background.webp"
@@ -85,7 +88,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
             <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
               Discord <ArrowRight size={18} />
             </Button>
-            <Button href="/erststart.html" variant="ghost" class="gap-2">Erststart</Button>
+            <Button href="/tutorial" variant="ghost" class="gap-2">Tutorial</Button>
           </div>
 
           <p class="text-muted mt-4 text-sm">
@@ -228,10 +231,10 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
           </p>
         </div>
         <div class="mt-6 flex flex-wrap gap-3">
-          <Button href="/serverinfos.html" variant="secondary" class="gap-2">
+          <Button href="/serverinfos" variant="secondary" class="gap-2">
             <ScrollText size={18} /> Serverinfos
           </Button>
-          <Button href="/rules.html" variant="ghost" class="gap-2">
+          <Button href="/rules" variant="ghost" class="gap-2">
             <Book size={18} /> Regeln
           </Button>
         </div>
@@ -343,8 +346,8 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
             Komfortfunktionen, die helfen – ohne das Survival-Gefühl zu verlieren.
           </p>
         </div>
-        <Button href="/erststart.html" variant="secondary" class="gap-2">
-          Erststart ansehen <ArrowRight size={18} />
+        <Button href="/tutorial" variant="secondary" class="gap-2">
+          Tutorial ansehen <ArrowRight size={18} />
         </Button>
       </div>
 
@@ -460,8 +463,8 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
           Nutze <code>/rtp</code>, finde deinen Spot und sichere dein Gebiet mit Claims.
         </p>
         <div class="mt-4">
-          <Button href="/erststart.html" size="sm" variant="secondary" class="gap-2">
-            Erststart <ArrowRight size={16} />
+          <Button href="/tutorial" size="sm" variant="secondary" class="gap-2">
+            Tutorial <ArrowRight size={16} />
           </Button>
         </div>
       </div>
@@ -556,19 +559,19 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
 
     <div class="mt-6 flex flex-wrap gap-2">
       <a
-        href="/serverinfos.html"
+        href="/serverinfos/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <ScrollText size={16} /> Serverinfos
       </a>
       <a
-        href="/rules.html"
+        href="/rules/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <Book size={16} /> Regeln
       </a>
       <a
-        href="/befehle.html"
+        href="/befehle/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <TerminalSquare size={16} /> Befehle
@@ -582,22 +585,22 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
         <Map size={16} /> Karte
       </a>
       <a
-        href="/stats.html"
+        href="/stats/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <Sparkles size={16} /> Statistiken
       </a>
       <a
-        href="/admin-team.html"
+        href="/team/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <Users size={16} /> Team
       </a>
       <a
-        href="/partner.html"
+        href="/partner/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
-        <ArrowRight size={16} /> Partner
+        <Handshake size={16} /> Partner
       </a>
     </div>
   </section>
