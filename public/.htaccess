@@ -5,6 +5,9 @@
     ExpiresActive On
 </IfModule>
 
+#UTF-8 als Standard setzen
+AddCharset UTF-8 .txt
+
 # 404-Seite (kompatibel: /404.html wird beim Build erzeugt)
 ErrorDocument 404 /404.html
 # HTML nie aus dem Cache zeigen
@@ -63,6 +66,9 @@ ErrorDocument 404 /404.html
 # Redirects / pretty URLs
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # Altes Sitemap-URL weiterhin erreichbar halten
+  RewriteRule ^sitemap\.xml$ /sitemap-index.xml [R=301,L]
 
   # Strip .html from requests (e.g. /rules.html -> /rules/)
   # NOTE: Exceptions for removed legacy routes (no redirect wanted)

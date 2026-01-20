@@ -1,3 +1,6 @@
+User-agent: *
+Allow: /
+
 # Sitemap
-Sitemap: https://minecraft-gilde.de/sitemap.xml
+Sitemap: https://minecraft-gilde.de/sitemap-index.xml
 

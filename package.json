@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@astrojs/sitemap": "^3.5.0",
     "@fontsource-variable/geist": "^5.1.0",
     "@fontsource-variable/space-grotesk": "^5.1.0",
     "@tailwindcss/vite": "^4.1.13",
