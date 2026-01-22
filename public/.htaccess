@@ -70,9 +70,21 @@ ErrorDocument 404 /404.html
   # Altes Sitemap-URL weiterhin erreichbar halten
   RewriteRule ^sitemap\.xml$ /sitemap-index.xml [R=301,L]
 
-  # Strip .html from requests (e.g. /rules.html -> /rules/)
-  # NOTE: Exceptions for removed legacy routes (no redirect wanted)
-  RewriteCond %{REQUEST_URI} !^/(?:erststart|admin-team)\.html$ [NC]
+  # --- 301 Weiterleitungen: alte URLs -> neue Seitenstruktur ---
+  RewriteRule ^rules/?$ /regeln/ [R=301,L,NC]
+  RewriteRule ^rules\.html$ /regeln/ [R=301,L,NC]
+
+  RewriteRule ^stats/?$ /statistiken/ [R=301,L,NC]
+  RewriteRule ^stats\.html$ /statistiken/ [R=301,L,NC]
+
+  RewriteRule ^playerstats/?$ /statistiken/spieler/ [R=301,L,NC]
+  RewriteRule ^playerstats\.html$ /statistiken/spieler/ [R=301,L,NC]
+
+  # Legacy-Seiten aus der alten Website
+  RewriteRule ^erststart\.html$ /tutorial/ [R=301,L,NC]
+  RewriteRule ^admin-team\.html$ /team/ [R=301,L,NC]
+
+  # Strip .html from requests (e.g. /seite.html -> /seite/)
   RewriteCond %{THE_REQUEST} \s/+(.*)\.html[\s?] [NC]
   RewriteRule ^ %1/ [R=301,L]
 

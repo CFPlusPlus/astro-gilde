@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
+import Card from '../components/ui/Card.astro';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +20,8 @@ import {
   TerminalSquare,
   Users,
   Wand2,
+  HelpCircle,
+  BadgeCheck,
 } from '@lucide/astro';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
@@ -234,7 +237,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
           <Button href="/serverinfos" variant="secondary" class="gap-2">
             <ScrollText size={18} /> Serverinfos
           </Button>
-          <Button href="/rules" variant="ghost" class="gap-2">
+          <Button href="/regeln" variant="ghost" class="gap-2">
             <Book size={18} /> Regeln
           </Button>
         </div>
@@ -333,6 +336,77 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Voting + FAQ teaser -->
+  <section class="mg-container py-12">
+    <div class="flex items-end justify-between gap-6">
+      <div>
+        <h2 class="text-xl font-semibold tracking-tight">Voting & Hilfe</h2>
+        <p class="text-muted mt-2 max-w-2xl text-sm">
+          Unterstütze den Server mit einem Vote und finde schnelle Antworten, wenn du neu bist.
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 lg:grid-cols-2">
+      <Card class="p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <BadgeCheck class="h-7 w-7" />
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-lg font-semibold tracking-tight">Voten & Belohnungen</h3>
+            <p class="text-muted mt-2 text-sm leading-relaxed">
+              Jeder Vote hilft beim Ranking und bringt dir Ingame-Belohnungen. Außerdem sammelst du Vote-Punkte für
+              den Vote-Shop.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <Button href="/voten" variant="primary" size="sm" class="gap-2">
+                Zum Voting <ArrowRight size={16} />
+              </Button>
+              <Button
+                href="https://minecraft-server.eu/vote/index/2321D"
+                external
+                variant="secondary"
+                size="sm"
+                class="gap-2"
+              >
+                minecraft-server.eu <ArrowRight size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      <Card class="p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <HelpCircle class="h-7 w-7" />
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-lg font-semibold tracking-tight">FAQ</h3>
+            <p class="text-muted mt-2 text-sm leading-relaxed">
+              Tutorial, Grundstücke, Updates & mehr – die häufigsten Fragen übersichtlich gruppiert.
+            </p>
+            <ul class="text-muted mt-3 grid gap-1 text-sm">
+              <li>• Erststart & Grundlagen</li>
+              <li>• Grundstücke & Bauen</li>
+              <li>• Technik, Updates & Sicherheit</li>
+            </ul>
+            <div class="mt-4">
+              <Button href="/faq" variant="secondary" size="sm" class="gap-2">
+                Zu den FAQs <ArrowRight size={16} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
     </div>
   </section>
 
@@ -565,7 +639,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
         <ScrollText size={16} /> Serverinfos
       </a>
       <a
-        href="/rules/"
+        href="/regeln/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <Book size={16} /> Regeln
@@ -585,10 +659,24 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
         <Map size={16} /> Karte
       </a>
       <a
-        href="/stats/"
+        href="/statistiken/"
         class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
       >
         <Sparkles size={16} /> Statistiken
+      </a>
+
+      <a
+        href="/voten/"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <BadgeCheck size={16} /> Voten
+      </a>
+
+      <a
+        href="/faq/"
+        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+      >
+        <HelpCircle size={16} /> FAQ
       </a>
       <a
         href="/team/"

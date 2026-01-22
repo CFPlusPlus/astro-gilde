@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clickTarget = tr.querySelector('.player-name');
     clickTarget?.addEventListener('click', (e) => {
       e.preventDefault();
-      window.location.href = `/playerstats/?uuid=${encodeURIComponent(uuid)}`;
+      window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
     });
   };
 
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
       li.addEventListener('mousedown', (e) => {
         // mousedown statt click, damit input blur nicht vorher alles schließt
         e.preventDefault();
-        window.location.href = `/playerstats/?uuid=${encodeURIComponent(it.uuid)}`;
+        window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(it.uuid)}`;
       });
       autocompleteList.appendChild(li);
     }
@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     try {
-      const data = await fetchJson(`api/players?q=${encodeURIComponent(q)}&limit=6`);
+      const data = await fetchJson(`/api/players?q=${encodeURIComponent(q)}&limit=6`);
       setGenerated(data.__generated);
       const items = Array.isArray(data.items) ? data.items : [];
       renderAutocomplete(items);
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Fallback: wenn jemand UUID reinkopiert
         const raw = (searchInput.value || '').trim();
         if (/^[0-9a-fA-F-]{32,36}$/.test(raw)) {
-          window.location.href = `/playerstats/?uuid=${encodeURIComponent(raw)}`;
+          window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(raw)}`;
         }
       }
       return;
@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const chosen = acItems[Math.max(acSelected, 0)];
-      if (chosen) window.location.href = `/playerstats/?uuid=${encodeURIComponent(chosen.uuid)}`;
+      if (chosen) window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(chosen.uuid)}`;
       return;
     } else {
       return;
@@ -478,7 +478,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const loadMetrics = async () => {
-    const data = await fetchJson('api/metrics');
+    const data = await fetchJson('/api/metrics');
     metricDefs = data.metrics || {};
     setGenerated(data.__generated);
     return metricDefs;
@@ -486,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const loadSummary = async () => {
     const q = KPI_METRICS.join(',');
-    const data = await fetchJson(`api/summary?metrics=${encodeURIComponent(q)}`);
+    const data = await fetchJson(`/api/summary?metrics=${encodeURIComponent(q)}`);
     setGenerated(data.__generated);
 
     if (typeof data.player_count === 'number' && playerCountEl) {
@@ -703,8 +703,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const fetchLeaderboardPage = async (metricId, cursor, limit) => {
     const url = cursor
-      ? `api/leaderboard?metric=${encodeURIComponent(metricId)}&limit=${limit}&cursor=${encodeURIComponent(cursor)}`
-      : `api/leaderboard?metric=${encodeURIComponent(metricId)}&limit=${limit}`;
+      ? `/api/leaderboard?metric=${encodeURIComponent(metricId)}&limit=${limit}&cursor=${encodeURIComponent(cursor)}`
+      : `/api/leaderboard?metric=${encodeURIComponent(metricId)}&limit=${limit}`;
     const data = await fetchJson(url);
     setGenerated(data.__generated);
     mergePlayers(data.__players);

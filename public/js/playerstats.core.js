@@ -231,13 +231,13 @@
     if (!uuidParam) {
       document.getElementById('player-name').textContent = 'Keine UUID übergeben';
       document.getElementById('player-uuid').textContent = '';
-      showApiError('Es wurde keine UUID übergeben. Öffne einen Spieler über die Suche auf /stats.');
+      showApiError('Es wurde keine UUID übergeben. Öffne einen Spieler über die Suche auf /statistiken.');
       return;
     }
 
     let data;
     try {
-      const res = await fetch(`api/player?uuid=${encodeURIComponent(uuidParam)}`, {
+      const res = await fetch(`/api/player?uuid=${encodeURIComponent(uuidParam)}`, {
         cache: 'no-store',
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -261,7 +261,7 @@
       document.getElementById('player-name').textContent = 'Unbekannte UUID';
       document.getElementById('player-uuid').textContent = uuidParam;
       showApiError(
-        'Die übergebene UUID ist unbekannt. Nutze die Spielersuche auf /stats oder prüfe den Link.',
+        'Die übergebene UUID ist unbekannt. Nutze die Spielersuche auf /statistiken oder prüfe den Link.',
       );
       return;
     }

@@ -1,0 +1,162 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Card from '../../components/ui/Card.astro';
+import Button from '../../components/ui/Button.astro';
+import { ArrowRight, BadgeCheck, Gift, ShoppingBag, ExternalLink, Info } from '@lucide/astro';
+
+const voteSites = [
+  {
+    name: 'minecraft-server.eu',
+    href: 'https://minecraft-server.eu/vote/index/2321D',
+    desc: 'Vote auf minecraft-server.eu und sichere dir Belohnungen ingame.',
+    active: true,
+  },
+  {
+    name: 'minecraft-serverlist.net',
+    href: 'https://www.minecraft-serverlist.net/vote/59253',
+    desc: 'Vote auf minecraft-serverlist.net und sammle Vote-Punkte.',
+    active: true,
+  },
+  {
+    name: 'serverliste.net',
+    href: 'https://serverliste.net/vote/5142',
+    desc: 'Vote auf serverliste.net – jeder Vote hilft beim Ranking.',
+    active: true,
+  },
+  {
+    name: 'findmcserver.com',
+    href: '#',
+    desc: 'Hier könnt ihr bald auf der offiziellen Minecraft-Serverliste voten.',
+    active: false,
+  },
+];
+---
+
+<BaseLayout
+  title="Minecraft Gilde - Voten"
+  canonical="https://minecraft-gilde.de/voten/"
+  description="Voten für Minecraft Gilde: Unterstütze den Server, verbessere das Ranking und erhalte Belohnungen sowie Vote-Punkte für den Vote-Shop."
+>
+  <section class="mg-container pt-12 pb-8">
+    <h1 class="text-3xl font-semibold tracking-tight">Voten</h1>
+    <p class="text-muted mt-2 max-w-3xl">
+      Mit jedem Vote machst du die Minecraft Gilde bekannter. Mehr Sichtbarkeit bringt mehr Spieler – und ein aktiver
+      Server macht einfach mehr Spaß.
+    </p>
+
+    <div class="mt-6 grid gap-4 lg:grid-cols-3">
+      <Card class="p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <Gift class="h-7 w-7" />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Belohnungen</h2>
+            <p class="text-muted mt-2 text-sm leading-relaxed">
+              Jeder Vote bringt dir eine zufällige Belohnung – von Diamanten bis hin zu Elytras.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card class="p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <ShoppingBag class="h-7 w-7" />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Vote-Punkte</h2>
+            <p class="text-muted mt-2 text-sm leading-relaxed">
+              Sammle Vote-Punkte und tausche sie im Vote-Shop gegen exklusive Items ein.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card class="p-6">
+        <div class="flex items-start gap-4">
+          <div
+            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+          >
+            <BadgeCheck class="h-7 w-7" />
+          </div>
+          <div>
+            <h2 class="text-base font-semibold">Ranking</h2>
+            <p class="text-muted mt-2 text-sm leading-relaxed">
+              Regelmäßiges Voting verbessert unseren Rang – dadurch finden neue Spieler leichter zu uns.
+            </p>
+          </div>
+        </div>
+      </Card>
+    </div>
+  </section>
+
+  <section class="mg-container pb-16">
+    <div class="flex items-end justify-between gap-6">
+      <div>
+        <h2 class="text-xl font-semibold tracking-tight">Vote-Links</h2>
+        <p class="text-muted mt-2 max-w-3xl text-sm">
+          Öffne eine der Serverlisten, vote kurz ab und komm dann wieder ingame – die Belohnung kommt automatisch.
+        </p>
+      </div>
+      <div class="hidden sm:block">
+        <Button href="/faq" variant="ghost" size="sm" class="gap-2">
+          Häufige Fragen <ArrowRight size={16} />
+        </Button>
+      </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-2">
+      {
+        voteSites.map((s) => (
+          <Card class="p-6">
+            <div class="flex items-start justify-between gap-4">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base font-semibold truncate">{s.name}</h3>
+                  {!s.active ? (
+                    <span class="bg-surface border-border text-muted inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium">
+                      Demnächst
+                    </span>
+                  ) : null}
+                </div>
+                <p class="text-muted mt-2 text-sm leading-relaxed">{s.desc}</p>
+              </div>
+
+              <div class="shrink-0">
+                {s.active ? (
+                  <Button href={s.href} external variant="primary" size="sm" class="gap-2">
+                    Vote <ExternalLink size={16} />
+                  </Button>
+                ) : (
+                  <Button href="#" variant="secondary" size="sm" class="gap-2" aria-disabled="true">
+                    Bald <Info size={16} />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))
+      }
+    </div>
+
+    <div class="mt-6">
+      <div class="mg-callout" data-variant="info">
+        <div class="flex gap-3">
+          <Info size={20} class="mt-0.5" />
+          <div>
+            <p class="text-sm font-semibold">Tipp</p>
+            <p class="text-fg/90 mt-1 text-sm">
+              Wenn du mehrere Listen nutzt, lohnt sich Voting besonders – du sammelst schneller Vote-Punkte für den
+              Vote-Shop.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

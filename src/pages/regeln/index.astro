@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
-import Button from '../components/ui/Button.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Card from '../../components/ui/Card.astro';
+import Button from '../../components/ui/Button.astro';
 import { getEntry } from 'astro:content';
-import { AlertTriangle, Book, MessageSquareText, Copy } from '@lucide/astro';
+import { AlertTriangle, Book, MessageSquareText, Copy, ArrowRight } from '@lucide/astro';
 
 const rules = await getEntry('rules', 'main');
 if (!rules) throw new Error('Rules entry "main" not found');
@@ -14,8 +14,8 @@ const ip = serverIp || 'minecraft-gilde.de';
 
 <BaseLayout
   title="Minecraft Gilde - Unser Regelwerk"
-  canonical="https://minecraft-gilde.de/rules/"
-  description="Alle Regeln f\u00fcr den Minecraft Vanilla Server der Gilde \u2013 fair, klar und verst\u00e4ndlich. Griefing, Hacks, Spam & Werbung verboten. Jetzt Regelwerk lesen!"
+  canonical="https://minecraft-gilde.de/regeln/"
+  description="Alle Regeln für den Minecraft Vanilla Server der Gilde – fair, klar und verständlich. Griefing, Hacks, Spam & Werbung verboten. Jetzt Regelwerk lesen!"
 >
   <section class="mg-container pt-12 pb-6">
     <h1 class="text-3xl font-semibold tracking-tight">Regeln</h1>
@@ -35,8 +35,12 @@ const ip = serverIp || 'minecraft-gilde.de';
       <Button variant="primary" class="gap-2" data-copy-ip>
         <Copy size={18} /> IP kopieren
       </Button>
-      <Button href="/tutorial" variant="secondary"> Tutorial </Button>
-      <Button href="/stats" variant="ghost"> Statistiken </Button>
+      <Button href="/tutorial" variant="secondary" class="gap-2">
+        <ArrowRight size={18} /> Tutorial
+      </Button>
+      <Button href="/statistiken" variant="ghost" class="gap-2">
+        <ArrowRight size={18} /> Statistiken
+      </Button>
     </div>
 
     <p class="text-muted mt-3 text-xs">IP: <span class="text-fg/90 font-medium">{ip}</span></p>

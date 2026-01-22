@@ -119,7 +119,7 @@ export async function openSkinModal() {
     if (_mojangProfileCache.has(uuid)) return _mojangProfileCache.get(uuid);
 
     const p = (async () => {
-      const res = await fetch(`api/profile?uuid=${uuid}`);
+      const res = await fetch(`/api/profile?uuid=${uuid}`);
       if (!res.ok) return null;
       return await res.json();
     })().catch(() => null);

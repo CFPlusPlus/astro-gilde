@@ -62,8 +62,8 @@
 
       const btn = document.createElement('a');
       btn.href = uuid
-        ? `/playerstats/?uuid=${encodeURIComponent(uuid)}`
-        : `/playerstats/?name=${encodeURIComponent(name)}`;
+        ? `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`
+        : `/statistiken/spieler/?name=${encodeURIComponent(name)}`;
       btn.className =
         'group inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-sm text-fg/90 hover:text-fg hover:bg-surface-solid/70 transition-colors';
 
