@@ -17,10 +17,10 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 
 ## Tech-Stack
 
-- **Astro** (Static Site Generation)
+- **Astro** 
 - **TypeScript**
+- **Tailwind CSS** 
 - **Vanilla JS** für interaktive Seiten (z. B. Stats/Playerstats)
-- **CSS** über Dateien in `public/css/`
 
 ## Inhalte pflegen
 
@@ -79,8 +79,25 @@ Alle Befehle werden im Projekt-Root in einem Terminal ausgeführt:
 | `npm run dev`             | Startet den lokalen Dev-Server auf `localhost:4321` |
 | `npm run build`           | Baut die Produktionsseite nach `./dist/`            |
 | `npm run preview`         | Preview des Builds lokal vor dem Deploy             |
+| `npm run format`          | Formatiert das Projekt (Prettier)                   |
+| `npm run format:check`    | Prüft Formatierung (CI-geeignet)                    |
+| `npm run lint`            | Linting (ESLint)                                    |
+| `npm run lint:fix`        | Linting + Auto-Fixes (ESLint)                       |
+| `npm run check`           | Type-/Template-Check (Astro)                        |
 | `npm run astro ...`       | CLI-Befehle wie `astro add`, `astro check`          |
 | `npm run astro -- --help` | Hilfe zur Astro-CLI anzeigen                        |
+
+---
+
+## Qualität & CI
+
+Das Repository enthält Quality-Gates, damit Code-Style und Typen stabil bleiben:
+
+- **Format-Check:** `npm run format:check`
+- **Linting:** `npm run lint`
+- **Type-/Template-Check:** `npm run check` (entspricht `astro check`)
+
+In **GitHub Actions** läuft das automatisch bei **Push** und **Pull Requests** über `.github/workflows/quality.yml`.
 
 ---
 
