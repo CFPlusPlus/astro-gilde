@@ -2,8 +2,41 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
+import { execSync } from 'node:child_process';
 
 // https://astro.build/config
+
+// Build-Metadaten (Git Commit/Branch) für Footer & Debugging.
+// Hinweis: Wird beim Build ermittelt (statisch) und ändert sich erst beim nächsten Deploy.
+const safeGit = (cmd) => {
+  try {
+    return execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] })
+      .toString()
+      .trim();
+  } catch {
+    return '';
+  }
+};
+
+const COMMIT_HASH =
+  process.env.GITHUB_SHA ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  process.env.CF_PAGES_COMMIT_SHA ||
+  process.env.COMMIT_REF ||
+  safeGit('git rev-parse HEAD') ||
+  'dev';
+
+const BRANCH_NAME =
+  process.env.GITHUB_REF_NAME ||
+  process.env.VERCEL_GIT_COMMIT_REF ||
+  process.env.CF_PAGES_BRANCH ||
+  safeGit('git rev-parse --abbrev-ref HEAD') ||
+  '';
+
+const REPO_URL = process.env.GITHUB_REPOSITORY
+  ? `https://github.com/${process.env.GITHUB_REPOSITORY}`
+  : '';
+
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
   // Directory-style output (no .html in URLs)
@@ -16,6 +49,11 @@ export default defineConfig({
     }),
   ],
   vite: {
+    define: {
+      'import.meta.env.GIT_COMMIT_HASH': JSON.stringify(COMMIT_HASH),
+      'import.meta.env.GIT_BRANCH': JSON.stringify(BRANCH_NAME),
+      'import.meta.env.GIT_REPO_URL': JSON.stringify(REPO_URL),
+    },
     plugins: [tailwindcss()],
   },
 });

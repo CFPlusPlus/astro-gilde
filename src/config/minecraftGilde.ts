@@ -7,6 +7,10 @@ export const minecraftGilde = {
   serverIp: 'minecraft-gilde.de',
   mcVersion: '1.21.x',
 
+  // Optional: Link zum GitHub-Repository (wird im Footer angezeigt)
+  // Beispiel: 'https://github.com/<user>/<repo>'
+  repoUrl: 'https://github.com/CFPlusPlus/minecraft-gilde-web',
+
   discord: {
     url: 'https://discord.minecraft-gilde.de',
     guildId: '1219625244906754093',
