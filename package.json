@@ -17,7 +17,11 @@
     "@lucide/astro": "^0.515.0",
     "astro": "^5.16.9",
     "isomorphic-dompurify": "^2.35.0",
-    "marked": "^17.0.1"
+    "marked": "^17.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "lucide-react": "^0.515.0",
+    "skinview3d": "^2.0.0"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.5.0",
@@ -36,6 +40,7 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.0.0",
     "typescript": "^5.0.0",
-    "@astrojs/check": "^0.9.6"
+    "@astrojs/check": "^0.9.6",
+    "@astrojs/react": "^4.3.0"
   }
 }

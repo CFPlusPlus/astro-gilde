@@ -1,6 +1,7 @@
 <p align="center">
   <a href="https://minecraft-gilde.de" target="_blank" rel="noopener noreferrer">
-  <img src="https://minecraft-gilde.de/images/logo-big.webp" alt="Minecraft Gilde" width="360" />
+    <img src="https://minecraft-gilde.de/images/logo-big.webp" alt="Minecraft Gilde" width="360" />
+  </a>
 </p>
 
 <p align="center">
@@ -17,10 +18,11 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 
 ## Tech-Stack
 
-- **Astro**
-- **TypeScript**
+- **Astro** (statisch, schnelle Builds)
+- **TypeScript** (Strict)
 - **Tailwind CSS**
-- **Vanilla JS** für interaktive Seiten (z. B. Stats/Playerstats)
+- **React (Astro Islands)** für interaktive Bereiche (Statistiken & Spielerstatistiken)
+- **skinview3d** (lazy geladen) für den 3D-Skin-Viewer
 
 ## Inhalte pflegen
 
@@ -31,36 +33,31 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 
 ---
 
-## Projektstruktur
-
-Im Projekt-Ordner findest du typischerweise die folgenden Ordner und Dateien:
+## Projektstruktur (Auszug)
 
 ```text
 /
 ├── public/
-│   ├── .htaccess
-│   ├── robots.txt
-│   ├── sitemap.xml
-│   ├── css/
 │   ├── images/
 │   └── js/
 ├── src/
-│   ├── assets/
 │   ├── components/
 │   │   └── ui/
 │   ├── content/
 │   │   ├── commands/
 │   │   ├── rules/
 │   │   └── config.ts
+│   ├── features/
+│   │   ├── stats/              # /statistiken (React Island)
+│   │   └── player-stats/       # /statistiken/spieler (React Island)
 │   ├── layouts/
-│   │   ├── BaseLayout.astro
-│   │   └── Layout.astro
+│   │   └── BaseLayout.astro
 │   └── pages/
 │       ├── index.astro
-│       ├── rules.astro
+│       ├── regeln.astro
 │       ├── befehle.astro
-│       ├── stats.astro
-│       └── playerstats.astro
+│       ├── statistiken.astro
+│       └── statistiken/spieler.astro
 ├── astro.config.mjs
 └── package.json
 ```
@@ -108,12 +105,21 @@ npm install
 npm run dev
 ```
 
-### API-Hinweis (Stats/Playerstats)
+### API-Hinweis (Statistiken)
 
-Die Seiten **Stats** und **Playerstats** rufen Endpunkte unter `/api/...` auf (z. B. `api/metrics`, `api/player`, `api/profile`).
+Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 
-- In Produktion existiert die API unter `https://minecraft-gilde.de/api/`.
-- Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
+- `/api/summary?metrics=...` (KPI-Übersicht)
+- `/api/metrics` (Kategorien/Definitionen)
+- `/api/leaderboard?metric=...&limit=...&cursor=...` (Ranglisten / Pagination via Cursor)
+- `/api/players?q=...&limit=...` (Autocomplete)
+- `/api/player?uuid=...` (Spieler-Detail)
+
+Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
+
+- `/js/translations.de.json`
+
+Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
 
 Beispiel für einen Dev-Proxy (optional):
 
@@ -135,4 +141,4 @@ export default defineConfig({
 ## Deployment
 
 - `npm run build` erzeugt die statische Ausgabe in `dist/`.
-- Alles aus `public/` wird 1:1 nach `dist/` kopiert (z. B. `.htaccess`, `robots.txt`, `sitemap.xml`).
+- Alles aus `public/` wird 1:1 nach `dist/` kopiert (z. B. `.htaccess`, `robots.txt`).

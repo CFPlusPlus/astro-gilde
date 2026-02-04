@@ -2,6 +2,7 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
+import react from '@astrojs/react';
 import { execSync } from 'node:child_process';
 
 // https://astro.build/config
@@ -43,6 +44,7 @@ export default defineConfig({
   build: { format: 'directory' },
   trailingSlash: 'always',
   integrations: [
+    react(),
     sitemap({
       // Nicht ins Sitemap aufnehmen (SEO): /404/
       filter: (page) => !page.endsWith('/404/'),
