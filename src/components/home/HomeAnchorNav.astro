@@ -1,0 +1,42 @@
+---
+export type AnchorItem = {
+  href: string;
+  label: string;
+};
+
+export interface Props {
+  items: AnchorItem[];
+  class?: string;
+}
+
+const { items, class: className = '' } = Astro.props as Props;
+---
+
+<nav
+  aria-label="Auf dieser Seite"
+  class={// Hinweis: Auf Mobile NICHT sticky, weil iOS/Chrome (Device Emu) bei mehreren Sticky/Glass-Layern
+  // gelegentlich das Haupt-Navi "hochschiebt" und abschneidet. Ab md ist Sticky wieder aktiv.
+  `z-40 md:sticky md:top-[calc(5rem+env(safe-area-inset-top))] ${className}`.trim()}
+>
+  <div class="mg-container">
+    <!-- Kein "Glass" auf Mobile (Backdrops können iOS Rendering-Bugs triggern) -->
+    <div
+      class="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2"
+    >
+      <ul class="flex w-max items-center gap-1" role="list">
+        {
+          items.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class="text-fg/85 hover:text-fg hover:bg-surface/50 focus-visible:ring-offset-bg inline-flex items-center rounded-lg px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</nav>

@@ -2,9 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
-import Card from '../components/ui/Card.astro';
+
+import HomeSection from '../components/home/HomeSection.astro';
+import HomePanel from '../components/home/HomePanel.astro';
+import HomeAnchorNav from '../components/home/HomeAnchorNav.astro';
+
 import fs from 'node:fs';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   ArrowRight,
@@ -29,7 +32,7 @@ const DYNMAP_URL = 'https://map.minecraft-gilde.de';
 const SERVER_IP = 'minecraft-gilde.de';
 const MC_VERSION = '1.21.x';
 
-// Build-time: collect gallery images from /public/images/Galerie
+// Build-Time: Galerie-Bilder aus /public/images/Galerie einsammeln
 const galleryDir = fileURLToPath(new URL('../../public/images/Galerie', import.meta.url));
 let galleryImages: string[] = [];
 
@@ -39,12 +42,22 @@ try {
     .filter((f) => /\.(png|jpe?g|webp|avif)$/i.test(f))
     .sort((a, b) => a.localeCompare(b, 'de', { numeric: true }));
 } catch {
-  // If the folder does not exist, we keep the fallback image.
+  // Wenn der Ordner nicht existiert, nutzen wir unten das Fallback-Bild.
 }
 
 const galleryUrls = galleryImages.map((f) => `/images/Galerie/${encodeURIComponent(f)}`);
 const galleryFallback = '/images/survival.webp';
 const galleryInitial = galleryUrls[0] ?? galleryFallback;
+
+const anchorItems = [
+  { href: '#about', label: 'Worum geht’s?' },
+  { href: '#vanilla', label: 'Vanilla+' },
+  { href: '#start', label: 'Start' },
+  { href: '#live', label: 'Live' },
+  { href: '#support', label: 'Voting & Hilfe' },
+  { href: '#links', label: 'Mehr' },
+  { href: '#join', label: 'Join' },
+];
 ---
 
 <BaseLayout
@@ -52,135 +65,152 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
   canonical="https://minecraft-gilde.de/"
   description="Die Minecraft Gilde ist ein deutscher Vanilla SMP (Java 1.21.x) mit Langzeitwelt ohne Resets, fair ohne Pay-to-Win und Vanilla+ Komfort. IP: minecraft-gilde.de"
   keywords="Minecraft Vanilla SMP Server, Minecraft Server deutsch, Vanilla Survival, Freebuild, Langzeitwelt, kein Pay2Win, Java 1.21.x, minecraft-gilde.de"
+  bodyClass="is-home"
 >
-  <!-- Hero -->
-  <section
-    class="relative -mt-[calc(6rem+env(safe-area-inset-top))] overflow-hidden pt-[calc(6rem+env(safe-area-inset-top)+3.5rem)] pb-10 sm:pt-[calc(6rem+env(safe-area-inset-top)+4rem)]"
-  >
-    <div class="pointer-events-none absolute inset-0 -z-10">
-      <img
-        src="/images/header-background.webp"
-        alt=""
-        loading="eager"
-        decoding="async"
-        class="h-full w-full [mask-image:radial-gradient(65%_55%_at_50%_35%,black,transparent)] object-cover opacity-25"
-      />
-      <div class="from-bg/10 via-bg/70 to-bg absolute inset-0 bg-gradient-to-b"></div>
-    </div>
+  <div data-home>
+    <!-- Hero-Bereich -->
+    <!--
+      WICHTIG (Mobile): Auf iOS/Chrome-Device-Emulation kann eine dynamische Messung/Anpassung (z. B. via
+      ResizeObserver + CSS-Variablen) in Kombination mit sticky Elementen zu „Springen“ führen.
+      Deshalb ziehen wir NICHT das Layout nach oben, sondern verlängern ausschließlich den Hero-Hintergrund
+      pauschal nach oben, sodass er auch hinter der Navbar bis ganz nach oben sichtbar ist.
+      (Ohne JS, ohne Layout-Verschiebung, sticky bleibt stabil.)
+    -->
+    <section class="home-hero relative pt-28 pb-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36">
+      <div class="home-hero-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
+        <img
+          src="/images/header-background.webp"
+          alt=""
+          loading="eager"
+          decoding="async"
+          class="h-full w-full [mask-image:radial-gradient(80%_65%_at_50%_22%,black_0%,black_55%,transparent_100%)] object-cover object-top opacity-25"
+        />
+        <div class="from-bg/10 via-bg/70 to-bg absolute inset-0 bg-gradient-to-b"></div>
+      </div>
 
-    <div class="mg-container">
-      <div class="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div>
-          <div class="flex flex-wrap items-center gap-2">
-            <Badge variant="accent">Vanilla+</Badge>
-            <Badge>Langzeitwelt</Badge>
-            <Badge>Kein P2W</Badge>
-            <Badge>Java {MC_VERSION}</Badge>
+      <div class="mg-container relative z-10">
+        <div class="grid items-center gap-16 lg:grid-cols-[1.12fr_0.88fr] lg:gap-24">
+          <div>
+            <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl" data-reveal>
+              Minecraft Gilde
+            </h1>
+            <p
+              class="text-muted mt-6 max-w-2xl text-base leading-relaxed sm:text-lg"
+              data-reveal
+              data-reveal-delay="80"
+            >
+              Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort – ohne das Gameplay
+              zu verbiegen.
+            </p>
+
+            <div
+              class="mt-12 flex flex-wrap items-center gap-3"
+              data-reveal
+              data-reveal-delay="140"
+            >
+              <Button variant="primary" class="gap-2" data-copy-ip>
+                <Copy size={18} /> IP kopieren
+              </Button>
+              <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+                Discord <ArrowRight size={18} />
+              </Button>
+              <Button href="/tutorial" variant="ghost" class="gap-2">Tutorial</Button>
+            </div>
+
+            <p class="text-muted mt-8 text-sm" data-reveal data-reveal-delay="200">
+              Keine Minigames, kein Citybuild – Fokus auf Survival & Freebuild.
+            </p>
+
+            <div
+              class="mt-12 flex flex-wrap items-center gap-2"
+              data-reveal
+              data-reveal-delay="260"
+            >
+              <Badge variant="accent">Vanilla+</Badge>
+              <Badge>Langzeitwelt</Badge>
+              <Badge>Kein P2W</Badge>
+              <Badge>Java {MC_VERSION}</Badge>
+            </div>
           </div>
 
-          <h1 class="mt-6 text-4xl font-semibold tracking-tight sm:text-5xl">Minecraft Gilde</h1>
-          <p class="text-muted mt-4 max-w-2xl text-base leading-relaxed sm:text-lg">
-            Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort – ohne das Gameplay zu
-            verbiegen.
-          </p>
-
-          <div class="mt-7 flex flex-wrap items-center gap-3">
-            <Button variant="primary" class="gap-2" data-copy-ip>
-              <Copy size={18} /> IP kopieren
-            </Button>
-            <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-              Discord <ArrowRight size={18} />
-            </Button>
-            <Button href="/tutorial" variant="ghost" class="gap-2">Tutorial</Button>
-          </div>
-
-          <p class="text-muted mt-4 text-sm">
-            Keine Minigames, kein Citybuild – Fokus auf Survival & Freebuild.
-          </p>
-        </div>
-
-        <div class="relative">
-          <div
-            class="bg-accent/10 pointer-events-none absolute -inset-8 -z-10 rounded-[32px] blur-3xl"
-          >
-          </div>
-          <img
-            src="/images/logo-big.webp"
-            width="900"
-            height="900"
-            alt="Minecraft Gilde Logo"
-            loading="eager"
-            decoding="async"
-            class="mx-auto w-[min(520px,90%)] opacity-95 drop-shadow-[0_40px_80px_rgba(0,0,0,0.35)] select-none sm:w-[min(560px,95%)]"
-          />
-          <div
-            class="from-bg/35 to-bg/10 pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-tr via-transparent"
-          >
+          <div class="relative" data-reveal="right" data-reveal-delay="140">
+            <img
+              src="/images/logo-big.webp"
+              width="900"
+              height="900"
+              alt="Minecraft Gilde Logo"
+              loading="eager"
+              decoding="async"
+              class="mx-auto w-[min(420px,85%)] opacity-95 drop-shadow-[0_24px_60px_rgba(0,0,0,0.32)] select-none sm:w-[min(460px,90%)] lg:w-[min(520px,95%)]"
+            />
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Join Bar -->
-      <div class="mt-10">
-        <div class="glass-strong rounded-2xl px-4 py-4 sm:px-5 sm:py-5">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex flex-wrap items-center gap-x-5 gap-y-3">
-              <div>
-                <div class="text-muted text-xs font-medium">Server-IP</div>
-                <div class="mt-1 flex items-center gap-2">
-                  <code class="text-sm">{SERVER_IP}</code>
-                  <button
-                    type="button"
-                    data-copy-ip
-                    class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
-                    aria-label="Server-IP kopieren"
-                  >
-                    <Copy size={16} />
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <div class="text-muted text-xs font-medium">Version</div>
-                <div class="mt-1 text-sm font-semibold">Java {MC_VERSION}</div>
-              </div>
-
-              <div>
-                <div class="text-muted text-xs font-medium">Live</div>
-                <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                  <span class="inline-flex items-center gap-2">
-                    <Users size={16} />
-                    <span class="font-semibold" data-mc-online>Keine</span>
-                    <span class="text-muted">Minecraft</span>
-                  </span>
-                  <span class="inline-flex items-center gap-2">
-                    <Users size={16} />
-                    <span class="font-semibold" data-discord-online>Keine</span>
-                    <span class="text-muted">Discord</span>
-                  </span>
-                </div>
+    <!-- Join-Bar (aus dem Hero ausgelagert, damit der Hero luftiger & weniger überladen wirkt) -->
+    <HomeSection size="tight" containerClass="pt-0">
+      <div class="bg-surface/30 rounded-[var(--radius)] px-4 py-6 sm:px-6 sm:py-7" data-reveal>
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex flex-wrap items-center gap-x-10 gap-y-4">
+            <div>
+              <div class="text-muted text-xs font-medium">Server-IP</div>
+              <div class="mt-1 flex items-center gap-2">
+                <code class="text-sm font-semibold">{SERVER_IP}</code>
+                <button
+                  type="button"
+                  data-copy-ip
+                  class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
+                  aria-label="Server-IP kopieren"
+                >
+                  <Copy size={16} />
+                </button>
               </div>
             </div>
 
-            <div class="flex flex-wrap gap-2">
-              <Button href={DYNMAP_URL} external variant="secondary" size="sm" class="gap-2">
-                <Map size={16} /> Karte
-              </Button>
-              <Button href={DISCORD_URL} external variant="primary" size="sm" class="gap-2">
-                Discord <ArrowRight size={16} />
-              </Button>
+            <div>
+              <div class="text-muted text-xs font-medium">Version</div>
+              <div class="mt-1 text-sm font-semibold">Java {MC_VERSION}</div>
             </div>
+
+            <div>
+              <div class="text-muted text-xs font-medium">Live</div>
+              <div class="mt-1 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
+                <span class="inline-flex items-center gap-2">
+                  <Users size={16} />
+                  <span class="font-semibold" data-mc-online>Keine</span>
+                  <span class="text-muted">Minecraft</span>
+                </span>
+                <span class="inline-flex items-center gap-2">
+                  <Users size={16} />
+                  <span class="font-semibold" data-discord-online>Keine</span>
+                  <span class="text-muted">Discord</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2">
+            <Button href={DYNMAP_URL} external variant="secondary" size="sm" class="gap-2">
+              <Map size={16} /> Karte
+            </Button>
+            <Button href={DISCORD_URL} external variant="primary" size="sm" class="gap-2">
+              Discord <ArrowRight size={16} />
+            </Button>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </HomeSection>
 
-  <!-- USP Strip -->
-  <section class="border-border border-t">
-    <div class="mg-container py-10">
-      <div class="grid gap-8 md:grid-cols-3">
-        <div class="flex items-start gap-4">
+    <!-- Sticky Sprungnavigation -->
+    <div class="mt-6 mb-4" data-reveal data-reveal-delay="60">
+      <HomeAnchorNav items={anchorItems} />
+    </div>
+
+    <!-- USPs -->
+    <HomeSection size="tight" containerClass="py-16 sm:py-20">
+      <div class="grid gap-12 md:grid-cols-3">
+        <div class="flex items-start gap-4" data-reveal>
           <div
             class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
           >
@@ -191,7 +221,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
             <p class="text-muted mt-1 text-sm">Ohne Resets – deine Projekte bleiben relevant.</p>
           </div>
         </div>
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4" data-reveal data-reveal-delay="80">
           <div
             class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
           >
@@ -202,7 +232,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
             <p class="text-muted mt-1 text-sm">Keine kaufbaren Vorteile. Fair für alle.</p>
           </div>
         </div>
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4" data-reveal data-reveal-delay="160">
           <div
             class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
           >
@@ -214,147 +244,394 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </HomeSection>
 
-  <!-- About -->
-  <section class="mg-container py-14 sm:py-16">
-    <div class="grid items-center gap-10 lg:grid-cols-2">
-      <div>
-        <h2 class="text-2xl font-semibold tracking-tight">Worum geht’s bei uns?</h2>
-        <div class="mg-prose text-muted mt-4 max-w-2xl text-base">
-          <p>
-            Minecraft Gilde ist ein deutscher Vanilla-SMP mit Fokus auf Survival & Freebuild. Keine
-            Minigames, kein Citybuild – dafür eine ruhige Langzeitwelt, in der große Builds wirklich
-            Sinn machen.
-          </p>
-          <p>
-            Du startest entspannt, suchst dir per <code>/rtp</code> einen Platz und sicherst dein Gebiet
-            mit Claims. Danach gilt: spielen, bauen, entdecken – ohne Reset-Stress.
-          </p>
-        </div>
-        <div class="mt-6 flex flex-wrap gap-3">
-          <Button href="/serverinfos" variant="secondary" class="gap-2">
-            <ScrollText size={18} /> Serverinfos
-          </Button>
-          <Button href="/regeln" variant="ghost" class="gap-2">
-            <Book size={18} /> Regeln
-          </Button>
-        </div>
-      </div>
-
-      <div class="relative">
-        <div
-          class="bg-accent/8 pointer-events-none absolute -inset-6 -z-10 rounded-[28px] blur-3xl"
-        >
-        </div>
-        <div
-          class="glass overflow-hidden rounded-[28px]"
-          data-gallery
-          data-gallery-interval="5200"
-          data-gallery-images={JSON.stringify(galleryUrls)}
-        >
-          <div class="group relative h-[320px] w-full sm:h-[360px]">
-            <div
-              data-gallery-placeholder
-              class="from-surface/60 via-surface-solid/50 to-surface/60 absolute inset-0 bg-gradient-to-br"
-            >
-            </div>
-            <img
-              data-gallery-a
-              src={galleryInitial}
-              alt="Impressionen vom Server – Minecraft Gilde"
-              loading="eager"
-              decoding="async"
-              style="opacity:0"
-              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
-            />
-
-            <noscript>
-              <img
-                src={galleryInitial}
-                alt="Impressionen vom Server – Minecraft Gilde"
-                class="absolute inset-0 h-full w-full object-cover opacity-100"
-              />
-            </noscript>
-            <img
-              data-gallery-b
-              src={galleryInitial}
-              alt=""
-              aria-hidden="true"
-              loading="lazy"
-              decoding="async"
-              style="opacity:0"
-              class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
-            />
-
-            <!-- controls -->
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3">
-              <button
-                type="button"
-                data-gallery-prev
-                aria-label="Vorheriges Bild"
-                title="Vorheriges Bild"
-                class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M15 18l-6-6 6-6"></path>
-                </svg>
-              </button>
-            </div>
-            <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-              <button
-                type="button"
-                data-gallery-next
-                aria-label="Nächstes Bild"
-                title="Nächstes Bild"
-                class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
-              >
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M9 18l6-6-6-6"></path>
-                </svg>
-              </button>
-            </div>
+    <!-- Über uns -->
+    <HomeSection id="about" size="normal">
+      <div class="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
+        <div>
+          <h2 class="text-3xl font-semibold tracking-tight" data-reveal>Worum geht’s bei uns?</h2>
+          <div
+            class="mg-prose text-muted mt-5 max-w-2xl text-base"
+            data-reveal
+            data-reveal-delay="80"
+          >
+            <p>
+              Minecraft Gilde ist ein deutscher Vanilla-SMP mit Fokus auf Survival & Freebuild.
+              Keine Minigames, kein Citybuild – dafür eine ruhige Langzeitwelt, in der große Builds
+              wirklich Sinn machen.
+            </p>
+            <p>
+              Du startest entspannt, suchst dir per <code>/rtp</code> einen Platz und sicherst dein Gebiet
+              mit Claims. Danach gilt: spielen, bauen, entdecken – ohne Reset-Stress.
+            </p>
+          </div>
+          <div class="mt-8 flex flex-wrap gap-3" data-reveal data-reveal-delay="140">
+            <Button href="/serverinfos" variant="secondary" class="gap-2">
+              <ScrollText size={18} /> Serverinfos
+            </Button>
+            <Button href="/regeln" variant="ghost" class="gap-2">
+              <Book size={18} /> Regeln
+            </Button>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- Voting + FAQ teaser -->
-  <section class="mg-container py-12">
-    <div class="flex items-end justify-between gap-6">
-      <div>
-        <h2 class="text-xl font-semibold tracking-tight">Voting & Hilfe</h2>
-        <p class="text-muted mt-2 max-w-2xl text-sm">
-          Unterstütze den Server mit einem Vote und finde schnelle Antworten, wenn du neu bist.
-        </p>
-      </div>
-    </div>
+        <div class="relative" data-reveal="right" data-reveal-delay="120">
+          <HomePanel
+            variant="outline"
+            class="overflow-hidden"
+            data-gallery
+            data-gallery-interval="5200"
+            data-gallery-images={JSON.stringify(galleryUrls)}
+          >
+            <div class="group relative h-[340px] w-full sm:h-[380px]">
+              <div
+                data-gallery-placeholder
+                class="from-surface/60 via-surface-solid/50 to-surface/60 absolute inset-0 bg-gradient-to-br"
+              >
+              </div>
 
-    <div class="mt-6 grid gap-4 lg:grid-cols-2">
-      <Card class="p-6">
-        <div class="flex items-start gap-4">
+              <img
+                data-gallery-a
+                src={galleryInitial}
+                alt="Impressionen vom Server – Minecraft Gilde"
+                loading="eager"
+                decoding="async"
+                style="opacity:0"
+                class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+              />
+
+              <noscript>
+                <img
+                  src={galleryInitial}
+                  alt="Impressionen vom Server – Minecraft Gilde"
+                  class="absolute inset-0 h-full w-full object-cover opacity-100"
+                />
+              </noscript>
+
+              <img
+                data-gallery-b
+                src={galleryInitial}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+                style="opacity:0"
+                class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+              />
+
+              <!-- Steuerung -->
+              <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+                <button
+                  type="button"
+                  data-gallery-prev
+                  aria-label="Vorheriges Bild"
+                  title="Vorheriges Bild"
+                  class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M15 18l-6-6 6-6"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+                <button
+                  type="button"
+                  data-gallery-next
+                  aria-label="Nächstes Bild"
+                  title="Nächstes Bild"
+                  class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+                >
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 24 24"
+                    class="h-5 w-5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M9 18l6-6-6-6"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </HomePanel>
+        </div>
+      </div>
+    </HomeSection>
+
+    <!-- Vanilla+ (Highlight #1) -->
+    <HomeSection id="vanilla" size="normal">
+      <div class="relative">
+        <div
+          class="bg-accent/6 pointer-events-none absolute -inset-x-6 -top-8 -bottom-8 -z-10 rounded-[32px] blur-2xl"
+          aria-hidden="true"
+        >
+        </div>
+
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+          <div>
+            <h2 class="text-3xl font-semibold tracking-tight">Vanilla+ – genau das richtige Maß</h2>
+            <p class="text-muted mt-3 max-w-2xl">
+              Komfortfunktionen, die helfen – ohne das Survival-Gefühl zu verlieren.
+            </p>
+          </div>
+          <Button href="/tutorial" variant="secondary" class="gap-2">
+            Tutorial ansehen <ArrowRight size={18} />
+          </Button>
+        </div>
+
+        <HomePanel variant="soft" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
+          <div class="grid gap-7 md:grid-cols-2">
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Shield size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
+                <p class="text-muted mt-1 text-sm">Sicher bauen: Dein Gebiet bleibt deins.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Map size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">Farmwelten</h3>
+                <p class="text-muted mt-1 text-sm">
+                  Ressourcen farmen, ohne die Hauptwelt zu zerstören.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Home size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">Bis zu 20 Homes</h3>
+                <p class="text-muted mt-1 text-sm">
+                  Schnell zurück zu deinen Projekten – ohne Laufwege.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Wand2 size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">/RTP</h3>
+                <p class="text-muted mt-1 text-sm">In Sekunden einen Spot finden und loslegen.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Sparkles size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">Quality-of-Life</h3>
+                <p class="text-muted mt-1 text-sm">Komfort ja – aber kein modded Overkill.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-4">
+              <div
+                class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+              >
+                <Cpu size={18} />
+              </div>
+              <div>
+                <h3 class="text-base font-semibold">Stabil & performant</h3>
+                <p class="text-muted mt-1 text-sm">Flüssig spielen – auch wenn mehr los ist.</p>
+              </div>
+            </div>
+          </div>
+        </HomePanel>
+      </div>
+    </HomeSection>
+
+    <!-- Start in 3 Schritten -->
+    <HomeSection id="start" size="normal">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+        <div>
+          <h2 class="text-3xl font-semibold tracking-tight">So startest du in 3 Schritten</h2>
+          <p class="text-muted mt-3 max-w-2xl">
+            Kurz, klar und ohne Overload – danach bist du direkt im Spiel.
+          </p>
+        </div>
+      </div>
+
+      <ol class="mt-10 grid gap-8 lg:grid-cols-3" role="list">
+        <li class="relative" data-reveal>
+          <div class="flex items-start gap-4">
+            <div
+              class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+            >
+              1
+            </div>
+            <div>
+              <h3 class="text-base font-semibold">IP kopieren & joinen</h3>
+              <p class="text-muted mt-2 text-sm">
+                Server hinzufügen, verbinden, loslegen – <strong>Java {MC_VERSION}</strong>.
+              </p>
+              <div class="mt-4">
+                <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
+                  <Copy size={16} /> IP kopieren
+                </Button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="relative" data-reveal data-reveal-delay="80">
+          <div class="flex items-start gap-4">
+            <div
+              class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+            >
+              2
+            </div>
+            <div>
+              <h3 class="text-base font-semibold">Platz finden & claimen</h3>
+              <p class="text-muted mt-2 text-sm">
+                Nutze <code>/rtp</code>, finde deinen Spot und sichere dein Gebiet mit Claims.
+              </p>
+              <div class="mt-4">
+                <Button href="/tutorial" size="sm" variant="secondary" class="gap-2">
+                  Tutorial <ArrowRight size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </li>
+
+        <li class="relative" data-reveal data-reveal-delay="160">
+          <div class="flex items-start gap-4">
+            <div
+              class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+            >
+              3
+            </div>
+            <div>
+              <h3 class="text-base font-semibold">Homes setzen & dranbleiben</h3>
+              <p class="text-muted mt-2 text-sm">
+                Bis zu 20 Homes – und auf Discord bekommst du News, Hilfe und Events.
+              </p>
+              <div class="mt-4">
+                <Button href={DISCORD_URL} external size="sm" variant="secondary" class="gap-2">
+                  Discord <ArrowRight size={16} />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </li>
+      </ol>
+    </HomeSection>
+
+    <!-- Live (Highlight #2) -->
+    <HomeSection id="live" size="normal">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+        <div>
+          <h2 class="text-3xl font-semibold tracking-tight">Live auf dem Server</h2>
+          <p class="text-muted mt-3 max-w-2xl">
+            Wer ist gerade online? Und wie lange läuft die Hauptwelt bereits?
+          </p>
+        </div>
+        <div class="text-muted text-sm">
+          Hauptwelt aktiv: <span class="text-fg font-semibold" id="world-age">—</span>
+          <span class="text-muted">(seit Feb 2024)</span>
+        </div>
+      </div>
+
+      <HomePanel variant="glass" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
+        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <h3 class="text-base font-semibold">Status</h3>
+            <div class="mt-4 grid gap-3">
+              <div
+                class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3"
+              >
+                <span class="inline-flex items-center gap-2 text-sm"
+                  ><Users size={16} /> Minecraft</span
+                >
+                <span class="text-sm font-semibold" data-mc-online>Keine</span>
+              </div>
+              <div
+                class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3"
+              >
+                <span class="inline-flex items-center gap-2 text-sm"
+                  ><Users size={16} /> Discord</span
+                >
+                <span class="text-sm font-semibold" data-discord-online>Keine</span>
+              </div>
+              <div
+                class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3"
+              >
+                <span class="inline-flex items-center gap-2 text-sm"><Map size={16} /> Karte</span>
+                <a
+                  href={DYNMAP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="mg-link text-sm font-semibold"
+                >
+                  Öffnen
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 class="text-base font-semibold">Spieler online</h3>
+            <div class="mt-4" id="player-list">
+              <p class="text-muted text-sm">Lade Spieler…</p>
+            </div>
+            <p class="text-muted mt-4 text-xs">
+              Tipp: Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
+            </p>
+          </div>
+        </div>
+      </HomePanel>
+    </HomeSection>
+
+    <!-- Voting & Hilfe -->
+    <HomeSection id="support" size="normal">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+        <div>
+          <h2 class="text-2xl font-semibold tracking-tight">Voting & Hilfe</h2>
+          <p class="text-muted mt-3 max-w-2xl text-sm">
+            Unterstütze den Server mit einem Vote und finde schnelle Antworten, wenn du neu bist.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-12 grid gap-14 lg:grid-cols-2">
+        <div class="flex items-start gap-5" data-reveal>
           <div
-            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+            class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
           >
             <BadgeCheck class="h-7 w-7" />
           </div>
@@ -364,7 +641,7 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
               Jeder Vote hilft beim Ranking und bringt dir Ingame-Belohnungen. Außerdem sammelst du
               Vote-Punkte für den Vote-Shop.
             </p>
-            <div class="mt-4 flex flex-wrap gap-2">
+            <div class="mt-5 flex flex-wrap gap-2">
               <Button href="/voten" variant="primary" size="sm" class="gap-2">
                 Zum Voting <ArrowRight size={16} />
               </Button>
@@ -380,12 +657,10 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
             </div>
           </div>
         </div>
-      </Card>
 
-      <Card class="p-6">
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-5" data-reveal="right" data-reveal-delay="80">
           <div
-            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+            class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
           >
             <HelpCircle class="h-7 w-7" />
           </div>
@@ -399,342 +674,280 @@ const galleryInitial = galleryUrls[0] ?? galleryFallback;
               <li>• Grundstücke & Bauen</li>
               <li>• Technik, Updates & Sicherheit</li>
             </ul>
-            <div class="mt-4">
+            <div class="mt-5">
               <Button href="/faq" variant="secondary" size="sm" class="gap-2">
                 Zu den FAQs <ArrowRight size={16} />
               </Button>
             </div>
           </div>
         </div>
-      </Card>
-    </div>
-  </section>
+      </div>
+    </HomeSection>
 
-  <!-- Vanilla+ -->
-  <section class="border-border border-t">
-    <div class="mg-container py-14 sm:py-16">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight">Vanilla+ – genau das richtige Maß</h2>
-          <p class="text-muted mt-2 max-w-2xl">
-            Komfortfunktionen, die helfen – ohne das Survival-Gefühl zu verlieren.
-          </p>
-        </div>
-        <Button href="/tutorial" variant="secondary" class="gap-2">
-          Tutorial ansehen <ArrowRight size={18} />
-        </Button>
+    <!-- Schnelllinks -->
+    <HomeSection id="links" size="normal">
+      <div data-reveal>
+        <h2 class="text-2xl font-semibold tracking-tight">Mehr entdecken</h2>
+        <p class="text-muted mt-3 max-w-2xl text-sm">Die wichtigsten Seiten – ohne Umwege.</p>
       </div>
 
-      <div class="mt-8 grid gap-6 md:grid-cols-2">
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Shield size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
-            <p class="text-muted mt-1 text-sm">Sicher bauen: Dein Gebiet bleibt deins.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Map size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">Farmwelten</h3>
-            <p class="text-muted mt-1 text-sm">
-              Ressourcen farmen, ohne die Hauptwelt zu zerstören.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Home size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">Bis zu 20 Homes</h3>
-            <p class="text-muted mt-1 text-sm">
-              Schnell zurück zu deinen Projekten – ohne Laufwege.
-            </p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Wand2 size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">/RTP</h3>
-            <p class="text-muted mt-1 text-sm">In Sekunden einen Spot finden und loslegen.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Sparkles size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">Quality-of-Life</h3>
-            <p class="text-muted mt-1 text-sm">Komfort ja – aber kein modded Overkill.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4">
-          <div
-            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
-          >
-            <Cpu size={18} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold">Stabil & performant</h3>
-            <p class="text-muted mt-1 text-sm">Flüssig spielen – auch wenn mehr los ist.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- How to start -->
-  <section class="mg-container py-14 sm:py-16">
-    <h2 class="text-2xl font-semibold tracking-tight">So startest du in 3 Schritten</h2>
-    <div class="mt-8 grid gap-6 md:grid-cols-3">
-      <div class="glass rounded-[24px] p-6">
-        <div
-          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+      <div class="mt-8 flex flex-wrap gap-2" data-reveal data-reveal-delay="80">
+        <a
+          href="/serverinfos/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
         >
-          1
-        </div>
-        <h3 class="mt-4 text-base font-semibold">IP kopieren & joinen</h3>
-        <p class="text-muted mt-2 text-sm">
-          Server hinzufügen, verbinden, loslegen – <strong>Java {MC_VERSION}</strong>.
-        </p>
-        <div class="mt-4 flex flex-wrap gap-2">
-          <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
-            <Copy size={16} /> IP kopieren
-          </Button>
-        </div>
-      </div>
-
-      <div class="glass rounded-[24px] p-6">
-        <div
-          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+          <ScrollText size={16} /> Serverinfos
+        </a>
+        <a
+          href="/regeln/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
         >
-          2
-        </div>
-        <h3 class="mt-4 text-base font-semibold">Platz finden & claimen</h3>
-        <p class="text-muted mt-2 text-sm">
-          Nutze <code>/rtp</code>, finde deinen Spot und sichere dein Gebiet mit Claims.
-        </p>
-        <div class="mt-4">
-          <Button href="/tutorial" size="sm" variant="secondary" class="gap-2">
-            Tutorial <ArrowRight size={16} />
-          </Button>
-        </div>
-      </div>
-
-      <div class="glass rounded-[24px] p-6">
-        <div
-          class="bg-accent inline-flex h-10 w-10 items-center justify-center rounded-xl font-semibold text-black"
+          <Book size={16} /> Regeln
+        </a>
+        <a
+          href="/befehle/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
         >
-          3
-        </div>
-        <h3 class="mt-4 text-base font-semibold">Homes setzen & dranbleiben</h3>
-        <p class="text-muted mt-2 text-sm">
-          Bis zu 20 Homes – und auf Discord bekommst du News, Hilfe und Events.
-        </p>
-        <div class="mt-4">
-          <Button href={DISCORD_URL} external size="sm" variant="secondary" class="gap-2">
-            Discord <ArrowRight size={16} />
-          </Button>
-        </div>
+          <TerminalSquare size={16} /> Befehle
+        </a>
+        <a
+          href={DYNMAP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <Map size={16} /> Karte
+        </a>
+        <a
+          href="/statistiken/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <Sparkles size={16} /> Statistiken
+        </a>
+        <a
+          href="/voten/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <BadgeCheck size={16} /> Voten
+        </a>
+        <a
+          href="/faq/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <HelpCircle size={16} /> FAQ
+        </a>
+        <a
+          href="/team/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <Users size={16} /> Team
+        </a>
+        <a
+          href="/partner/"
+          class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+        >
+          <Handshake size={16} /> Partner
+        </a>
       </div>
-    </div>
-  </section>
+    </HomeSection>
 
-  <!-- Live -->
-  <section class="border-border border-t">
-    <div class="mg-container py-14 sm:py-16">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h2 class="text-2xl font-semibold tracking-tight">Live auf dem Server</h2>
-          <p class="text-muted mt-2 max-w-2xl">
-            Wer ist gerade online? Und wie lange läuft die Hauptwelt bereits?
+    <!-- Join / CTA -->
+    <HomeSection id="join" size="normal">
+      <div class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+        <div data-reveal>
+          <h2 class="text-3xl font-semibold tracking-tight">Bereit für dein nächstes Projekt?</h2>
+          <p class="text-muted mt-4 max-w-2xl">
+            Join jetzt auf <strong>{SERVER_IP}</strong> und spiele echtes Vanilla-Survival – fair, stabil
+            und ohne Reset-Stress.
           </p>
+          <div class="mt-7 flex flex-wrap gap-3">
+            <Button variant="primary" class="gap-2" data-copy-ip>
+              <Copy size={18} /> IP kopieren
+            </Button>
+            <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+              Discord <ArrowRight size={18} />
+            </Button>
+          </div>
         </div>
-        <div class="text-muted text-sm">
-          Hauptwelt aktiv: <span class="text-fg font-semibold" id="world-age">—</span>
-          <span class="text-muted">(seit Feb 2024)</span>
+
+        <div class="lg:pl-10" data-reveal data-reveal-delay="100">
+          <div class="text-muted text-xs font-medium">Kurzinfo</div>
+          <dl class="mt-4 grid gap-3 text-sm">
+            <div class="flex items-center justify-between">
+              <dt class="text-muted">Edition</dt>
+              <dd class="font-semibold">Java</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-muted">Version</dt>
+              <dd class="font-semibold">{MC_VERSION}</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-muted">IP</dt>
+              <dd class="font-semibold">{SERVER_IP}</dd>
+            </div>
+          </dl>
         </div>
       </div>
+    </HomeSection>
 
-      <div class="mt-8 grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <div class="glass rounded-[24px] p-6">
-          <h3 class="text-base font-semibold">Status</h3>
-          <div class="mt-4 grid gap-3">
-            <div
-              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
-            >
-              <span class="inline-flex items-center gap-2 text-sm"
-                ><Users size={16} /> Minecraft</span
-              >
-              <span class="text-sm font-semibold" data-mc-online>Keine</span>
-            </div>
-            <div
-              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
-            >
-              <span class="inline-flex items-center gap-2 text-sm"><Users size={16} /> Discord</span
-              >
-              <span class="text-sm font-semibold" data-discord-online>Keine</span>
-            </div>
-            <div
-              class="border-border bg-surface/70 flex items-center justify-between rounded-xl border px-4 py-3"
-            >
-              <span class="inline-flex items-center gap-2 text-sm"><Map size={16} /> Karte</span>
-              <a
-                href={DYNMAP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mg-link text-sm font-semibold"
-              >
-                Öffnen
-              </a>
-            </div>
-          </div>
-        </div>
+    <style is:global>
+      /*
+        Home Motion + Onepager Helpers
+        - Scoping über [data-home], damit andere Seiten nicht beeinflusst werden.
+      */
 
-        <div class="glass rounded-[24px] p-6">
-          <h3 class="text-base font-semibold">Spieler online</h3>
-          <div class="mt-4" id="player-list">
-            <p class="text-muted text-sm">Lade Spieler…</p>
-          </div>
-          <p class="text-muted mt-4 text-xs">
-            Tipp: Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
-          </p>
-        </div>
-      </div>
-    </div>
-  </section>
+      /*
+        Fix (Mobile): In Chrome-Device-Emulation/iOS kann env(safe-area-inset-top) beim Scrollen
+        unerwartet „springen“. Da die Navbar ihr Top-Padding daraus berechnet, wirkt es so,
+        als würde die Navbar nach oben/unten hüpfen.
 
-  <!-- Quick links -->
-  <section class="mg-container py-12">
-    <h2 class="text-xl font-semibold tracking-tight">Mehr entdecken</h2>
-    <p class="text-muted mt-2 max-w-2xl text-sm">Die wichtigsten Seiten – ohne Umwege.</p>
+        Lösung: Auf der Startseite frieren wir das berechnete Padding einmalig in einer CSS-Variable ein
+        (siehe Inline-Script unten) und nutzen diese Variable hier als Override.
+      */
+      body.is-home [data-site-nav] > div {
+        padding-top: var(--home-nav-pad-top, calc(1.25rem + env(safe-area-inset-top)));
+      }
 
-    <div class="mt-6 flex flex-wrap gap-2">
-      <a
-        href="/serverinfos/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <ScrollText size={16} /> Serverinfos
-      </a>
-      <a
-        href="/regeln/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <Book size={16} /> Regeln
-      </a>
-      <a
-        href="/befehle/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <TerminalSquare size={16} /> Befehle
-      </a>
-      <a
-        href={DYNMAP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <Map size={16} /> Karte
-      </a>
-      <a
-        href="/statistiken/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <Sparkles size={16} /> Statistiken
-      </a>
+      [data-home] .home-hero-bg {
+        /*
+          Hintergrund pauschal nach oben verlängern.
+          Wichtig: ohne env(...), damit auf Mobile nichts dynamisch „mitwandert“.
+        */
+        top: -220px;
+      }
 
-      <a
-        href="/voten/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <BadgeCheck size={16} /> Voten
-      </a>
+      @media (min-width: 640px) {
+        [data-home] .home-hero-bg {
+          top: -240px;
+        }
+      }
 
-      <a
-        href="/faq/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <HelpCircle size={16} /> FAQ
-      </a>
-      <a
-        href="/team/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <Users size={16} /> Team
-      </a>
-      <a
-        href="/partner/"
-        class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
-      >
-        <Handshake size={16} /> Partner
-      </a>
-    </div>
-  </section>
+      @media (min-width: 1024px) {
+        [data-home] .home-hero-bg {
+          top: -260px;
+        }
+      }
 
-  <!-- Bottom CTA -->
-  <section class="border-border border-t">
-    <div class="mg-container py-14 sm:py-16">
-      <div class="glass rounded-[28px] p-7 sm:p-10">
-        <div class="grid items-center gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div>
-            <h2 class="text-2xl font-semibold tracking-tight">Bereit für dein nächstes Projekt?</h2>
-            <p class="text-muted mt-3 max-w-2xl">
-              Join jetzt auf <strong>{SERVER_IP}</strong> und spiele echtes Vanilla-Survival – fair, stabil
-              und ohne Reset-Stress.
-            </p>
-            <div class="mt-6 flex flex-wrap gap-3">
-              <Button variant="primary" class="gap-2" data-copy-ip>
-                <Copy size={18} /> IP kopieren
-              </Button>
-              <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-                Discord <ArrowRight size={18} />
-              </Button>
-            </div>
-          </div>
+      [data-home] [data-section] {
+        scroll-margin-top: calc(7.25rem + env(safe-area-inset-top));
+      }
 
-          <div class="border-border bg-surface/60 rounded-2xl border p-5">
-            <div class="text-muted text-xs font-medium">Kurzinfo</div>
-            <dl class="mt-3 grid gap-3 text-sm">
-              <div class="flex items-center justify-between">
-                <dt class="text-muted">Edition</dt>
-                <dd class="font-semibold">Java</dd>
-              </div>
-              <div class="flex items-center justify-between">
-                <dt class="text-muted">Version</dt>
-                <dd class="font-semibold">{MC_VERSION}</dd>
-              </div>
-              <div class="flex items-center justify-between">
-                <dt class="text-muted">IP</dt>
-                <dd class="font-semibold">{SERVER_IP}</dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+      [data-home] [data-reveal] {
+        opacity: 0;
+        transform: translate3d(0, 14px, 0);
+        transition:
+          opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
+          transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        transition-delay: var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
+      }
 
-  <script slot="afterScripts" src="/js/app-home.js" defer></script>
+      /* Fly-ins (ohne zusätzliche Libraries) */
+      [data-home] [data-reveal='left'] {
+        transform: translate3d(-18px, 0, 0);
+      }
+
+      [data-home] [data-reveal='right'] {
+        transform: translate3d(18px, 0, 0);
+      }
+
+      [data-home] [data-reveal='down'] {
+        transform: translate3d(0, -14px, 0);
+      }
+
+      [data-home] [data-reveal].is-revealed {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        [data-home] [data-reveal] {
+          opacity: 1;
+          transform: none;
+          transition: none;
+        }
+      }
+    </style>
+
+    <script slot="afterScripts" src="/js/app-home.js" defer></script>
+
+    <script slot="afterScripts" is:inline>
+      // Navbar-Stabilisierung (nur Startseite)
+      // --------------------------------------
+      // In Chrome-Device-Emulation (iPhone etc.) kann sich env(safe-area-inset-top) beim Scrollen ändern.
+      // Dadurch verschiebt sich das Top-Padding der Navbar sichtbar nach oben/unten.
+      // Wir messen das berechnete Padding einmalig und frieren es in --home-nav-pad-top ein.
+      (() => {
+        try {
+          const root = document.documentElement;
+          const host = document.body;
+          if (!host?.classList?.contains('is-home')) return;
+
+          const target = document.querySelector('[data-site-nav] > div');
+          if (!(target instanceof HTMLElement)) return;
+
+          const update = () => {
+            const pad = getComputedStyle(target).paddingTop;
+            if (pad) root.style.setProperty('--home-nav-pad-top', pad);
+          };
+
+          // Nach dem initialen Layout messen (stabiler als direkt synchron).
+          requestAnimationFrame(update);
+
+          // Bei Rotation einmalig neu setzen (kein window.resize -> sonst wieder Scroll-Jitter).
+          window.addEventListener('orientationchange', () => {
+            window.setTimeout(() => requestAnimationFrame(update), 250);
+          });
+        } catch {
+          // Wenn das nicht klappt, ist es kein harter Fehler – die Seite bleibt nutzbar.
+        }
+      })();
+
+      // Subtiles Reveal (IntersectionObserver) – ohne extra Libraries.
+      // Respektiert prefers-reduced-motion und bleibt auf der Startseite scoped.
+      (() => {
+        try {
+          const root = document.querySelector('[data-home]');
+          if (!root) return;
+
+          const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+          const els = Array.from(root.querySelectorAll('[data-reveal]'));
+
+          if (reduce) {
+            els.forEach((el) => el.classList.add('is-revealed'));
+            return;
+          }
+
+          const io = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+
+                const el = entry.target;
+                const delayAttr = el.getAttribute('data-reveal-delay');
+
+                if (delayAttr) {
+                  const delay = Number.parseInt(delayAttr, 10);
+                  if (!Number.isNaN(delay) && delay > 0) {
+                    el.style.setProperty('--reveal-delay', `${delay}ms`);
+                  }
+                }
+
+                el.classList.add('is-revealed');
+                io.unobserve(el);
+              }
+            },
+            {
+              threshold: 0.12,
+              rootMargin: '0px 0px -10% 0px',
+            },
+          );
+
+          els.forEach((el) => io.observe(el));
+        } catch {
+          // Falls etwas schiefgeht: keine harte Abhängigkeit, Seite bleibt vollständig nutzbar.
+        }
+      })();
+    </script>
+  </div>
 </BaseLayout>

@@ -1,0 +1,27 @@
+---
+export type HomePanelVariant = 'outline' | 'soft' | 'glass';
+
+export interface Props {
+  variant?: HomePanelVariant;
+  class?: string;
+}
+
+const {
+  variant = 'outline',
+  class: className = '',
+  ...rest
+} = Astro.props as Props & Record<string, any>;
+
+const variants: Record<HomePanelVariant, string> = {
+  // Sehr ruhig: nur Border, keine "Card"-Anmutung
+  outline: 'border border-border bg-transparent',
+  // Leichte Fläche, ohne starke Schatten
+  soft: 'border border-border bg-surface/60',
+  // Bewusst "besonders": nur gezielt einsetzen
+  glass: 'glass-strong',
+};
+---
+
+<div class={`${variants[variant]} rounded-[var(--radius)] ${className}`.trim()} {...rest}>
+  <slot />
+</div>

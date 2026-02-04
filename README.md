@@ -17,9 +17,9 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 
 ## Tech-Stack
 
-- **Astro** 
+- **Astro**
 - **TypeScript**
-- **Tailwind CSS** 
+- **Tailwind CSS**
 - **Vanilla JS** für interaktive Seiten (z. B. Stats/Playerstats)
 
 ## Inhalte pflegen
