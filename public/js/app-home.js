@@ -180,23 +180,6 @@
     const root = qs('[data-gallery]');
     if (!root) return;
 
-    const raw = root.getAttribute('data-gallery-images') || '[]';
-    let images;
-
-    try {
-      images = JSON.parse(raw);
-    } catch {
-      images = [];
-    }
-
-    if (!Array.isArray(images)) images = [];
-    images = images.filter((s) => typeof s === 'string' && s.length > 0);
-    if (images.length < 2) return;
-
-    const intervalMs = Number(root.getAttribute('data-gallery-interval') || '5200');
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const fadeMs = prefersReduced ? 0 : 700;
-
     const imgA = root.querySelector('[data-gallery-a]');
     const imgB = root.querySelector('[data-gallery-b]');
     const placeholder = root.querySelector('[data-gallery-placeholder]');
@@ -204,46 +187,6 @@
     const nextBtn = root.querySelector('[data-gallery-next]');
 
     if (!imgA || !imgB) return;
-
-    // Shuffle order => random start image
-    const order = shuffleInPlace(images.slice());
-
-    let index = 0;
-    let front = imgA;
-    let back = imgB;
-    let timer = null;
-    // Autoplay can be paused (e.g. hover/focus), but manual navigation should still work.
-    let isAutoplayPaused = false;
-    let isTransitioning = false;
-    let touchStartX = null;
-    let touchStartY = null;
-
-    const preload = (src) => {
-      const img = new Image();
-      img.decoding = 'async';
-      img.loading = 'eager';
-      img.src = src;
-    };
-
-    const ensureLoaded = (el, src) =>
-      new Promise((resolve) => {
-        if (el.src === src && el.complete && el.naturalWidth > 0) {
-          resolve();
-          return;
-        }
-
-        const onLoad = () => resolve();
-        const onError = () => resolve();
-
-        el.addEventListener('load', onLoad, { once: true });
-        el.addEventListener('error', onError, { once: true });
-        el.src = src;
-
-        // If cached, resolve on next tick
-        if (el.complete) {
-          queueMicrotask(resolve);
-        }
-      });
 
     const setOpacity = (el, v) => {
       el.style.opacity = String(v);
@@ -255,41 +198,157 @@
       placeholder.style.opacity = '0';
     };
 
-    const showInitial = async () => {
-      // Hide both images to avoid showing the first file briefly
-      setOpacity(imgA, 0);
+    const showSingle = () => {
+      // Failsafe: wenn JS/JSON/Build-List nicht sauber ist, soll das Initial-Bild trotzdem sichtbar sein.
+      setOpacity(imgA, 1);
       setOpacity(imgB, 0);
+      revealPlaceholder();
+    };
 
-      await ensureLoaded(front, order[index]);
+    const raw = root.getAttribute('data-gallery-images') || '[]';
+    let images;
 
-      // Prepare next in background
-      const nextIndex = (index + 1) % order.length;
-      back.src = order[nextIndex];
-      preload(back.src);
+    try {
+      images = JSON.parse(raw);
+    } catch {
+      images = [];
+    }
 
-      // Reveal
+    if (!Array.isArray(images)) images = [];
+    images = images.filter((s) => typeof s === 'string' && s.length > 0);
+
+    if (images.length < 2) {
+      showSingle();
+      return;
+    }
+
+    const intervalMs = Number(root.getAttribute('data-gallery-interval') || '5200');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fadeMs = prefersReduced ? 0 : 700;
+
+    // Shuffle order => random start image
+    const order = shuffleInPlace(images.slice());
+
+    let index = 0;
+    let front = imgA;
+    let back = imgB;
+    let timer = null;
+    let isAutoplayPaused = false;
+    let isTransitioning = false;
+    let touchStartX = null;
+    let touchStartY = null;
+
+    // Wir vermeiden absichtsvoll „broken image“-Icons:
+    // -> erst preloaden (in einem separaten Image), dann erst ins DOM-IMG schreiben.
+    const bad = new Set();
+
+    const preloadOk = (src) =>
+      new Promise((resolve) => {
+        if (!src) return resolve(false);
+        if (bad.has(src)) return resolve(false);
+
+        const tmp = new Image();
+        let done = false;
+
+        const finish = (ok) => {
+          if (done) return;
+          done = true;
+          if (!ok) bad.add(src);
+          resolve(ok);
+        };
+
+        tmp.decoding = 'async';
+        tmp.loading = 'eager';
+        tmp.onload = () => finish(true);
+        tmp.onerror = () => finish(false);
+        tmp.src = src;
+
+        // Falls aus Cache: sofort bewerten
+        if (tmp.complete) {
+          finish(tmp.naturalWidth > 0);
+        }
+      });
+
+    const pickFirstLoadableIndex = async (startAt = 0) => {
+      for (let tries = 0; tries < order.length; tries++) {
+        const i = (startAt + tries) % order.length;
+        const ok = await preloadOk(order[i]);
+        if (ok) return i;
+      }
+      return null;
+    };
+
+    const findNextIndex = async (fromIndex, delta) => {
+      for (let tries = 1; tries <= order.length; tries++) {
+        const i = (fromIndex + delta * tries + order.length) % order.length;
+        const ok = await preloadOk(order[i]);
+        if (ok) return i;
+      }
+      return null;
+    };
+
+    const setSrcSafe = async (el, src) => {
+      const ok = await preloadOk(src);
+      if (!ok) return false;
+      el.src = src;
+      return true;
+    };
+
+    const showInitial = async () => {
+      // Falls irgendwas klemmt: niemals „leer“ bleiben.
+      showSingle();
+
+      const firstIndex = await pickFirstLoadableIndex(0);
+      if (firstIndex == null) return;
+
+      index = firstIndex;
+
+      // Front setzen
+      await setSrcSafe(front, order[index]);
+
+      // Next vorbereiten
+      const nextIndex = await findNextIndex(index, +1);
+      if (nextIndex != null) {
+        back.src = order[nextIndex];
+      }
+
       setOpacity(front, 1);
       setOpacity(back, 0);
       revealPlaceholder();
     };
 
-    const transitionTo = async (nextIndex) => {
-      // Manual navigation must work even while autoplay is paused.
+    const transitionTo = async (targetIndex) => {
       if (document.hidden) return;
       if (isTransitioning) return;
       isTransitioning = true;
 
-      const nextSrc = order[nextIndex];
-      const afterNext = order[(nextIndex + 1) % order.length];
+      // Falls Zielbild nicht ladbar ist, suchen wir das nächste funktionierende.
+      let nextIndex = targetIndex;
+      if (!(await preloadOk(order[nextIndex]))) {
+        const fallbackIndex = await findNextIndex(index, +1);
+        if (fallbackIndex == null) {
+          isTransitioning = false;
+          return;
+        }
+        nextIndex = fallbackIndex;
+      }
 
-      // Load next into back before starting fade
-      await ensureLoaded(back, nextSrc);
-      preload(afterNext);
+      const nextSrc = order[nextIndex];
+
+      // back mit dem nächsten Bild bestücken
+      const ok = await setSrcSafe(back, nextSrc);
+      if (!ok) {
+        isTransitioning = false;
+        return;
+      }
+
+      // AfterNext vorbereiten (nur fürs Preload/Cache, kein „broken icon“ riskieren)
+      const afterIndex = await findNextIndex(nextIndex, +1);
+      if (afterIndex != null) preloadOk(order[afterIndex]);
 
       if (fadeMs === 0) {
         front.src = nextSrc;
         index = nextIndex;
-        back.src = afterNext;
         isTransitioning = false;
         return;
       }
@@ -307,14 +366,16 @@
         // reset back for next transition
         setOpacity(back, 0);
         index = nextIndex;
-        back.src = afterNext;
         isTransitioning = false;
       }, fadeMs + 30);
     };
 
-    const step = () => {
+    const step = async () => {
       if (isAutoplayPaused || document.hidden) return;
-      const nextIndex = (index + 1) % order.length;
+
+      const nextIndex = await findNextIndex(index, +1);
+      if (nextIndex == null) return;
+
       transitionTo(nextIndex);
     };
 
@@ -335,18 +396,15 @@
       start();
     };
 
-    const nudge = (delta) => {
-      const nextIndex = (index + delta + order.length) % order.length;
+    const nudge = async (delta) => {
+      const nextIndex = await findNextIndex(index, delta);
+      if (nextIndex == null) return;
       transitionTo(nextIndex);
-      // Restart autoplay so it doesn't instantly jump again
       if (!isAutoplayPaused) start();
     };
 
     // Init
-    showInitial().then(() => {
-      // Start autoplay after first image is ready
-      start();
-    });
+    showInitial().then(() => start());
 
     // Controls
     if (prevBtn) prevBtn.addEventListener('click', () => nudge(-1));

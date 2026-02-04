@@ -1,50 +1,8 @@
 ---
 import Button from '../../ui/Button.astro';
-import IconBadge from '../../ui/IconBadge.astro';
-
 import HomePanel from '../HomePanel.astro';
 import HomeSection from '../HomeSection.astro';
-
 import { ArrowRight, Cpu, Home, Map, Shield, Sparkles, Wand2 } from '@lucide/astro';
-
-type Feature = {
-  title: string;
-  description: string;
-  Icon: typeof Shield;
-};
-
-const FEATURES: Feature[] = [
-  {
-    title: 'Claims / Grief-Schutz',
-    description: 'Sicher bauen: Dein Gebiet bleibt deins.',
-    Icon: Shield,
-  },
-  {
-    title: 'Farmwelten',
-    description: 'Ressourcen farmen, ohne die Hauptwelt zu zerstören.',
-    Icon: Map,
-  },
-  {
-    title: 'Bis zu 20 Homes',
-    description: 'Schnell zurück zu deinen Projekten – ohne Laufwege.',
-    Icon: Home,
-  },
-  {
-    title: '/RTP',
-    description: 'In Sekunden einen Spot finden und loslegen.',
-    Icon: Wand2,
-  },
-  {
-    title: 'Quality-of-Life',
-    description: 'Komfort ja – aber kein modded Overkill.',
-    Icon: Sparkles,
-  },
-  {
-    title: 'Stabil & performant',
-    description: 'Flüssig spielen – auch wenn mehr los ist.',
-    Icon: Cpu,
-  },
-];
 ---
 
 <HomeSection id="vanilla" size="normal">
@@ -69,19 +27,81 @@ const FEATURES: Feature[] = [
 
     <HomePanel variant="soft" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
       <div class="grid gap-7 md:grid-cols-2">
-        {
-          FEATURES.map(({ title, description, Icon }) => (
-            <div class="flex gap-4">
-              <IconBadge variant="outline" size="md">
-                <Icon size={18} />
-              </IconBadge>
-              <div>
-                <h3 class="text-base font-semibold">{title}</h3>
-                <p class="text-muted mt-1 text-sm">{description}</p>
-              </div>
-            </div>
-          ))
-        }
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Shield size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
+            <p class="text-muted mt-1 text-sm">Sicher bauen: Dein Gebiet bleibt deins.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Map size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Farmwelten</h3>
+            <p class="text-muted mt-1 text-sm">
+              Ressourcen farmen, ohne die Hauptwelt zu zerstören.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Home size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Bis zu 20 Homes</h3>
+            <p class="text-muted mt-1 text-sm">
+              Schnell zurück zu deinen Projekten – ohne Laufwege.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Wand2 size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">/RTP</h3>
+            <p class="text-muted mt-1 text-sm">In Sekunden einen Spot finden und loslegen.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Quality-of-Life</h3>
+            <p class="text-muted mt-1 text-sm">Komfort ja – aber kein modded Overkill.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Cpu size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Stabil & performant</h3>
+            <p class="text-muted mt-1 text-sm">Flüssig spielen – auch wenn mehr los ist.</p>
+          </div>
+        </div>
       </div>
     </HomePanel>
   </div>

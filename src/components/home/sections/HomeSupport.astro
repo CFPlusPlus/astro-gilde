@@ -1,8 +1,6 @@
 ---
 import Button from '../../ui/Button.astro';
-import IconBadge from '../../ui/IconBadge.astro';
 import HomeSection from '../HomeSection.astro';
-
 import { minecraftGilde } from '../../../config/minecraftGilde';
 import { ArrowRight, BadgeCheck, HelpCircle } from '@lucide/astro';
 
@@ -21,9 +19,11 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
 
   <div class="mt-12 grid gap-14 lg:grid-cols-2">
     <div class="flex items-start gap-5" data-reveal>
-      <IconBadge variant="soft" size="lg" class="mt-0.5">
+      <div
+        class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+      >
         <BadgeCheck class="h-7 w-7" />
-      </IconBadge>
+      </div>
       <div class="min-w-0">
         <h3 class="text-lg font-semibold tracking-tight">Voten & Belohnungen</h3>
         <p class="text-muted mt-2 text-sm leading-relaxed">
@@ -42,9 +42,11 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
     </div>
 
     <div class="flex items-start gap-5" data-reveal="right" data-reveal-delay="80">
-      <IconBadge variant="soft" size="lg" class="mt-0.5">
+      <div
+        class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
+      >
         <HelpCircle class="h-7 w-7" />
-      </IconBadge>
+      </div>
       <div class="min-w-0">
         <h3 class="text-lg font-semibold tracking-tight">FAQ</h3>
         <p class="text-muted mt-2 text-sm leading-relaxed">

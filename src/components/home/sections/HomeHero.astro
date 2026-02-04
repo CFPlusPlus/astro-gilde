@@ -13,8 +13,11 @@ const MC_VERSION = minecraftGilde.mcVersion;
 ---
 
 <!-- Hero-Bereich --><!--
-  Der Hero-Hintergrund wird pauschal nach oben verlängert.
-  So bleibt die Navbar stabil (kein Layout-Shift, kein JS).
+  WICHTIG (Mobile): Auf iOS/Chrome-Device-Emulation kann eine dynamische Messung/Anpassung
+  (z. B. via ResizeObserver + CSS-Variablen) in Kombination mit sticky Elementen zu "Springen" führen.
+  Deshalb ziehen wir NICHT das Layout nach oben, sondern verlängern ausschließlich den Hero-Hintergrund
+  pauschal nach oben, sodass er auch hinter der Navbar bis ganz nach oben sichtbar ist.
+  (Ohne JS, ohne Layout-Verschiebung, sticky bleibt stabil.)
 -->
 <section class="home-hero relative pt-28 pb-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36">
   <div class="home-hero-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">

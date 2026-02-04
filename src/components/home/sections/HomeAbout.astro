@@ -59,8 +59,7 @@ const { galleryUrls, galleryInitial } = Astro.props as Props;
             alt="Impressionen vom Server – Minecraft Gilde"
             loading="eager"
             decoding="async"
-            style="opacity:0"
-            class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+            class="absolute inset-0 h-full w-full object-cover opacity-100 transition-opacity duration-700"
           />
 
           <noscript>
@@ -78,7 +77,6 @@ const { galleryUrls, galleryInitial } = Astro.props as Props;
             aria-hidden="true"
             loading="lazy"
             decoding="async"
-            style="opacity:0"
             class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
           />
 

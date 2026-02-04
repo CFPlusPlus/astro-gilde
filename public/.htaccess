@@ -8,6 +8,12 @@
 #UTF-8 als Standard setzen
 AddCharset UTF-8 .txt
 
+# MIME-Types für moderne Bildformate (wichtig für Safari/iOS)
+<IfModule mod_mime.c>
+  AddType image/webp .webp
+  AddType image/avif .avif
+</IfModule>
+
 # 404-Seite (kompatibel: /404.html wird beim Build erzeugt)
 ErrorDocument 404 /404.html
 # HTML nie aus dem Cache zeigen
