@@ -10,9 +10,7 @@ type HomeGallery = {
 // Build-Time: Galerie-Bilder aus /public/images/Galerie einsammeln
 export const getHomeGallery = (): HomeGallery => {
   const fallback = '/images/survival.webp';
-  const galleryDir = fileURLToPath(
-    new URL('../../../public/images/Galerie', import.meta.url),
-  );
+  const galleryDir = fileURLToPath(new URL('../../../public/images/Galerie', import.meta.url));
 
   let images: string[] = [];
 
