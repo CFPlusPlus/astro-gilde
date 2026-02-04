@@ -1,43 +1,12 @@
 ---
 // Home-spezifische Scripts
 // - /public/js/app-home.js: Player-Liste, World-Age, Galerie
-// - Inline: Navbar-Stabilisierung + Reveal-Animationen (IntersectionObserver)
+// - Inline: Reveal-Animationen (IntersectionObserver)
 ---
 
 <script src="/js/app-home.js" defer></script>
 
 <script is:inline>
-  // Navbar-Stabilisierung (nur Startseite)
-  // --------------------------------------
-  // In Chrome-Device-Emulation (iPhone etc.) kann sich env(safe-area-inset-top) beim Scrollen ändern.
-  // Dadurch verschiebt sich das Top-Padding der Navbar sichtbar nach oben/unten.
-  // Wir messen das berechnete Padding einmalig und frieren es in --home-nav-pad-top ein.
-  (() => {
-    try {
-      const root = document.documentElement;
-      const host = document.body;
-      if (!host?.classList?.contains('is-home')) return;
-
-      const target = document.querySelector('[data-site-nav] > div');
-      if (!(target instanceof HTMLElement)) return;
-
-      const update = () => {
-        const pad = getComputedStyle(target).paddingTop;
-        if (pad) root.style.setProperty('--home-nav-pad-top', pad);
-      };
-
-      // Nach dem initialen Layout messen (stabiler als direkt synchron).
-      requestAnimationFrame(update);
-
-      // Bei Rotation einmalig neu setzen (kein window.resize -> sonst wieder Scroll-Jitter).
-      window.addEventListener('orientationchange', () => {
-        window.setTimeout(() => requestAnimationFrame(update), 250);
-      });
-    } catch {
-      // Wenn das nicht klappt, ist es kein harter Fehler – die Seite bleibt nutzbar.
-    }
-  })();
-
   // Subtiles Reveal (IntersectionObserver) – ohne extra Libraries.
   // Respektiert prefers-reduced-motion und bleibt auf der Startseite scoped.
   (() => {

@@ -16,6 +16,10 @@ export default defineConfig({
     }),
   ],
   vite: {
+    // Hinweis: Astro bringt eine eigene Vite-Version mit.
+    // @tailwindcss/vite referenziert Vite-Typen aus dem Root, was bei Type-Checks zu Plugin-Typ-Konflikten führt.
+    // Zur Laufzeit ist das unkritisch – deshalb hier bewusst ignoriert.
+    // @ts-expect-error - Astro/Vite Typen kollidieren (Runtime ok)
     plugins: [tailwindcss()],
   },
 });

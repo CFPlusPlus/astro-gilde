@@ -1,44 +1,56 @@
 ---
 import HomeSection from '../HomeSection.astro';
+import IconBadge from '../../ui/IconBadge.astro';
+
 import { Shield, Sparkles, Wand2 } from '@lucide/astro';
+
+type UspItem = {
+  title: string;
+  description: string;
+  Icon: typeof Sparkles;
+  delay?: number;
+};
+
+const ITEMS: UspItem[] = [
+  {
+    title: 'Langzeitwelt',
+    description: 'Ohne Resets – deine Projekte bleiben relevant.',
+    Icon: Sparkles,
+    delay: 0,
+  },
+  {
+    title: 'Kein Pay-to-Win',
+    description: 'Keine kaufbaren Vorteile. Fair für alle.',
+    Icon: Shield,
+    delay: 80,
+  },
+  {
+    title: 'Vanilla+',
+    description: 'Komfort & Schutz – echtes Survival bleibt.',
+    Icon: Wand2,
+    delay: 160,
+  },
+];
 ---
 
 <HomeSection size="tight" containerClass="py-16 sm:py-20">
   <div class="grid gap-12 md:grid-cols-3">
-    <div class="flex items-start gap-4" data-reveal>
-      <div
-        class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
-      >
-        <Sparkles size={18} />
-      </div>
-      <div>
-        <h2 class="text-base font-semibold">Langzeitwelt</h2>
-        <p class="text-muted mt-1 text-sm">Ohne Resets – deine Projekte bleiben relevant.</p>
-      </div>
-    </div>
-
-    <div class="flex items-start gap-4" data-reveal data-reveal-delay="80">
-      <div
-        class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
-      >
-        <Shield size={18} />
-      </div>
-      <div>
-        <h2 class="text-base font-semibold">Kein Pay-to-Win</h2>
-        <p class="text-muted mt-1 text-sm">Keine kaufbaren Vorteile. Fair für alle.</p>
-      </div>
-    </div>
-
-    <div class="flex items-start gap-4" data-reveal data-reveal-delay="160">
-      <div
-        class="bg-accent/15 border-accent/25 mt-0.5 inline-flex h-10 w-10 items-center justify-center rounded-xl border"
-      >
-        <Wand2 size={18} />
-      </div>
-      <div>
-        <h2 class="text-base font-semibold">Vanilla+</h2>
-        <p class="text-muted mt-1 text-sm">Komfort & Schutz – echtes Survival bleibt.</p>
-      </div>
-    </div>
+    {
+      ITEMS.map(({ title, description, Icon, delay }) => (
+        <div
+          class="flex items-start gap-4"
+          data-reveal
+          data-reveal-delay={delay ? String(delay) : undefined}
+        >
+          <IconBadge variant="outline" size="sm" class="mt-0.5">
+            <Icon size={18} />
+          </IconBadge>
+          <div>
+            <h2 class="text-base font-semibold">{title}</h2>
+            <p class="text-muted mt-1 text-sm">{description}</p>
+          </div>
+        </div>
+      ))
+    }
   </div>
 </HomeSection>

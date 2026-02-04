@@ -1,0 +1,36 @@
+---
+import { hrefFor, isExternalHref } from '../../lib/links';
+
+export interface Props {
+  href: string;
+  external?: boolean;
+  class?: string;
+}
+
+const {
+  href,
+  external = false,
+  class: className = '',
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
+
+const resolvedHref = hrefFor(href);
+const resolvedExternal = external || isExternalHref(href);
+
+const base =
+  'border-border bg-surface hover:bg-surface-solid/70 text-fg/90 hover:text-fg inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
+
+const attrs = {
+  href: resolvedHref,
+  ...(resolvedExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+  ...rest,
+};
+---
+
+<a class={`${base} ${className}`.trim()} {...attrs}>
+  <span class="inline-flex items-center" aria-hidden="true">
+    <slot name="icon" />
+  </span>
+  <span class="whitespace-nowrap"><slot /></span>
+  {resolvedExternal ? <span class="sr-only"> (extern)</span> : null}
+</a>

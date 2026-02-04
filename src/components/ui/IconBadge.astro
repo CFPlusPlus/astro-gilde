@@ -1,0 +1,40 @@
+---
+export type IconBadgeVariant = 'outline' | 'soft';
+export type IconBadgeSize = 'sm' | 'md' | 'lg';
+
+export interface Props {
+  /** Optik-Preset für Hintergrund/Border */
+  variant?: IconBadgeVariant;
+  /** Größen-Preset (passt zu den Home-Sections) */
+  size?: IconBadgeSize;
+  /** Zusätzliche Klassen */
+  class?: string;
+}
+
+const {
+  variant = 'outline',
+  size = 'sm',
+  class: className = '',
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
+
+const variants: Record<IconBadgeVariant, string> = {
+  // Klassische „Icon in Box“ Optik (sehr gut für USPs/Feature-Listen)
+  outline: 'bg-accent/15 border-accent/25 border text-fg',
+  // Ruhiger, flächiger – gut für größere Icons (z. B. Support-Karten)
+  soft: 'bg-accent/10 text-accent',
+};
+
+const sizes: Record<IconBadgeSize, string> = {
+  sm: 'h-10 w-10 rounded-xl',
+  md: 'h-11 w-11 rounded-xl',
+  lg: 'h-12 w-12 rounded-2xl',
+};
+---
+
+<div
+  class={`${variants[variant]} ${sizes[size]} inline-flex shrink-0 items-center justify-center ${className}`.trim()}
+  {...rest}
+>
+  <slot />
+</div>

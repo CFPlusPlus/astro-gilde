@@ -14,12 +14,12 @@ const { items, class: className = '' } = Astro.props as Props;
 
 <nav
   aria-label="Auf dieser Seite"
-  class={// Hinweis: Auf Mobile NICHT sticky, weil iOS/Chrome (Device Emu) bei mehreren Sticky/Glass-Layern
-  // gelegentlich das Haupt-Navi "hochschiebt" und abschneidet. Ab md ist Sticky wieder aktiv.
+  class={// Hinweis: Auf Mobile bewusst nicht sticky (mehr Platz, weniger Risiko für Rendering-Quirks).
+  // Ab md ist Sticky wieder aktiv.
   `z-40 md:sticky md:top-[calc(5rem+env(safe-area-inset-top))] ${className}`.trim()}
 >
   <div class="mg-container">
-    <!-- Kein "Glass" auf Mobile (Backdrops können iOS Rendering-Bugs triggern) -->
+    <!-- Kein "Glass" auf Mobile (ruhiger / performanter) -->
     <div
       class="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2"
     >
