@@ -1,0 +1,100 @@
+import React from 'react';
+import type { MetricDef } from '../types';
+import type { LeaderboardState } from '../types-ui';
+import { formatMetricValue, rankMedal } from '../format';
+import { Pagination } from './Pagination';
+
+export function LeaderboardTable({
+  metricId,
+  def,
+  state,
+  pageSize,
+  getPlayerName,
+  onPlayerClick,
+  onGoPage,
+  onLoadMore,
+}: {
+  metricId: string;
+  def?: MetricDef;
+  state: LeaderboardState;
+  pageSize: number;
+  getPlayerName: (uuid: string) => string;
+  onPlayerClick: (uuid: string) => void;
+  onGoPage: (page: number) => void;
+  onLoadMore: () => void;
+}) {
+  const page = state.pages[state.currentPage] || [];
+
+  return (
+    <div className="mg-card relative overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
+          <thead className="bg-surface-solid/40 text-muted text-xs">
+            <tr>
+              <th className="px-4 py-3 text-left font-semibold">Platz</th>
+              <th className="px-4 py-3 text-left font-semibold">Spielername</th>
+              <th className="px-4 py-3 text-left font-semibold">
+                {def?.unit ? `Wert (${def.unit})` : 'Wert'}
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+            {state.loaded && page.length === 0 ? (
+              <tr>
+                <td className="text-muted px-4 py-5 text-sm" colSpan={3}>
+                  Keine Daten verfügbar.
+                </td>
+              </tr>
+            ) : null}
+
+            {page.map((row, i) => {
+              const rank = state.currentPage * pageSize + (i + 1);
+              const medal = rankMedal(rank);
+              const name = getPlayerName(row.uuid);
+              return (
+                <tr key={`${row.uuid}-${i}`}>
+                  <td className="whitespace-nowrap">
+                    <span className="inline-flex items-center gap-2">
+                      {medal ? <span aria-hidden="true">{medal}</span> : null}
+                      <span className="font-semibold">{rank}</span>
+                    </span>
+                  </td>
+                  <td className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => onPlayerClick(row.uuid)}
+                      className="hover:text-fg text-fg/90 inline-flex min-w-0 items-center gap-2 text-left transition-colors"
+                      title="Zur Spielerstatistik"
+                    >
+                      <img
+                        src={`https://minotar.net/helm/${encodeURIComponent(name)}/32.png`}
+                        alt=""
+                        className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span className="truncate">{name}</span>
+                    </button>
+                  </td>
+                  <td className="whitespace-nowrap">{formatMetricValue(row.value, def)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {state.loading ? (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
+          <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
+            Lädt…
+          </span>
+        </div>
+      ) : null}
+
+      <div className="border-border flex items-center justify-between gap-3 border-t px-4 py-3">
+        <Pagination state={state} onGo={onGoPage} onLoadMore={onLoadMore} />
+      </div>
+    </div>
+  );
+}
