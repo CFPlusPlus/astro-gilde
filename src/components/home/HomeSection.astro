@@ -21,7 +21,8 @@ const {
   divider = false,
   size = 'normal',
   ...rest
-} = Astro.props as Props & Record<string, any>;
+} = Astro.props as Props & Record<string, unknown>;
+
 
 const sizes: Record<HomeSectionSize, string> = {
   // Mehr „Luft“: größere Default-Abstände, damit die Startseite ruhiger wirkt.

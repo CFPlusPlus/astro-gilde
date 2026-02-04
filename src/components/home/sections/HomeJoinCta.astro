@@ -1,0 +1,48 @@
+---
+import Button from '../../ui/Button.astro';
+import HomeSection from '../HomeSection.astro';
+import { minecraftGilde } from '../../../config/minecraftGilde';
+import { ArrowRight, Copy } from '@lucide/astro';
+
+const DISCORD_URL = minecraftGilde.discord.url;
+const SERVER_IP = minecraftGilde.serverIp;
+const MC_VERSION = minecraftGilde.mcVersion;
+---
+
+<HomeSection id="join" size="normal">
+  <div class="grid items-start gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+    <div data-reveal>
+      <h2 class="text-3xl font-semibold tracking-tight">Bereit für dein nächstes Projekt?</h2>
+      <p class="text-muted mt-4 max-w-2xl">
+        Join jetzt auf <strong>{SERVER_IP}</strong> und spiele echtes Vanilla-Survival – fair, stabil
+        und ohne Reset-Stress.
+      </p>
+      <div class="mt-7 flex flex-wrap gap-3">
+        <Button variant="primary" class="gap-2" data-copy-ip>
+          <Copy size={18} /> IP kopieren
+        </Button>
+        <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+          Discord <ArrowRight size={18} />
+        </Button>
+      </div>
+    </div>
+
+    <div class="lg:pl-10" data-reveal data-reveal-delay="100">
+      <div class="text-muted text-xs font-medium">Kurzinfo</div>
+      <dl class="mt-4 grid gap-3 text-sm">
+        <div class="flex items-center justify-between">
+          <dt class="text-muted">Edition</dt>
+          <dd class="font-semibold">Java</dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-muted">Version</dt>
+          <dd class="font-semibold">{MC_VERSION}</dd>
+        </div>
+        <div class="flex items-center justify-between">
+          <dt class="text-muted">IP</dt>
+          <dd class="font-semibold">{SERVER_IP}</dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+</HomeSection>

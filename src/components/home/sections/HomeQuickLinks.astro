@@ -1,0 +1,83 @@
+---
+import HomeSection from '../HomeSection.astro';
+import { minecraftGilde } from '../../../config/minecraftGilde';
+import {
+  BadgeCheck,
+  Book,
+  Handshake,
+  HelpCircle,
+  Map,
+  ScrollText,
+  Sparkles,
+  TerminalSquare,
+  Users,
+} from '@lucide/astro';
+
+const DYNMAP_URL = minecraftGilde.mapUrl;
+---
+
+<HomeSection id="links" size="normal">
+  <div data-reveal>
+    <h2 class="text-2xl font-semibold tracking-tight">Mehr entdecken</h2>
+    <p class="text-muted mt-3 max-w-2xl text-sm">Die wichtigsten Seiten – ohne Umwege.</p>
+  </div>
+
+  <div class="mt-8 flex flex-wrap gap-2" data-reveal data-reveal-delay="80">
+    <a
+      href="/serverinfos/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <ScrollText size={16} /> Serverinfos
+    </a>
+    <a
+      href="/regeln/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <Book size={16} /> Regeln
+    </a>
+    <a
+      href="/befehle/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <TerminalSquare size={16} /> Befehle
+    </a>
+    <a
+      href={DYNMAP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <Map size={16} /> Karte
+    </a>
+    <a
+      href="/statistiken/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <Sparkles size={16} /> Statistiken
+    </a>
+    <a
+      href="/voten/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <BadgeCheck size={16} /> Voten
+    </a>
+    <a
+      href="/faq/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <HelpCircle size={16} /> FAQ
+    </a>
+    <a
+      href="/team/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <Users size={16} /> Team
+    </a>
+    <a
+      href="/partner/"
+      class="border-border bg-surface hover:bg-surface-solid/70 inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors"
+    >
+      <Handshake size={16} /> Partner
+    </a>
+  </div>
+</HomeSection>

@@ -10,7 +10,8 @@ const {
   variant = 'outline',
   class: className = '',
   ...rest
-} = Astro.props as Props & Record<string, any>;
+} = Astro.props as Props & Record<string, unknown>;
+
 
 const variants: Record<HomePanelVariant, string> = {
   // Sehr ruhig: nur Border, keine "Card"-Anmutung

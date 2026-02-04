@@ -1,0 +1,41 @@
+---
+import HomeAnchorNav from './HomeAnchorNav.astro';
+
+import HomeHero from './sections/HomeHero.astro';
+import HomeUsps from './sections/HomeUsps.astro';
+import HomeAbout from './sections/HomeAbout.astro';
+import HomeVanillaPlus from './sections/HomeVanillaPlus.astro';
+import HomeStartSteps from './sections/HomeStartSteps.astro';
+import HomeLive from './sections/HomeLive.astro';
+import HomeSupport from './sections/HomeSupport.astro';
+import HomeQuickLinks from './sections/HomeQuickLinks.astro';
+import HomeJoinCta from './sections/HomeJoinCta.astro';
+
+import type { AnchorItem } from './HomeAnchorNav.astro';
+
+export interface Props {
+  anchorItems: AnchorItem[];
+  galleryUrls: string[];
+  galleryInitial: string;
+}
+
+const { anchorItems, galleryUrls, galleryInitial } = Astro.props as Props;
+---
+
+<div data-home>
+  <HomeHero />
+
+  <!-- Sticky Sprungnavigation -->
+  <div class="mt-6 mb-4" data-reveal data-reveal-delay="60">
+    <HomeAnchorNav items={anchorItems} />
+  </div>
+
+  <HomeUsps />
+  <HomeAbout galleryUrls={galleryUrls} galleryInitial={galleryInitial} />
+  <HomeVanillaPlus />
+  <HomeStartSteps />
+  <HomeLive />
+  <HomeSupport />
+  <HomeQuickLinks />
+  <HomeJoinCta />
+</div>

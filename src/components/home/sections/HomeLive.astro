@@ -1,0 +1,62 @@
+---
+import HomePanel from '../HomePanel.astro';
+import HomeSection from '../HomeSection.astro';
+import { minecraftGilde } from '../../../config/minecraftGilde';
+import { Map, Users } from '@lucide/astro';
+
+const DYNMAP_URL = minecraftGilde.mapUrl;
+---
+
+<HomeSection id="live" size="normal">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+    <div>
+      <h2 class="text-3xl font-semibold tracking-tight">Live auf dem Server</h2>
+      <p class="text-muted mt-3 max-w-2xl">
+        Wer ist gerade online? Und wie lange läuft die Hauptwelt bereits?
+      </p>
+    </div>
+    <div class="text-muted text-sm">
+      Hauptwelt aktiv: <span class="text-fg font-semibold" id="world-age">—</span>
+      <span class="text-muted">(seit Feb 2024)</span>
+    </div>
+  </div>
+
+  <HomePanel variant="glass" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
+    <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+      <div>
+        <h3 class="text-base font-semibold">Status</h3>
+        <div class="mt-4 grid gap-3">
+          <div class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3">
+            <span class="inline-flex items-center gap-2 text-sm"><Users size={16} /> Minecraft</span>
+            <span class="text-sm font-semibold" data-mc-online>Keine</span>
+          </div>
+          <div class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3">
+            <span class="inline-flex items-center gap-2 text-sm"><Users size={16} /> Discord</span>
+            <span class="text-sm font-semibold" data-discord-online>Keine</span>
+          </div>
+          <div class="border-border bg-surface/60 flex items-center justify-between rounded-xl border px-4 py-3">
+            <span class="inline-flex items-center gap-2 text-sm"><Map size={16} /> Karte</span>
+            <a
+              href={DYNMAP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mg-link text-sm font-semibold"
+            >
+              Öffnen
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-base font-semibold">Spieler online</h3>
+        <div class="mt-4" id="player-list">
+          <p class="text-muted text-sm">Lade Spieler…</p>
+        </div>
+        <p class="text-muted mt-4 text-xs">
+          Tipp: Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
+        </p>
+      </div>
+    </div>
+  </HomePanel>
+</HomeSection>

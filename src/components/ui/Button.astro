@@ -21,7 +21,7 @@ const {
   class: className = '',
   type = 'button',
   ...rest
-} = Astro.props as Props & Record<string, any>;
+} = Astro.props as Props & Record<string, unknown>;
 
 const resolvedHref = href ? hrefFor(href) : undefined;
 const resolvedExternal = external || (href ? isExternalHref(href) : false);

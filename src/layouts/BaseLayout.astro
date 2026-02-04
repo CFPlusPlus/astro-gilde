@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildBaseGraph } from '../lib/structuredData';
+import { browserAppConfig } from '../config/minecraftGilde';
 
 export interface Props {
   title?: string;
@@ -170,15 +171,9 @@ const ldBase = buildBaseGraph({
       }
     </script>
 
-    <script is:inline>
-      // Expose v2 config to JS (no sensitive data)
-      window.__APP_CONFIG__ = {
-        serverIp: 'minecraft-gilde.de',
-        discordGuildId: '1219625244906754093',
-        discordInvite: 'https://discord.minecraft-gilde.de',
-        discordInviteCode: 'gCNfmWKFSp',
-        dynmapUrl: 'https://map.minecraft-gilde.de',
-      };
+    <script is:inline define:vars={{ browserAppConfig }}>
+      // Globale App-Config für Client-Skripte
+      window.__APP_CONFIG__ = browserAppConfig;
     </script>
 
     <slot name="head" />

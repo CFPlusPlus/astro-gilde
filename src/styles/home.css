@@ -1,0 +1,77 @@
+/*
+  Home Motion + Onepager Helpers
+  -----------------------------
+  - Scoping über [data-home], damit andere Seiten nicht beeinflusst werden.
+*/
+
+/*
+  Fix (Mobile): In Chrome-Device-Emulation/iOS kann env(safe-area-inset-top) beim Scrollen
+  unerwartet "springen". Da die Navbar ihr Top-Padding daraus berechnet, wirkt es so,
+  als würde die Navbar nach oben/unten hüpfen.
+
+  Lösung: Auf der Startseite frieren wir das berechnete Padding einmalig in einer CSS-Variable ein
+  (siehe Inline-Script in HomeInlineScripts.astro) und nutzen diese Variable hier als Override.
+*/
+body.is-home [data-site-nav] > div {
+  padding-top: var(--home-nav-pad-top, calc(1.25rem + env(safe-area-inset-top)));
+}
+
+[data-home] .home-hero-bg {
+  /*
+    Hintergrund pauschal nach oben verlängern.
+    Wichtig: ohne env(...), damit auf Mobile nichts dynamisch "mitwandert".
+  */
+  top: -220px;
+}
+
+@media (min-width: 640px) {
+  [data-home] .home-hero-bg {
+    top: -240px;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-home] .home-hero-bg {
+    top: -260px;
+  }
+}
+
+[data-home] [data-section] {
+  scroll-margin-top: calc(7.25rem + env(safe-area-inset-top));
+}
+
+[data-home] [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+/* Fly-ins (ohne zusätzliche Libraries) */
+[data-home] [data-reveal='left'] {
+  transform: translate3d(-18px, 0, 0);
+}
+
+[data-home] [data-reveal='right'] {
+  transform: translate3d(18px, 0, 0);
+}
+
+[data-home] [data-reveal='down'] {
+  transform: translate3d(0, -14px, 0);
+}
+
+[data-home] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-home] [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

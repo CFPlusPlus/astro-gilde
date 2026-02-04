@@ -1,0 +1,138 @@
+---
+import Button from '../../ui/Button.astro';
+import HomePanel from '../HomePanel.astro';
+import HomeSection from '../HomeSection.astro';
+
+import { Book, ScrollText } from '@lucide/astro';
+
+export interface Props {
+  galleryUrls: string[];
+  galleryInitial: string;
+}
+
+const { galleryUrls, galleryInitial } = Astro.props as Props;
+---
+
+<HomeSection id="about" size="normal">
+  <div class="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
+    <div>
+      <h2 class="text-3xl font-semibold tracking-tight" data-reveal>Worum geht’s bei uns?</h2>
+      <div
+        class="mg-prose text-muted mt-5 max-w-2xl text-base"
+        data-reveal
+        data-reveal-delay="80"
+      >
+        <p>
+          Minecraft Gilde ist ein deutscher Vanilla-SMP mit Fokus auf Survival & Freebuild.
+          Keine Minigames, kein Citybuild – dafür eine ruhige Langzeitwelt, in der große Builds
+          wirklich Sinn machen.
+        </p>
+        <p>
+          Du startest entspannt, suchst dir per <code>/rtp</code> einen Platz und sicherst dein Gebiet
+          mit Claims. Danach gilt: spielen, bauen, entdecken – ohne Reset-Stress.
+        </p>
+      </div>
+      <div class="mt-8 flex flex-wrap gap-3" data-reveal data-reveal-delay="140">
+        <Button href="/serverinfos" variant="secondary" class="gap-2">
+          <ScrollText size={18} /> Serverinfos
+        </Button>
+        <Button href="/regeln" variant="ghost" class="gap-2">
+          <Book size={18} /> Regeln
+        </Button>
+      </div>
+    </div>
+
+    <div class="relative" data-reveal="right" data-reveal-delay="120">
+      <HomePanel
+        variant="outline"
+        class="overflow-hidden"
+        data-gallery
+        data-gallery-interval="5200"
+        data-gallery-images={JSON.stringify(galleryUrls)}
+      >
+        <div class="group relative h-[340px] w-full sm:h-[380px]">
+          <div
+            data-gallery-placeholder
+            class="from-surface/60 via-surface-solid/50 to-surface/60 absolute inset-0 bg-gradient-to-br"
+          ></div>
+
+          <img
+            data-gallery-a
+            src={galleryInitial}
+            alt="Impressionen vom Server – Minecraft Gilde"
+            loading="eager"
+            decoding="async"
+            style="opacity:0"
+            class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+          />
+
+          <noscript>
+            <img
+              src={galleryInitial}
+              alt="Impressionen vom Server – Minecraft Gilde"
+              class="absolute inset-0 h-full w-full object-cover opacity-100"
+            />
+          </noscript>
+
+          <img
+            data-gallery-b
+            src={galleryInitial}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            style="opacity:0"
+            class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+          />
+
+          <!-- Steuerung -->
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3">
+            <button
+              type="button"
+              data-gallery-prev
+              aria-label="Vorheriges Bild"
+              title="Vorheriges Bild"
+              class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M15 18l-6-6 6-6"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="absolute inset-y-0 right-0 flex items-center pr-3">
+            <button
+              type="button"
+              data-gallery-next
+              aria-label="Nächstes Bild"
+              title="Nächstes Bild"
+              class="border-border/40 bg-surface/55 text-fg/85 hover:bg-surface/75 hover:text-fg inline-flex h-9 w-9 items-center justify-center rounded-full border shadow-sm backdrop-blur transition lg:pointer-events-none lg:opacity-0 lg:group-focus-within:pointer-events-auto lg:group-focus-within:opacity-100 lg:group-hover:pointer-events-auto lg:group-hover:opacity-100"
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                class="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 18l6-6-6-6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </HomePanel>
+    </div>
+  </div>
+</HomeSection>

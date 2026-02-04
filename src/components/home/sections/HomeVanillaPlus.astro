@@ -1,0 +1,107 @@
+---
+import Button from '../../ui/Button.astro';
+import HomePanel from '../HomePanel.astro';
+import HomeSection from '../HomeSection.astro';
+import { ArrowRight, Cpu, Home, Map, Shield, Sparkles, Wand2 } from '@lucide/astro';
+---
+
+<HomeSection id="vanilla" size="normal">
+  <div class="relative">
+    <div
+      class="bg-accent/6 pointer-events-none absolute -inset-x-6 -top-8 -bottom-8 -z-10 rounded-[32px] blur-2xl"
+      aria-hidden="true"
+    ></div>
+
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+      <div>
+        <h2 class="text-3xl font-semibold tracking-tight">Vanilla+ – genau das richtige Maß</h2>
+        <p class="text-muted mt-3 max-w-2xl">
+          Komfortfunktionen, die helfen – ohne das Survival-Gefühl zu verlieren.
+        </p>
+      </div>
+      <Button href="/tutorial" variant="secondary" class="gap-2">
+        Tutorial ansehen <ArrowRight size={18} />
+      </Button>
+    </div>
+
+    <HomePanel variant="soft" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
+      <div class="grid gap-7 md:grid-cols-2">
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Shield size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
+            <p class="text-muted mt-1 text-sm">Sicher bauen: Dein Gebiet bleibt deins.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Map size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Farmwelten</h3>
+            <p class="text-muted mt-1 text-sm">
+              Ressourcen farmen, ohne die Hauptwelt zu zerstören.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Home size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Bis zu 20 Homes</h3>
+            <p class="text-muted mt-1 text-sm">
+              Schnell zurück zu deinen Projekten – ohne Laufwege.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Wand2 size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">/RTP</h3>
+            <p class="text-muted mt-1 text-sm">In Sekunden einen Spot finden und loslegen.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Sparkles size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Quality-of-Life</h3>
+            <p class="text-muted mt-1 text-sm">Komfort ja – aber kein modded Overkill.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4">
+          <div
+            class="bg-accent/15 border-accent/25 inline-flex h-11 w-11 items-center justify-center rounded-xl border"
+          >
+            <Cpu size={18} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold">Stabil & performant</h3>
+            <p class="text-muted mt-1 text-sm">Flüssig spielen – auch wenn mehr los ist.</p>
+          </div>
+        </div>
+      </div>
+    </HomePanel>
+  </div>
+</HomeSection>

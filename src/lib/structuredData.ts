@@ -1,4 +1,4 @@
-type JsonLd = Record<string, any>;
+type JsonLd = Record<string, unknown>;
 
 const stripSiteName = (title: string): string => {
   // Common title patterns in this project:
@@ -196,7 +196,7 @@ export const buildFaqPage = (args: {
         .replace(/\n\n/g, '\n')
         .replace(/\s+\n/g, '\n')
         // Absolutize remaining bare internal paths like "/tutorial"
-        .replace(/(\s|^)(\/[a-z0-9\-\/]+\/?)(?=\s|$)/gi, (_m, p1, p2) => {
+        .replace(/(\s|^)(\/[a-z0-9/-]+\/?)(?=\s|$)/gi, (_m, p1, p2) => {
           const abs = new URL(p2, site).toString();
           return `${p1}${abs}`;
         })

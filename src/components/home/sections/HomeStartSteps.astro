@@ -1,0 +1,85 @@
+---
+import Button from '../../ui/Button.astro';
+import HomeSection from '../HomeSection.astro';
+import { minecraftGilde } from '../../../config/minecraftGilde';
+import { ArrowRight, Copy } from '@lucide/astro';
+
+const DISCORD_URL = minecraftGilde.discord.url;
+const MC_VERSION = minecraftGilde.mcVersion;
+---
+
+<HomeSection id="start" size="normal">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+    <div>
+      <h2 class="text-3xl font-semibold tracking-tight">So startest du in 3 Schritten</h2>
+      <p class="text-muted mt-3 max-w-2xl">
+        Kurz, klar und ohne Overload – danach bist du direkt im Spiel.
+      </p>
+    </div>
+  </div>
+
+  <ol class="mt-10 grid gap-8 lg:grid-cols-3" role="list">
+    <li class="relative" data-reveal>
+      <div class="flex items-start gap-4">
+        <div
+          class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          1
+        </div>
+        <div>
+          <h3 class="text-base font-semibold">IP kopieren & joinen</h3>
+          <p class="text-muted mt-2 text-sm">
+            Server hinzufügen, verbinden, loslegen – <strong>Java {MC_VERSION}</strong>.
+          </p>
+          <div class="mt-4">
+            <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
+              <Copy size={16} /> IP kopieren
+            </Button>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li class="relative" data-reveal data-reveal-delay="80">
+      <div class="flex items-start gap-4">
+        <div
+          class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          2
+        </div>
+        <div>
+          <h3 class="text-base font-semibold">Platz finden & claimen</h3>
+          <p class="text-muted mt-2 text-sm">
+            Nutze <code>/rtp</code>, finde deinen Spot und sichere dein Gebiet mit Claims.
+          </p>
+          <div class="mt-4">
+            <Button href="/tutorial" size="sm" variant="secondary" class="gap-2">
+              Tutorial <ArrowRight size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </li>
+
+    <li class="relative" data-reveal data-reveal-delay="160">
+      <div class="flex items-start gap-4">
+        <div
+          class="bg-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-semibold text-black"
+        >
+          3
+        </div>
+        <div>
+          <h3 class="text-base font-semibold">Homes setzen & dranbleiben</h3>
+          <p class="text-muted mt-2 text-sm">
+            Bis zu 20 Homes – und auf Discord bekommst du News, Hilfe und Events.
+          </p>
+          <div class="mt-4">
+            <Button href={DISCORD_URL} external size="sm" variant="secondary" class="gap-2">
+              Discord <ArrowRight size={16} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ol>
+</HomeSection>
