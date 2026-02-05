@@ -220,7 +220,7 @@ html[data-theme='dark'] {
     width: 50%;
     height: 3px;
     border-radius: 999px;
-    background: #ffffff;
+    background: color-mix(in oklab, var(--fg) 85%, transparent);
     opacity: 0;
     transform: translateX(-50%) scaleX(0);
     transform-origin: center;
