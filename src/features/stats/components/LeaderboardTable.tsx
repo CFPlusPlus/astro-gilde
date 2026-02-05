@@ -1,7 +1,7 @@
 import React from 'react';
 import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
-import { formatMetricValue, rankMedal } from '../format';
+import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
 
 export function LeaderboardTable({
@@ -47,21 +47,26 @@ export function LeaderboardTable({
 
             {page.map((row, i) => {
               const rank = state.currentPage * pageSize + (i + 1);
-              const medal = rankMedal(rank);
+              const medalClass = rank <= 3 ? `mg-rank-medal mg-rank-medal--${rank}` : null;
               const name = getPlayerName(row.uuid);
               return (
-                <tr key={`${row.uuid}-${i}`}>
+                <tr key={`${row.uuid}-${i}`} className="group">
                   <td className="whitespace-nowrap">
                     <span className="inline-flex items-center gap-2">
-                      {medal ? <span aria-hidden="true">{medal}</span> : null}
-                      <span className="font-semibold">{rank}</span>
+                      {medalClass ? (
+                        <span className={medalClass} aria-label={`Platz ${rank}`}>
+                          {rank}
+                        </span>
+                      ) : (
+                        <span className="font-semibold">{rank}</span>
+                      )}
                     </span>
                   </td>
                   <td className="min-w-0">
                     <button
                       type="button"
                       onClick={() => onPlayerClick(row.uuid)}
-                      className="hover:text-fg text-fg/90 inline-flex min-w-0 items-center gap-2 text-left transition-colors"
+                      className="text-fg/90 group-hover:text-fg decoration-accent/60 focus-visible:ring-offset-bg inline-flex min-w-0 cursor-pointer items-center gap-2 rounded-md text-left underline-offset-4 transition-colors group-hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
                       title="Zur Spielerstatistik"
                     >
                       <img

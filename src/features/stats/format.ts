@@ -35,10 +35,3 @@ export function formatMetricValue(value: number, def?: MetricDef): string {
 
   return unit ? `${fmtNumber(value, dec)} ${unit}` : fmtNumber(value, dec);
 }
-
-export function rankMedal(rank: number): string | null {
-  if (rank === 1) return '🥇';
-  if (rank === 2) return '🥈';
-  if (rank === 3) return '🥉';
-  return null;
-}

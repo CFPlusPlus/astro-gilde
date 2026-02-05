@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Crown, Sparkles, Swords, X } from 'lucide-react';
+import { Clock, Crown, Map as MapIcon, Skull, Sparkles, Swords, X } from 'lucide-react';
 
 import { getLeaderboard, getMetrics, getSummary, searchPlayers } from './api';
 import type { MetricDef, MetricId, PlayersSearchItem } from './types';
@@ -48,7 +48,6 @@ export default function StatsApp() {
 
   // Welcome-/Info-Callouts
   const [showWelcome, setShowWelcome] = useState(true);
-  const [showKingInfo, setShowKingInfo] = useState(true);
 
   // Autovervollstaendigung
   const [searchValue, setSearchValue] = useState('');
@@ -57,6 +56,7 @@ export default function StatsApp() {
   const [acSelected, setAcSelected] = useState(-1);
   const acAbortRef = useRef<AbortController | null>(null);
   const acWrapRef = useRef<HTMLDivElement | null>(null);
+  const metricScrollRef = useRef<number | null>(null);
 
   // Spielername-Cache (uuid -> name) aus API-Payloads
   const playerNamesRef = useRef<Record<string, string>>({});
@@ -82,7 +82,6 @@ export default function StatsApp() {
     // Persistente Callout-States (damit es nicht bei jedem Reload wieder aufgeht)
     try {
       setShowWelcome(localStorage.getItem('mg_stats_welcome_closed') !== '1');
-      setShowKingInfo(localStorage.getItem('mg_stats_kinginfo_closed') !== '1');
     } catch {
       // Unkritisch: localStorage kann blockiert sein.
     }
@@ -257,22 +256,27 @@ export default function StatsApp() {
     return defs;
   }, []);
 
+  const kpiIcons = useMemo(() => {
+    return {
+      hours: <Clock size={16} />,
+      distance: <MapIcon size={16} />,
+      mob_kills: <Swords size={16} />,
+      creeper: <Skull size={16} />,
+    } as Record<string, React.ReactNode>;
+  }, []);
+
   const kpiItems: KpiItem[] = useMemo(() => {
     return KPI_METRICS.map((id) => {
       const def = kpiDefs[id];
       const value = totals?.[id];
       return {
         id,
+        icon: kpiIcons[id],
         label: def.label,
         value: typeof value === 'number' ? formatMetricValue(value, def) : '–',
-        meta: (
-          <>
-            Kategorie: <span className="text-fg/80">{def.category}</span>
-          </>
-        ),
       };
     });
-  }, [kpiDefs, totals]);
+  }, [kpiDefs, kpiIcons, totals]);
 
   const filteredMetricIds = useMemo(() => {
     if (!metrics) return [];
@@ -309,6 +313,15 @@ export default function StatsApp() {
 
   const hasNoResults = metrics && filteredMetricIds.length === 0;
 
+  // Beim Öffnen der Ranglisten direkt die erste Rangliste aktivieren.
+  useEffect(() => {
+    if (activeTab !== 'ranglisten') return;
+    if (!metrics) return;
+    if (activeMetricId) return;
+    const first = filteredMetricIds[0] || null;
+    setActiveMetricId(first);
+  }, [activeTab, metrics, filteredMetricIds, activeMetricId]);
+
   // Wenn Metriken geladen sind: sinnvollen Standard auswaehlen
   useEffect(() => {
     if (!metrics) return;
@@ -326,6 +339,17 @@ export default function StatsApp() {
     if (!st.loaded && !st.loading) {
       void loadLeaderboard(activeMetricId, activeMetricId);
     }
+  }, [activeMetricId, activeTab]);
+
+  // Scroll-Position beim Kategorie-Wechsel stabil halten
+  useEffect(() => {
+    if (activeTab !== 'ranglisten') return;
+    const y = metricScrollRef.current;
+    if (y === null) return;
+    metricScrollRef.current = null;
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: y });
+    });
   }, [activeMetricId, activeTab]);
 
   function setTab(tab: TabKey) {
@@ -375,14 +399,14 @@ export default function StatsApp() {
               {generatedIso ? <Chip>Stand: {fmtDateBerlin(generatedIso)}</Chip> : null}
 
               {showPageSize ? (
-                <label className="bg-surface border-border text-fg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold shadow-sm backdrop-blur-md">
+                <label className="bg-surface border-border text-fg inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md">
                   <span className="text-muted">Einträge</span>
                   <select
                     value={pageSize}
                     onChange={(e) =>
                       setPageSize(Math.max(1, Math.min(100, Number(e.target.value) || 10)))
                     }
-                    className="text-fg bg-transparent outline-none"
+                    className="text-fg bg-transparent text-xs leading-none font-semibold outline-none"
                     aria-label="Einträge pro Seite"
                   >
                     {[10, 20, 30, 50].map((n) => (
@@ -456,35 +480,18 @@ export default function StatsApp() {
 
             <div className="mt-5 grid gap-4 lg:grid-cols-[360px_1fr]">
               <div className="space-y-4">
-                {showKingInfo ? (
-                  <div className="mg-callout relative flex items-start gap-3" data-variant="info">
-                    <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
-                      <Crown size={18} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-fg font-semibold">Wie werden die Punkte berechnet?</p>
-                      <p className="text-muted mt-1 text-sm leading-relaxed">
-                        Für jede Kategorie bekommen die Top 3 Spieler Punkte (3 / 2 / 1). Ab Platz 4
-                        gibt es keine Punkte. Die Punkte werden über alle Kategorien addiert.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-                      aria-label="Schließen"
-                      onClick={() => {
-                        setShowKingInfo(false);
-                        try {
-                          localStorage.setItem('mg_stats_kinginfo_closed', '1');
-                        } catch {
-                          // Unkritisch: localStorage kann blockiert sein.
-                        }
-                      }}
-                    >
-                      <X size={18} />
-                    </button>
+                <div className="mg-callout flex items-start gap-3" data-variant="info">
+                  <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
+                    <Crown size={18} />
                   </div>
-                ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-fg font-semibold">Wie werden die Punkte berechnet?</p>
+                    <p className="text-muted mt-1 text-sm leading-relaxed">
+                      Für jede Kategorie bekommen die Top 3 Spieler Punkte (3 / 2 / 1). Ab Platz 4
+                      gibt es keine Punkte. Die Punkte werden über alle Kategorien addiert.
+                    </p>
+                  </div>
+                </div>
               </div>
 
               <LeaderboardTable
@@ -532,7 +539,11 @@ export default function StatsApp() {
                   filter={metricFilter}
                   onFilterChange={setMetricFilter}
                   activeMetricId={activeMetricId}
-                  onSelectMetric={(id) => setActiveMetricId(id)}
+                  onSelectMetric={(id) => {
+                    if (id === activeMetricId) return;
+                    metricScrollRef.current = window.scrollY;
+                    setActiveMetricId(id);
+                  }}
                 />
               )}
 

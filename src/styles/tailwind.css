@@ -406,4 +406,39 @@ html[data-theme='dark'] {
     border-color: color-mix(in oklab, var(--accent) 18%, var(--border) 82%);
     background: color-mix(in oklab, var(--surface) 85%, transparent);
   }
+
+  /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */
+  .mg-rank-medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--fg) 14%, var(--border) 86%);
+    background: color-mix(in oklab, var(--surface-solid) 92%, transparent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--fg) 4%, transparent);
+  }
+
+  .mg-rank-medal--1 {
+    background: color-mix(in oklab, var(--accent) 22%, var(--surface-solid) 78%);
+    border-color: color-mix(in oklab, var(--accent) 55%, var(--border) 45%);
+    color: color-mix(in oklab, var(--accent) 80%, var(--fg) 20%);
+  }
+
+  .mg-rank-medal--2 {
+    background: color-mix(in oklab, var(--fg) 6%, var(--surface-solid) 94%);
+    border-color: color-mix(in oklab, var(--fg) 18%, var(--border) 82%);
+    color: color-mix(in oklab, var(--fg) 80%, var(--muted) 20%);
+  }
+
+  .mg-rank-medal--3 {
+    background: color-mix(in oklab, #d99a6c 18%, var(--surface-solid) 82%);
+    border-color: color-mix(in oklab, #d99a6c 50%, var(--border) 50%);
+    color: color-mix(in oklab, #9a5d3a 80%, var(--fg) 20%);
+  }
 }

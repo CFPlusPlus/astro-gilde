@@ -2,6 +2,7 @@ import React from 'react';
 
 export type KpiItem = {
   id: string;
+  icon?: React.ReactNode;
   label: string;
   value: React.ReactNode;
   meta?: React.ReactNode;
@@ -17,7 +18,14 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
       <div className="divide-border grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
         {items.map((it) => (
           <div key={it.id} className="p-4 sm:p-5">
-            <p className="text-muted text-xs font-semibold">{it.label}</p>
+            <div className="flex items-center gap-2">
+              {it.icon ? (
+                <span className="bg-accent/15 text-accent inline-flex h-8 w-8 items-center justify-center rounded-xl">
+                  {it.icon}
+                </span>
+              ) : null}
+              <p className="text-muted text-xs font-semibold">{it.label}</p>
+            </div>
             <p className="text-fg mt-2 text-2xl font-semibold tracking-tight">{it.value}</p>
             {it.meta ? <p className="text-muted mt-2 text-xs">{it.meta}</p> : null}
           </div>
