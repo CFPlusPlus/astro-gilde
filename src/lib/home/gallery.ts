@@ -32,7 +32,7 @@ export const getHomeGallery = (): HomeGallery => {
         break;
       }
     } catch {
-      // ignore
+      // Dateisystem-Fehler hier sind unkritisch.
     }
   }
 
@@ -45,7 +45,7 @@ export const getHomeGallery = (): HomeGallery => {
         .filter((f) => /\.(png|jpe?g|webp|avif)$/i.test(f))
         .sort((a, b) => a.localeCompare(b, 'de', { numeric: true }));
     } catch {
-      // ignore
+      // Fallback: Bei Fehlern bleibt die Galerie leer.
     }
   }
 

@@ -10,8 +10,8 @@ type Props = {
 
 /**
  * 3D Skin-Viewer Modal
- * - skinview3d wird nur bei Bedarf (open) via dynamic import geladen
- * - verhindert unnötiges JS im Initial Load
+ * - skinview3d wird nur bei Bedarf (open) per Dynamic-Import geladen
+ * - verhindert unnoetiges JS im Initial-Load
  */
 export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', skinUrl }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -64,15 +64,15 @@ export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', 
 
     (async () => {
       try {
-        // Lazy import: nur wenn das Modal geöffnet wird.
+        // Lazy-Import: nur wenn das Modal geoeffnet wird.
         const mod = await import('skinview3d');
         if (disposed) return;
 
-        // SkinViewer ist in skinview3d das Default-Objekt für den Viewer.
+        // SkinViewer ist in skinview3d das Standard-Objekt fuer den Viewer.
         const SkinViewer = (mod as unknown as { SkinViewer: SkinViewerCtor }).SkinViewer;
         if (!SkinViewer) throw new Error('SkinViewer nicht gefunden');
 
-        // Alte Instanz wegräumen (safety)
+        // Alte Instanz wegraeumen (safety)
         viewerRef.current?.dispose?.();
 
         const viewer = new SkinViewer({
@@ -102,7 +102,7 @@ export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', 
       try {
         v?.dispose?.();
       } catch {
-        // ignore
+        // Unkritisch: Dispose darf fehlschlagen.
       }
     };
   }, [open, skinUrl]);
@@ -115,10 +115,10 @@ export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', 
 
     try {
       v.controls?.reset?.();
-      // Falls Skin geändert wurde: erneut laden.
+      // Falls Skin geaendert wurde: erneut laden.
       void v.loadSkin?.(skinUrl);
     } catch {
-      // ignore
+      // Unkritisch: Reset darf fehlschlagen.
     }
   };
 
@@ -129,7 +129,7 @@ export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', 
       aria-modal="true"
       aria-label={title}
       onMouseDown={(e) => {
-        // Klick auf Overlay schließt (aber nicht auf Dialog selbst)
+        // Klick auf Overlay schliesst (aber nicht auf Dialog selbst)
         if (e.target === e.currentTarget) onClose();
       }}
     >

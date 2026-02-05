@@ -1,25 +1,13 @@
 /*
-  Home Motion + Onepager Helpers
-  -----------------------------
-  - Scoping über [data-home], damit andere Seiten nicht beeinflusst werden.
+  Home-Motion + Onepager-Helfer
+  ----------------------------
+  - Scoping ueber [data-home], damit andere Seiten nicht beeinflusst werden.
 */
-
-/*
-  Fix (Mobile): In Chrome-Device-Emulation/iOS kann env(safe-area-inset-top) beim Scrollen
-  unerwartet "springen". Da die Navbar ihr Top-Padding daraus berechnet, wirkt es so,
-  als würde die Navbar nach oben/unten hüpfen.
-
-  Lösung: Auf der Startseite frieren wir das berechnete Padding einmalig in einer CSS-Variable ein
-  (siehe Inline-Script in HomeInlineScripts.astro) und nutzen diese Variable hier als Override.
-*/
-body.is-home [data-site-nav] > div {
-  padding-top: var(--home-nav-pad-top, calc(1.25rem + env(safe-area-inset-top)));
-}
 
 [data-home] .home-hero-bg {
   /*
-    Hintergrund pauschal nach oben verlängern.
-    Wichtig: ohne env(...), damit auf Mobile nichts dynamisch "mitwandert".
+    Hintergrund pauschal nach oben verlaengern.
+    Wichtig: ohne env(...), damit auf Mobile nichts dynamisch mitwandert.
   */
   top: -220px;
 }
@@ -50,7 +38,7 @@ body.is-home [data-site-nav] > div {
   will-change: opacity, transform;
 }
 
-/* Fly-ins (ohne zusätzliche Libraries) */
+/* Fly-ins (ohne zusaetzliche Bibliotheken) */
 [data-home] [data-reveal='left'] {
   transform: translate3d(-18px, 0, 0);
 }

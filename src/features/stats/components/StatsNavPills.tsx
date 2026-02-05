@@ -17,7 +17,6 @@ export function StatsNavPills({
 
   return (
     <nav aria-label="Statistik Navigation">
-      {/* Hinweis: Auf Mobile bewusst nicht sticky, weil iOS bei Backdrop + Sticky gelegentlich Rendering-Bugs zeigt. */}
       <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
         <ul className="flex w-max items-center gap-1" role="list">
           {items.map((it) => {

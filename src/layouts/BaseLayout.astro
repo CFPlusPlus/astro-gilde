@@ -1,5 +1,5 @@
 ---
-// BaseLayout: Tailwind + local fonts + no Font Awesome
+// BaseLayout: Tailwind + lokale Fonts + ohne Font Awesome
 import '../styles/tailwind.css';
 import '@fontsource-variable/geist';
 import '@fontsource-variable/space-grotesk';
@@ -17,13 +17,13 @@ export interface Props {
   keywords?: string;
   author?: string;
 
-  /** If true: add robots noindex/nofollow */
+  /** Wenn true: robots auf noindex/nofollow setzen */
   noindex?: boolean;
 
-  /** OpenGraph / Twitter */
+  /** OpenGraph / Twitter Metadaten */
   ogTitle?: string;
   ogDescription?: string;
-  ogImage?: string; // relative (/og/...) or absolute
+  ogImage?: string; // relativ (/og/...) oder absolut
   ogType?: 'website' | 'article';
   twitterCard?: 'summary' | 'summary_large_image';
   twitterSite?: string;
@@ -56,7 +56,7 @@ const {
   scripts = [],
 } = Astro.props as Props;
 
-// Absolute URLs (important for OG/Twitter)
+// Absolute URLs (wichtig fuer OG/Twitter)
 const site = Astro.site ?? new URL('https://minecraft-gilde.de');
 const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site).toString();
 
@@ -71,7 +71,7 @@ const finalOgDescription = ogDescription ?? metaDescription;
 const finalOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, site).toString();
 
 // ---
-// Structured data (JSON-LD)
+// Strukturierte Daten (JSON-LD)
 // ---
 const ldBase = buildBaseGraph({
   site,
@@ -99,7 +99,7 @@ const ldBase = buildBaseGraph({
     {author ? <meta name="author" content={author} /> : null}
     <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow'} />
 
-    {/* Theme color (updated dynamically to match --bg) */}
+    {/* Theme-Farbe (wird dynamisch an --bg angepasst) */}
     <meta name="theme-color" content="#0b0f14" />
 
     {/* Icons / PWA */}
@@ -128,23 +128,23 @@ const ldBase = buildBaseGraph({
     <meta name="twitter:description" content={finalOgDescription} />
     <meta name="twitter:image" content={finalOgImage} />
 
-    {/* Structured data (global + WebPage + Breadcrumbs) */}
+    {/* Strukturierte Daten (global + WebPage + Breadcrumbs/Navigationspfad) */}
     <JsonLd data={ldBase} />
 
     <script is:inline>
-      // Theme bootstrap (prevents flash). Values: 'light' | 'dark' | 'system'
+      // Theme-Bootstrap (verhindert Flash). Werte: 'light' | 'dark' | 'system'
       try {
         const stored = localStorage.getItem('theme');
         const root = document.documentElement;
         if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
         else root.removeAttribute('data-theme');
       } catch {
-        // ignore
+        // Optional: Fehler ignorieren, damit das Rendering nicht blockiert.
       }
     </script>
 
     <script is:inline>
-      // Keep theme-color in sync with the active theme (uses CSS variable --bg)
+      // Theme-Farbe mit dem aktiven Theme synchron halten (nutzt CSS-Variable --bg).
       try {
         const meta = document.querySelector('meta[name="theme-color"]');
         const root = document.documentElement;
@@ -154,25 +154,25 @@ const ldBase = buildBaseGraph({
           if (meta && bg) meta.setAttribute('content', bg);
         };
 
-        // Initial update (after theme bootstrap above)
+        // Erstes Update (nach dem Theme-Bootstrap oben)
         update();
 
-        // React to manual theme toggles (data-theme changes)
+        // Auf manuelle Theme-Wechsel reagieren (data-theme)
         const obs = new MutationObserver(update);
         obs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
 
-        // React to system theme changes (when no manual override is set)
+        // Auf System-Theme-Wechsel reagieren (wenn kein Override gesetzt ist)
         const mq = window.matchMedia('(prefers-color-scheme: dark)');
         mq.addEventListener?.('change', update);
 
         window.addEventListener('DOMContentLoaded', update);
       } catch {
-        // ignore
+        // Optional: Fehler ignorieren, damit das Rendering nicht blockiert.
       }
     </script>
 
     <script is:inline define:vars={{ browserAppConfig }}>
-      // Globale App-Config für Client-Skripte
+      // Globale App-Config fuer Client-Skripte
       window.__APP_CONFIG__ = browserAppConfig;
     </script>
 

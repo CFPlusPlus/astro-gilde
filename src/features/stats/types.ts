@@ -28,7 +28,7 @@ export interface LeaderboardRow {
 export interface LeaderboardResponse {
   boards?: Record<MetricId, LeaderboardRow[]>;
   cursors?: Record<MetricId, string | null>;
-  __players?: Record<string, string>; // uuid -> name
+  __players?: Record<string, string>; // uuid -> name (Cache fuer Anzeige)
   __generated?: string;
 }
 

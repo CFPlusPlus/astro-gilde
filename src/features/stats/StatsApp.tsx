@@ -42,15 +42,15 @@ export default function StatsApp() {
 
   const [apiError, setApiError] = useState<string | null>(null);
 
-  // Controls
+  // Steuerung
   const [pageSize, setPageSize] = useState<number>(10);
   const [metricFilter, setMetricFilter] = useState<string>('');
 
-  // Welcome / Info Callouts
+  // Welcome-/Info-Callouts
   const [showWelcome, setShowWelcome] = useState(true);
   const [showKingInfo, setShowKingInfo] = useState(true);
 
-  // Autocomplete
+  // Autovervollstaendigung
   const [searchValue, setSearchValue] = useState('');
   const [acItems, setAcItems] = useState<PlayersSearchItem[]>([]);
   const [acOpen, setAcOpen] = useState(false);
@@ -58,17 +58,17 @@ export default function StatsApp() {
   const acAbortRef = useRef<AbortController | null>(null);
   const acWrapRef = useRef<HTMLDivElement | null>(null);
 
-  // Player name cache (uuid -> name) aus API payloads
+  // Spielername-Cache (uuid -> name) aus API-Payloads
   const playerNamesRef = useRef<Record<string, string>>({});
 
-  // King + Metric states
+  // King- und Metrik-States
   const [king, setKing] = useState<LeaderboardState>(makeEmptyLeaderboardState);
   const [boards, setBoards] = useState<Record<string, LeaderboardState>>({});
 
-  // Ranglisten-UI: ausgewählte Metric
+  // Ranglisten-UI: ausgewaehlte Metrik
   const [activeMetricId, setActiveMetricId] = useState<string | null>(null);
 
-  // Hash -> Tab (nice UX, ohne Router)
+  // Hash -> Tab (gute UX, ohne Router)
   useEffect(() => {
     const h = String(window.location.hash || '')
       .replace('#', '')
@@ -84,11 +84,11 @@ export default function StatsApp() {
       setShowWelcome(localStorage.getItem('mg_stats_welcome_closed') !== '1');
       setShowKingInfo(localStorage.getItem('mg_stats_kinginfo_closed') !== '1');
     } catch {
-      // ignore
+      // Unkritisch: localStorage kann blockiert sein.
     }
   }, []);
 
-  // Initial load: KPI + player count
+  // Initialer Load: KPI + Spieleranzahl
   useEffect(() => {
     const ac = new AbortController();
 
@@ -110,7 +110,7 @@ export default function StatsApp() {
     return () => ac.abort();
   }, []);
 
-  // Tab-based prefetch
+  // Tab-basiertes Prefetch
   useEffect(() => {
     if (activeTab === 'ranglisten' && !metrics) {
       const ac = new AbortController();
@@ -141,7 +141,7 @@ export default function StatsApp() {
     setBoards({});
   }, [pageSize]);
 
-  // Click outside closes autocomplete
+  // Klick ausserhalb schliesst Autocomplete
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
       const el = acWrapRef.current;
@@ -152,7 +152,7 @@ export default function StatsApp() {
     return () => window.removeEventListener('mousedown', onDown);
   }, []);
 
-  // Debounced autocomplete
+  // Debounce fuer Autocomplete
   useEffect(() => {
     const q = searchValue.trim();
     if (q.length < 2) {
@@ -198,7 +198,7 @@ export default function StatsApp() {
   }
 
   async function loadLeaderboard(metricId: string, stateKey: string) {
-    // stateKey erlaubt separate Caches (king vs. echte metricIds)
+    // stateKey erlaubt separate Caches (king vs. echte Metrik-IDs)
     setApiError(null);
 
     const setState = (up: (s: LeaderboardState) => LeaderboardState) => {
@@ -246,7 +246,7 @@ export default function StatsApp() {
     window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
   }
 
-  // KPI-Definitions (fallback, falls API keine liefert)
+  // KPI-Definitionen (Fallback, falls API keine liefert)
   const kpiDefs = useMemo(() => {
     const defs: Record<string, MetricDef> = {
       hours: { label: 'Spielzeit', category: 'Übersicht', unit: 'h', decimals: 2 },
@@ -309,7 +309,7 @@ export default function StatsApp() {
 
   const hasNoResults = metrics && filteredMetricIds.length === 0;
 
-  // Wenn Metrics geladen sind: sinnvollen Default auswählen
+  // Wenn Metriken geladen sind: sinnvollen Standard auswaehlen
   useEffect(() => {
     if (!metrics) return;
     if (activeMetricId && filteredMetricIds.includes(activeMetricId)) return;
@@ -318,7 +318,7 @@ export default function StatsApp() {
     setActiveMetricId(first);
   }, [metrics, metricFilter]);
 
-  // Wenn Metric ausgewählt wird: lazy load
+  // Wenn Metrik ausgewaehlt wird: Lazy-Load
   useEffect(() => {
     if (activeTab !== 'ranglisten') return;
     if (!activeMetricId) return;
@@ -333,7 +333,7 @@ export default function StatsApp() {
     try {
       window.history.replaceState({}, '', `#${tab}`);
     } catch {
-      // ignore
+      // Unkritisch: History-API kann blockiert sein.
     }
   }
 
@@ -343,8 +343,8 @@ export default function StatsApp() {
     <div>
       {/*
         Neue Top-Struktur:
-        - Pill-Navigation wie im neuen Layout (ähnlich HomeAnchorNav)
-        - Search + Meta als offene Zeile (kein "riesiger Glass-Wrapper")
+        - Pill-Navigation wie im neuen Layout (aehnlich HomeAnchorNav)
+        - Suche + Meta als offene Zeile (kein "riesiger Glass-Wrapper")
       */}
       <section className="mg-container pb-8">
         <div className="mt-2 space-y-4">
@@ -424,7 +424,7 @@ export default function StatsApp() {
                   try {
                     localStorage.setItem('mg_stats_welcome_closed', '1');
                   } catch {
-                    // ignore
+                    // Unkritisch: localStorage kann blockiert sein.
                   }
                 }}
               >
@@ -477,7 +477,7 @@ export default function StatsApp() {
                         try {
                           localStorage.setItem('mg_stats_kinginfo_closed', '1');
                         } catch {
-                          // ignore
+                          // Unkritisch: localStorage kann blockiert sein.
                         }
                       }}
                     >

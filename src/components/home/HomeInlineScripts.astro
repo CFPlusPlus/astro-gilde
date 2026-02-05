@@ -1,45 +1,14 @@
 ---
-// Home-spezifische Scripts
+// Home-spezifische Skripte
 // - /public/js/app-home.js: Player-Liste, World-Age, Galerie
-// - Inline: Navbar-Stabilisierung + Reveal-Animationen (IntersectionObserver)
+// - Inline: Reveal-Animationen (IntersectionObserver)
 ---
 
 <script src="/js/app-home.js" defer is:inline></script>
 
 <script is:inline>
-  // Navbar-Stabilisierung (nur Startseite)
-  // --------------------------------------
-  // In Chrome-Device-Emulation (iPhone etc.) kann sich env(safe-area-inset-top) beim Scrollen ändern.
-  // Dadurch verschiebt sich das Top-Padding der Navbar sichtbar nach oben/unten.
-  // Wir messen das berechnete Padding einmalig und frieren es in --home-nav-pad-top ein.
-  (() => {
-    try {
-      const root = document.documentElement;
-      const host = document.body;
-      if (!host?.classList?.contains('is-home')) return;
-
-      const target = document.querySelector('[data-site-nav] > div');
-      if (!(target instanceof HTMLElement)) return;
-
-      const update = () => {
-        const pad = getComputedStyle(target).paddingTop;
-        if (pad) root.style.setProperty('--home-nav-pad-top', pad);
-      };
-
-      // Nach dem initialen Layout messen (stabiler als direkt synchron).
-      requestAnimationFrame(update);
-
-      // Bei Rotation einmalig neu setzen (kein window.resize -> sonst wieder Scroll-Jitter).
-      window.addEventListener('orientationchange', () => {
-        window.setTimeout(() => requestAnimationFrame(update), 250);
-      });
-    } catch {
-      // Wenn das nicht klappt, ist es kein harter Fehler – die Seite bleibt nutzbar.
-    }
-  })();
-
-  // Subtiles Reveal (IntersectionObserver) – ohne extra Libraries.
-  // Respektiert prefers-reduced-motion und bleibt auf der Startseite scoped.
+  // Subtiles Reveal (IntersectionObserver) ohne Extra-Bibliotheken.
+  // Respektiert prefers-reduced-motion und bleibt auf die Startseite begrenzt.
   (() => {
     try {
       const root = document.querySelector('[data-home]');
@@ -54,7 +23,7 @@
       }
 
       // iOS/Safari kann bei `rootMargin` mit Prozentangaben zickig sein.
-      // Daher: erst „modern“ versuchen, und wenn es knallt, auf Pixel-Fallback gehen.
+      // Daher: erst modern versuchen, bei Fehlern auf Pixel-Fallback gehen.
       const observerCallback = (entries, io) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
@@ -90,14 +59,14 @@
 
       els.forEach((el) => io.observe(el));
     } catch {
-      // Falls etwas schiefgeht: keine harte Abhängigkeit.
-      // Fallback: Wir blenden alle Reveal-Elemente sofort ein, damit Mobile/Safari nie „leer“ wirkt.
+      // Falls etwas schiefgeht: keine harte Abhaengigkeit.
+      // Fallback: Alle Reveal-Elemente sofort einblenden, damit die Seite nicht leer wirkt.
       try {
         const root = document.querySelector('[data-home]');
         if (!root) return;
         root.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-revealed'));
       } catch {
-        // noop
+        // Absichtlich leer.
       }
     }
   })();

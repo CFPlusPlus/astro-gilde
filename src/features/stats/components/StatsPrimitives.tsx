@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Kleine UI-Helfer für die Statistik-Seite.
- * Hinweis: Wir nutzen bewusst die vorhandenen Tokens/Utilities (mg-card, bg-surface, border-border, ...).
+ * Kleine UI-Helfer fuer die Statistik-Seite.
+ * Hinweis: Wir nutzen bewusst die vorhandenen Tokens/Hilfsklassen (mg-card, bg-surface, border-border, ...).
  */
 
 export function Chip({ children }: { children: React.ReactNode }) {

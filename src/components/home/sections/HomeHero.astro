@@ -14,11 +14,8 @@ const MC_VERSION = minecraftGilde.mcVersion;
 ---
 
 <!-- Hero-Bereich --><!--
-  WICHTIG (Mobile): Auf iOS/Chrome-Device-Emulation kann eine dynamische Messung/Anpassung
-  (z. B. via ResizeObserver + CSS-Variablen) in Kombination mit sticky Elementen zu "Springen" führen.
-  Deshalb ziehen wir NICHT das Layout nach oben, sondern verlängern ausschließlich den Hero-Hintergrund
-  pauschal nach oben, sodass er auch hinter der Navbar bis ganz nach oben sichtbar ist.
-  (Ohne JS, ohne Layout-Verschiebung, sticky bleibt stabil.)
+  Der Hero-Hintergrund wird nach oben verlaengert, damit er unter der Navbar sauber abschliesst,
+  ohne das Layout nach oben zu ziehen oder JavaScript zu benoetigen.
 -->
 <section class="home-hero relative pt-28 pb-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36">
   <div class="home-hero-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
@@ -84,7 +81,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
   </div>
 </section>
 
-<!-- Join-Bar (aus dem Hero ausgelagert, damit der Hero luftiger & weniger überladen wirkt) -->
+<!-- Join-Bar (aus dem Hero ausgelagert, damit der Hero luftiger und weniger ueberladen wirkt) -->
 <HomeSection size="tight" containerClass="pt-0">
   <div class="bg-surface/30 rounded-[var(--radius)] px-4 py-6 sm:px-6 sm:py-7" data-reveal>
     <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">

@@ -5,8 +5,8 @@ function rawFallback(rawId: string): string {
 }
 
 /**
- * Übersetzungs-Helper
- * - wenn DE aktiv: Übersetzung versuchen, sonst Fallback
+ * Uebersetzungs-Helper
+ * - wenn DE aktiv: Uebersetzung versuchen, sonst Fallback
  * - wenn EN/Original aktiv: immer das "Raw" anzeigen
  */
 export function tLabel(
@@ -25,8 +25,8 @@ export function tLabel(
 }
 
 /**
- * Prüfroutine: zeigt fehlende Übersetzungen in der Konsole (hilft beim Pflegeaufwand).
- * In Production ist das unkritisch, aber sehr hilfreich beim Nachpflegen.
+ * Pruefroutine: zeigt fehlende Uebersetzungen in der Konsole (hilft beim Pflegeaufwand).
+ * In Produktion ist das unkritisch, aber sehr hilfreich beim Nachpflegen.
  */
 export function logMissingTranslations(
   stats: Record<string, unknown>,

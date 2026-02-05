@@ -123,12 +123,12 @@ export default function PlayerStatsApp() {
   });
   const [sortMobs, setSortMobs] = useState<SortState<keyof MobsRow>>({ key: 'label', dir: 'asc' });
 
-  // UUID copy UX
+  // UUID-Copy-UX
   const [uuidCopied, setUuidCopied] = useState(false);
   const uuidBtnRef = useRef<HTMLButtonElement | null>(null);
   const uuidMinWidthRef = useRef<number | null>(null);
 
-  // Skin modal
+  // Skin-Modal
   const [skinOpen, setSkinOpen] = useState(false);
 
   useEffect(() => {
@@ -137,7 +137,7 @@ export default function PlayerStatsApp() {
     setUuidParam(uuid);
   }, []);
 
-  // Load: translations + player
+  // Laden: Uebersetzungen + Spieler
   useEffect(() => {
     const uuid = uuidParam.trim();
     if (!uuid) {
@@ -204,23 +204,23 @@ export default function PlayerStatsApp() {
     setGeneratedIso(typeof data.__generated === 'string' ? data.__generated : null);
     setStats((data.player || null) as Record<string, unknown> | null);
 
-    // Console helper für Übersetzungen (wichtig für Pflege, stört Nutzer nicht)
+    // Konsolen-Helper fuer Uebersetzungen (hilft bei Pflege, stoert Nutzer nicht)
     try {
       if (data.player && typeof data.player === 'object') {
         logMissingTranslations(data.player as Record<string, unknown>, t);
       }
     } catch {
-      // ignore
+      // Unkritisch: Debug-Logging darf fehlschlagen.
     }
   }
 
-  // Title
+  // Titel
   useEffect(() => {
     if (!playerName) return;
     document.title = `Minecraft Gilde - Spielerstatistik von ${playerName}`;
   }, [playerName]);
 
-  // UUID min-width messen (damit "Kopiert!" nicht springt)
+  // UUID-Min-Width messen (damit "Kopiert!" nicht springt)
   useEffect(() => {
     if (!uuidFull) return;
     const btn = uuidBtnRef.current;
@@ -278,7 +278,7 @@ export default function PlayerStatsApp() {
         return { raw, label, value: val, display };
       });
 
-    // Items
+    // Gegenstaende
     const mined = asObj((s as Record<string, unknown>)['minecraft:mined']) || {};
     const broken = asObj((s as Record<string, unknown>)['minecraft:broken']) || {};
     const crafted = asObj((s as Record<string, unknown>)['minecraft:crafted']) || {};
@@ -309,7 +309,7 @@ export default function PlayerStatsApp() {
       };
     });
 
-    // Mobs
+    // Kreaturen
     const killed = asObj((s as Record<string, unknown>)['minecraft:killed']) || {};
     const killedBy = asObj((s as Record<string, unknown>)['minecraft:killed_by']) || {};
     const mobKeys = new Set([...Object.keys(killed), ...Object.keys(killedBy)]);
@@ -447,7 +447,7 @@ export default function PlayerStatsApp() {
             })}
           </div>
 
-          {/* Meta row + actions */}
+          {/* Meta-Zeile + Aktionen */}
           <div className="p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2">
@@ -477,7 +477,7 @@ export default function PlayerStatsApp() {
                         window.setTimeout(() => setUuidCopied(false), 1200);
                       })
                       .catch(() => {
-                        // ignore
+                        // Clipboard kann blockiert sein (z. B. ohne User-Geste).
                       });
                   }}
                 >
@@ -509,7 +509,7 @@ export default function PlayerStatsApp() {
           </div>
         </div>
 
-        {/* Player skin + filter */}
+        {/* Spieler-Skin + Filter */}
         <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
           <div className="bg-surface border-border overflow-hidden rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
             <button

@@ -6,7 +6,7 @@ import type {
 } from './types';
 
 /**
- * Einheitlicher JSON-Fetch mit sinnvollen Defaults.
+ * Einheitlicher JSON-Fetch mit sinnvollen Standardwerten.
  * - Accept: application/json
  * - Fehler werden als Exception geworfen
  */

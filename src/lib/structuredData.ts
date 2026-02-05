@@ -1,7 +1,7 @@
 type JsonLd = Record<string, unknown>;
 
 const stripSiteName = (title: string): string => {
-  // Common title patterns in this project:
+  // Uebliche Titel-Muster in diesem Projekt:
   // - "Minecraft Gilde – ..."
   // - "Minecraft Gilde - ..."
   // - "... – Minecraft Gilde"
@@ -35,7 +35,7 @@ export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string)
   if (map[path]) return map[path];
   const fromTitle = stripSiteName(fallbackTitle ?? '');
   if (fromTitle) return fromTitle;
-  // last fallback: derive from path
+  // Letzter Fallback: aus dem Pfad ableiten
   const seg = path.replace(/^\//, '').replace(/\/$/, '').split('/').filter(Boolean).pop();
   return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Home';
 };
@@ -182,7 +182,7 @@ export const buildFaqPage = (args: {
       return h.startsWith('/') ? new URL(h, site).toString() : h;
     };
 
-    // Convert Markdown links to readable plain text (and absolutize relative URLs).
+    // Markdown-Links in lesbaren Klartext wandeln (und relative URLs absolut setzen).
     const withMdLinks = src.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => {
       const url = toAbs(href);
       return `${String(label).trim()}: ${url}`;
@@ -190,12 +190,12 @@ export const buildFaqPage = (args: {
 
     return (
       withMdLinks
-        // Inline code -> plain
+        // Inline-Code -> Klartext
         .replace(/`([^`]+)`/g, '$1')
-        // Keep answers compact for JSON-LD
+        // Antworten fuer JSON-LD kompakt halten
         .replace(/\n\n/g, '\n')
         .replace(/\s+\n/g, '\n')
-        // Absolutize remaining bare internal paths like "/tutorial"
+        // Uebrige interne Pfade wie "/tutorial" absolut setzen
         .replace(/(\s|^)(\/[a-z0-9/-]+\/?)(?=\s|$)/gi, (_m, p1, p2) => {
           const abs = new URL(p2, site).toString();
           return `${p1}${abs}`;

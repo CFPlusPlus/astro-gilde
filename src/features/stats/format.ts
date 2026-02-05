@@ -26,7 +26,7 @@ export function fmtNumber(value: number, decimals = 0): string {
 export function formatMetricValue(value: number, def?: MetricDef): string {
   const unit = def?.unit || '';
 
-  // decimals aus metric_def – falls nicht gesetzt: heuristische Defaults
+  // Dezimalstellen aus metric_def – falls nicht gesetzt: heuristische Standardwerte
   let dec = def?.decimals;
   if (dec === null || dec === undefined) {
     if (unit === 'h' || unit === 'km') dec = 2;

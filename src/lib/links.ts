@@ -7,8 +7,8 @@ export const isExternalHref = (href: string): boolean => {
   );
 };
 
-// Internal links should be directory-style (no .html) and use a trailing slash.
-// This keeps URLs stable across dev/prod and on static hosts.
+// Interne Links sollen den Verzeichnis-Stil nutzen (keine .html) und mit Slash enden.
+// Das haelt URLs stabil in Dev/Prod und auf statischen Hosts.
 export const hrefFor = (href: string): string => {
   if (isExternalHref(href)) return href;
 
@@ -23,7 +23,7 @@ export const hrefFor = (href: string): string => {
   let path = (pathPart || '/').replace(/\.html$/i, '');
   if (!path.startsWith('/')) path = `/${path}`;
 
-  // Avoid adding a trailing slash for files with an extension (e.g. /file.json)
+  // Kein Slash fuer Dateien mit Dateiendung (z. B. /file.json)
   const hasExt = /\/[^/]+\.[^/]+$/.test(path);
   if (!hasExt && path !== '/' && !path.endsWith('/')) path += '/';
 

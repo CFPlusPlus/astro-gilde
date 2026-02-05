@@ -15,6 +15,6 @@ export function getPlayer(uuid: string, signal?: AbortSignal) {
 }
 
 export async function getTranslations(signal?: AbortSignal) {
-  // Übersetzungen bewusst als "static asset" laden (spart Bundle, lädt nur auf dieser Seite).
+  // Übersetzungen bewusst als statisches Asset laden (spart Bundle, lädt nur auf dieser Seite).
   return fetchJson<PlayerTranslations>('/js/translations.de.json', signal);
 }
