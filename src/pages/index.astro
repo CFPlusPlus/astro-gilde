@@ -10,7 +10,9 @@ import { minecraftGilde } from '../config/minecraftGilde';
 // Home-spezifische Styles (scoped über [data-home])
 import '../styles/home.css';
 
+// Build-Time: Galerie-URLs einsammeln (wird im Build aufgerufen).
 const { urls: galleryUrls, initial: galleryInitial } = getHomeGallery();
+// Version/IP zentral aus der Konfiguration holen, damit SEO-Texte konsistent bleiben.
 const MC_VERSION = minecraftGilde.mcVersion;
 const SERVER_IP = minecraftGilde.serverIp;
 ---

@@ -8,6 +8,7 @@ import StatsApp from '../features/stats/StatsApp';
   canonical="https://minecraft-gilde.de/statistiken/"
   description="Live-Spielerstatistiken für Minecraft Gilde – Ranglisten, Server-König und Spielerübersicht."
 >
+  <!-- Performance: Avatar-CDN frueh aufloesen -->
   <link slot="head" rel="preconnect" href="https://minotar.net" crossorigin />
   <link slot="head" rel="dns-prefetch" href="//minotar.net" />
 
@@ -19,5 +20,6 @@ import StatsApp from '../features/stats/StatsApp';
     </p>
   </section>
 
+  <!-- React-Island: laedt die interaktive Statistik-App -->
   <StatsApp client:load />
 </BaseLayout>

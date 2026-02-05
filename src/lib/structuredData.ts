@@ -1,6 +1,7 @@
 type JsonLd = Record<string, unknown>;
 
 const stripSiteName = (title: string): string => {
+  // Brand-Teil entfernen, damit Breadcrumbs/Labels kuerzer und lesbarer bleiben.
   // Uebliche Titel-Muster in diesem Projekt:
   // - "Minecraft Gilde – ..."
   // - "Minecraft Gilde - ..."
@@ -15,6 +16,7 @@ const stripSiteName = (title: string): string => {
 
 export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string): string => {
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  // Bekannte statische Routen -> feste Labels (kein Rate-Guessing).
   const map: Record<string, string> = {
     '/': 'Home',
     '/befehle/': 'Befehle',
@@ -33,6 +35,7 @@ export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string)
   };
 
   if (map[path]) return map[path];
+  // Erst versuchen: Titel ohne Site-Name verwenden.
   const fromTitle = stripSiteName(fallbackTitle ?? '');
   if (fromTitle) return fromTitle;
   // Letzter Fallback: aus dem Pfad ableiten
@@ -47,6 +50,7 @@ export const buildBreadcrumbList = (args: {
 }): JsonLd | null => {
   const { site, pathname, pageTitle } = args;
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
+  // Keine Breadcrumbs auf Home/404 (wuerde nur redundant wirken).
   if (path === '/' || path === '/404/') return null;
 
   const label = breadcrumbLabelForPath(path, pageTitle);
@@ -84,6 +88,7 @@ export const buildBaseGraph = (args: {
   const { site, canonicalUrl, pathname, title, description, ogImage } = args;
   const siteUrl = site.toString().replace(/\/$/, '');
 
+  // Stabile IDs, damit alle Knoten im Graph sauber referenzieren koennen.
   const websiteId = `${siteUrl}/#website`;
   const orgId = `${siteUrl}/#org`;
 
@@ -91,6 +96,7 @@ export const buildBaseGraph = (args: {
 
   const webPageId = `${canonicalUrl}#webpage`;
 
+  // Kern-Graph: Website, Organisation und die konkrete Seite.
   const graph: JsonLd[] = [
     {
       '@type': 'WebSite',
@@ -157,6 +163,7 @@ export const buildBaseGraph = (args: {
     },
   ];
 
+  // Breadcrumbs nur anhaengen, wenn sie sinnvoll sind.
   if (breadcrumb) {
     graph.push(breadcrumb);
   }
@@ -178,6 +185,7 @@ export const buildFaqPage = (args: {
     const src = String(text ?? '');
 
     const toAbs = (href: string) => {
+      // Relative Links fuer JSON-LD absolut machen.
       const h = String(href ?? '').trim();
       return h.startsWith('/') ? new URL(h, site).toString() : h;
     };
@@ -231,6 +239,7 @@ export const buildHowTo = (args: {
     '@id': `${canonicalUrl}#howto`,
     name,
     description,
+    // Reihenfolge beibehalten und Position explizit setzen.
     step: steps.map((s, idx) => ({
       '@type': 'HowToStep',
       position: idx + 1,
@@ -271,6 +280,7 @@ export const buildArticle = (args: {
   const siteUrl = site.toString().replace(/\/$/, '');
   const orgId = `${siteUrl}/#org`;
 
+  // Optionalfelder nur setzen, wenn vorhanden, um JSON-LD schlank zu halten.
   return {
     '@context': 'https://schema.org',
     '@type': type,
@@ -315,6 +325,7 @@ export const buildGameServer = (args: {
   const gameId = `${siteUrl}/#game`;
   const serverId = `${siteUrl}/#gameserver`;
 
+  // Zwei Knoten im Graph: Game + GameServer (schema.org Empfehlung).
   return {
     '@context': 'https://schema.org',
     '@graph': [
