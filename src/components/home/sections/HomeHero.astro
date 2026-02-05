@@ -4,10 +4,11 @@ import Badge from '../../ui/Badge.astro';
 import HomeSection from '../HomeSection.astro';
 
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { ArrowRight, Copy, Map, Users } from '@lucide/astro';
+import { Activity, ArrowRight, Copy, Map, Users } from '@lucide/astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
+const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
 ---
@@ -53,7 +54,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
           <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
             Discord <ArrowRight size={18} />
           </Button>
-          <Button href="/tutorial" variant="ghost" class="gap-2">Tutorial</Button>
+          <Button href="/tutorial" variant="secondary" class="gap-2">Tutorial</Button>
         </div>
 
         <p class="text-muted mt-8 text-sm" data-reveal data-reveal-delay="200">
@@ -129,8 +130,8 @@ const MC_VERSION = minecraftGilde.mcVersion;
         <Button href={DYNMAP_URL} external variant="secondary" size="sm" class="gap-2">
           <Map size={16} /> Karte
         </Button>
-        <Button href={DISCORD_URL} external variant="primary" size="sm" class="gap-2">
-          Discord <ArrowRight size={16} />
+        <Button href={STATUS_URL} external variant="secondary" size="sm" class="gap-2">
+          <Activity size={16} /> Status
         </Button>
       </div>
     </div>

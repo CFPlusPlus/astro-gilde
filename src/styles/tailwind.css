@@ -28,6 +28,8 @@
   --accent: #f2c94c;
   --accent2: #ffd56a;
   --ring: rgba(242, 201, 76, 0.45);
+  --accent-dark: color-mix(in oklab, var(--accent) 85%, black 15%);
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
 
   --radius: 16px;
 }
@@ -195,6 +197,62 @@ html[data-theme='dark'] {
     background: color-mix(in oklab, var(--surface-solid) 94%, transparent);
     border: 1px solid var(--border);
     backdrop-filter: blur(24px);
+  }
+
+  /* Top navigation links: accent active + animated underline on hover */
+  .site-nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: color-mix(in oklab, var(--fg) 88%, transparent);
+    transition: color 150ms ease;
+  }
+
+  .site-nav-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -0.02rem;
+    width: 50%;
+    height: 3px;
+    border-radius: 999px;
+    background: #ffffff;
+    opacity: 0;
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
+    transition:
+      transform 180ms ease,
+      opacity 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .site-nav-link:hover {
+    color: var(--fg);
+  }
+
+  .site-nav-link:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  .site-nav-link.is-active {
+    color: var(--accent);
+  }
+
+  .site-nav-link.is-active::after {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+    background: var(--accent);
+  }
+
+  .site-nav-link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+    border-radius: 999px;
   }
 
   /* Project design-system aliases ("mg" = Minecraft Gilde). */

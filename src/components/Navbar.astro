@@ -1,7 +1,8 @@
 ---
 import { hrefFor } from '../lib/links';
-import { Menu, X, ExternalLink, Sun, Moon, Laptop } from '@lucide/astro';
+import { Menu, X, ExternalLink, Sun, Moon, SunMoon } from '@lucide/astro';
 import Button from './ui/Button.astro';
+import { minecraftGilde } from '../config/minecraftGilde';
 
 type NavItem = { href: string; label: string; external?: boolean };
 
@@ -22,12 +23,12 @@ const MORE_LINKS: NavItem[] = [
   { href: '/partner/', label: 'Partner' },
   { href: '/datenschutz/', label: 'Datenschutz' },
   { href: '/impressum/', label: 'Impressum' },
-  { href: 'https://stats.uptimerobot.com/OnyzM9GmG2', label: 'Status', external: true },
-  { href: 'https://map.minecraft-gilde.de', label: 'Dynmap', external: true },
+  { href: minecraftGilde.statusUrl, label: 'Status', external: true },
+  { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true },
 ];
 
 const DISCORD: NavItem = {
-  href: 'https://discord.minecraft-gilde.de',
+  href: minecraftGilde.discord.url,
   label: 'Discord',
   external: true,
 };
@@ -50,7 +51,9 @@ const isActive = (href: string, external?: boolean) => {
   return h === current;
 };
 
-const linkClass = (active: boolean) =>
+const linkClassDesktop = (active: boolean) => `site-nav-link ${active ? 'is-active' : ''}`.trim();
+
+const linkClassMobile = (active: boolean) =>
   `rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
     active
       ? 'bg-surface border-border text-fg'
@@ -81,7 +84,10 @@ const linkClass = (active: boolean) =>
         <nav class="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
           {
             PRIMARY_LINKS.map((item) => (
-              <a href={hrefFor(item.href)} class={linkClass(isActive(item.href, item.external))}>
+              <a
+                href={hrefFor(item.href)}
+                class={linkClassDesktop(isActive(item.href, item.external))}
+              >
                 {item.label}
               </a>
             ))
@@ -97,7 +103,7 @@ const linkClass = (active: boolean) =>
           >
             <Sun size={18} class="hidden" data-theme-icon="light" />
             <Moon size={18} class="hidden" data-theme-icon="dark" />
-            <Laptop size={18} data-theme-icon="system" />
+            <SunMoon size={18} data-theme-icon="system" />
           </button>
 
           <!-- Discord status indicator (desktop) + hover card -->
@@ -167,7 +173,7 @@ const linkClass = (active: boolean) =>
                     PRIMARY_LINKS.map((item) => (
                       <a
                         href={hrefFor(item.href)}
-                        class={linkClass(isActive(item.href, item.external))}
+                        class={linkClassMobile(isActive(item.href, item.external))}
                       >
                         {item.label}
                       </a>

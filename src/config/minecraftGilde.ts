@@ -18,6 +18,7 @@ export const minecraftGilde = {
   },
 
   mapUrl: 'https://map.minecraft-gilde.de',
+  statusUrl: 'https://stats.uptimerobot.com/OnyzM9GmG2',
 
   voting: {
     minecraftServerEuVoteUrl: 'https://minecraft-server.eu/vote/index/2321D',
@@ -31,4 +32,5 @@ export const browserAppConfig = {
   discordInvite: minecraftGilde.discord.url,
   discordInviteCode: minecraftGilde.discord.inviteCode,
   dynmapUrl: minecraftGilde.mapUrl,
+  statusUrl: minecraftGilde.statusUrl,
 } as const;

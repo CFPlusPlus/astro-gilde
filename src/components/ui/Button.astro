@@ -34,10 +34,14 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-10 px-4 text-sm',
 };
 
+const outline =
+  'bg-transparent border border-accent/60 text-fg hover:bg-[var(--accent-soft)] hover:border-accent';
+
 const variants: Record<ButtonVariant, string> = {
-  primary: 'bg-accent text-black hover:bg-accent2',
-  secondary: 'bg-surface border border-border hover:bg-surface-solid/70 text-fg backdrop-blur-md',
-  ghost: 'bg-transparent hover:bg-surface border border-transparent hover:border-border text-fg',
+  primary:
+    'bg-accent text-black border border-accent hover:bg-[var(--accent-dark)] hover:border-[var(--accent-dark)]',
+  secondary: outline,
+  ghost: outline,
 };
 
 const attrs = href
