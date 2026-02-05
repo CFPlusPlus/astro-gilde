@@ -77,14 +77,9 @@ export function logMissingTranslations(
     }
   }
 
-  // eslint-disable-next-line no-console
   console.group('Übersetzungsprüfung');
-  // eslint-disable-next-line no-console
   console.info('Fehlende Stats:', [...missing.stats]);
-  // eslint-disable-next-line no-console
   console.info('Fehlende Items:', [...missing.items]);
-  // eslint-disable-next-line no-console
   console.info('Fehlende Mobs:', [...missing.mobs]);
-  // eslint-disable-next-line no-console
   console.groupEnd();
 }

@@ -225,19 +225,11 @@
   // Copy IP
   // -------------------------
   const fallbackCopy = (text) => {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
     try {
-      return document.execCommand('copy');
+      const result = window.prompt('IP kopieren:', text);
+      return result !== null;
     } catch {
       return false;
-    } finally {
-      document.body.removeChild(ta);
     }
   };
 

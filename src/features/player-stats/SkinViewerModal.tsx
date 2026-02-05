@@ -90,7 +90,6 @@ export default function SkinViewerModal({ open, onClose, title = 'Spielerskin', 
 
         viewerRef.current = viewer;
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn('skinview3d konnte nicht geladen werden:', e);
         setLoadError('Der 3D Skin-Viewer konnte nicht geladen werden.');
       }

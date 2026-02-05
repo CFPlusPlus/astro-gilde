@@ -133,15 +133,12 @@ export default function StatsApp() {
     if (activeTab === 'king' && !king.loaded && !king.loading) {
       void loadLeaderboard('king', 'king');
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Wenn PageSize geändert wird: Board-Caches verwerfen (Cursor hängt am Limit)
   useEffect(() => {
     setKing(makeEmptyLeaderboardState());
     setBoards({});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageSize]);
 
   // Click outside closes autocomplete
@@ -319,8 +316,6 @@ export default function StatsApp() {
 
     const first = filteredMetricIds[0] || null;
     setActiveMetricId(first);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metrics, metricFilter]);
 
   // Wenn Metric ausgewählt wird: lazy load
@@ -331,7 +326,6 @@ export default function StatsApp() {
     if (!st.loaded && !st.loading) {
       void loadLeaderboard(activeMetricId, activeMetricId);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeMetricId, activeTab]);
 
   function setTab(tab: TabKey) {
@@ -494,7 +488,6 @@ export default function StatsApp() {
               </div>
 
               <LeaderboardTable
-                metricId="king"
                 def={{ label: 'Punkte', category: 'King' }}
                 state={king}
                 pageSize={pageSize}
@@ -575,7 +568,6 @@ export default function StatsApp() {
 
                 {metrics && activeMetricId ? (
                   <LeaderboardTable
-                    metricId={activeMetricId}
                     def={metrics[activeMetricId]}
                     state={boards[activeMetricId] || makeEmptyLeaderboardState()}
                     pageSize={pageSize}

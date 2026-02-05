@@ -16,4 +16,4 @@ const json = JSON.stringify(data ?? null).replace(/</g, '\\u003c');
   This avoids cases where templating/escaping can lead to invalid JSON-LD.
   Astro docs: https://docs.astro.build/en/reference/directives-reference/#sethtml
 -->
-<script type="application/ld+json" set:html={json} />
+<script type="application/ld+json" set:html={json} is:inline />

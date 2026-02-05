@@ -4,7 +4,7 @@ import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import { TEAM_GROUPS, TEAM_MEMBERS } from '../data/team';
-import { Shield, Users, ArrowRight } from '@lucide/astro';
+import { Shield, ArrowRight } from '@lucide/astro';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
 
@@ -22,12 +22,9 @@ const groups = TEAM_GROUPS.map((g) => ({
   description="Lerne das Minecraft Gilde Serverteam kennen – erfahrene Admins und hilfsbereite Moderatoren für dein optimales Freebuild & Survival Erlebnis auf unserem deutschen Minecraft-Server."
 >
   <section class="mg-container pt-12 pb-6">
-    <div class="flex items-start gap-3">
-      <Users size={22} />
-      <div>
-        <h1 class="text-3xl font-semibold tracking-tight">Team</h1>
-        <p class="text-muted mt-2">Hier findest du das engagierte Team der Minecraft Gilde.</p>
-      </div>
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight">Team</h1>
+      <p class="text-muted mt-2">Hier findest du das engagierte Team der Minecraft Gilde.</p>
     </div>
 
     <div class="mt-6 flex flex-wrap gap-3">

@@ -21,7 +21,7 @@ export function PlayerAutocomplete({
   selectedIndex: number;
   onSelectedIndexChange: (next: number) => void;
   onChoose: (uuid: string) => void;
-  wrapRef: React.RefObject<HTMLDivElement>;
+  wrapRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
     <div className="relative w-full lg:max-w-xl" ref={wrapRef}>

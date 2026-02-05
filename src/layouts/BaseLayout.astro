@@ -214,8 +214,8 @@ const ldBase = buildBaseGraph({
     >
     </div>
 
-    <script src="/js/app.js" defer></script>
-    {scripts.map((src) => <script src={src} defer />)}
+    <script src="/js/app.js" defer is:inline></script>
+    {scripts.map((src) => <script src={src} defer is:inline />)}
     <slot name="afterScripts" />
   </body>
 </html>

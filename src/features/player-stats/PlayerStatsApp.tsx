@@ -164,7 +164,6 @@ export default function PlayerStatsApp() {
         applyPlayerResponse(p, uuid, t);
         setApiError(null);
       } catch (e) {
-        // eslint-disable-next-line no-console
         console.warn('Spielerstatistiken konnten nicht geladen werden:', e);
         setApiError(
           'Spielerstatistiken sind aktuell nicht erreichbar. Bitte versuche es später erneut.',
@@ -177,7 +176,6 @@ export default function PlayerStatsApp() {
     })();
 
     return () => ac.abort();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [uuidParam]);
 
   function applyPlayerResponse(

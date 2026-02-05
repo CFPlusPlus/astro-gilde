@@ -5,7 +5,6 @@ import { formatMetricValue, rankMedal } from '../format';
 import { Pagination } from './Pagination';
 
 export function LeaderboardTable({
-  metricId,
   def,
   state,
   pageSize,
@@ -14,7 +13,6 @@ export function LeaderboardTable({
   onGoPage,
   onLoadMore,
 }: {
-  metricId: string;
   def?: MetricDef;
   state: LeaderboardState;
   pageSize: number;

@@ -6,7 +6,7 @@ import RoleBadge from '../components/ui/RoleBadge.astro';
 import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
-import { ArrowRight, Copy, Wand2, Shield, Hammer, Map, Vote, UserRound } from '@lucide/astro';
+import { ArrowRight, Copy, Wand, Shield, Hammer, Map, Vote, UserRound } from '@lucide/astro';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
 const DYNMAP_URL = 'https://map.minecraft-gilde.de';
@@ -100,7 +100,7 @@ const howToLd = buildHowTo({
       <details class="mg-accordion" open>
         <summary class="flex items-center justify-between gap-3">
           <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Wand2 size={18} /> Abenteuerstart</span
+            ><Wand size={18} /> Abenteuerstart</span
           >
           <span class="text-muted text-xs">/rtp · home · ankommen</span>
         </summary>
@@ -116,7 +116,7 @@ const howToLd = buildHowTo({
             <code>/home &lt;Name&gt;</code> jederzeit zurück.
           </p>
           <Callout variant="info" title="Performance-Hinweis (Folia)">
-            <Wand2 size={18} slot="icon" />
+            <Wand size={18} slot="icon" />
             <p>
               Damit der Server für alle flüssig bleibt: Baue deine Basis nicht direkt neben anderen
               Spielern &ndash; besonders nicht mit großen Farmen. Ein paar hundert Blöcke Abstand

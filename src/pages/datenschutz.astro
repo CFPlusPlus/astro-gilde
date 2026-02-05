@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
-import { Shield, ArrowRight } from '@lucide/astro';
+import { ArrowRight } from '@lucide/astro';
 import datenschutzHtml from '../partials/datenschutz.html?raw';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
@@ -15,13 +15,11 @@ const DISCORD_URL = 'https://discord.minecraft-gilde.de';
   description="Datenschutzerkl\u00e4rung f\u00fcr die private Minecraft-Community 'Minecraft Gilde' mit Informationen zur Verarbeitung von Daten auf der Website und dem Minecraft-Server."
 >
   <section class="mg-container pt-12 pb-6">
-    <div class="flex items-start gap-3">
-      <Shield size={22} class="mt-1 shrink-0" />
-      <div>
-        <h1 class="text-3xl font-semibold tracking-tight">Datenschutz</h1>
-        <p class="text-muted mt-2">Datenschutzerklärung für Website &amp; Minecraft-Server.</p>
-      </div>
+    <div>
+      <h1 class="text-3xl font-semibold tracking-tight">Datenschutz</h1>
+      <p class="text-muted mt-2">Datenschutzerklärung für Website &amp; Minecraft-Server.</p>
     </div>
+
     <div class="mt-6 flex flex-wrap gap-3">
       <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
         Discord <ArrowRight size={18} />

@@ -9,6 +9,7 @@ import { execSync } from 'node:child_process';
 
 // Build-Metadaten (Git Commit/Branch) für Footer & Debugging.
 // Hinweis: Wird beim Build ermittelt (statisch) und ändert sich erst beim nächsten Deploy.
+/** @param {string} cmd */
 const safeGit = (cmd) => {
   try {
     return execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] })
@@ -38,6 +39,8 @@ const REPO_URL = process.env.GITHUB_REPOSITORY
   ? `https://github.com/${process.env.GITHUB_REPOSITORY}`
   : '';
 
+const tailwindPlugin = /** @type {any} */ (tailwindcss());
+
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
   // Directory-style output (no .html in URLs)
@@ -56,6 +59,6 @@ export default defineConfig({
       'import.meta.env.GIT_BRANCH': JSON.stringify(BRANCH_NAME),
       'import.meta.env.GIT_REPO_URL': JSON.stringify(REPO_URL),
     },
-    plugins: [tailwindcss()],
+    plugins: [tailwindPlugin],
   },
 });
