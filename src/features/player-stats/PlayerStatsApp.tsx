@@ -514,137 +514,164 @@ export default function PlayerStatsApp() {
 
   return (
     <div>
-      <section className="mg-container pt-12 pb-8">
-        <h1 className="text-3xl font-semibold tracking-tight">
-          Spielerstatistik von <span>{playerName ? playerName : canRender ? 'Lädt…' : ''}</span>
-        </h1>
-        <p className="text-muted mt-2 max-w-3xl">
-          Alle Werte, Items und Kreaturen eines Spielers – inklusive Filter und Sortierung.
-        </p>
+      <section className="mg-container pt-10 pb-6">
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">
+                Spielerstatistik von{' '}
+                <span>{playerName ? playerName : canRender ? 'Lädt…' : ''}</span>
+              </h1>
+              <p className="text-muted mt-2 max-w-3xl">
+                Alle Werte, Items und Kreaturen eines Spielers – inklusive Filter und Sortierung.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              aria-pressed={isGerman}
+              title="Zwischen Deutsch und Original wechseln"
+              className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex h-10 items-center gap-2 self-start rounded-lg border px-3 text-sm font-semibold transition-colors"
+              onClick={() => setIsGerman((v) => !v)}
+            >
+              <Languages size={16} />
+              <span className="label">{isGerman ? 'DE' : 'EN'}</span>
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="/statistiken"
+              className="bg-accent hover:bg-accent2 focus-visible:ring-offset-bg inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-black transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+            >
+              <ArrowLeft size={16} /> Zurück zur Statistik
+            </a>
+
+            <button
+              ref={uuidBtnRef}
+              type="button"
+              title="UUID kopieren"
+              className="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition-colors"
+              style={
+                uuidMinWidthRef.current ? { minWidth: `${uuidMinWidthRef.current}px` } : undefined
+              }
+              onClick={() => {
+                if (!uuidFull) return;
+                void navigator.clipboard
+                  .writeText(uuidFull)
+                  .then(() => {
+                    setUuidCopied(true);
+                    window.setTimeout(() => setUuidCopied(false), 1200);
+                  })
+                  .catch(() => {
+                    // Clipboard kann blockiert sein (z. B. ohne User-Geste).
+                  });
+              }}
+            >
+              {uuidButtonText}
+            </button>
+
+            {generatedIso ? (
+              <span className="bg-surface border-border text-muted inline-flex h-9 items-center rounded-full border px-3 text-xs font-medium">
+                {fmtGenerated(generatedIso)}
+              </span>
+            ) : null}
+          </div>
+
+          <ApiAlert message={apiError} />
+        </div>
       </section>
 
       <section className="mg-container pb-12">
-        <div className="glass overflow-hidden rounded-[var(--radius)] shadow-sm">
-          {/* Meta-Zeile + Aktionen */}
-          <div className="p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex flex-wrap items-center gap-2">
-                <a
-                  href="/statistiken"
-                  className="bg-accent hover:bg-accent2 focus-visible:ring-offset-bg inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-black transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-                >
-                  <ArrowLeft size={16} /> Zurück zur Statistik
-                </a>
+        <div className="space-y-6">
+          <KpiStrip items={kpiItems} variant="inline" />
 
-                <button
-                  ref={uuidBtnRef}
-                  type="button"
-                  title="UUID kopieren"
-                  className="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors"
-                  style={
-                    uuidMinWidthRef.current
-                      ? { minWidth: `${uuidMinWidthRef.current}px` }
-                      : undefined
-                  }
-                  onClick={() => {
-                    if (!uuidFull) return;
-                    void navigator.clipboard
-                      .writeText(uuidFull)
-                      .then(() => {
-                        setUuidCopied(true);
-                        window.setTimeout(() => setUuidCopied(false), 1200);
-                      })
-                      .catch(() => {
-                        // Clipboard kann blockiert sein (z. B. ohne User-Geste).
-                      });
+          {/* Spieler-Skin + Filter */}
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                className="group inline-flex items-center gap-3 rounded-xl"
+                onClick={() => {
+                  if (!skinFullUrl) return;
+                  setSkinOpen(true);
+                }}
+                aria-label="3D Skin-Viewer öffnen"
+              >
+                <img
+                  src={skinHeadUrl}
+                  alt={playerName || uuidFull || ''}
+                  className="border-border/70 h-14 w-14 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!skinHeadFallback) return;
+                    if (img.src !== skinHeadFallback) img.src = skinHeadFallback;
                   }}
-                >
-                  {uuidButtonText}
-                </button>
-
-                {generatedIso ? (
-                  <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md">
-                    {fmtGenerated(generatedIso)}
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  aria-pressed={isGerman}
-                  title="Zwischen Deutsch und Original wechseln"
-                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors"
-                  onClick={() => setIsGerman((v) => !v)}
-                >
-                  <Languages size={16} />
-                  <span className="label">{isGerman ? 'DE' : 'EN'}</span>
-                </button>
-              </div>
+                />
+                <span className="text-muted inline-flex items-center gap-2 text-xs">
+                  <Info size={16} className="shrink-0" /> Skin-Viewer öffnen
+                </span>
+              </button>
             </div>
 
-            <ApiAlert message={apiError} />
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <KpiStrip items={kpiItems} />
-        </div>
-
-        {/* Spieler-Skin + Filter */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-[220px_1fr]">
-          <div className="border-border/70 overflow-hidden rounded-[var(--radius)] border p-3">
-            <button
-              type="button"
-              className="block w-full"
-              onClick={() => {
-                if (!skinFullUrl) return;
-                setSkinOpen(true);
-              }}
-              aria-label="3D Skin-Viewer öffnen"
-            >
-              <img
-                src={skinHeadUrl}
-                alt={playerName || uuidFull || ''}
-                className="aspect-square w-full rounded-[calc(var(--radius)-6px)] bg-black/20 object-cover"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  if (!skinHeadFallback) return;
-                  if (img.src !== skinHeadFallback) img.src = skinHeadFallback;
-                }}
-              />
-            </button>
-            <p className="text-muted mt-3 flex items-center gap-2 text-xs">
-              <Info size={18} className="shrink-0" /> Klick auf den Kopf öffnet den 3D-Skin-Viewer.
-            </p>
-          </div>
-
-          <div className="border-border/70 rounded-[var(--radius)] border p-4">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="w-full sm:max-w-xl">
-                <div className="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
-                  <Search size={18} className="text-muted" />
-                  <input
-                    ref={filterInputRef}
-                    value={filterRaw}
-                    onChange={(e) => setFilterRaw(e.target.value)}
-                    type="search"
-                    placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
-                    className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
-                  />
-                  {filterRaw ? (
-                    <button
-                      type="button"
-                      className="text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors"
-                      onClick={() => setFilterRaw('')}
-                      aria-label="Filter leeren"
-                    >
-                      <X size={14} />
-                    </button>
-                  ) : null}
-                </div>
+            <nav aria-label="Spielerstatistik Navigation">
+              <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
+                <ul className="flex w-max items-center gap-1" role="list">
+                  {(
+                    [
+                      { key: 'allgemein', label: 'Allgemein', Icon: Sparkles },
+                      { key: 'items', label: 'Gegenstände', Icon: Package },
+                      { key: 'mobs', label: 'Kreaturen', Icon: Skull },
+                    ] as const
+                  ).map((it) => {
+                    const isActive = it.key === activeTab;
+                    const Icon = it.Icon;
+                    return (
+                      <li key={it.key}>
+                        <button
+                          type="button"
+                          onClick={() => setActiveTab(it.key)}
+                          className={[
+                            'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
+                            isActive
+                              ? 'bg-accent/15 border-accent/40 text-fg shadow-sm'
+                              : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
+                          ].join(' ')}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
+                          {it.label}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-              <div className="text-muted flex flex-wrap items-center gap-3 text-xs sm:justify-end">
+            </nav>
+
+            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+              <label className="bg-surface/55 border-border focus-within:border-accent/55 focus-within:ring-accent/20 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors focus-within:ring-2">
+                <Search size={18} className="text-muted" />
+                <input
+                  ref={filterInputRef}
+                  value={filterRaw}
+                  onChange={(e) => setFilterRaw(e.target.value)}
+                  type="search"
+                  placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
+                  className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+                />
+                {filterRaw ? (
+                  <button
+                    type="button"
+                    className="text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors"
+                    onClick={() => setFilterRaw('')}
+                    aria-label="Filter leeren"
+                  >
+                    <X size={14} />
+                  </button>
+                ) : null}
+              </label>
+              <div className="text-muted flex flex-wrap items-center gap-3 text-xs lg:justify-end">
                 <span>
                   {nf(activeResultCount)} Einträge in {activeTabLabel}
                 </span>
@@ -654,262 +681,261 @@ export default function PlayerStatsApp() {
               </div>
             </div>
           </div>
-        </div>
 
-        <nav aria-label="Spielerstatistik Navigation" className="mt-6">
-          <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
-            <ul className="flex w-max items-center gap-1" role="list">
-              {(
-                [
-                  { key: 'allgemein', label: 'Allgemein', Icon: Sparkles },
-                  { key: 'items', label: 'Gegenstände', Icon: Package },
-                  { key: 'mobs', label: 'Kreaturen', Icon: Skull },
-                ] as const
-              ).map((it) => {
-                const isActive = it.key === activeTab;
-                const Icon = it.Icon;
-                return (
-                  <li key={it.key}>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab(it.key)}
-                      className={[
-                        'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
-                        isActive
-                          ? 'bg-accent/15 border-accent/40 text-fg shadow-sm'
-                          : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
-                      ].join(' ')}
-                      aria-current={isActive ? 'page' : undefined}
-                    >
-                      <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
-                      {it.label}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </nav>
-
-        {/* Tabellen */}
-        {activeTab === 'allgemein' ? (
-          <section className="mt-6">
-            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
-              <table className="w-full min-w-[720px] text-sm">
-                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                  <tr>
-                    <th
-                      className={
-                        'px-4 py-3 text-left font-semibold ' +
-                        (sortGeneral.key === 'label' && sortGeneral.dir !== 'none'
-                          ? 'bg-surface-solid/30'
-                          : '')
-                      }
-                    >
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2"
-                        onClick={() =>
-                          setSortGeneral((s) => ({
-                            key: 'label',
-                            dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                          }))
+          {/* Tabellen */}
+          {activeTab === 'allgemein' ? (
+            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
+              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
+                <p className="text-fg text-sm font-semibold">Allgemein</p>
+                <p className="text-muted text-xs">{nf(filtered.general.length)} Einträge</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
+                    <tr>
+                      <th
+                        className={
+                          'px-4 py-3 text-left font-semibold ' +
+                          (sortGeneral.key === 'label' && sortGeneral.dir !== 'none'
+                            ? 'bg-surface-solid/30'
+                            : '')
                         }
                       >
-                        Eintrag{' '}
-                        <SortIcon dir={sortGeneral.key === 'label' ? sortGeneral.dir : 'none'} />
-                      </button>
-                    </th>
-                    <th
-                      className={
-                        'px-4 py-3 text-left font-semibold ' +
-                        (sortGeneral.key === 'value' && sortGeneral.dir !== 'none'
-                          ? 'bg-surface-solid/30'
-                          : '')
-                      }
-                    >
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2"
-                        onClick={() =>
-                          setSortGeneral((s) => ({
-                            key: 'value',
-                            dir: s.key === 'value' ? nextSort(s.dir) : 'asc',
-                          }))
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2"
+                          onClick={() =>
+                            setSortGeneral((s) => ({
+                              key: 'label',
+                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
+                            }))
+                          }
+                        >
+                          Eintrag{' '}
+                          <SortIcon dir={sortGeneral.key === 'label' ? sortGeneral.dir : 'none'} />
+                        </button>
+                      </th>
+                      <th
+                        className={
+                          'px-4 py-3 text-left font-semibold ' +
+                          (sortGeneral.key === 'value' && sortGeneral.dir !== 'none'
+                            ? 'bg-surface-solid/30'
+                            : '')
                         }
                       >
-                        Wert{' '}
-                        <SortIcon dir={sortGeneral.key === 'value' ? sortGeneral.dir : 'none'} />
-                      </button>
-                    </th>
-                    <th
-                      className={
-                        'px-4 py-3 text-left font-semibold ' +
-                        (sortGeneral.key === 'raw' && sortGeneral.dir !== 'none'
-                          ? 'bg-surface-solid/30'
-                          : '')
-                      }
-                    >
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2"
-                        onClick={() =>
-                          setSortGeneral((s) => ({
-                            key: 'raw',
-                            dir: s.key === 'raw' ? nextSort(s.dir) : 'asc',
-                          }))
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2"
+                          onClick={() =>
+                            setSortGeneral((s) => ({
+                              key: 'value',
+                              dir: s.key === 'value' ? nextSort(s.dir) : 'asc',
+                            }))
+                          }
+                        >
+                          Wert{' '}
+                          <SortIcon dir={sortGeneral.key === 'value' ? sortGeneral.dir : 'none'} />
+                        </button>
+                      </th>
+                      <th
+                        className={
+                          'px-4 py-3 text-left font-semibold ' +
+                          (sortGeneral.key === 'raw' && sortGeneral.dir !== 'none'
+                            ? 'bg-surface-solid/30'
+                            : '')
                         }
                       >
-                        Technischer Schlüssel{' '}
-                        <SortIcon dir={sortGeneral.key === 'raw' ? sortGeneral.dir : 'none'} />
-                      </button>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                  {filtered.general.map((r) => (
-                    <tr key={r.raw}>
-                      <td>{r.label}</td>
-                      <td>{r.display}</td>
-                      <td className="text-muted text-xs font-medium whitespace-nowrap">{r.raw}</td>
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-2"
+                          onClick={() =>
+                            setSortGeneral((s) => ({
+                              key: 'raw',
+                              dir: s.key === 'raw' ? nextSort(s.dir) : 'asc',
+                            }))
+                          }
+                        >
+                          Technischer Schlüssel{' '}
+                          <SortIcon dir={sortGeneral.key === 'raw' ? sortGeneral.dir : 'none'} />
+                        </button>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+                    {filtered.general.map((r) => (
+                      <tr key={r.raw}>
+                        <td>{r.label}</td>
+                        <td>{r.display}</td>
+                        <td className="text-muted text-xs font-medium whitespace-nowrap">
+                          {r.raw}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {filtered.general.length === 0 ? <NoResults /> : null}
+              {filtered.general.length === 0 ? (
+                <div className="px-4 pb-4">
+                  <NoResults />
+                </div>
+              ) : null}
 
-            <div className="bg-surface border-border text-muted mt-3 rounded-[var(--radius)] border px-4 py-3 text-sm shadow-sm backdrop-blur-md">
-              Einige Werte werden zur besseren Lesbarkeit formatiert (z. B. Spielzeit in Stunden,{' '}
-              <em>one_cm</em> in Kilometern).
-            </div>
-          </section>
-        ) : null}
+              <div className="border-border/70 text-muted border-t px-4 py-3 text-sm">
+                Einige Werte werden zur besseren Lesbarkeit formatiert (z. B. Spielzeit in Stunden,{' '}
+                <em>one_cm</em> in Kilometern).
+              </div>
+            </section>
+          ) : null}
 
-        {activeTab === 'items' ? (
-          <section className="mt-6">
-            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
-              <table className="w-full min-w-[920px] text-sm">
-                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2"
-                        onClick={() =>
-                          setSortItems((s) => ({
-                            key: 'label',
-                            dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                          }))
-                        }
-                      >
-                        Item <SortIcon dir={sortItems.key === 'label' ? sortItems.dir : 'none'} />
-                      </button>
-                    </th>
-                    {(
-                      [
-                        ['mined', 'Abgebaut'],
-                        ['broken', 'Verbraucht'],
-                        ['crafted', 'Hergestellt'],
-                        ['used', 'Benutzt'],
-                        ['picked_up', 'Aufgesammelt'],
-                        ['dropped', 'Fallen gelassen'],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <th key={key} className="px-4 py-3 text-left font-semibold whitespace-nowrap">
+          {activeTab === 'items' ? (
+            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
+              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
+                <p className="text-fg text-sm font-semibold">Gegenstände</p>
+                <p className="text-muted text-xs">{nf(filtered.items.length)} Einträge</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[920px] text-sm">
+                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold">
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
                           onClick={() =>
                             setSortItems((s) => ({
-                              key,
-                              dir: s.key === key ? nextSort(s.dir) : 'asc',
+                              key: 'label',
+                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
                             }))
                           }
                         >
-                          {label} <SortIcon dir={sortItems.key === key ? sortItems.dir : 'none'} />
+                          Item <SortIcon dir={sortItems.key === 'label' ? sortItems.dir : 'none'} />
                         </button>
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                  {filtered.items.map((r) => (
-                    <tr key={r.key}>
-                      <td>{r.label}</td>
-                      <td>{nf(r.mined)}</td>
-                      <td>{nf(r.broken)}</td>
-                      <td>{nf(r.crafted)}</td>
-                      <td>{nf(r.used)}</td>
-                      <td>{nf(r.picked_up)}</td>
-                      <td>{nf(r.dropped)}</td>
+                      {(
+                        [
+                          ['mined', 'Abgebaut'],
+                          ['broken', 'Verbraucht'],
+                          ['crafted', 'Hergestellt'],
+                          ['used', 'Benutzt'],
+                          ['picked_up', 'Aufgesammelt'],
+                          ['dropped', 'Fallen gelassen'],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <th
+                          key={key}
+                          className="px-4 py-3 text-left font-semibold whitespace-nowrap"
+                        >
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2"
+                            onClick={() =>
+                              setSortItems((s) => ({
+                                key,
+                                dir: s.key === key ? nextSort(s.dir) : 'asc',
+                              }))
+                            }
+                          >
+                            {label}{' '}
+                            <SortIcon dir={sortItems.key === key ? sortItems.dir : 'none'} />
+                          </button>
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {filtered.items.length === 0 ? <NoResults /> : null}
-          </section>
-        ) : null}
+                  </thead>
+                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+                    {filtered.items.map((r) => (
+                      <tr key={r.key}>
+                        <td>{r.label}</td>
+                        <td>{nf(r.mined)}</td>
+                        <td>{nf(r.broken)}</td>
+                        <td>{nf(r.crafted)}</td>
+                        <td>{nf(r.used)}</td>
+                        <td>{nf(r.picked_up)}</td>
+                        <td>{nf(r.dropped)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filtered.items.length === 0 ? (
+                <div className="px-4 pb-4">
+                  <NoResults />
+                </div>
+              ) : null}
+            </section>
+          ) : null}
 
-        {activeTab === 'mobs' ? (
-          <section className="mt-6">
-            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
-              <table className="w-full min-w-[620px] text-sm">
-                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                  <tr>
-                    <th className="px-4 py-3 text-left font-semibold">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-2"
-                        onClick={() =>
-                          setSortMobs((s) => ({
-                            key: 'label',
-                            dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                          }))
-                        }
-                      >
-                        Kreatur <SortIcon dir={sortMobs.key === 'label' ? sortMobs.dir : 'none'} />
-                      </button>
-                    </th>
-                    {(
-                      [
-                        ['killed', 'Getötet'],
-                        ['killed_by', 'Gestorben durch'],
-                      ] as const
-                    ).map(([key, label]) => (
-                      <th key={key} className="px-4 py-3 text-left font-semibold whitespace-nowrap">
+          {activeTab === 'mobs' ? (
+            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
+              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
+                <p className="text-fg text-sm font-semibold">Kreaturen</p>
+                <p className="text-muted text-xs">{nf(filtered.mobs.length)} Einträge</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[620px] text-sm">
+                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
+                    <tr>
+                      <th className="px-4 py-3 text-left font-semibold">
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
                           onClick={() =>
                             setSortMobs((s) => ({
-                              key,
-                              dir: s.key === key ? nextSort(s.dir) : 'asc',
+                              key: 'label',
+                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
                             }))
                           }
                         >
-                          {label} <SortIcon dir={sortMobs.key === key ? sortMobs.dir : 'none'} />
+                          Kreatur{' '}
+                          <SortIcon dir={sortMobs.key === 'label' ? sortMobs.dir : 'none'} />
                         </button>
                       </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                  {filtered.mobs.map((r) => (
-                    <tr key={r.key}>
-                      <td>{r.label}</td>
-                      <td>{nf(r.killed)}</td>
-                      <td>{nf(r.killed_by)}</td>
+                      {(
+                        [
+                          ['killed', 'Getötet'],
+                          ['killed_by', 'Gestorben durch'],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <th
+                          key={key}
+                          className="px-4 py-3 text-left font-semibold whitespace-nowrap"
+                        >
+                          <button
+                            type="button"
+                            className="inline-flex items-center gap-2"
+                            onClick={() =>
+                              setSortMobs((s) => ({
+                                key,
+                                dir: s.key === key ? nextSort(s.dir) : 'asc',
+                              }))
+                            }
+                          >
+                            {label} <SortIcon dir={sortMobs.key === key ? sortMobs.dir : 'none'} />
+                          </button>
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {filtered.mobs.length === 0 ? <NoResults /> : null}
-          </section>
-        ) : null}
+                  </thead>
+                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+                    {filtered.mobs.map((r) => (
+                      <tr key={r.key}>
+                        <td>{r.label}</td>
+                        <td>{nf(r.killed)}</td>
+                        <td>{nf(r.killed_by)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {filtered.mobs.length === 0 ? (
+                <div className="px-4 pb-4">
+                  <NoResults />
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+        </div>
       </section>
 
       <SkinViewerModal

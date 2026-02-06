@@ -8,9 +8,21 @@ export type KpiItem = {
   meta?: React.ReactNode;
 };
 
-export function KpiStrip({ items }: { items: KpiItem[] }) {
+type KpiStripVariant = 'card' | 'inline';
+
+export function KpiStrip({
+  items,
+  variant = 'card',
+}: {
+  items: KpiItem[];
+  variant?: KpiStripVariant;
+}) {
+  const isInline = variant === 'inline';
+
   return (
-    <div className="mg-card overflow-hidden">
+    <div
+      className={isInline ? 'border-border/70 overflow-hidden border-y' : 'mg-card overflow-hidden'}
+    >
       {/*
         Ziel: kein "4x einzelne Cards", sondern ein hochwertiger KPI-Strip mit Dividern.
         Passt optisch besser in den neuen Layout-Rhythmus.
@@ -20,7 +32,13 @@ export function KpiStrip({ items }: { items: KpiItem[] }) {
           <div key={it.id} className="p-4 sm:p-5">
             <div className="flex items-center gap-2">
               {it.icon ? (
-                <span className="bg-accent/15 text-accent inline-flex h-8 w-8 items-center justify-center rounded-xl">
+                <span
+                  className={
+                    isInline
+                      ? 'text-accent inline-flex h-7 w-7 items-center justify-center'
+                      : 'bg-accent/15 text-accent inline-flex h-8 w-8 items-center justify-center rounded-xl'
+                  }
+                >
                   {it.icon}
                 </span>
               ) : null}
