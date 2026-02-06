@@ -1,9 +1,18 @@
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  Clock3,
   Info,
   Languages,
+  Map as MapIcon,
+  Package,
   Search,
+  SearchX,
+  Slash,
+  Sparkles,
+  Swords,
+  Skull,
+  X,
   ChevronUp,
   ChevronDown,
   ChevronsUpDown,
@@ -15,6 +24,7 @@ import { nf, nf2, matchQueries, parseFilter } from './format';
 import { tLabel, logMissingTranslations } from './i18n';
 import { compactUUID } from './uuid';
 import SkinViewerModal from './SkinViewerModal';
+import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
 
 type TabKey = 'allgemein' | 'items' | 'mobs';
 type SortDir = 'none' | 'asc' | 'desc';
@@ -45,6 +55,10 @@ type MobsRow = {
 };
 
 type SortState<K extends string> = { key: K; dir: SortDir };
+
+function isTabKey(value: string | null): value is TabKey {
+  return value === 'allgemein' || value === 'items' || value === 'mobs';
+}
 
 function nextSort(dir: SortDir): SortDir {
   if (dir === 'none') return 'asc';
@@ -81,7 +95,7 @@ function ApiAlert({ message }: { message: string | null }) {
 function NoResults() {
   return (
     <div className="bg-accent/10 border-accent/40 mt-3 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm shadow-sm">
-      <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
+      <SearchX size={18} className="text-accent mt-0.5 flex-none" aria-hidden="true" />
       <span className="text-fg/90">Keine Ergebnisse gefunden.</span>
     </div>
   );
@@ -111,6 +125,7 @@ export default function PlayerStatsApp() {
   const [filterRaw, setFilterRaw] = useState('');
   const filterDeferred = useDeferredValue(filterRaw);
   const parsedQueries = useMemo(() => parseFilter(filterDeferred), [filterDeferred]);
+  const filterInputRef = useRef<HTMLInputElement | null>(null);
 
   // Sort-State pro Tabelle
   const [sortGeneral, setSortGeneral] = useState<SortState<'label' | 'value' | 'raw'>>({
@@ -134,8 +149,54 @@ export default function PlayerStatsApp() {
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search);
     const uuid = (qp.get('uuid') || '').trim();
+    const tab = qp.get('tab');
+    const filter = qp.get('filter') || '';
     setUuidParam(uuid);
+    if (isTabKey(tab)) setActiveTab(tab);
+    if (filter) setFilterRaw(filter);
   }, []);
+
+  useEffect(() => {
+    const qp = new URLSearchParams(window.location.search);
+    if (uuidParam) qp.set('uuid', uuidParam);
+    else qp.delete('uuid');
+    qp.set('tab', activeTab);
+    if (filterRaw.trim()) qp.set('filter', filterRaw);
+    else qp.delete('filter');
+
+    const qs = qp.toString();
+    const nextUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState({}, '', nextUrl);
+    }
+  }, [uuidParam, activeTab, filterRaw]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isFormField =
+        !!target &&
+        (target instanceof HTMLInputElement ||
+          target instanceof HTMLTextAreaElement ||
+          target.isContentEditable);
+
+      if (e.key === '/' && !isFormField) {
+        e.preventDefault();
+        const input = filterInputRef.current;
+        if (!input) return;
+        input.focus();
+        input.select();
+      }
+
+      if (e.key === 'Escape' && document.activeElement === filterInputRef.current && filterRaw) {
+        setFilterRaw('');
+      }
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [filterRaw]);
 
   // Laden: Uebersetzungen + Spieler
   useEffect(() => {
@@ -395,6 +456,58 @@ export default function PlayerStatsApp() {
     return { general, items, mobs };
   }, [sorted, parsedQueries]);
 
+  const kpiItems = useMemo<KpiItem[]>(() => {
+    const asObj = (v: unknown) =>
+      v && typeof v === 'object' ? (v as Record<string, number>) : null;
+    const custom = asObj(stats?.['minecraft:custom']) || {};
+
+    const playTimeHours = (custom['minecraft:play_time'] || 0) / 72000;
+    const walkKm = (custom['minecraft:walk_one_cm'] || 0) / 100000;
+    const mobKills = custom['minecraft:mob_kills'] || 0;
+    const deaths = custom['minecraft:deaths'] || 0;
+
+    return [
+      {
+        id: 'play_time',
+        icon: <Clock3 size={16} />,
+        label: 'Spielzeit',
+        value: `${nf2(playTimeHours)} h`,
+        meta: 'minecraft:play_time',
+      },
+      {
+        id: 'walk',
+        icon: <MapIcon size={16} />,
+        label: 'Laufdistanz',
+        value: `${nf2(walkKm)} km`,
+        meta: 'minecraft:walk_one_cm',
+      },
+      {
+        id: 'mob_kills',
+        icon: <Swords size={16} />,
+        label: 'Mob-Kills',
+        value: nf(mobKills),
+        meta: 'minecraft:mob_kills',
+      },
+      {
+        id: 'deaths',
+        icon: <Skull size={16} />,
+        label: 'Tode',
+        value: nf(deaths),
+        meta: generatedIso ? fmtGenerated(generatedIso) : 'Serverexport',
+      },
+    ];
+  }, [stats, generatedIso]);
+
+  const activeResultCount =
+    activeTab === 'allgemein'
+      ? filtered.general.length
+      : activeTab === 'items'
+        ? filtered.items.length
+        : filtered.mobs.length;
+
+  const activeTabLabel =
+    activeTab === 'allgemein' ? 'Allgemein' : activeTab === 'items' ? 'Gegenstaende' : 'Kreaturen';
+
   const canRender = !!uuidParam;
 
   const uuidButtonText = uuidCopied ? 'Kopiert!' : uuidFull;
@@ -403,8 +516,7 @@ export default function PlayerStatsApp() {
     <div>
       <section className="mg-container pt-12 pb-8">
         <h1 className="text-3xl font-semibold tracking-tight">
-          Spielerstatistik{' '}
-          <span className="text-accent">{playerName ? playerName : canRender ? 'Lädt…' : ''}</span>
+          Spielerstatistik von <span>{playerName ? playerName : canRender ? 'Lädt…' : ''}</span>
         </h1>
         <p className="text-muted mt-2 max-w-3xl">
           Alle Werte, Items und Kreaturen eines Spielers – inklusive Filter und Sortierung.
@@ -413,40 +525,6 @@ export default function PlayerStatsApp() {
 
       <section className="mg-container pb-12">
         <div className="glass overflow-hidden rounded-[var(--radius)] shadow-sm">
-          {/* Tabs */}
-          <div
-            className="border-border flex flex-wrap items-center gap-1 border-b px-4"
-            role="tablist"
-            aria-label="Spielerstatistik Tabs"
-          >
-            {(
-              [
-                { key: 'allgemein', label: 'Allgemein' },
-                { key: 'items', label: 'Gegenstände' },
-                { key: 'mobs', label: 'Kreaturen' },
-              ] as const
-            ).map((t) => {
-              const isActive = activeTab === t.key;
-              return (
-                <button
-                  key={t.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  className={[
-                    'tab-btn focus-visible:ring-offset-bg -mb-px inline-flex items-center justify-center border-b-2 px-3 py-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
-                    isActive
-                      ? 'text-fg border-accent'
-                      : 'text-muted hover:border-border/60 hover:text-fg border-transparent',
-                  ].join(' ')}
-                  onClick={() => setActiveTab(t.key)}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
-          </div>
-
           {/* Meta-Zeile + Aktionen */}
           <div className="p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -509,9 +587,13 @@ export default function PlayerStatsApp() {
           </div>
         </div>
 
+        <div className="mt-6">
+          <KpiStrip items={kpiItems} />
+        </div>
+
         {/* Spieler-Skin + Filter */}
-        <div className="mt-6 grid gap-4 sm:grid-cols-[160px_1fr]">
-          <div className="bg-surface border-border overflow-hidden rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+        <div className="mt-6 grid gap-4 sm:grid-cols-[220px_1fr]">
+          <div className="border-border/70 overflow-hidden rounded-[var(--radius)] border p-3">
             <button
               type="button"
               className="block w-full"
@@ -533,37 +615,88 @@ export default function PlayerStatsApp() {
               />
             </button>
             <p className="text-muted mt-3 flex items-center gap-2 text-xs">
-              <Info size={14} /> Klick auf den Kopf öffnet den 3D-Skin-Viewer.
+              <Info size={18} className="shrink-0" /> Klick auf den Kopf öffnet den 3D-Skin-Viewer.
             </p>
           </div>
 
-          <div className="bg-surface border-border rounded-[var(--radius)] border p-4 shadow-sm backdrop-blur-md">
+          <div className="border-border/70 rounded-[var(--radius)] border p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="w-full sm:max-w-xl">
                 <div className="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
                   <Search size={18} className="text-muted" />
                   <input
+                    ref={filterInputRef}
                     value={filterRaw}
                     onChange={(e) => setFilterRaw(e.target.value)}
                     type="search"
                     placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
                     className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
                   />
+                  {filterRaw ? (
+                    <button
+                      type="button"
+                      className="text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors"
+                      onClick={() => setFilterRaw('')}
+                      aria-label="Filter leeren"
+                    >
+                      <X size={14} />
+                    </button>
+                  ) : null}
                 </div>
               </div>
-              <p className="text-muted text-xs sm:text-right">
-                Tipp: Klicke auf die Spaltenköpfe zum Sortieren.
-              </p>
+              <div className="text-muted flex flex-wrap items-center gap-3 text-xs sm:justify-end">
+                <span>
+                  {nf(activeResultCount)} Einträge in {activeTabLabel}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <Slash size={12} /> Suche fokussieren
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
+        <nav aria-label="Spielerstatistik Navigation" className="mt-6">
+          <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
+            <ul className="flex w-max items-center gap-1" role="list">
+              {(
+                [
+                  { key: 'allgemein', label: 'Allgemein', Icon: Sparkles },
+                  { key: 'items', label: 'Gegenstände', Icon: Package },
+                  { key: 'mobs', label: 'Kreaturen', Icon: Skull },
+                ] as const
+              ).map((it) => {
+                const isActive = it.key === activeTab;
+                const Icon = it.Icon;
+                return (
+                  <li key={it.key}>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab(it.key)}
+                      className={[
+                        'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
+                        isActive
+                          ? 'bg-accent/15 border-accent/40 text-fg shadow-sm'
+                          : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
+                      ].join(' ')}
+                      aria-current={isActive ? 'page' : undefined}
+                    >
+                      <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
+                      {it.label}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </nav>
+
         {/* Tabellen */}
         {activeTab === 'allgemein' ? (
           <section className="mt-6">
-            <div className="bg-surface border-border overflow-x-auto rounded-[var(--radius)] border shadow-sm backdrop-blur-md">
+            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
               <table className="w-full min-w-[720px] text-sm">
-                <thead className="bg-surface-solid/40 text-muted text-xs">
+                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                   <tr>
                     <th
                       className={
@@ -656,9 +789,9 @@ export default function PlayerStatsApp() {
 
         {activeTab === 'items' ? (
           <section className="mt-6">
-            <div className="bg-surface border-border overflow-x-auto rounded-[var(--radius)] border shadow-sm backdrop-blur-md">
+            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
               <table className="w-full min-w-[920px] text-sm">
-                <thead className="bg-surface-solid/40 text-muted text-xs">
+                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">
                       <button
@@ -722,9 +855,9 @@ export default function PlayerStatsApp() {
 
         {activeTab === 'mobs' ? (
           <section className="mt-6">
-            <div className="bg-surface border-border overflow-x-auto rounded-[var(--radius)] border shadow-sm backdrop-blur-md">
+            <div className="border-border overflow-x-auto rounded-[var(--radius)] border">
               <table className="w-full min-w-[620px] text-sm">
-                <thead className="bg-surface-solid/40 text-muted text-xs">
+                <thead className="bg-surface-solid/95 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                   <tr>
                     <th className="px-4 py-3 text-left font-semibold">
                       <button
@@ -779,7 +912,13 @@ export default function PlayerStatsApp() {
         ) : null}
       </section>
 
-      <SkinViewerModal open={skinOpen} onClose={() => setSkinOpen(false)} skinUrl={skinFullUrl} />
+      <SkinViewerModal
+        open={skinOpen}
+        onClose={() => setSkinOpen(false)}
+        skinUrl={skinFullUrl}
+        playerUuid={uuidFull}
+        playerName={playerName}
+      />
     </div>
   );
 }
