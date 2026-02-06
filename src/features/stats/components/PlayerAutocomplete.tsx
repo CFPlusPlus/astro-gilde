@@ -24,7 +24,7 @@ export function PlayerAutocomplete({
   wrapRef: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <div className="relative w-full lg:max-w-xl" ref={wrapRef}>
+    <div className="relative z-30 w-full lg:max-w-xl" ref={wrapRef}>
       <div className="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Search size={18} className="text-muted" />
         <input
@@ -54,7 +54,7 @@ export function PlayerAutocomplete({
       </div>
 
       {open ? (
-        <div className="border-border bg-surface-solid/95 absolute right-0 left-0 z-50 mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
+        <div className="border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
           <ul className="max-h-72 overflow-auto py-1">
             {items.map((it, idx) => {
               const isActive = idx === selectedIndex;

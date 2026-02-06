@@ -185,7 +185,7 @@ function buildVersusCatalog(
     const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
     const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
     const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
-    const group = `Gegenstaende - ${sec.label}`;
+    const group = `Gegenstände - ${sec.label}`;
     for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
       list.push({
         id: `item:${sec.key}:${key}`,
@@ -199,7 +199,7 @@ function buildVersusCatalog(
   }
 
   const mobSections = [
-    { key: 'killed', label: 'Getoetet' },
+    { key: 'killed', label: 'Getötet' },
     { key: 'killed_by', label: 'Gestorben durch' },
   ];
 
@@ -248,12 +248,25 @@ function usePlayerAutocomplete({
   onGeneratedIso?: (iso: string) => void;
   onError?: (message: string | null) => void;
 }) {
-  const [value, setValue] = useState('');
+  const [value, setValueState] = useState('');
   const [items, setItems] = useState<PlayersSearchItem[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const abortRef = useRef<AbortController | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const suppressOpenForQueryRef = useRef<string | null>(null);
+
+  function setValue(next: string) {
+    suppressOpenForQueryRef.current = null;
+    setValueState(next);
+  }
+
+  function setValueWithoutAutoOpen(next: string) {
+    suppressOpenForQueryRef.current = next.trim().toLowerCase();
+    setValueState(next);
+    setOpen(false);
+    setSelectedIndex(-1);
+  }
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -268,6 +281,7 @@ function usePlayerAutocomplete({
   useEffect(() => {
     const q = value.trim();
     if (q.length < 2) {
+      suppressOpenForQueryRef.current = null;
       setItems([]);
       setOpen(false);
       setSelectedIndex(-1);
@@ -282,14 +296,17 @@ function usePlayerAutocomplete({
       try {
         const data = await searchPlayers(q, 6, ac.signal);
         if (typeof data.__generated === 'string') onGeneratedIso?.(data.__generated);
-        setItems(Array.isArray(data.items) ? data.items : []);
-        setOpen(Array.isArray(data.items) && data.items.length > 0);
+        const nextItems = Array.isArray(data.items) ? data.items : [];
+        const suppressOpen = suppressOpenForQueryRef.current === q.toLowerCase();
+        setItems(nextItems);
+        setOpen(!suppressOpen && nextItems.length > 0);
+        if (suppressOpen) suppressOpenForQueryRef.current = null;
         setSelectedIndex(-1);
         onError?.(null);
       } catch (e) {
         if ((e as Error)?.name === 'AbortError') return;
         console.warn('Autocomplete Fehler', e);
-        onError?.('Statistiken sind aktuell nicht erreichbar. Bitte versuche es spaeter erneut.');
+        onError?.('Statistiken sind aktuell nicht erreichbar. Bitte versuche es später erneut.');
       }
     }, 180);
 
@@ -299,6 +316,7 @@ function usePlayerAutocomplete({
   return {
     value,
     setValue,
+    setValueWithoutAutoOpen,
     items,
     setItems,
     open,
@@ -526,9 +544,7 @@ export default function StatsApp() {
     const next = found || { uuid, name: uuid };
     if (side === 'A') setVersusPlayerA(next);
     else setVersusPlayerB(next);
-    search.setValue(next.name);
-    search.setOpen(false);
-    search.setSelectedIndex(-1);
+    search.setValueWithoutAutoOpen(next.name);
     playerNamesRef.current[next.uuid] = next.name;
   }
 
@@ -547,12 +563,8 @@ export default function StatsApp() {
     const nextB = versusPlayerA;
     setVersusPlayerA(nextA);
     setVersusPlayerB(nextB);
-    versusSearchA.setValue(nextA?.name || '');
-    versusSearchB.setValue(nextB?.name || '');
-    versusSearchA.setOpen(false);
-    versusSearchB.setOpen(false);
-    versusSearchA.setSelectedIndex(-1);
-    versusSearchB.setSelectedIndex(-1);
+    versusSearchA.setValueWithoutAutoOpen(nextA?.name || '');
+    versusSearchB.setValueWithoutAutoOpen(nextB?.name || '');
   }
 
   function updateVersusSearch(side: 'A' | 'B', next: string) {
@@ -570,12 +582,12 @@ export default function StatsApp() {
     const playerB = versusPlayerB;
 
     if (!playerA || !playerB) {
-      setVersusError('Bitte waehle zwei Spieler fuer den Vergleich aus.');
+      setVersusError('Bitte wähle zwei Spieler für den Vergleich aus.');
       return;
     }
 
     if (playerA.uuid === playerB.uuid) {
-      setVersusError('Bitte waehle zwei unterschiedliche Spieler.');
+      setVersusError('Bitte wähle zwei unterschiedliche Spieler.');
       return;
     }
 
@@ -638,7 +650,7 @@ export default function StatsApp() {
     } catch (e) {
       if ((e as Error)?.name === 'AbortError') return;
       console.warn('Versus Fehler', e);
-      setVersusError('Versus konnte nicht geladen werden. Bitte versuche es spaeter erneut.');
+      setVersusError('Versus konnte nicht geladen werden. Bitte versuche es später erneut.');
     } finally {
       setVersusLoading(false);
     }
@@ -1096,10 +1108,10 @@ export default function StatsApp() {
           <div className="mt-6 space-y-6">
             <SectionTitle
               title="Versus"
-              subtitle="Vergleiche zwei Spieler in ausgewaehlten Kategorien. Werte basieren auf den kompletten Spielerstatistiken."
+              subtitle="Vergleiche zwei Spieler in ausgewählten Kategorien."
             />
 
-            <div className="mg-card p-5">
+            <div className="mg-card relative z-20 overflow-visible p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                   <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
@@ -1108,7 +1120,7 @@ export default function StatsApp() {
                   <div className="min-w-0">
                     <p className="text-fg font-semibold">Spieler-Vergleich</p>
                     <p className="text-muted mt-1 text-sm leading-relaxed">
-                      Waehle zwei Spieler und starte den Vergleich. Fuer beste Ergebnisse nutze
+                      Wähle zwei Spieler und starte den Vergleich. Für beste Ergebnisse nutze
                       konkrete Kategorien.
                     </p>
                   </div>
@@ -1126,7 +1138,7 @@ export default function StatsApp() {
               </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-                <div className="bg-surface border-border rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                <div className="bg-surface border-border relative z-30 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <p className="text-muted text-xs font-semibold uppercase">Spieler A</p>
                     {versusPlayerA ? (
@@ -1186,7 +1198,7 @@ export default function StatsApp() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                    <p className="text-muted mt-2 text-xs">Wähle einen Spieler aus der Liste.</p>
                   )}
                 </div>
 
@@ -1194,7 +1206,7 @@ export default function StatsApp() {
                   vs
                 </div>
 
-                <div className="bg-surface border-border rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                <div className="bg-surface border-border relative z-30 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
                   <div className="flex items-center justify-between">
                     <p className="text-muted text-xs font-semibold uppercase">Spieler B</p>
                     {versusPlayerB ? (
@@ -1254,7 +1266,7 @@ export default function StatsApp() {
                       </button>
                     </div>
                   ) : (
-                    <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                    <p className="text-muted mt-2 text-xs">Wähle einen Spieler aus der Liste.</p>
                   )}
                 </div>
               </div>
@@ -1279,7 +1291,7 @@ export default function StatsApp() {
                   }}
                   className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
                 >
-                  Zuruecksetzen
+                  Zurücksetzen
                 </button>
                 <span className="text-muted text-xs">
                   Maximal {VERSUS_MAX_METRICS} Kategorien gleichzeitig.
@@ -1292,7 +1304,7 @@ export default function StatsApp() {
                   role="status"
                 >
                   <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-                  <span className="text-fg/90">Bitte waehle zwei unterschiedliche Spieler.</span>
+                  <span className="text-fg/90">Bitte wähle zwei unterschiedliche Spieler.</span>
                 </div>
               ) : null}
 
@@ -1317,7 +1329,7 @@ export default function StatsApp() {
                 <div className="mg-card p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
-                    <span className="text-muted text-xs">{versusCatalog.length} Eintraege</span>
+                    <span className="text-muted text-xs">{versusCatalog.length} Einträge</span>
                   </div>
 
                   <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1345,7 +1357,7 @@ export default function StatsApp() {
                       Keine
                     </button>
                     <span className="text-muted text-xs">
-                      {versusMetricIds.length}/{VERSUS_MAX_METRICS} ausgewaehlt
+                      {versusMetricIds.length}/{VERSUS_MAX_METRICS} ausgewählt
                     </span>
                   </div>
 
@@ -1430,16 +1442,16 @@ export default function StatsApp() {
                   <div className="mg-card p-4">
                     <p className="text-fg font-semibold">Spielerstatistiken werden geladen...</p>
                     <p className="text-muted mt-1 text-sm">
-                      Je mehr Daten vorhanden sind, desto laenger dauert der Vergleich.
+                      Je mehr Daten vorhanden sind, desto länger dauert der Vergleich.
                     </p>
                   </div>
                 ) : null}
 
                 {!versusPlayerA || !versusPlayerB ? (
                   <div className="mg-card p-6">
-                    <p className="text-fg font-semibold">Bitte zwei Spieler waehlen</p>
+                    <p className="text-fg font-semibold">Bitte zwei Spieler wählen</p>
                     <p className="text-muted mt-2 text-sm">
-                      Nutze die Suche oben, um Spieler A und B auszuwaehlen.
+                      Nutze die Suche oben, um Spieler A und B auszuwählen.
                     </p>
                   </div>
                 ) : !hasVersusData ? (
@@ -1451,16 +1463,16 @@ export default function StatsApp() {
                   </div>
                 ) : versusMetricIds.length === 0 ? (
                   <div className="mg-card p-6">
-                    <p className="text-fg font-semibold">Keine Kategorien ausgewaehlt</p>
+                    <p className="text-fg font-semibold">Keine Kategorien ausgewählt</p>
                     <p className="text-muted mt-2 text-sm">
-                      Waehle links die Kategorien aus, die du vergleichen moechtest.
+                      Wähle links die Kategorien aus, die du vergleichen möchtest.
                     </p>
                   </div>
                 ) : !hasVersusResults ? (
                   <div className="mg-card p-6">
                     <p className="text-fg font-semibold">Vergleich bereit</p>
                     <p className="text-muted mt-2 text-sm">
-                      Waehle Kategorien aus, um die Werte zu sehen.
+                      Wähle Kategorien aus, um die Werte zu sehen.
                     </p>
                   </div>
                 ) : (
@@ -1564,7 +1576,7 @@ export default function StatsApp() {
                       {versusLoading ? (
                         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
                           <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
-                            Laedt...
+                            Lädt...
                           </span>
                         </div>
                       ) : null}
