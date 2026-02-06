@@ -207,7 +207,11 @@ const ldBase = buildBaseGraph({
     >
     </div>
 
-    <script src="/js/app.js" defer is:inline></script>
+    <script>
+      import '../scripts/app.ts';
+      import '../scripts/app-commands.ts';
+      import '../scripts/email-obfuscate.ts';
+    </script>
     {scripts.map((src) => <script src={src} defer is:inline />)}
     <slot name="afterScripts" />
   </body>

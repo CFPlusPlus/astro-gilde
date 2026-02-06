@@ -1,10 +1,12 @@
 ---
 // Home-spezifische Skripte
-// - /public/js/app-home.js: Player-Liste, World-Age, Galerie
+// - src/scripts/app-home.ts: Player-Liste, World-Age, Galerie
 // - Inline: Reveal-Animationen (IntersectionObserver)
 ---
 
-<script src="/js/app-home.js" defer is:inline></script>
+<script>
+  import '../../scripts/app-home.ts';
+</script>
 
 <script is:inline>
   // Subtiles Reveal (IntersectionObserver) ohne Extra-Bibliotheken.

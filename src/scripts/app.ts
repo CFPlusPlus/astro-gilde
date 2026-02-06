@@ -1,34 +1,50 @@
 /*
-  app.js
-  ------------
+  app.ts
+  ------
   Global behavior for the site:
   - Theme toggle (system/light/dark) with localStorage
-  - Navbar "more" menu toggle + click-outside + escape
+  - Navbar menu toggle + click-outside + escape
   - Copy server IP helper
   - Online counters (Discord + Minecraft)
   - Lightweight toast
 */
 
+type ThemeMode = 'system' | 'light' | 'dark';
+type ToastVariant = 'default' | 'error';
+
+interface DiscordWidgetResponse {
+  presence_count?: number;
+}
+
+interface DiscordInviteResponse {
+  approximate_member_count?: number;
+}
+
+interface MinecraftStatusResponse {
+  players?: {
+    online?: number;
+  };
+}
+
 (() => {
-  const config = window.__APP_CONFIG__ || {
+  const config: BrowserAppConfig = window.__APP_CONFIG__ ?? {
     serverIp: 'minecraft-gilde.de',
     discordGuildId: '1219625244906754093',
     discordInvite: 'https://discord.minecraft-gilde.de',
     dynmapUrl: 'https://map.minecraft-gilde.de',
   };
 
-  const qs = (sel, root = document) => root.querySelector(sel);
-  const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const qs = <T extends Element>(sel: string, root: ParentNode = document): T | null =>
+    root.querySelector<T>(sel);
+  const qsa = <T extends Element>(sel: string, root: ParentNode = document): T[] =>
+    Array.from(root.querySelectorAll<T>(sel));
 
-  // -------------------------
-  // Toast
-  // -------------------------
-  const toastEl = qs('#toast');
-  let toastTimer = null;
+  const toastEl = qs<HTMLElement>('#toast');
+  let toastTimer: number | null = null;
 
-  const showToast = (message, variant = 'default') => {
+  const showToast = (message: unknown, variant: ToastVariant = 'default'): void => {
     if (!toastEl) return;
-    window.clearTimeout(toastTimer);
+    if (toastTimer != null) window.clearTimeout(toastTimer);
 
     toastEl.classList.remove('hidden');
     toastEl.innerHTML = `
@@ -48,36 +64,34 @@
     }, 2200);
   };
 
-  // -------------------------
-  // Theme (system/light/dark)
-  // -------------------------
   const THEME_KEY = 'theme';
-  const VALID = new Set(['system', 'light', 'dark']);
+  const VALID_THEMES: ReadonlySet<ThemeMode> = new Set(['system', 'light', 'dark']);
 
-  const getStoredTheme = () => {
+  const getStoredTheme = (): ThemeMode => {
     try {
-      const v = localStorage.getItem(THEME_KEY) || 'system';
-      return VALID.has(v) ? v : 'system';
+      const value = localStorage.getItem(THEME_KEY);
+      if (value && VALID_THEMES.has(value as ThemeMode)) {
+        return value as ThemeMode;
+      }
+      return 'system';
     } catch {
       return 'system';
     }
   };
 
-  const applyTheme = (mode) => {
+  const applyTheme = (mode: ThemeMode): void => {
     const root = document.documentElement;
 
     if (mode === 'light' || mode === 'dark') root.dataset.theme = mode;
     else root.removeAttribute('data-theme');
 
-    // Persist
     try {
       localStorage.setItem(THEME_KEY, mode);
     } catch {
-      // ignore
+      // ignore localStorage write errors
     }
 
-    // Update icons
-    qsa('[data-theme-icon]').forEach((el) => {
+    qsa<HTMLElement>('[data-theme-icon]').forEach((el) => {
       const iconMode = el.getAttribute('data-theme-icon');
       const shouldShow = iconMode === mode;
       if (shouldShow) el.classList.remove('hidden');
@@ -85,17 +99,16 @@
     });
   };
 
-  const cycleTheme = () => {
+  const cycleTheme = (): ThemeMode => {
     const current = getStoredTheme();
     if (current === 'system') return 'dark';
     if (current === 'dark') return 'light';
     return 'system';
   };
 
-  // Initialize theme icons based on stored preference
   applyTheme(getStoredTheme());
 
-  const themeBtn = qs('[data-theme-toggle]');
+  const themeBtn = qs<HTMLElement>('[data-theme-toggle]');
   if (themeBtn) {
     themeBtn.addEventListener('click', () => {
       const next = cycleTheme();
@@ -105,23 +118,20 @@
     });
   }
 
-  // -------------------------
-  // Navbar menu toggle
-  // -------------------------
-  const navRoot = qs('[data-site-nav]');
-  const panel = qs('[data-nav-panel]', navRoot || document);
-  const toggle = qs('[data-nav-toggle]', navRoot || document);
-  const overlay = qs('[data-nav-overlay]', panel || document);
-  const iconOpen = qs('[data-icon-open]', toggle || document);
-  const iconClose = qs('[data-icon-close]', toggle || document);
+  const navRoot = qs<HTMLElement>('[data-site-nav]');
+  const panel = qs<HTMLElement>('[data-nav-panel]', navRoot ?? document);
+  const toggle = qs<HTMLElement>('[data-nav-toggle]', navRoot ?? document);
+  const overlay = qs<HTMLElement>('[data-nav-overlay]', panel ?? document);
+  const iconOpen = qs<HTMLElement>('[data-icon-open]', toggle ?? document);
+  const iconClose = qs<HTMLElement>('[data-icon-close]', toggle ?? document);
 
-  const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+  const isMobile = (): boolean => window.matchMedia('(max-width: 767px)').matches;
 
   const root = document.documentElement;
   let lockedScrollY = 0;
   let isScrollLocked = false;
 
-  const lockScroll = () => {
+  const lockScroll = (): void => {
     if (isScrollLocked) return;
     lockedScrollY = window.scrollY || window.pageYOffset || 0;
     isScrollLocked = true;
@@ -129,7 +139,6 @@
     root.dataset.menuOpen = '1';
     root.style.overflow = 'hidden';
 
-    // iOS-safe scroll lock (prevents menu disappearing after scroll)
     document.body.style.position = 'fixed';
     document.body.style.top = `-${lockedScrollY}px`;
     document.body.style.left = '0';
@@ -137,7 +146,7 @@
     document.body.style.width = '100%';
   };
 
-  const unlockScroll = () => {
+  const unlockScroll = (): void => {
     if (!isScrollLocked) {
       delete root.dataset.menuOpen;
       root.style.overflow = '';
@@ -158,7 +167,7 @@
     window.scrollTo(0, y);
   };
 
-  const closeMenu = () => {
+  const closeMenu = (): void => {
     if (!panel || !toggle) return;
     panel.classList.add('hidden');
     if (overlay) overlay.classList.add('hidden');
@@ -169,7 +178,7 @@
     unlockScroll();
   };
 
-  const openMenu = () => {
+  const openMenu = (): void => {
     if (!panel || !toggle) return;
     panel.classList.remove('hidden');
     if (overlay) overlay.classList.toggle('hidden', !isMobile());
@@ -181,17 +190,16 @@
     else unlockScroll();
   };
 
-  const isMenuOpen = () => panel && !panel.classList.contains('hidden');
+  const isMenuOpen = (): boolean => Boolean(panel && !panel.classList.contains('hidden'));
 
   if (toggle && panel) {
-    toggle.addEventListener('click', (e) => {
+    toggle.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();
       if (isMenuOpen()) closeMenu();
       else openMenu();
     });
 
-    // close on click outside
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', (e: MouseEvent) => {
       if (!isMenuOpen()) return;
       const target = e.target;
       if (!(target instanceof Node)) return;
@@ -199,32 +207,25 @@
       closeMenu();
     });
 
-    // close on overlay click
     if (overlay) {
       overlay.addEventListener('click', () => closeMenu());
     }
 
-    // close when a menu link is clicked
-    panel.addEventListener('click', (e) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
-      const link = t.closest('a');
+    panel.addEventListener('click', (e: MouseEvent) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest('a');
       if (link) closeMenu();
     });
 
-    // close on escape
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isMenuOpen()) closeMenu();
     });
 
-    // close on resize to keep state sane
     window.addEventListener('resize', () => closeMenu());
   }
 
-  // -------------------------
-  // Copy IP
-  // -------------------------
-  const fallbackCopy = (text) => {
+  const fallbackCopy = (text: string): boolean => {
     try {
       const result = window.prompt('IP kopieren:', text);
       return result !== null;
@@ -233,99 +234,108 @@
     }
   };
 
-  const copyIp = async () => {
+  const copyIp = async (): Promise<void> => {
     const ip = config.serverIp || 'minecraft-gilde.de';
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(ip);
       } else {
         const ok = fallbackCopy(ip);
-        if (!ok) throw new Error('Clipboard API nicht verfügbar');
+        if (!ok) throw new Error('Clipboard API nicht verfuegbar');
       }
       showToast('IP kopiert!');
     } catch (e) {
       console.warn('Copy-IP Fehler:', e);
-      showToast('Kopieren nicht möglich.', 'error');
+      showToast('Kopieren nicht moeglich.', 'error');
     }
   };
 
-  qsa('[data-copy-ip]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
+  qsa<HTMLElement>('[data-copy-ip]').forEach((btn) => {
+    btn.addEventListener('click', (e: MouseEvent) => {
       e.preventDefault();
-      copyIp();
+      void copyIp();
     });
   });
 
-  // -------------------------
-  // Online Counters
-  // -------------------------
-  const formatInt = (value) => {
+  const formatInt = (value: unknown): string => {
     const n = Number(value);
     return Number.isFinite(n) ? n.toLocaleString('de-DE') : String(value);
   };
 
-  const fetchDiscordOnlineUsers = async () => {
+  const fetchDiscordOnlineUsers = async (): Promise<string> => {
     try {
       const guildId = config.discordGuildId;
       if (!guildId) return 'Keine';
+
       const apiWidgetUrl = `https://discord.com/api/guilds/${guildId}/widget.json`;
       const response = await fetch(apiWidgetUrl, { cache: 'no-store' });
-      const data = await response.json();
-      return data?.presence_count ? String(data.presence_count) : 'Keine';
+      const data = (await response.json()) as DiscordWidgetResponse;
+
+      return data.presence_count ? String(data.presence_count) : 'Keine';
     } catch {
       return 'Keine';
     }
   };
 
-  const fetchDiscordMemberCount = async () => {
+  const fetchDiscordMemberCount = async (): Promise<string> => {
     try {
       const code = config.discordInviteCode;
-      if (!code) return '—';
+      if (!code) return '�';
+
       const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
       const response = await fetch(apiUrl, { cache: 'no-store' });
-      const data = await response.json();
-      const count = data?.approximate_member_count;
-      return count != null ? String(count) : '—';
+      const data = (await response.json()) as DiscordInviteResponse;
+      const count = data.approximate_member_count;
+
+      return count != null ? String(count) : '�';
     } catch {
-      return '—';
+      return '�';
     }
   };
 
-  const fetchMinecraftOnlinePlayers = async () => {
+  const fetchMinecraftOnlinePlayers = async (): Promise<string> => {
     try {
       const ip = config.serverIp || 'minecraft-gilde.de';
       const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
       const response = await fetch(apiUrl, { cache: 'no-store' });
-      const data = await response.json();
-      return data?.players?.online != null ? String(data.players.online) : 'Keine';
+      const data = (await response.json()) as MinecraftStatusResponse;
+
+      return data.players?.online != null ? String(data.players.online) : 'Keine';
     } catch (e) {
       console.warn('Minecraft Online-Count Fehler:', e);
       return 'Keine';
     }
   };
 
-  const discordTargets = qsa('[data-discord-online]');
-  const discordMemberTargets = qsa('[data-discord-members]');
-  const mcTargets = qsa('[data-mc-online]');
+  const discordTargets = qsa<HTMLElement>('[data-discord-online]');
+  const discordMemberTargets = qsa<HTMLElement>('[data-discord-members]');
+  const mcTargets = qsa<HTMLElement>('[data-mc-online]');
 
-  const updateCounters = async () => {
+  const updateCounters = async (): Promise<void> => {
     if (discordTargets.length) {
       const val = await fetchDiscordOnlineUsers();
-      discordTargets.forEach((el) => (el.textContent = val));
+      discordTargets.forEach((el) => {
+        el.textContent = val;
+      });
     }
 
     if (discordMemberTargets.length) {
       const raw = await fetchDiscordMemberCount();
       const val = formatInt(raw);
-      discordMemberTargets.forEach((el) => (el.textContent = val));
+      discordMemberTargets.forEach((el) => {
+        el.textContent = val;
+      });
     }
 
     if (mcTargets.length) {
       const val = await fetchMinecraftOnlinePlayers();
-      mcTargets.forEach((el) => (el.textContent = val));
+      mcTargets.forEach((el) => {
+        el.textContent = val;
+      });
     }
   };
 
-  // only fetch if the page actually has placeholders
-  if (discordTargets.length || discordMemberTargets.length || mcTargets.length) updateCounters();
+  if (discordTargets.length || discordMemberTargets.length || mcTargets.length) {
+    void updateCounters();
+  }
 })();

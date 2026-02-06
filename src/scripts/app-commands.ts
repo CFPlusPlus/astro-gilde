@@ -1,28 +1,28 @@
 /*
-  app-commands.js
-  -------------
+  app-commands.ts
+  ---------------
   Client-side search for /befehle.
   Filters command cards inside categories.
 */
 
 (() => {
   const input = document.getElementById('commandSearch');
-  const root = document.querySelector('[data-commands]');
-  const clearBtn = root ? root.querySelector('[data-command-search-clear]') : null;
-  if (!input || !root) return;
+  const root = document.querySelector<HTMLElement>('[data-commands]');
+  if (!(input instanceof HTMLInputElement) || !root) return;
 
-  const norm = (s) => String(s || '').toLowerCase();
+  const clearBtn = root.querySelector<HTMLElement>('[data-command-search-clear]');
+  const norm = (value: unknown): string => String(value ?? '').toLowerCase();
 
-  const cats = Array.from(root.querySelectorAll('[data-category]'));
+  const cats = Array.from(root.querySelectorAll<HTMLElement>('[data-category]'));
 
-  const syncClear = () => {
+  const syncClear = (): void => {
     if (!clearBtn) return;
     const hasValue = norm(input.value).trim().length > 0;
     clearBtn.classList.toggle('mg-search-clear--hidden', !hasValue);
     clearBtn.tabIndex = hasValue ? 0 : -1;
   };
 
-  const apply = () => {
+  const apply = (): void => {
     const q = norm(input.value).trim();
     syncClear();
 
@@ -30,13 +30,15 @@
     if (!q) {
       cats.forEach((cat) => {
         cat.classList.remove('hidden');
-        cat.querySelectorAll('[data-command]').forEach((item) => item.classList.remove('hidden'));
+        cat
+          .querySelectorAll<HTMLElement>('[data-command]')
+          .forEach((item) => item.classList.remove('hidden'));
       });
       return;
     }
 
     cats.forEach((cat) => {
-      const items = Array.from(cat.querySelectorAll('[data-command]'));
+      const items = Array.from(cat.querySelectorAll<HTMLElement>('[data-command]'));
       let visible = 0;
 
       items.forEach((item) => {
@@ -50,18 +52,18 @@
         }
       });
 
-      // Hide empty categories
       if (visible === 0) cat.classList.add('hidden');
       else cat.classList.remove('hidden');
 
-      // keep categories open while searching
       const details = cat.closest('details');
-      if (details) details.open = visible > 0;
+      if (details instanceof HTMLDetailsElement) {
+        details.open = visible > 0;
+      }
     });
   };
 
   input.addEventListener('input', apply);
-  root.addEventListener('click', (e) => {
+  root.addEventListener('click', (e: MouseEvent) => {
     if (!(e.target instanceof Element)) return;
     const trigger = e.target.closest('[data-command-search-clear]');
     if (!trigger || !clearBtn) return;
@@ -71,8 +73,9 @@
     apply();
     input.focus();
   });
+
   if (clearBtn) {
-    clearBtn.addEventListener('keydown', (e) => {
+    clearBtn.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       e.preventDefault();
       input.value = '';
@@ -80,5 +83,6 @@
       input.focus();
     });
   }
+
   syncClear();
 })();
