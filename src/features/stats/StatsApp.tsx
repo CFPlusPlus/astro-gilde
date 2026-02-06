@@ -6,6 +6,7 @@ import {
   Crown,
   Filter,
   Map as MapIcon,
+  SearchX,
   Skull,
   Sparkles,
   Swords,
@@ -1050,10 +1051,12 @@ export default function StatsApp() {
                 className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
                 role="status"
               >
-                <div
-                  className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full"
+                <span
+                  className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
                   aria-hidden="true"
-                />
+                >
+                  <SearchX size={14} />
+                </span>
                 <span className="text-fg/90">Keine Ranglisten gefunden.</span>
               </div>
             ) : null}
@@ -1361,7 +1364,7 @@ export default function StatsApp() {
 
             <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
               {!hasVersusData ? (
-                <div className="mg-card min-w-0 text-muted p-5 text-sm">
+                <div className="mg-card text-muted min-w-0 p-5 text-sm">
                   Klicke auf "Vergleichen", um die Spielerstatistiken zu laden.
                 </div>
               ) : (
@@ -1416,10 +1419,12 @@ export default function StatsApp() {
                       className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
                       role="status"
                     >
-                      <div
-                        className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full"
+                      <span
+                        className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
                         aria-hidden="true"
-                      />
+                      >
+                        <SearchX size={14} />
+                      </span>
                       <span className="text-fg/90">Keine Kategorien gefunden.</span>
                     </div>
                   ) : null}
@@ -1429,7 +1434,7 @@ export default function StatsApp() {
                       {versusGroupedMetrics.map(({ cat, items }) => (
                         <div key={cat} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <p className="text-muted min-w-0 break-words text-xs font-semibold tracking-wide uppercase">
+                            <p className="text-muted min-w-0 text-xs font-semibold tracking-wide break-words uppercase">
                               {cat}
                             </p>
                             <span className="text-muted text-xs">{items.length}</span>
@@ -1522,11 +1527,15 @@ export default function StatsApp() {
                       <p className="text-muted text-xs font-semibold">Zwischenstand</p>
                       <div className="mt-2 flex flex-wrap items-start gap-2 sm:items-center sm:gap-3">
                         <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
-                          <span className="min-w-0 truncate">{versusPlayerA?.name || 'Spieler A'}</span>
+                          <span className="min-w-0 truncate">
+                            {versusPlayerA?.name || 'Spieler A'}
+                          </span>
                           <span className="shrink-0">: {versusSummary.winsA}</span>
                         </span>
                         <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
-                          <span className="min-w-0 truncate">{versusPlayerB?.name || 'Spieler B'}</span>
+                          <span className="min-w-0 truncate">
+                            {versusPlayerB?.name || 'Spieler B'}
+                          </span>
                           <span className="shrink-0">: {versusSummary.winsB}</span>
                         </span>
                         <span className="bg-surface border-border text-muted inline-flex w-full items-center rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
@@ -1546,7 +1555,7 @@ export default function StatsApp() {
 
                     <div className="mg-card relative min-w-0 overflow-hidden">
                       <div className="max-w-full overflow-x-auto overscroll-x-contain">
-                        <table className="w-full min-w-[560px] sm:min-w-[720px] text-sm">
+                        <table className="w-full min-w-[560px] text-sm sm:min-w-[720px]">
                           <thead className="bg-surface-solid/40 text-muted text-xs">
                             <tr>
                               <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">

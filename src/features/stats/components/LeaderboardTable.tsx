@@ -26,13 +26,11 @@ export function LeaderboardTable({
   return (
     <div className="mg-card relative min-w-0 overflow-hidden">
       <div className="max-w-full overflow-x-auto overscroll-x-contain">
-        <table className="w-full min-w-[390px] sm:min-w-[520px] text-sm">
+        <table className="w-full min-w-[390px] text-sm sm:min-w-[520px]">
           <thead className="bg-surface-solid/40 text-muted text-xs">
             <tr>
               <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">Platz</th>
-              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
-                Spielername
-              </th>
+              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">Spielername</th>
               <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
                 {def?.unit ? `Wert (${def.unit})` : 'Wert'}
               </th>
