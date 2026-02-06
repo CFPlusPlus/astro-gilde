@@ -1408,10 +1408,22 @@ export default function StatsApp() {
                     <input
                       value={versusMetricFilter}
                       onChange={(e) => setVersusMetricFilter(e.target.value)}
+                      type="search"
                       placeholder="Filtern..."
                       className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
                       aria-label="Versus Kategorien filtern"
                     />
+                    {versusMetricFilter.trim().length > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setVersusMetricFilter('')}
+                        className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
+                        aria-label="Versus-Kategorien-Filter zurücksetzen"
+                        title="Filter zurücksetzen"
+                      >
+                        <X size={14} />
+                      </button>
+                    ) : null}
                   </div>
 
                   {hasNoVersusResults ? (
@@ -1429,7 +1441,7 @@ export default function StatsApp() {
                     </div>
                   ) : null}
 
-                  <div className="mt-4 max-h-[520px] overflow-auto pr-1">
+                  <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1">
                     <div className="space-y-5">
                       {versusGroupedMetrics.map(({ cat, items }) => (
                         <div key={cat} className="space-y-2">

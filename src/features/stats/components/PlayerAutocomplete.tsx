@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import type { PlayersSearchItem } from '../types';
 
 export function PlayerAutocomplete({
@@ -51,6 +51,21 @@ export function PlayerAutocomplete({
           placeholder="Spieler suchen…"
           className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
         />
+        {value.trim().length > 0 ? (
+          <button
+            type="button"
+            onClick={() => {
+              onChange('');
+              onOpenChange(false);
+              onSelectedIndexChange(-1);
+            }}
+            className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
+            aria-label="Spielersuche zurücksetzen"
+            title="Suche zurücksetzen"
+          >
+            <X size={14} />
+          </button>
+        ) : null}
       </div>
 
       {open ? (
