@@ -24,7 +24,7 @@
   --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #ffffff;
   --border: rgba(15, 23, 42, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.52);
+  --glass-highlight: rgba(255, 255, 255, 0.34);
   --glass-shadow: rgba(15, 23, 42, 0.12);
 
   --ambient-1: rgba(242, 201, 76, 0.22);
@@ -50,7 +50,7 @@
     --surface: rgba(22, 30, 41, 0.54);
     --surface-solid: #161f2b;
     --border: rgba(231, 237, 245, 0.16);
-    --glass-highlight: rgba(255, 255, 255, 0.16);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(6, 10, 18, 0.52);
 
     --ambient-1: rgba(242, 201, 76, 0.32);
@@ -72,7 +72,7 @@ html[data-theme='light'] {
   --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #ffffff;
   --border: rgba(15, 23, 42, 0.1);
-  --glass-highlight: rgba(255, 255, 255, 0.52);
+  --glass-highlight: rgba(255, 255, 255, 0.34);
   --glass-shadow: rgba(15, 23, 42, 0.12);
 
   --ambient-1: rgba(242, 201, 76, 0.22);
@@ -92,7 +92,7 @@ html[data-theme='dark'] {
   --surface: rgba(22, 30, 41, 0.54);
   --surface-solid: #161f2b;
   --border: rgba(231, 237, 245, 0.16);
-  --glass-highlight: rgba(255, 255, 255, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
   --glass-shadow: rgba(6, 10, 18, 0.52);
 
   --ambient-1: rgba(242, 201, 76, 0.32);
@@ -267,23 +267,23 @@ html[data-theme='dark'] {
   /* Dezenter Glas-Helfer */
   .glass {
     background: color-mix(in oklab, var(--surface) 90%, transparent);
-    border: 1px solid color-mix(in oklab, var(--border) 82%, white 18%);
+    border: 1px solid color-mix(in oklab, var(--border) 92%, white 8%);
     box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      0 14px 34px -22px var(--glass-shadow);
-    -webkit-backdrop-filter: blur(16px) saturate(130%);
-    backdrop-filter: blur(16px) saturate(130%);
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+      0 12px 28px -24px var(--glass-shadow);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    backdrop-filter: blur(14px) saturate(120%);
   }
 
   /* Staerkerer Glas-Look (z. B. Overlay / Mobile-Navigation) */
   .glass-strong {
     background: color-mix(in oklab, var(--surface-solid) 86%, transparent);
-    border: 1px solid color-mix(in oklab, var(--border) 84%, white 16%);
+    border: 1px solid color-mix(in oklab, var(--border) 92%, white 8%);
     box-shadow:
-      inset 0 1px 0 var(--glass-highlight),
-      0 26px 52px -28px var(--glass-shadow);
-    -webkit-backdrop-filter: blur(28px) saturate(140%);
-    backdrop-filter: blur(28px) saturate(140%);
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+      0 22px 46px -30px var(--glass-shadow);
+    -webkit-backdrop-filter: blur(24px) saturate(130%);
+    backdrop-filter: blur(24px) saturate(130%);
   }
 
   /* Top-Navigation: Akzent aktiv + animierte Unterstreichung beim Hover */
