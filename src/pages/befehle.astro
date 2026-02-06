@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import CommandsInlineScripts from '../components/commands/CommandsInlineScripts.astro';
 import { getEntry } from 'astro:content';
@@ -32,29 +31,27 @@ const categories = commandsEntry.data.categories;
   </section>
 
   <section class="mg-container pb-16" data-commands>
-    <Card class="p-4">
-      <div
-        class="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2"
+    <div
+      class="bg-surface-solid/30 border-border flex w-full items-center gap-2 rounded-[var(--radius)] border px-3 py-2 lg:max-w-xl"
+    >
+      <Search size={18} />
+      <input
+        id="commandSearch"
+        type="search"
+        placeholder="Suchen (z. B. /rtp, claim, home …)"
+        class="peer placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
+        autocomplete="off"
+      />
+      <button
+        type="button"
+        class="mg-search-clear mg-search-clear--hidden"
+        data-command-search-clear
+        aria-label="Suche zurücksetzen"
+        title="Suche zurücksetzen"
       >
-        <Search size={18} />
-        <input
-          id="commandSearch"
-          type="search"
-          placeholder="Suchen (z. B. /rtp, claim, home …)"
-          class="peer placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
-          autocomplete="off"
-        />
-        <button
-          type="button"
-          class="mg-search-clear mg-search-clear--hidden"
-          data-command-search-clear
-          aria-label="Suche zurücksetzen"
-          title="Suche zurücksetzen"
-        >
-          <X size={14} />
-        </button>
-      </div>
-    </Card>
+        <X size={14} />
+      </button>
+    </div>
 
     <div class="mt-4 space-y-3">
       {
