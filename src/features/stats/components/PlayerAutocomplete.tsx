@@ -58,9 +58,10 @@ export function PlayerAutocomplete({
             onOpenChange(false);
             onSelectedIndexChange(-1);
           }}
-          className={['mg-search-clear', value.trim().length > 0 ? '' : 'mg-search-clear--hidden'].join(
-            ' ',
-          )}
+          className={[
+            'mg-search-clear',
+            value.trim().length > 0 ? '' : 'mg-search-clear--hidden',
+          ].join(' ')}
           aria-label="Spielersuche zurücksetzen"
           title="Suche zurücksetzen"
           tabIndex={value.trim().length > 0 ? 0 : -1}

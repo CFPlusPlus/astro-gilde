@@ -39,9 +39,10 @@ export function MetricPicker({
         <button
           type="button"
           onClick={() => onFilterChange('')}
-          className={['mg-search-clear', filter.trim().length > 0 ? '' : 'mg-search-clear--hidden'].join(
-            ' ',
-          )}
+          className={[
+            'mg-search-clear',
+            filter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
+          ].join(' ')}
           aria-label="Ranglisten-Filter zurücksetzen"
           title="Filter zurücksetzen"
           tabIndex={filter.trim().length > 0 ? 0 : -1}

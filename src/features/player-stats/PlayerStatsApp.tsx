@@ -662,10 +662,9 @@ export default function PlayerStatsApp() {
                 />
                 <button
                   type="button"
-                  className={[
-                    'mg-search-clear',
-                    filterRaw ? '' : 'mg-search-clear--hidden',
-                  ].join(' ')}
+                  className={['mg-search-clear', filterRaw ? '' : 'mg-search-clear--hidden'].join(
+                    ' ',
+                  )}
                   onClick={() => setFilterRaw('')}
                   aria-label="Filter leeren"
                   tabIndex={filterRaw ? 0 : -1}

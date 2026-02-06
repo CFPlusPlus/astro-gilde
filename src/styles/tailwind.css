@@ -24,6 +24,12 @@
   --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #ffffff;
   --border: rgba(15, 23, 42, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.52);
+  --glass-shadow: rgba(15, 23, 42, 0.12);
+
+  --ambient-1: rgba(242, 201, 76, 0.22);
+  --ambient-2: rgba(125, 180, 255, 0.16);
+  --ambient-3: rgba(15, 23, 42, 0.11);
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
@@ -37,13 +43,19 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Dunkel (Obsidian / Anthrazit) */
-    --bg: #0b0f14;
-    --fg: #e5e7eb;
-    --muted: #a1a1aa;
+    --bg: #111823;
+    --fg: #e7edf5;
+    --muted: #a8b2c2;
 
-    --surface: rgba(17, 21, 27, 0.6);
-    --surface-solid: #11151b;
-    --border: rgba(255, 255, 255, 0.1);
+    --surface: rgba(22, 30, 41, 0.54);
+    --surface-solid: #161f2b;
+    --border: rgba(231, 237, 245, 0.16);
+    --glass-highlight: rgba(255, 255, 255, 0.16);
+    --glass-shadow: rgba(6, 10, 18, 0.52);
+
+    --ambient-1: rgba(242, 201, 76, 0.32);
+    --ambient-2: rgba(125, 180, 255, 0.2);
+    --ambient-3: rgba(90, 118, 158, 0.14);
 
     --accent: #f2c94c;
     --accent2: #ffd56a;
@@ -60,6 +72,12 @@ html[data-theme='light'] {
   --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #ffffff;
   --border: rgba(15, 23, 42, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.52);
+  --glass-shadow: rgba(15, 23, 42, 0.12);
+
+  --ambient-1: rgba(242, 201, 76, 0.22);
+  --ambient-2: rgba(125, 180, 255, 0.16);
+  --ambient-3: rgba(15, 23, 42, 0.11);
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
@@ -67,13 +85,19 @@ html[data-theme='light'] {
 }
 
 html[data-theme='dark'] {
-  --bg: #0b0f14;
-  --fg: #e5e7eb;
-  --muted: #a1a1aa;
+  --bg: #111823;
+  --fg: #e7edf5;
+  --muted: #a8b2c2;
 
-  --surface: rgba(17, 21, 27, 0.6);
-  --surface-solid: #11151b;
-  --border: rgba(255, 255, 255, 0.1);
+  --surface: rgba(22, 30, 41, 0.54);
+  --surface-solid: #161f2b;
+  --border: rgba(231, 237, 245, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.16);
+  --glass-shadow: rgba(6, 10, 18, 0.52);
+
+  --ambient-1: rgba(242, 201, 76, 0.32);
+  --ambient-2: rgba(125, 180, 255, 0.2);
+  --ambient-3: rgba(90, 118, 158, 0.14);
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
@@ -198,18 +222,68 @@ html[data-theme='dark'] {
 }
 
 @layer utilities {
+  .mg-page-bg {
+    position: relative;
+    isolation: isolate;
+    background:
+      radial-gradient(120% 72% at 50% -14%, var(--ambient-1) 0%, transparent 63%),
+      radial-gradient(78% 62% at 104% 18%, var(--ambient-2) 0%, transparent 66%),
+      radial-gradient(66% 56% at -10% 82%, var(--ambient-3) 0%, transparent 64%),
+      linear-gradient(to bottom, color-mix(in oklab, var(--bg) 88%, transparent), var(--bg));
+  }
+
+  .mg-page-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        to right,
+        color-mix(in oklab, var(--fg) 8%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--fg) 7%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 130px 130px;
+    mask-image: radial-gradient(100% 65% at 50% 0%, black 0%, transparent 100%);
+    opacity: 0.28;
+  }
+
+  .mg-page-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      color-mix(in oklab, var(--bg) 70%, black 30%) 100%
+    );
+    opacity: 0.36;
+  }
+
   /* Dezenter Glas-Helfer */
   .glass {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(12px);
+    background: color-mix(in oklab, var(--surface) 90%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 82%, white 18%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 14px 34px -22px var(--glass-shadow);
+    -webkit-backdrop-filter: blur(16px) saturate(130%);
+    backdrop-filter: blur(16px) saturate(130%);
   }
 
   /* Staerkerer Glas-Look (z. B. Overlay / Mobile-Navigation) */
   .glass-strong {
-    background: color-mix(in oklab, var(--surface-solid) 94%, transparent);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(24px);
+    background: color-mix(in oklab, var(--surface-solid) 86%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 84%, white 16%);
+    box-shadow:
+      inset 0 1px 0 var(--glass-highlight),
+      0 26px 52px -28px var(--glass-shadow);
+    -webkit-backdrop-filter: blur(28px) saturate(140%);
+    backdrop-filter: blur(28px) saturate(140%);
   }
 
   /* Top-Navigation: Akzent aktiv + animierte Unterstreichung beim Hover */
