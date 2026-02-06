@@ -1,5 +1,5 @@
 import React from 'react';
-import { Filter } from 'lucide-react';
+import { Check, Filter } from 'lucide-react';
 import type { MetricDef } from '../types';
 
 export type GroupedMetrics = Array<{ cat: string; ids: string[] }>;
@@ -62,13 +62,16 @@ export function MetricPicker({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0 truncate">{def?.label || id}</span>
-                          {def?.unit ? (
-                            <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                              {def.unit}
-                            </span>
-                          ) : null}
+                          <span className="flex items-center gap-2">
+                            {def?.unit ? (
+                              <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
+                                {def.unit}
+                              </span>
+                            ) : null}
+                            {isActive ? <Check size={16} className="text-accent" /> : null}
+                          </span>
                         </div>
-                        <p className="text-muted mt-1 text-xs">ID: {id}</p>
+                        <p className="text-muted mt-1 text-xs break-all">ID: {id}</p>
                       </button>
                     </li>
                   );

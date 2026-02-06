@@ -373,7 +373,9 @@ export default function StatsApp() {
   const [versusLoading, setVersusLoading] = useState(false);
   const [versusError, setVersusError] = useState<string | null>(null);
   const [versusNotice, setVersusNotice] = useState<string | null>(null);
+  const [versusSwapFx, setVersusSwapFx] = useState(false);
   const versusAbortRef = useRef<AbortController | null>(null);
+  const versusSwapFxTimeoutRef = useRef<number | null>(null);
   const metricScrollRef = useRef<number | null>(null);
 
   // Autovervollstaendigung
@@ -417,6 +419,14 @@ export default function StatsApp() {
     } catch {
       // Unkritisch: localStorage kann blockiert sein.
     }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (versusSwapFxTimeoutRef.current !== null) {
+        window.clearTimeout(versusSwapFxTimeoutRef.current);
+      }
+    };
   }, []);
 
   // Initialer Load: KPI + Spieleranzahl
@@ -558,6 +568,15 @@ export default function StatsApp() {
     search.setSelectedIndex(-1);
   }
 
+  function triggerVersusSwapFx() {
+    setVersusSwapFx(false);
+    if (versusSwapFxTimeoutRef.current !== null) {
+      window.clearTimeout(versusSwapFxTimeoutRef.current);
+    }
+    window.requestAnimationFrame(() => setVersusSwapFx(true));
+    versusSwapFxTimeoutRef.current = window.setTimeout(() => setVersusSwapFx(false), 420);
+  }
+
   function swapVersusPlayers() {
     const nextA = versusPlayerB;
     const nextB = versusPlayerA;
@@ -565,6 +584,7 @@ export default function StatsApp() {
     setVersusPlayerB(nextB);
     versusSearchA.setValueWithoutAutoOpen(nextA?.name || '');
     versusSearchB.setValueWithoutAutoOpen(nextB?.name || '');
+    triggerVersusSwapFx();
   }
 
   function updateVersusSearch(side: 'A' | 'B', next: string) {
@@ -811,6 +831,11 @@ export default function StatsApp() {
     !!versusPlayerA && !!versusPlayerB && versusPlayerA.uuid === versusPlayerB.uuid;
 
   const canRunVersus = !!versusPlayerA && !!versusPlayerB && !versusLoading && !isSameVersusPlayer;
+  const versusSwapFxClass = versusSwapFx
+    ? 'border-accent/55 bg-accent/10 ring-accent/35 ring-1'
+    : '';
+  const versusCardAZClass = versusSearchA.open ? 'z-50' : 'z-30';
+  const versusCardBZClass = versusSearchB.open ? 'z-50' : 'z-30';
 
   const hasVersusData = !!versusStatsA && !!versusStatsB;
 
@@ -996,15 +1021,17 @@ export default function StatsApp() {
                 </div>
               </div>
 
-              <LeaderboardTable
-                def={{ label: 'Punkte', category: 'King' }}
-                state={king}
-                pageSize={pageSize}
-                getPlayerName={getPlayerName}
-                onPlayerClick={goToPlayer}
-                onGoPage={(pageIndex) => setKing((s) => ({ ...s, currentPage: pageIndex }))}
-                onLoadMore={() => void loadLeaderboard('king', 'king')}
-              />
+              <div className="min-w-0">
+                <LeaderboardTable
+                  def={{ label: 'Punkte', category: 'King' }}
+                  state={king}
+                  pageSize={pageSize}
+                  getPlayerName={getPlayerName}
+                  onPlayerClick={goToPlayer}
+                  onGoPage={(pageIndex) => setKing((s) => ({ ...s, currentPage: pageIndex }))}
+                  onLoadMore={() => void loadLeaderboard('king', 'king')}
+                />
+              </div>
             </div>
           </div>
         </section>
@@ -1049,7 +1076,7 @@ export default function StatsApp() {
                 />
               )}
 
-              <div className="space-y-3">
+              <div className="min-w-0 space-y-3">
                 {metrics && activeMetricId ? (
                   <div className="mg-card p-4">
                     <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
@@ -1138,7 +1165,13 @@ export default function StatsApp() {
               </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-                <div className="bg-surface border-border relative z-30 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                <div
+                  className={[
+                    'bg-surface border-border relative min-w-0 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300',
+                    versusCardAZClass,
+                    versusSwapFxClass,
+                  ].join(' ')}
+                >
                   <div className="flex items-center justify-between">
                     <p className="text-muted text-xs font-semibold uppercase">Spieler A</p>
                     {versusPlayerA ? (
@@ -1171,7 +1204,7 @@ export default function StatsApp() {
                     />
                   </div>
                   {versusPlayerA ? (
-                    <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-2">
                         <img
                           src={`https://minotar.net/helm/${encodeURIComponent(
@@ -1192,7 +1225,7 @@ export default function StatsApp() {
                       <button
                         type="button"
                         onClick={() => goToPlayer(versusPlayerA.uuid)}
-                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex w-fit shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
                       >
                         Profil
                       </button>
@@ -1206,7 +1239,13 @@ export default function StatsApp() {
                   vs
                 </div>
 
-                <div className="bg-surface border-border relative z-30 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                <div
+                  className={[
+                    'bg-surface border-border relative min-w-0 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300',
+                    versusCardBZClass,
+                    versusSwapFxClass,
+                  ].join(' ')}
+                >
                   <div className="flex items-center justify-between">
                     <p className="text-muted text-xs font-semibold uppercase">Spieler B</p>
                     {versusPlayerB ? (
@@ -1239,7 +1278,7 @@ export default function StatsApp() {
                     />
                   </div>
                   {versusPlayerB ? (
-                    <div className="mt-3 flex items-center justify-between gap-3">
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex min-w-0 items-center gap-2">
                         <img
                           src={`https://minotar.net/helm/${encodeURIComponent(
@@ -1260,7 +1299,7 @@ export default function StatsApp() {
                       <button
                         type="button"
                         onClick={() => goToPlayer(versusPlayerB.uuid)}
-                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex w-fit shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
                       >
                         Profil
                       </button>
@@ -1271,7 +1310,7 @@ export default function StatsApp() {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="mt-4 flex flex-wrap items-start gap-2 sm:items-center">
                 <button
                   type="button"
                   onClick={() => void runVersusCompare()}
@@ -1293,7 +1332,7 @@ export default function StatsApp() {
                 >
                   Zurücksetzen
                 </button>
-                <span className="text-muted text-xs">
+                <span className="text-muted text-xs sm:ml-auto">
                   Maximal {VERSUS_MAX_METRICS} Kategorien gleichzeitig.
                 </span>
               </div>
@@ -1322,11 +1361,11 @@ export default function StatsApp() {
 
             <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
               {!hasVersusData ? (
-                <div className="mg-card text-muted p-5 text-sm">
+                <div className="mg-card min-w-0 text-muted p-5 text-sm">
                   Klicke auf "Vergleichen", um die Spielerstatistiken zu laden.
                 </div>
               ) : (
-                <div className="mg-card p-4">
+                <div className="mg-card min-w-0 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
                     <span className="text-muted text-xs">{versusCatalog.length} Einträge</span>
@@ -1390,7 +1429,7 @@ export default function StatsApp() {
                       {versusGroupedMetrics.map(({ cat, items }) => (
                         <div key={cat} className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <p className="text-muted text-xs font-semibold tracking-wide uppercase">
+                            <p className="text-muted min-w-0 break-words text-xs font-semibold tracking-wide uppercase">
                               {cat}
                             </p>
                             <span className="text-muted text-xs">{items.length}</span>
@@ -1412,7 +1451,7 @@ export default function StatsApp() {
                                     ].join(' ')}
                                   >
                                     <div className="flex items-start justify-between gap-3">
-                                      <span className="min-w-0 truncate">{entry.label}</span>
+                                      <span className="min-w-0 break-words">{entry.label}</span>
                                       <span className="flex items-center gap-2">
                                         {entry.unit ? (
                                           <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
@@ -1424,7 +1463,9 @@ export default function StatsApp() {
                                         ) : null}
                                       </span>
                                     </div>
-                                    <p className="text-muted mt-1 text-xs">ID: {entry.id}</p>
+                                    <p className="text-muted mt-1 text-xs break-all">
+                                      ID: {entry.id}
+                                    </p>
                                   </button>
                                 </li>
                               );
@@ -1437,7 +1478,7 @@ export default function StatsApp() {
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div className="min-w-0 space-y-3">
                 {versusLoading ? (
                   <div className="mg-card p-4">
                     <p className="text-fg font-semibold">Spielerstatistiken werden geladen...</p>
@@ -1477,19 +1518,21 @@ export default function StatsApp() {
                   </div>
                 ) : (
                   <>
-                    <div className="mg-card p-4">
+                    <div className="mg-card min-w-0 p-4">
                       <p className="text-muted text-xs font-semibold">Zwischenstand</p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3">
-                        <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
-                          {versusPlayerA?.name || 'Spieler A'}: {versusSummary.winsA}
+                      <div className="mt-2 flex flex-wrap items-start gap-2 sm:items-center sm:gap-3">
+                        <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
+                          <span className="min-w-0 truncate">{versusPlayerA?.name || 'Spieler A'}</span>
+                          <span className="shrink-0">: {versusSummary.winsA}</span>
                         </span>
-                        <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
-                          {versusPlayerB?.name || 'Spieler B'}: {versusSummary.winsB}
+                        <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
+                          <span className="min-w-0 truncate">{versusPlayerB?.name || 'Spieler B'}</span>
+                          <span className="shrink-0">: {versusSummary.winsB}</span>
                         </span>
-                        <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
+                        <span className="bg-surface border-border text-muted inline-flex w-full items-center rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
                           Gleichstand: {versusSummary.ties}
                         </span>
-                        <span className="text-muted text-xs">
+                        <span className="text-muted w-full text-xs sm:w-auto">
                           Verglichene Kategorien: {versusSummary.counted}
                         </span>
                       </div>
@@ -1501,22 +1544,26 @@ export default function StatsApp() {
                       ) : null}
                     </div>
 
-                    <div className="mg-card relative overflow-hidden">
-                      <div className="overflow-x-auto">
-                        <table className="w-full min-w-[720px] text-sm">
+                    <div className="mg-card relative min-w-0 overflow-hidden">
+                      <div className="max-w-full overflow-x-auto overscroll-x-contain">
+                        <table className="w-full min-w-[560px] sm:min-w-[720px] text-sm">
                           <thead className="bg-surface-solid/40 text-muted text-xs">
                             <tr>
-                              <th className="px-4 py-3 text-left font-semibold">Kategorie</th>
-                              <th className="px-4 py-3 text-left font-semibold">
+                              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
+                                Kategorie
+                              </th>
+                              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
                                 {versusPlayerA?.name || 'Spieler A'}
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold">
+                              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
                                 {versusPlayerB?.name || 'Spieler B'}
                               </th>
-                              <th className="px-4 py-3 text-left font-semibold">Differenz</th>
+                              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
+                                Differenz
+                              </th>
                             </tr>
                           </thead>
-                          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+                          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3">
                             {versusRows.map((row) => {
                               const def = row.def;
                               const label = def?.label || row.id;
@@ -1538,7 +1585,7 @@ export default function StatsApp() {
                                 <tr key={row.id}>
                                   <td>
                                     <p className="text-fg font-semibold">{label}</p>
-                                    <p className="text-muted mt-1 text-xs">
+                                    <p className="text-muted mt-1 text-xs break-all">
                                       Gruppe: {def?.group || '-'} - ID: {row.id}
                                       {def?.unit ? ` - Einheit: ${def.unit}` : ''}
                                     </p>
@@ -1572,6 +1619,9 @@ export default function StatsApp() {
                           </tbody>
                         </table>
                       </div>
+                      <p className="text-muted px-2.5 pb-2 text-[11px] sm:hidden">
+                        Seitlich wischen, um alle Spalten zu sehen.
+                      </p>
 
                       {versusLoading ? (
                         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">

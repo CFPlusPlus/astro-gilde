@@ -24,22 +24,24 @@ export function LeaderboardTable({
   const page = state.pages[state.currentPage] || [];
 
   return (
-    <div className="mg-card relative overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
+    <div className="mg-card relative min-w-0 overflow-hidden">
+      <div className="max-w-full overflow-x-auto overscroll-x-contain">
+        <table className="w-full min-w-[390px] sm:min-w-[520px] text-sm">
           <thead className="bg-surface-solid/40 text-muted text-xs">
             <tr>
-              <th className="px-4 py-3 text-left font-semibold">Platz</th>
-              <th className="px-4 py-3 text-left font-semibold">Spielername</th>
-              <th className="px-4 py-3 text-left font-semibold">
+              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">Platz</th>
+              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
+                Spielername
+              </th>
+              <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">
                 {def?.unit ? `Wert (${def.unit})` : 'Wert'}
               </th>
             </tr>
           </thead>
-          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3">
             {state.loaded && page.length === 0 ? (
               <tr>
-                <td className="text-muted px-4 py-5 text-sm" colSpan={3}>
+                <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
                   Keine Daten verfügbar.
                 </td>
               </tr>
@@ -86,6 +88,9 @@ export function LeaderboardTable({
           </tbody>
         </table>
       </div>
+      <p className="text-muted px-2.5 pb-2 text-[11px] sm:hidden">
+        Seitlich wischen, um alle Spalten zu sehen.
+      </p>
 
       {state.loading ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
@@ -95,7 +100,7 @@ export function LeaderboardTable({
         </div>
       ) : null}
 
-      <div className="border-border flex items-center justify-between gap-3 border-t px-4 py-3">
+      <div className="border-border flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
         <Pagination state={state} onGo={onGoPage} onLoadMore={onLoadMore} />
       </div>
     </div>
