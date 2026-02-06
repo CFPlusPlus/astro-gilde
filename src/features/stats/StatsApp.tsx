@@ -1,5 +1,16 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Clock, Crown, Map as MapIcon, Skull, Sparkles, Swords, X } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Check,
+  Clock,
+  Crown,
+  Filter,
+  Map as MapIcon,
+  Skull,
+  Sparkles,
+  Swords,
+  X,
+} from 'lucide-react';
 
 import { getLeaderboard, getMetrics, getSummary, searchPlayers } from './api';
 import type { MetricDef, MetricId, PlayersSearchItem } from './types';
@@ -11,8 +22,292 @@ import { PlayerAutocomplete } from './components/PlayerAutocomplete';
 import { KpiStrip, type KpiItem } from './components/KpiStrip';
 import { MetricPicker, type GroupedMetrics } from './components/MetricPicker';
 import { LeaderboardTable } from './components/LeaderboardTable';
+import { getPlayer, getTranslations } from '../player-stats/api';
+import type { PlayerTranslations } from '../player-stats/types';
+import { tLabel } from '../player-stats/i18n';
 
 const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills', 'creeper'];
+const VERSUS_MAX_METRICS = 12;
+
+type VersusMetricKind = 'stat' | 'item' | 'mob';
+type VersusMetricDef = {
+  id: string;
+  label: string;
+  group: string;
+  unit?: string;
+  decimals?: number;
+  kind: VersusMetricKind;
+  key: string;
+  section?: string;
+  transform?: (raw: number) => number;
+};
+
+type VersusGroupedMetrics = Array<{ cat: string; items: VersusMetricDef[] }>;
+
+function filterMetricIds(metrics: Record<string, MetricDef> | null, filter: string) {
+  if (!metrics) return [];
+  const q = filter.trim().toLowerCase();
+  const ids = Object.keys(metrics);
+  if (!q) return ids;
+  return ids.filter((id) => {
+    const def = metrics[id];
+    return (
+      id.toLowerCase().includes(q) ||
+      (def?.label || '').toLowerCase().includes(q) ||
+      (def?.category || '').toLowerCase().includes(q)
+    );
+  });
+}
+
+function groupMetricIds(metrics: Record<string, MetricDef> | null, ids: string[]): GroupedMetrics {
+  if (!metrics) return [];
+  const map = new Map<string, string[]>();
+
+  for (const id of ids) {
+    const cat = metrics[id]?.category || 'Sonstiges';
+    const arr = map.get(cat) || [];
+    arr.push(id);
+    map.set(cat, arr);
+  }
+
+  const cats = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], 'de'));
+  return cats.map(([cat, entries]) => ({
+    cat,
+    ids: entries.sort((a, b) =>
+      (metrics[a]?.label || a).localeCompare(metrics[b]?.label || b, 'de'),
+    ),
+  }));
+}
+
+function filterVersusCatalog(catalog: VersusMetricDef[], filter: string) {
+  const q = filter.trim().toLowerCase();
+  if (!q) return catalog;
+  return catalog.filter((entry) => {
+    return (
+      entry.id.toLowerCase().includes(q) ||
+      entry.label.toLowerCase().includes(q) ||
+      entry.group.toLowerCase().includes(q)
+    );
+  });
+}
+
+function groupVersusCatalog(catalog: VersusMetricDef[]): VersusGroupedMetrics {
+  const map = new Map<string, VersusMetricDef[]>();
+  for (const entry of catalog) {
+    const arr = map.get(entry.group) || [];
+    arr.push(entry);
+    map.set(entry.group, arr);
+  }
+
+  const cats = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], 'de'));
+  return cats.map(([cat, items]) => ({
+    cat,
+    items: items.sort((a, b) => a.label.localeCompare(b.label, 'de')),
+  }));
+}
+
+function getQuickVersusSelection(catalog: VersusMetricDef[]) {
+  const general = catalog.filter((entry) => entry.group === 'Allgemein');
+  const base = general.length > 0 ? general : catalog;
+  return base.slice(0, 4).map((entry) => entry.id);
+}
+
+function formatVersusValue(value: number, def?: VersusMetricDef) {
+  const unit = def?.unit || '';
+  const dec = def?.decimals ?? 0;
+  return unit ? `${fmtNumber(value, dec)} ${unit}` : fmtNumber(value, dec);
+}
+
+function formatVersusDiff(value: number, def?: VersusMetricDef) {
+  if (value === 0) return formatVersusValue(0, def);
+  const sign = value > 0 ? '+' : '-';
+  return `${sign}${formatVersusValue(Math.abs(value), def)}`;
+}
+
+function buildVersusCatalog(
+  statsA: Record<string, unknown> | null,
+  statsB: Record<string, unknown> | null,
+  translations: PlayerTranslations | null,
+): VersusMetricDef[] {
+  const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
+
+  const list: VersusMetricDef[] = [];
+  const HOUR_KEYS = new Set([
+    'minecraft:play_time',
+    'minecraft:sneak_time',
+    'minecraft:time_since_death',
+    'minecraft:time_since_rest',
+    'minecraft:total_world_time',
+  ]);
+
+  const customA = asObj(statsA?.['minecraft:custom']);
+  const customB = asObj(statsB?.['minecraft:custom']);
+  const customKeys = new Set([...Object.keys(customA || {}), ...Object.keys(customB || {})]);
+
+  for (const key of [...customKeys].sort((a, b) => a.localeCompare(b, 'de'))) {
+    let unit: string | undefined;
+    let decimals: number | undefined;
+    let transform: ((raw: number) => number) | undefined;
+
+    if (HOUR_KEYS.has(key)) {
+      unit = 'h';
+      decimals = 2;
+      transform = (raw) => raw / 72000;
+    } else if (key.endsWith('_one_cm')) {
+      unit = 'km';
+      decimals = 2;
+      transform = (raw) => raw / 100000;
+    }
+
+    list.push({
+      id: `stat:${key}`,
+      label: tLabel(key, 'stat', true, translations),
+      group: 'Allgemein',
+      unit,
+      decimals,
+      kind: 'stat',
+      key,
+      transform,
+    });
+  }
+
+  const itemSections = [
+    { key: 'mined', label: 'Abgebaut' },
+    { key: 'broken', label: 'Verbraucht' },
+    { key: 'crafted', label: 'Hergestellt' },
+    { key: 'used', label: 'Benutzt' },
+    { key: 'picked_up', label: 'Aufgesammelt' },
+    { key: 'dropped', label: 'Fallen gelassen' },
+    { key: 'placed', label: 'Platziert' },
+  ];
+
+  for (const sec of itemSections) {
+    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
+    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
+    const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
+    const group = `Gegenstaende - ${sec.label}`;
+    for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
+      list.push({
+        id: `item:${sec.key}:${key}`,
+        label: `${tLabel(key, 'item', true, translations)} (${sec.label})`,
+        group,
+        kind: 'item',
+        key,
+        section: `minecraft:${sec.key}`,
+      });
+    }
+  }
+
+  const mobSections = [
+    { key: 'killed', label: 'Getoetet' },
+    { key: 'killed_by', label: 'Gestorben durch' },
+  ];
+
+  for (const sec of mobSections) {
+    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
+    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
+    const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
+    const group = `Kreaturen - ${sec.label}`;
+    for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
+      list.push({
+        id: `mob:${sec.key}:${key}`,
+        label: `${tLabel(key, 'mob', true, translations)} (${sec.label})`,
+        group,
+        kind: 'mob',
+        key,
+        section: `minecraft:${sec.key}`,
+      });
+    }
+  }
+
+  return list;
+}
+
+function getVersusValue(stats: Record<string, unknown> | null, def?: VersusMetricDef) {
+  if (!stats || !def) return null;
+  const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
+
+  if (def.kind === 'stat') {
+    const custom = asObj(stats['minecraft:custom']);
+    const raw = custom?.[def.key];
+    if (typeof raw !== 'number') return null;
+    return def.transform ? def.transform(raw) : raw;
+  }
+
+  const sectionKey = def.section || '';
+  const sec = asObj(stats[sectionKey]);
+  const raw = sec?.[def.key];
+  if (typeof raw !== 'number') return null;
+  return def.transform ? def.transform(raw) : raw;
+}
+
+function usePlayerAutocomplete({
+  onGeneratedIso,
+  onError,
+}: {
+  onGeneratedIso?: (iso: string) => void;
+  onError?: (message: string | null) => void;
+}) {
+  const [value, setValue] = useState('');
+  const [items, setItems] = useState<PlayersSearchItem[]>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const abortRef = useRef<AbortController | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      const el = wrapRef.current;
+      if (!el) return;
+      if (!el.contains(e.target as Node)) setOpen(false);
+    };
+    window.addEventListener('mousedown', onDown);
+    return () => window.removeEventListener('mousedown', onDown);
+  }, []);
+
+  useEffect(() => {
+    const q = value.trim();
+    if (q.length < 2) {
+      setItems([]);
+      setOpen(false);
+      setSelectedIndex(-1);
+      return;
+    }
+
+    const t = window.setTimeout(async () => {
+      abortRef.current?.abort();
+      const ac = new AbortController();
+      abortRef.current = ac;
+
+      try {
+        const data = await searchPlayers(q, 6, ac.signal);
+        if (typeof data.__generated === 'string') onGeneratedIso?.(data.__generated);
+        setItems(Array.isArray(data.items) ? data.items : []);
+        setOpen(Array.isArray(data.items) && data.items.length > 0);
+        setSelectedIndex(-1);
+        onError?.(null);
+      } catch (e) {
+        if ((e as Error)?.name === 'AbortError') return;
+        console.warn('Autocomplete Fehler', e);
+        onError?.('Statistiken sind aktuell nicht erreichbar. Bitte versuche es spaeter erneut.');
+      }
+    }, 180);
+
+    return () => window.clearTimeout(t);
+  }, [value, onGeneratedIso, onError]);
+
+  return {
+    value,
+    setValue,
+    items,
+    setItems,
+    open,
+    setOpen,
+    selectedIndex,
+    setSelectedIndex,
+    wrapRef,
+  };
+}
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
@@ -49,14 +344,33 @@ export default function StatsApp() {
   // Welcome-/Info-Callouts
   const [showWelcome, setShowWelcome] = useState(true);
 
-  // Autovervollstaendigung
-  const [searchValue, setSearchValue] = useState('');
-  const [acItems, setAcItems] = useState<PlayersSearchItem[]>([]);
-  const [acOpen, setAcOpen] = useState(false);
-  const [acSelected, setAcSelected] = useState(-1);
-  const acAbortRef = useRef<AbortController | null>(null);
-  const acWrapRef = useRef<HTMLDivElement | null>(null);
+  // Versus
+  const [versusMetricFilter, setVersusMetricFilter] = useState<string>('');
+  const [versusMetricIds, setVersusMetricIds] = useState<string[]>([]);
+  const [versusPlayerA, setVersusPlayerA] = useState<PlayersSearchItem | null>(null);
+  const [versusPlayerB, setVersusPlayerB] = useState<PlayersSearchItem | null>(null);
+  const [versusStatsA, setVersusStatsA] = useState<Record<string, unknown> | null>(null);
+  const [versusStatsB, setVersusStatsB] = useState<Record<string, unknown> | null>(null);
+  const [versusCatalog, setVersusCatalog] = useState<VersusMetricDef[]>([]);
+  const [versusLoading, setVersusLoading] = useState(false);
+  const [versusError, setVersusError] = useState<string | null>(null);
+  const [versusNotice, setVersusNotice] = useState<string | null>(null);
+  const versusAbortRef = useRef<AbortController | null>(null);
   const metricScrollRef = useRef<number | null>(null);
+
+  // Autovervollstaendigung
+  const mainSearch = usePlayerAutocomplete({
+    onGeneratedIso: setGeneratedIso,
+    onError: setApiError,
+  });
+  const versusSearchA = usePlayerAutocomplete({
+    onGeneratedIso: setGeneratedIso,
+    onError: setVersusError,
+  });
+  const versusSearchB = usePlayerAutocomplete({
+    onGeneratedIso: setGeneratedIso,
+    onError: setVersusError,
+  });
 
   // Spielername-Cache (uuid -> name) aus API-Payloads
   const playerNamesRef = useRef<Record<string, string>>({});
@@ -140,49 +454,6 @@ export default function StatsApp() {
     setBoards({});
   }, [pageSize]);
 
-  // Klick ausserhalb schliesst Autocomplete
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      const el = acWrapRef.current;
-      if (!el) return;
-      if (!el.contains(e.target as Node)) setAcOpen(false);
-    };
-    window.addEventListener('mousedown', onDown);
-    return () => window.removeEventListener('mousedown', onDown);
-  }, []);
-
-  // Debounce fuer Autocomplete
-  useEffect(() => {
-    const q = searchValue.trim();
-    if (q.length < 2) {
-      setAcItems([]);
-      setAcOpen(false);
-      setAcSelected(-1);
-      return;
-    }
-
-    const t = window.setTimeout(async () => {
-      acAbortRef.current?.abort();
-      const ac = new AbortController();
-      acAbortRef.current = ac;
-
-      try {
-        const data = await searchPlayers(q, 6, ac.signal);
-        if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
-        setAcItems(Array.isArray(data.items) ? data.items : []);
-        setAcOpen(Array.isArray(data.items) && data.items.length > 0);
-        setAcSelected(-1);
-        setApiError(null);
-      } catch (e) {
-        if ((e as Error)?.name === 'AbortError') return;
-        console.warn('Autocomplete Fehler', e);
-        setApiError('Statistiken sind aktuell nicht erreichbar. Bitte versuche es später erneut.');
-      }
-    }, 180);
-
-    return () => window.clearTimeout(t);
-  }, [searchValue]);
-
   function getPlayerName(uuid: string) {
     return playerNamesRef.current[uuid] || uuid;
   }
@@ -245,6 +516,160 @@ export default function StatsApp() {
     window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
   }
 
+  function setVersusPlayer(
+    side: 'A' | 'B',
+    uuid: string,
+    items: PlayersSearchItem[],
+    search: ReturnType<typeof usePlayerAutocomplete>,
+  ) {
+    const found = items.find((it) => it.uuid === uuid);
+    const next = found || { uuid, name: uuid };
+    if (side === 'A') setVersusPlayerA(next);
+    else setVersusPlayerB(next);
+    search.setValue(next.name);
+    search.setOpen(false);
+    search.setSelectedIndex(-1);
+    playerNamesRef.current[next.uuid] = next.name;
+  }
+
+  function clearVersusPlayer(side: 'A' | 'B') {
+    if (side === 'A') setVersusPlayerA(null);
+    else setVersusPlayerB(null);
+    const search = side === 'A' ? versusSearchA : versusSearchB;
+    search.setValue('');
+    search.setItems([]);
+    search.setOpen(false);
+    search.setSelectedIndex(-1);
+  }
+
+  function swapVersusPlayers() {
+    const nextA = versusPlayerB;
+    const nextB = versusPlayerA;
+    setVersusPlayerA(nextA);
+    setVersusPlayerB(nextB);
+    versusSearchA.setValue(nextA?.name || '');
+    versusSearchB.setValue(nextB?.name || '');
+    versusSearchA.setOpen(false);
+    versusSearchB.setOpen(false);
+    versusSearchA.setSelectedIndex(-1);
+    versusSearchB.setSelectedIndex(-1);
+  }
+
+  function updateVersusSearch(side: 'A' | 'B', next: string) {
+    const search = side === 'A' ? versusSearchA : versusSearchB;
+    const current = side === 'A' ? versusPlayerA : versusPlayerB;
+    search.setValue(next);
+    if (current && current.name.trim().toLowerCase() !== next.trim().toLowerCase()) {
+      if (side === 'A') setVersusPlayerA(null);
+      else setVersusPlayerB(null);
+    }
+  }
+
+  async function runVersusCompare() {
+    const playerA = versusPlayerA;
+    const playerB = versusPlayerB;
+
+    if (!playerA || !playerB) {
+      setVersusError('Bitte waehle zwei Spieler fuer den Vergleich aus.');
+      return;
+    }
+
+    if (playerA.uuid === playerB.uuid) {
+      setVersusError('Bitte waehle zwei unterschiedliche Spieler.');
+      return;
+    }
+
+    setVersusError(null);
+    setVersusNotice(null);
+    setVersusLoading(true);
+    versusAbortRef.current?.abort();
+    const ac = new AbortController();
+    versusAbortRef.current = ac;
+
+    try {
+      const [t, a, b] = await Promise.all([
+        getTranslations(ac.signal).catch(() => null),
+        getPlayer(playerA.uuid, ac.signal),
+        getPlayer(playerB.uuid, ac.signal),
+      ]);
+
+      const statsA =
+        a.found === false || !a.player || typeof a.player !== 'object'
+          ? null
+          : (a.player as Record<string, unknown>);
+      const statsB =
+        b.found === false || !b.player || typeof b.player !== 'object'
+          ? null
+          : (b.player as Record<string, unknown>);
+
+      if (!statsA) {
+        setVersusError(`Spieler A (${playerA.name}) wurde nicht gefunden.`);
+        setVersusStatsA(null);
+        setVersusStatsB(null);
+        setVersusCatalog([]);
+        return;
+      }
+
+      if (!statsB) {
+        setVersusError(`Spieler B (${playerB.name}) wurde nicht gefunden.`);
+        setVersusStatsA(null);
+        setVersusStatsB(null);
+        setVersusCatalog([]);
+        return;
+      }
+
+      if (typeof a.__generated === 'string') setGeneratedIso(a.__generated);
+      if (typeof b.__generated === 'string') setGeneratedIso(b.__generated);
+
+      setVersusStatsA(statsA);
+      setVersusStatsB(statsB);
+
+      const catalog = buildVersusCatalog(statsA, statsB, t);
+      setVersusCatalog(catalog);
+
+      setVersusMetricIds((prev) => {
+        const available = new Set(catalog.map((entry) => entry.id));
+        const filtered = prev.filter((id) => available.has(id));
+        if (filtered.length > 0) return filtered.slice(0, VERSUS_MAX_METRICS);
+
+        const quick = getQuickVersusSelection(catalog);
+        return quick.slice(0, VERSUS_MAX_METRICS);
+      });
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') return;
+      console.warn('Versus Fehler', e);
+      setVersusError('Versus konnte nicht geladen werden. Bitte versuche es spaeter erneut.');
+    } finally {
+      setVersusLoading(false);
+    }
+  }
+
+  function applyVersusSelection(next: string[]) {
+    const unique = Array.from(new Set(next));
+    if (unique.length > VERSUS_MAX_METRICS) {
+      setVersusNotice(`Maximal ${VERSUS_MAX_METRICS} Kategorien gleichzeitig.`);
+      setVersusMetricIds(unique.slice(0, VERSUS_MAX_METRICS));
+      return;
+    }
+    setVersusNotice(null);
+    setVersusMetricIds(unique);
+  }
+
+  function toggleVersusMetric(id: string) {
+    setVersusMetricIds((prev) => {
+      if (prev.includes(id)) {
+        setVersusNotice(null);
+        return prev.filter((item) => item !== id);
+      }
+      if (prev.length >= VERSUS_MAX_METRICS) {
+        setVersusNotice(`Maximal ${VERSUS_MAX_METRICS} Kategorien gleichzeitig.`);
+        return prev;
+      }
+      setVersusNotice(null);
+      return [...prev, id];
+    });
+  }
+
   // KPI-Definitionen (Fallback, falls API keine liefert)
   const kpiDefs = useMemo(() => {
     const defs: Record<string, MetricDef> = {
@@ -278,40 +703,28 @@ export default function StatsApp() {
     });
   }, [kpiDefs, kpiIcons, totals]);
 
-  const filteredMetricIds = useMemo(() => {
-    if (!metrics) return [];
-    const q = metricFilter.trim().toLowerCase();
-    const ids = Object.keys(metrics);
-    if (!q) return ids;
-    return ids.filter((id) => {
-      const def = metrics[id];
-      return (
-        id.toLowerCase().includes(q) ||
-        (def?.label || '').toLowerCase().includes(q) ||
-        (def?.category || '').toLowerCase().includes(q)
-      );
-    });
-  }, [metrics, metricFilter]);
+  const filteredMetricIds = useMemo(
+    () => filterMetricIds(metrics, metricFilter),
+    [metrics, metricFilter],
+  );
 
-  const groupedMetrics: GroupedMetrics = useMemo(() => {
-    if (!metrics) return [];
-    const map = new Map<string, string[]>();
+  const groupedMetrics: GroupedMetrics = useMemo(
+    () => groupMetricIds(metrics, filteredMetricIds),
+    [metrics, filteredMetricIds],
+  );
 
-    for (const id of filteredMetricIds) {
-      const cat = metrics[id]?.category || 'Sonstiges';
-      const arr = map.get(cat) || [];
-      arr.push(id);
-      map.set(cat, arr);
-    }
+  const versusFilteredCatalog = useMemo(
+    () => filterVersusCatalog(versusCatalog, versusMetricFilter),
+    [versusCatalog, versusMetricFilter],
+  );
 
-    const cats = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], 'de'));
-    return cats.map(([cat, ids]) => ({
-      cat,
-      ids: ids.sort((a, b) => (metrics[a]?.label || a).localeCompare(metrics[b]?.label || b, 'de')),
-    }));
-  }, [filteredMetricIds, metrics]);
+  const versusGroupedMetrics: VersusGroupedMetrics = useMemo(
+    () => groupVersusCatalog(versusFilteredCatalog),
+    [versusFilteredCatalog],
+  );
 
-  const hasNoResults = metrics && filteredMetricIds.length === 0;
+  const hasNoRanklistResults = metrics && filteredMetricIds.length === 0;
+  const hasNoVersusResults = versusCatalog.length > 0 && versusFilteredCatalog.length === 0;
 
   // Beim Öffnen der Ranglisten direkt die erste Rangliste aktivieren.
   useEffect(() => {
@@ -352,6 +765,25 @@ export default function StatsApp() {
     });
   }, [activeMetricId, activeTab]);
 
+  useEffect(() => {
+    setVersusStatsA(null);
+    setVersusStatsB(null);
+    setVersusCatalog([]);
+    setVersusNotice(null);
+    setVersusError(null);
+  }, [versusPlayerA?.uuid, versusPlayerB?.uuid]);
+
+  useEffect(() => {
+    if (versusCatalog.length === 0) return;
+    setVersusMetricIds((prev) => {
+      const available = new Set(versusCatalog.map((entry) => entry.id));
+      const filtered = prev.filter((id) => available.has(id));
+      if (filtered.length > 0) return filtered.slice(0, VERSUS_MAX_METRICS);
+      const quick = getQuickVersusSelection(versusCatalog);
+      return quick.slice(0, VERSUS_MAX_METRICS);
+    });
+  }, [versusCatalog]);
+
   function setTab(tab: TabKey) {
     setActiveTab(tab);
     try {
@@ -362,6 +794,64 @@ export default function StatsApp() {
   }
 
   const showPageSize = activeTab === 'king' || activeTab === 'ranglisten';
+
+  const isSameVersusPlayer =
+    !!versusPlayerA && !!versusPlayerB && versusPlayerA.uuid === versusPlayerB.uuid;
+
+  const canRunVersus = !!versusPlayerA && !!versusPlayerB && !versusLoading && !isSameVersusPlayer;
+
+  const hasVersusData = !!versusStatsA && !!versusStatsB;
+
+  const versusCatalogMap = useMemo(
+    () => new Map(versusCatalog.map((entry) => [entry.id, entry])),
+    [versusCatalog],
+  );
+
+  const versusRows = useMemo(() => {
+    return versusMetricIds
+      .map((id) => {
+        const def = versusCatalogMap.get(id);
+        if (!def) return null;
+        return {
+          id,
+          def,
+          valueA: getVersusValue(versusStatsA, def),
+          valueB: getVersusValue(versusStatsB, def),
+        };
+      })
+      .filter(
+        (
+          row,
+        ): row is {
+          id: string;
+          def: VersusMetricDef;
+          valueA: number | null;
+          valueB: number | null;
+        } => row !== null,
+      );
+  }, [versusMetricIds, versusCatalogMap, versusStatsA, versusStatsB]);
+
+  const versusSummary = useMemo(() => {
+    let winsA = 0;
+    let winsB = 0;
+    let ties = 0;
+    let counted = 0;
+
+    for (const row of versusRows) {
+      if (row.valueA === null || row.valueB === null) continue;
+      counted += 1;
+      if (row.valueA > row.valueB) winsA += 1;
+      else if (row.valueB > row.valueA) winsB += 1;
+      else ties += 1;
+    }
+
+    return { winsA, winsB, ties, counted };
+  }, [versusRows]);
+
+  const hasVersusResults = hasVersusData && versusRows.length > 0;
+  const hasMissingVersusValues = versusRows.some(
+    (row) => row.valueA === null || row.valueB === null,
+  );
 
   return (
     <div>
@@ -381,15 +871,15 @@ export default function StatsApp() {
 
           <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
             <PlayerAutocomplete
-              value={searchValue}
-              onChange={setSearchValue}
-              items={acItems}
-              open={acOpen}
-              onOpenChange={setAcOpen}
-              selectedIndex={acSelected}
-              onSelectedIndexChange={setAcSelected}
+              value={mainSearch.value}
+              onChange={mainSearch.setValue}
+              items={mainSearch.items}
+              open={mainSearch.open}
+              onOpenChange={mainSearch.setOpen}
+              selectedIndex={mainSearch.selectedIndex}
+              onSelectedIndexChange={mainSearch.setSelectedIndex}
               onChoose={(uuid) => goToPlayer(uuid)}
-              wrapRef={acWrapRef}
+              wrapRef={mainSearch.wrapRef}
             />
 
             <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
@@ -516,7 +1006,7 @@ export default function StatsApp() {
               subtitle="Wähle links eine Kategorie aus. Ranglisten werden erst geladen, wenn du sie wirklich öffnest (performant bei vielen Spielern)."
             />
 
-            {hasNoResults ? (
+            {hasNoRanklistResults ? (
               <div
                 className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
                 role="status"
@@ -601,21 +1091,486 @@ export default function StatsApp() {
           </div>
         </section>
       ) : null}
-
       {activeTab === 'versus' ? (
         <section aria-label="Versus" className="mg-container pb-12">
-          <div className="mt-6">
+          <div className="mt-6 space-y-6">
+            <SectionTitle
+              title="Versus"
+              subtitle="Vergleiche zwei Spieler in ausgewaehlten Kategorien. Werte basieren auf den kompletten Spielerstatistiken."
+            />
+
             <div className="mg-card p-5">
-              <div className="flex items-start gap-3">
-                <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
-                  <Swords size={18} />
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
+                    <Swords size={18} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-fg font-semibold">Spieler-Vergleich</p>
+                    <p className="text-muted mt-1 text-sm leading-relaxed">
+                      Waehle zwei Spieler und starte den Vergleich. Fuer beste Ergebnisse nutze
+                      konkrete Kategorien.
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-fg font-semibold">Versus</p>
-                  <p className="text-muted mt-1 text-sm leading-relaxed">
-                    Geplant, wird aber erst in einem späteren Schritt umgesetzt.
-                  </p>
+
+                <button
+                  type="button"
+                  onClick={swapVersusPlayers}
+                  disabled={!versusPlayerA && !versusPlayerB}
+                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <ArrowLeftRight size={16} />
+                  Tauschen
+                </button>
+              </div>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
+                <div className="bg-surface border-border rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted text-xs font-semibold uppercase">Spieler A</p>
+                    {versusPlayerA ? (
+                      <button
+                        type="button"
+                        onClick={() => clearVersusPlayer('A')}
+                        className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
+                        aria-label="Spieler A entfernen"
+                      >
+                        <X size={14} />
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="mt-2">
+                    <PlayerAutocomplete
+                      value={versusSearchA.value}
+                      onChange={(next) => updateVersusSearch('A', next)}
+                      items={versusSearchA.items}
+                      open={versusSearchA.open}
+                      onOpenChange={(open) => {
+                        versusSearchA.setOpen(open);
+                        if (open) versusSearchB.setOpen(false);
+                      }}
+                      selectedIndex={versusSearchA.selectedIndex}
+                      onSelectedIndexChange={versusSearchA.setSelectedIndex}
+                      onChoose={(uuid) =>
+                        setVersusPlayer('A', uuid, versusSearchA.items, versusSearchA)
+                      }
+                      wrapRef={versusSearchA.wrapRef}
+                    />
+                  </div>
+                  {versusPlayerA ? (
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <img
+                          src={`https://minotar.net/helm/${encodeURIComponent(
+                            versusPlayerA.name,
+                          )}/32.png`}
+                          alt=""
+                          className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-fg truncate text-sm font-semibold">
+                            {versusPlayerA.name}
+                          </p>
+                          <p className="text-muted truncate text-xs">{versusPlayerA.uuid}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => goToPlayer(versusPlayerA.uuid)}
+                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                      >
+                        Profil
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                  )}
                 </div>
+
+                <div className="text-muted text-center text-xs font-semibold tracking-wide uppercase">
+                  vs
+                </div>
+
+                <div className="bg-surface border-border rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md">
+                  <div className="flex items-center justify-between">
+                    <p className="text-muted text-xs font-semibold uppercase">Spieler B</p>
+                    {versusPlayerB ? (
+                      <button
+                        type="button"
+                        onClick={() => clearVersusPlayer('B')}
+                        className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
+                        aria-label="Spieler B entfernen"
+                      >
+                        <X size={14} />
+                      </button>
+                    ) : null}
+                  </div>
+                  <div className="mt-2">
+                    <PlayerAutocomplete
+                      value={versusSearchB.value}
+                      onChange={(next) => updateVersusSearch('B', next)}
+                      items={versusSearchB.items}
+                      open={versusSearchB.open}
+                      onOpenChange={(open) => {
+                        versusSearchB.setOpen(open);
+                        if (open) versusSearchA.setOpen(false);
+                      }}
+                      selectedIndex={versusSearchB.selectedIndex}
+                      onSelectedIndexChange={versusSearchB.setSelectedIndex}
+                      onChoose={(uuid) =>
+                        setVersusPlayer('B', uuid, versusSearchB.items, versusSearchB)
+                      }
+                      wrapRef={versusSearchB.wrapRef}
+                    />
+                  </div>
+                  {versusPlayerB ? (
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <img
+                          src={`https://minotar.net/helm/${encodeURIComponent(
+                            versusPlayerB.name,
+                          )}/32.png`}
+                          alt=""
+                          className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-fg truncate text-sm font-semibold">
+                            {versusPlayerB.name}
+                          </p>
+                          <p className="text-muted truncate text-xs">{versusPlayerB.uuid}</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => goToPlayer(versusPlayerB.uuid)}
+                        className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                      >
+                        Profil
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => void runVersusCompare()}
+                  disabled={!canRunVersus}
+                  className="bg-accent hover:bg-accent2 focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-black transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  <Swords size={16} />
+                  Vergleichen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearVersusPlayer('A');
+                    clearVersusPlayer('B');
+                    setVersusError(null);
+                    setVersusNotice(null);
+                  }}
+                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
+                >
+                  Zuruecksetzen
+                </button>
+                <span className="text-muted text-xs">
+                  Maximal {VERSUS_MAX_METRICS} Kategorien gleichzeitig.
+                </span>
+              </div>
+
+              {isSameVersusPlayer ? (
+                <div
+                  className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-xs"
+                  role="status"
+                >
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">Bitte waehle zwei unterschiedliche Spieler.</span>
+                </div>
+              ) : null}
+
+              {versusNotice ? (
+                <div
+                  className="bg-surface border-border text-muted mt-3 rounded-[var(--radius)] border px-4 py-3 text-xs"
+                  role="status"
+                >
+                  {versusNotice}
+                </div>
+              ) : null}
+
+              {versusError ? <ApiAlert message={versusError} /> : null}
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+              {!hasVersusData ? (
+                <div className="mg-card text-muted p-5 text-sm">
+                  Klicke auf "Vergleichen", um die Spielerstatistiken zu laden.
+                </div>
+              ) : (
+                <div className="mg-card p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
+                    <span className="text-muted text-xs">{versusCatalog.length} Eintraege</span>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => applyVersusSelection(getQuickVersusSelection(versusCatalog))}
+                      className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                    >
+                      Schnellwahl
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        applyVersusSelection(versusFilteredCatalog.map((entry) => entry.id))
+                      }
+                      className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                    >
+                      Alle
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => applyVersusSelection([])}
+                      className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                    >
+                      Keine
+                    </button>
+                    <span className="text-muted text-xs">
+                      {versusMetricIds.length}/{VERSUS_MAX_METRICS} ausgewaehlt
+                    </span>
+                  </div>
+
+                  <div className="bg-surface-solid/30 border-border mt-3 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+                    <Filter size={16} className="text-muted" />
+                    <input
+                      value={versusMetricFilter}
+                      onChange={(e) => setVersusMetricFilter(e.target.value)}
+                      placeholder="Filtern..."
+                      className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+                      aria-label="Versus Kategorien filtern"
+                    />
+                  </div>
+
+                  {hasNoVersusResults ? (
+                    <div
+                      className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
+                      role="status"
+                    >
+                      <div
+                        className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full"
+                        aria-hidden="true"
+                      />
+                      <span className="text-fg/90">Keine Kategorien gefunden.</span>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4 max-h-[520px] overflow-auto pr-1">
+                    <div className="space-y-5">
+                      {versusGroupedMetrics.map(({ cat, items }) => (
+                        <div key={cat} className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-muted text-xs font-semibold tracking-wide uppercase">
+                              {cat}
+                            </p>
+                            <span className="text-muted text-xs">{items.length}</span>
+                          </div>
+
+                          <ul className="space-y-1" role="list">
+                            {items.map((entry) => {
+                              const isActive = versusMetricIds.includes(entry.id);
+                              return (
+                                <li key={entry.id}>
+                                  <button
+                                    type="button"
+                                    onClick={() => toggleVersusMetric(entry.id)}
+                                    className={[
+                                      'border-border/60 hover:bg-surface-solid/45 text-fg/90 w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors',
+                                      isActive
+                                        ? 'bg-surface-solid/55 border-accent/50'
+                                        : 'bg-surface-solid/30',
+                                    ].join(' ')}
+                                  >
+                                    <div className="flex items-start justify-between gap-3">
+                                      <span className="min-w-0 truncate">{entry.label}</span>
+                                      <span className="flex items-center gap-2">
+                                        {entry.unit ? (
+                                          <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
+                                            {entry.unit}
+                                          </span>
+                                        ) : null}
+                                        {isActive ? (
+                                          <Check size={16} className="text-accent" />
+                                        ) : null}
+                                      </span>
+                                    </div>
+                                    <p className="text-muted mt-1 text-xs">ID: {entry.id}</p>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                {versusLoading ? (
+                  <div className="mg-card p-4">
+                    <p className="text-fg font-semibold">Spielerstatistiken werden geladen...</p>
+                    <p className="text-muted mt-1 text-sm">
+                      Je mehr Daten vorhanden sind, desto laenger dauert der Vergleich.
+                    </p>
+                  </div>
+                ) : null}
+
+                {!versusPlayerA || !versusPlayerB ? (
+                  <div className="mg-card p-6">
+                    <p className="text-fg font-semibold">Bitte zwei Spieler waehlen</p>
+                    <p className="text-muted mt-2 text-sm">
+                      Nutze die Suche oben, um Spieler A und B auszuwaehlen.
+                    </p>
+                  </div>
+                ) : !hasVersusData ? (
+                  <div className="mg-card p-6">
+                    <p className="text-fg font-semibold">Spielerstatistiken laden</p>
+                    <p className="text-muted mt-2 text-sm">
+                      Klicke auf "Vergleichen", um die kompletten Spielerstatistiken zu laden.
+                    </p>
+                  </div>
+                ) : versusMetricIds.length === 0 ? (
+                  <div className="mg-card p-6">
+                    <p className="text-fg font-semibold">Keine Kategorien ausgewaehlt</p>
+                    <p className="text-muted mt-2 text-sm">
+                      Waehle links die Kategorien aus, die du vergleichen moechtest.
+                    </p>
+                  </div>
+                ) : !hasVersusResults ? (
+                  <div className="mg-card p-6">
+                    <p className="text-fg font-semibold">Vergleich bereit</p>
+                    <p className="text-muted mt-2 text-sm">
+                      Waehle Kategorien aus, um die Werte zu sehen.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mg-card p-4">
+                      <p className="text-muted text-xs font-semibold">Zwischenstand</p>
+                      <div className="mt-2 flex flex-wrap items-center gap-3">
+                        <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
+                          {versusPlayerA?.name || 'Spieler A'}: {versusSummary.winsA}
+                        </span>
+                        <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
+                          {versusPlayerB?.name || 'Spieler B'}: {versusSummary.winsB}
+                        </span>
+                        <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold">
+                          Gleichstand: {versusSummary.ties}
+                        </span>
+                        <span className="text-muted text-xs">
+                          Verglichene Kategorien: {versusSummary.counted}
+                        </span>
+                      </div>
+                      {hasMissingVersusValues ? (
+                        <p className="text-muted mt-2 text-xs">
+                          Hinweis: Einige Werte fehlen, wenn ein Spieler keinen Eintrag in der
+                          Kategorie hat.
+                        </p>
+                      ) : null}
+                    </div>
+
+                    <div className="mg-card relative overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[720px] text-sm">
+                          <thead className="bg-surface-solid/40 text-muted text-xs">
+                            <tr>
+                              <th className="px-4 py-3 text-left font-semibold">Kategorie</th>
+                              <th className="px-4 py-3 text-left font-semibold">
+                                {versusPlayerA?.name || 'Spieler A'}
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold">
+                                {versusPlayerB?.name || 'Spieler B'}
+                              </th>
+                              <th className="px-4 py-3 text-left font-semibold">Differenz</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
+                            {versusRows.map((row) => {
+                              const def = row.def;
+                              const label = def?.label || row.id;
+                              const winner =
+                                row.valueA === null || row.valueB === null
+                                  ? null
+                                  : row.valueA === row.valueB
+                                    ? 'tie'
+                                    : row.valueA > row.valueB
+                                      ? 'A'
+                                      : 'B';
+                              const diff =
+                                row.valueA === null || row.valueB === null
+                                  ? null
+                                  : row.valueA - row.valueB;
+                              const missingHint = 'Keine Daten';
+
+                              return (
+                                <tr key={row.id}>
+                                  <td>
+                                    <p className="text-fg font-semibold">{label}</p>
+                                    <p className="text-muted mt-1 text-xs">
+                                      Gruppe: {def?.group || '-'} - ID: {row.id}
+                                      {def?.unit ? ` - Einheit: ${def.unit}` : ''}
+                                    </p>
+                                  </td>
+                                  <td
+                                    className={
+                                      winner === 'A' ? 'text-accent font-semibold' : 'text-fg'
+                                    }
+                                  >
+                                    {row.valueA === null ? '-' : formatVersusValue(row.valueA, def)}
+                                    {row.valueA === null ? (
+                                      <p className="text-muted mt-1 text-xs">{missingHint}</p>
+                                    ) : null}
+                                  </td>
+                                  <td
+                                    className={
+                                      winner === 'B' ? 'text-accent font-semibold' : 'text-fg'
+                                    }
+                                  >
+                                    {row.valueB === null ? '-' : formatVersusValue(row.valueB, def)}
+                                    {row.valueB === null ? (
+                                      <p className="text-muted mt-1 text-xs">{missingHint}</p>
+                                    ) : null}
+                                  </td>
+                                  <td className="text-fg/90">
+                                    {diff === null ? '-' : formatVersusDiff(diff, def)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {versusLoading ? (
+                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
+                          <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
+                            Laedt...
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>
