@@ -3,7 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import { getEntry } from 'astro:content';
-import { Search, TerminalSquare, Copy } from '@lucide/astro';
+import { Search, TerminalSquare, Copy, X } from '@lucide/astro';
 
 const commandsEntry = await getEntry('commands', 'list');
 if (!commandsEntry) throw new Error('Missing commands content: src/content/commands/list.json');
@@ -32,15 +32,24 @@ const categories = commandsEntry.data.categories;
 
   <section class="mg-container pb-16" data-commands>
     <Card class="p-4">
-      <div class="flex items-center gap-3">
+      <div class="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Search size={18} />
         <input
           id="commandSearch"
           type="search"
           placeholder="Suchen (z. B. /rtp, claim, home …)"
-          class="border-border bg-surface h-10 w-full rounded-lg border px-3 text-sm outline-none focus:ring-2 focus:ring-[color:var(--ring)]"
+          class="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
           autocomplete="off"
         />
+        <button
+          type="button"
+          class="text-muted hover:text-fg pointer-events-none -m-1 rounded-lg p-1 opacity-0 transition-colors"
+          data-command-search-clear
+          aria-label="Suche zurücksetzen"
+          title="Suche zurücksetzen"
+        >
+          <X size={14} />
+        </button>
       </div>
     </Card>
 

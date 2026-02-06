@@ -993,7 +993,7 @@ export default function StatsApp() {
           </div>
 
           <div aria-live="polite" className="mt-5">
-            <KpiStrip items={kpiItems} />
+            <KpiStrip items={kpiItems} variant="inline" />
           </div>
         </section>
       ) : null}

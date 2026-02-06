@@ -8,14 +8,24 @@
 (() => {
   const input = document.getElementById('commandSearch');
   const root = document.querySelector('[data-commands]');
+  const clearBtn = root ? root.querySelector('[data-command-search-clear]') : null;
   if (!input || !root) return;
 
   const norm = (s) => String(s || '').toLowerCase();
 
   const cats = Array.from(root.querySelectorAll('[data-category]'));
 
+  const syncClear = () => {
+    if (!clearBtn) return;
+    const hasValue = norm(input.value).trim().length > 0;
+    clearBtn.classList.toggle('opacity-0', !hasValue);
+    clearBtn.classList.toggle('pointer-events-none', !hasValue);
+    clearBtn.tabIndex = hasValue ? 0 : -1;
+  };
+
   const apply = () => {
     const q = norm(input.value).trim();
+    syncClear();
 
     // No query -> show all
     if (!q) {
@@ -52,4 +62,12 @@
   };
 
   input.addEventListener('input', apply);
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      apply();
+      input.focus();
+    });
+  }
+  syncClear();
 })();

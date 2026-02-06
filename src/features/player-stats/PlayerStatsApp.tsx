@@ -650,7 +650,7 @@ export default function PlayerStatsApp() {
             </nav>
 
             <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <label className="bg-surface/55 border-border focus-within:border-accent/55 focus-within:ring-accent/20 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors focus-within:ring-2">
+              <label className="bg-surface/55 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors">
                 <Search size={18} className="text-muted" />
                 <input
                   ref={filterInputRef}
@@ -660,16 +660,20 @@ export default function PlayerStatsApp() {
                   placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
                   className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
                 />
-                {filterRaw ? (
-                  <button
-                    type="button"
-                    className="text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors"
-                    onClick={() => setFilterRaw('')}
-                    aria-label="Filter leeren"
-                  >
-                    <X size={14} />
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  className={[
+                    'text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors',
+                    filterRaw
+                      ? ''
+                      : 'pointer-events-none opacity-0',
+                  ].join(' ')}
+                  onClick={() => setFilterRaw('')}
+                  aria-label="Filter leeren"
+                  tabIndex={filterRaw ? 0 : -1}
+                >
+                  <X size={14} />
+                </button>
               </label>
               <div className="text-muted flex flex-wrap items-center gap-3 text-xs lg:justify-end">
                 <span>
