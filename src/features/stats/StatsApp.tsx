@@ -29,6 +29,9 @@ import { tLabel } from '../player-stats/i18n';
 
 const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills', 'creeper'];
 const VERSUS_MAX_METRICS = 12;
+const WELCOME_DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 Tage
+const WELCOME_DISMISS_KEY = 'mg_stats_welcome_dismissed_at';
+const WELCOME_DISMISS_LEGACY_KEY = 'mg_stats_welcome_closed';
 
 type VersusMetricKind = 'stat' | 'item' | 'mob';
 type VersusMetricDef = {
@@ -339,6 +342,25 @@ function makeEmptyLeaderboardState(): LeaderboardState {
   };
 }
 
+function shouldShowWelcome(storage: Storage, now = Date.now()) {
+  const rawDismissedAt = storage.getItem(WELCOME_DISMISS_KEY);
+  if (rawDismissedAt) {
+    const dismissedAt = Number(rawDismissedAt);
+    if (Number.isFinite(dismissedAt) && now - dismissedAt < WELCOME_DISMISS_TTL_MS) {
+      return false;
+    }
+    // Abgelaufene oder ungueltige Werte bereinigen.
+    storage.removeItem(WELCOME_DISMISS_KEY);
+  }
+
+  // Legacy-Migration: alter "permanent geschlossen"-Key wird einmalig geloescht.
+  if (storage.getItem(WELCOME_DISMISS_LEGACY_KEY) === '1') {
+    storage.removeItem(WELCOME_DISMISS_LEGACY_KEY);
+  }
+
+  return true;
+}
+
 /**
  * Statistik-Island (React)
  * - keine DOM-Manipulationen
@@ -414,9 +436,9 @@ export default function StatsApp() {
   }, []);
 
   useEffect(() => {
-    // Persistente Callout-States (damit es nicht bei jedem Reload wieder aufgeht)
+    // Persistenter Callout-State mit TTL.
     try {
-      setShowWelcome(localStorage.getItem('mg_stats_welcome_closed') !== '1');
+      setShowWelcome(shouldShowWelcome(localStorage));
     } catch {
       // Unkritisch: localStorage kann blockiert sein.
     }
@@ -974,7 +996,8 @@ export default function StatsApp() {
                 onClick={() => {
                   setShowWelcome(false);
                   try {
-                    localStorage.setItem('mg_stats_welcome_closed', '1');
+                    localStorage.setItem(WELCOME_DISMISS_KEY, String(Date.now()));
+                    localStorage.removeItem(WELCOME_DISMISS_LEGACY_KEY);
                   } catch {
                     // Unkritisch: localStorage kann blockiert sein.
                   }
