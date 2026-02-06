@@ -43,19 +43,19 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Dunkel (Obsidian / Anthrazit) */
-    --bg: #111823;
+    --bg: #0d1219;
     --fg: #e7edf5;
     --muted: #a8b2c2;
 
-    --surface: rgba(22, 30, 41, 0.54);
-    --surface-solid: #161f2b;
+    --surface: rgba(19, 25, 34, 0.56);
+    --surface-solid: #131a25;
     --border: rgba(231, 237, 245, 0.16);
     --glass-highlight: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(6, 10, 18, 0.52);
 
-    --ambient-1: rgba(242, 201, 76, 0.32);
-    --ambient-2: rgba(125, 180, 255, 0.2);
-    --ambient-3: rgba(90, 118, 158, 0.14);
+    --ambient-1: rgba(242, 201, 76, 0.24);
+    --ambient-2: rgba(102, 124, 150, 0.11);
+    --ambient-3: rgba(64, 79, 98, 0.1);
 
     --accent: #f2c94c;
     --accent2: #ffd56a;
@@ -85,19 +85,19 @@ html[data-theme='light'] {
 }
 
 html[data-theme='dark'] {
-  --bg: #111823;
+  --bg: #0d1219;
   --fg: #e7edf5;
   --muted: #a8b2c2;
 
-  --surface: rgba(22, 30, 41, 0.54);
-  --surface-solid: #161f2b;
+  --surface: rgba(19, 25, 34, 0.56);
+  --surface-solid: #131a25;
   --border: rgba(231, 237, 245, 0.16);
   --glass-highlight: rgba(255, 255, 255, 0.1);
   --glass-shadow: rgba(6, 10, 18, 0.52);
 
-  --ambient-1: rgba(242, 201, 76, 0.32);
-  --ambient-2: rgba(125, 180, 255, 0.2);
-  --ambient-3: rgba(90, 118, 158, 0.14);
+  --ambient-1: rgba(242, 201, 76, 0.24);
+  --ambient-2: rgba(102, 124, 150, 0.11);
+  --ambient-3: rgba(64, 79, 98, 0.1);
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
