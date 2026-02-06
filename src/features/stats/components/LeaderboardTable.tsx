@@ -22,9 +22,10 @@ export function LeaderboardTable({
   onLoadMore: () => void;
 }) {
   const page = state.pages[state.currentPage] || [];
+  const isInitialLoad = !state.loaded;
 
   return (
-    <div className="mg-card relative min-w-0 overflow-hidden">
+    <div className="mg-card relative min-h-[360px] min-w-0 overflow-hidden">
       <div className="max-w-full overflow-x-auto overscroll-x-contain">
         <table className="w-full min-w-[390px] text-sm sm:min-w-[520px]">
           <thead className="bg-surface-solid/40 text-muted text-xs">
@@ -37,6 +38,14 @@ export function LeaderboardTable({
             </tr>
           </thead>
           <tbody className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3">
+            {isInitialLoad ? (
+              <tr>
+                <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
+                  Lade Daten...
+                </td>
+              </tr>
+            ) : null}
+
             {state.loaded && page.length === 0 ? (
               <tr>
                 <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
@@ -58,7 +67,9 @@ export function LeaderboardTable({
                           {rank}
                         </span>
                       ) : (
-                        <span className="font-semibold">{rank}</span>
+                        <span className="inline-flex min-w-[1.5rem] items-center justify-center font-semibold tabular-nums">
+                          {rank}
+                        </span>
                       )}
                     </span>
                   </td>
@@ -91,9 +102,9 @@ export function LeaderboardTable({
       </p>
 
       {state.loading ? (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
-          <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
-            Lädt…
+        <div className="pointer-events-none absolute top-3 right-3">
+          <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm">
+            Aktualisiere...
           </span>
         </div>
       ) : null}

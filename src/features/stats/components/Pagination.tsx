@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { LeaderboardState } from '../types-ui';
 
 export function Pagination({
@@ -42,7 +42,7 @@ export function Pagination({
             className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors"
             disabled={state.loading}
           >
-            <ChevronDown size={14} />
+            <ArrowRight size={14} />
             Mehr laden
           </button>
         ) : (

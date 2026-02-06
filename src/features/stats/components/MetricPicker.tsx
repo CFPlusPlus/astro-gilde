@@ -19,11 +19,13 @@ export function MetricPicker({
   activeMetricId: string | null;
   onSelectMetric: (id: string) => void;
 }) {
+  const visibleCount = grouped.reduce((sum, group) => sum + group.ids.length, 0);
+
   return (
     <div className="mg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
-        <span className="text-muted text-xs">{Object.keys(metrics).length} Einträge</span>
+        <span className="text-muted text-xs">{visibleCount} Einträge</span>
       </div>
 
       <div className="bg-surface-solid/30 border-border mt-3 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
@@ -77,12 +79,12 @@ export function MetricPicker({
                         <div className="flex items-start justify-between gap-3">
                           <span className="min-w-0 truncate">{def?.label || id}</span>
                           <span className="flex items-center gap-2">
+                            {isActive ? <Check size={16} className="text-accent" /> : null}
                             {def?.unit ? (
                               <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
                                 {def.unit}
                               </span>
                             ) : null}
-                            {isActive ? <Check size={16} className="text-accent" /> : null}
                           </span>
                         </div>
                         <p className="text-muted mt-1 text-xs break-all">ID: {id}</p>

@@ -48,10 +48,44 @@ type VersusMetricDef = {
 
 type VersusGroupedMetrics = Array<{ cat: string; items: VersusMetricDef[] }>;
 
+function isServerKingMetric(id: string, def?: MetricDef) {
+  const normalizedId = id.trim().toLowerCase();
+  if (normalizedId === 'king' || normalizedId === 'server_king' || normalizedId === 'server-king') {
+    return true;
+  }
+
+  const label = (def?.label || '').trim().toLowerCase();
+  const category = (def?.category || '').trim().toLowerCase();
+  if (category === 'king' || category === 'server-könig' || category === 'server-koenig') {
+    return true;
+  }
+
+  return label.includes('server-könig') || label.includes('server-koenig');
+}
+
+function pickDefaultRankMetricId(ids: string[], metrics: Record<string, MetricDef> | null) {
+  if (ids.length === 0) return null;
+
+  const preferredIds = ['hours', 'play_time', 'minecraft:play_time'];
+  for (const id of preferredIds) {
+    if (ids.includes(id)) return id;
+  }
+
+  if (metrics) {
+    const byLabel = ids.find((id) => {
+      const label = (metrics[id]?.label || '').toLowerCase();
+      return label.includes('spielstunden') || label.includes('spielzeit');
+    });
+    if (byLabel) return byLabel;
+  }
+
+  return ids[0];
+}
+
 function filterMetricIds(metrics: Record<string, MetricDef> | null, filter: string) {
   if (!metrics) return [];
   const q = filter.trim().toLowerCase();
-  const ids = Object.keys(metrics);
+  const ids = Object.keys(metrics).filter((id) => !isServerKingMetric(id, metrics[id]));
   if (!q) return ids;
   return ids.filter((id) => {
     const def = metrics[id];
@@ -339,6 +373,7 @@ function makeEmptyLeaderboardState(): LeaderboardState {
     currentPage: 0,
     nextCursor: null,
     hasMore: false,
+    pageSize: null,
   };
 }
 
@@ -399,7 +434,7 @@ export default function StatsApp() {
   const [versusSwapFx, setVersusSwapFx] = useState(false);
   const versusAbortRef = useRef<AbortController | null>(null);
   const versusSwapFxTimeoutRef = useRef<number | null>(null);
-  const metricScrollRef = useRef<number | null>(null);
+  const scrollRestoreRef = useRef<number | null>(null);
 
   // Autovervollstaendigung
   const mainSearch = usePlayerAutocomplete({
@@ -493,17 +528,7 @@ export default function StatsApp() {
       })();
       return () => ac.abort();
     }
-
-    if (activeTab === 'king' && !king.loaded && !king.loading) {
-      void loadLeaderboard('king', 'king');
-    }
-  }, [activeTab]);
-
-  // Wenn PageSize geändert wird: Board-Caches verwerfen (Cursor hängt am Limit)
-  useEffect(() => {
-    setKing(makeEmptyLeaderboardState());
-    setBoards({});
-  }, [pageSize]);
+  }, [activeTab, metrics]);
 
   function getPlayerName(uuid: string) {
     return playerNamesRef.current[uuid] || uuid;
@@ -518,9 +543,14 @@ export default function StatsApp() {
     }
   }
 
-  async function loadLeaderboard(metricId: string, stateKey: string) {
+  async function loadLeaderboard(
+    metricId: string,
+    stateKey: string,
+    opts?: { openLoadedPage?: boolean },
+  ) {
     // stateKey erlaubt separate Caches (king vs. echte Metrik-IDs)
     setApiError(null);
+    const openLoadedPage = opts?.openLoadedPage ?? false;
 
     const setState = (up: (s: LeaderboardState) => LeaderboardState) => {
       if (stateKey === 'king') setKing((s) => up(s));
@@ -537,7 +567,8 @@ export default function StatsApp() {
     setState((s) => ({ ...s, loading: true }));
 
     try {
-      const cursor = current.loaded ? current.nextCursor : null;
+      const isSamePageSize = current.pageSize === pageSize;
+      const cursor = current.loaded && isSamePageSize ? current.nextCursor : null;
       const data = await getLeaderboard(metricId, pageSize, cursor);
       if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
       mergePlayers(data.__players);
@@ -547,13 +578,15 @@ export default function StatsApp() {
 
       setState((s) => {
         const pages = cursor ? [...s.pages, list] : [list];
+        const nextCurrentPage = cursor ? (openLoadedPage ? pages.length - 1 : s.currentPage) : 0;
         return {
           loaded: true,
           loading: false,
           pages,
-          currentPage: cursor ? s.currentPage : 0,
+          currentPage: nextCurrentPage,
           nextCursor: next,
           hasMore: !!next,
+          pageSize,
         };
       });
     } catch (e) {
@@ -781,43 +814,51 @@ export default function StatsApp() {
   const hasNoRanklistResults = metrics && filteredMetricIds.length === 0;
   const hasNoVersusResults = versusCatalog.length > 0 && versusFilteredCatalog.length === 0;
 
-  // Beim Öffnen der Ranglisten direkt die erste Rangliste aktivieren.
+  // Beim Öffnen der Ranglisten direkt eine sinnvolle Rangliste aktivieren.
   useEffect(() => {
     if (activeTab !== 'ranglisten') return;
     if (!metrics) return;
-    if (activeMetricId) return;
-    const first = filteredMetricIds[0] || null;
-    setActiveMetricId(first);
+    if (activeMetricId && filteredMetricIds.includes(activeMetricId)) return;
+    setActiveMetricId(pickDefaultRankMetricId(filteredMetricIds, metrics));
   }, [activeTab, metrics, filteredMetricIds, activeMetricId]);
 
-  // Wenn Metriken geladen sind: sinnvollen Standard auswaehlen
+  // King bei Bedarf lazy laden (auch nach pageSize-Wechsel).
   useEffect(() => {
-    if (!metrics) return;
-    if (activeMetricId && filteredMetricIds.includes(activeMetricId)) return;
+    if (activeTab !== 'king') return;
+    const kingNeedsRefresh = !king.loaded || king.pageSize !== pageSize;
+    if (kingNeedsRefresh && !king.loading) {
+      void loadLeaderboard('king', 'king');
+    }
+  }, [activeTab, king.loaded, king.loading, king.pageSize, pageSize]);
 
-    const first = filteredMetricIds[0] || null;
-    setActiveMetricId(first);
-  }, [metrics, metricFilter]);
+  const activeMetricBoard = activeMetricId ? boards[activeMetricId] : null;
+  const activeMetricLoaded = activeMetricBoard?.loaded ?? false;
+  const activeMetricLoading = activeMetricBoard?.loading ?? false;
+  const activeMetricBoardPageSize = activeMetricBoard?.pageSize ?? null;
 
-  // Wenn Metrik ausgewaehlt wird: Lazy-Load
+  // Wenn Metrik ausgewählt wird: Lazy-Load (auch nach pageSize-Wechsel).
   useEffect(() => {
     if (activeTab !== 'ranglisten') return;
     if (!activeMetricId) return;
-    const st = boards[activeMetricId] || makeEmptyLeaderboardState();
-    if (!st.loaded && !st.loading) {
+    const metricNeedsRefresh = !activeMetricLoaded || activeMetricBoardPageSize !== pageSize;
+    if (metricNeedsRefresh && !activeMetricLoading) {
       void loadLeaderboard(activeMetricId, activeMetricId);
     }
-  }, [activeMetricId, activeTab]);
+  }, [
+    activeTab,
+    activeMetricId,
+    activeMetricLoaded,
+    activeMetricLoading,
+    activeMetricBoardPageSize,
+    pageSize,
+  ]);
 
-  // Scroll-Position beim Kategorie-Wechsel stabil halten
+  // Scroll-Position beim Tab-/Ranglisten-Wechsel stabil halten.
   useEffect(() => {
-    if (activeTab !== 'ranglisten') return;
-    const y = metricScrollRef.current;
+    const y = scrollRestoreRef.current;
     if (y === null) return;
-    metricScrollRef.current = null;
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: y });
-    });
+    scrollRestoreRef.current = null;
+    window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [activeMetricId, activeTab]);
 
   useEffect(() => {
@@ -840,6 +881,8 @@ export default function StatsApp() {
   }, [versusCatalog]);
 
   function setTab(tab: TabKey) {
+    if (tab === activeTab) return;
+    scrollRestoreRef.current = window.scrollY;
     setActiveTab(tab);
     try {
       window.history.replaceState({}, '', `#${tab}`);
@@ -1053,7 +1096,7 @@ export default function StatsApp() {
                   getPlayerName={getPlayerName}
                   onPlayerClick={goToPlayer}
                   onGoPage={(pageIndex) => setKing((s) => ({ ...s, currentPage: pageIndex }))}
-                  onLoadMore={() => void loadLeaderboard('king', 'king')}
+                  onLoadMore={() => void loadLeaderboard('king', 'king', { openLoadedPage: true })}
                 />
               </div>
             </div>
@@ -1066,7 +1109,7 @@ export default function StatsApp() {
           <div className="mt-6">
             <SectionTitle
               title="Ranglisten"
-              subtitle="Wähle links eine Kategorie aus. Ranglisten werden erst geladen, wenn du sie wirklich öffnest (performant bei vielen Spielern)."
+              subtitle="Wähle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
             />
 
             {hasNoRanklistResults ? (
@@ -1096,7 +1139,7 @@ export default function StatsApp() {
                   activeMetricId={activeMetricId}
                   onSelectMetric={(id) => {
                     if (id === activeMetricId) return;
-                    metricScrollRef.current = window.scrollY;
+                    scrollRestoreRef.current = window.scrollY;
                     setActiveMetricId(id);
                   }}
                 />
@@ -1148,7 +1191,9 @@ export default function StatsApp() {
                         },
                       }))
                     }
-                    onLoadMore={() => void loadLeaderboard(activeMetricId, activeMetricId)}
+                    onLoadMore={() =>
+                      void loadLeaderboard(activeMetricId, activeMetricId, { openLoadedPage: true })
+                    }
                   />
                 ) : null}
               </div>

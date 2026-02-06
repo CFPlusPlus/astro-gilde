@@ -9,4 +9,5 @@ export type LeaderboardState = {
   currentPage: number;
   nextCursor: string | null;
   hasMore: boolean;
+  pageSize: number | null;
 };
