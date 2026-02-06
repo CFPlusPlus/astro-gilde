@@ -709,7 +709,7 @@ export default function StatsApp() {
       hours: { label: 'Spielzeit', category: 'Übersicht', unit: 'h', decimals: 2 },
       distance: { label: 'Distanz', category: 'Übersicht', unit: 'km', decimals: 2 },
       mob_kills: { label: 'Kills', category: 'Übersicht' },
-      creeper: { label: 'Creeper', category: 'Übersicht' },
+      creeper: { label: 'Creeper getötet', category: 'Übersicht' },
     };
     return defs;
   }, []);
@@ -1410,20 +1410,22 @@ export default function StatsApp() {
                       onChange={(e) => setVersusMetricFilter(e.target.value)}
                       type="search"
                       placeholder="Filtern..."
-                      className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+                      className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
                       aria-label="Versus Kategorien filtern"
                     />
-                    {versusMetricFilter.trim().length > 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => setVersusMetricFilter('')}
-                        className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-                        aria-label="Versus-Kategorien-Filter zurücksetzen"
-                        title="Filter zurücksetzen"
-                      >
-                        <X size={14} />
-                      </button>
-                    ) : null}
+                    <button
+                      type="button"
+                      onClick={() => setVersusMetricFilter('')}
+                      className={[
+                        'mg-search-clear',
+                        versusMetricFilter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
+                      ].join(' ')}
+                      aria-label="Versus-Kategorien-Filter zurücksetzen"
+                      title="Filter zurücksetzen"
+                      tabIndex={versusMetricFilter.trim().length > 0 ? 0 : -1}
+                    >
+                      <X size={14} />
+                    </button>
                   </div>
 
                   {hasNoVersusResults ? (

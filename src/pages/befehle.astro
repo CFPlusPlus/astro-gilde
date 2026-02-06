@@ -38,12 +38,12 @@ const categories = commandsEntry.data.categories;
           id="commandSearch"
           type="search"
           placeholder="Suchen (z. B. /rtp, claim, home …)"
-          class="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+          class="peer placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
           autocomplete="off"
         />
         <button
           type="button"
-          class="text-muted hover:text-fg pointer-events-none -m-1 rounded-lg p-1 opacity-0 transition-colors"
+          class="mg-search-clear mg-search-clear--hidden"
           data-command-search-clear
           aria-label="Suche zurücksetzen"
           title="Suche zurücksetzen"

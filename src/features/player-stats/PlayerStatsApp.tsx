@@ -493,10 +493,10 @@ export default function PlayerStatsApp() {
         icon: <Skull size={16} />,
         label: 'Tode',
         value: nf(deaths),
-        meta: generatedIso ? fmtGenerated(generatedIso) : 'Serverexport',
+        meta: 'minecraft:deaths',
       },
     ];
-  }, [stats, generatedIso]);
+  }, [stats]);
 
   const activeResultCount =
     activeTab === 'allgemein'
@@ -658,15 +658,13 @@ export default function PlayerStatsApp() {
                   onChange={(e) => setFilterRaw(e.target.value)}
                   type="search"
                   placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
-                  className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+                  className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
                 />
                 <button
                   type="button"
                   className={[
-                    'text-muted hover:text-fg inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors',
-                    filterRaw
-                      ? ''
-                      : 'pointer-events-none opacity-0',
+                    'mg-search-clear',
+                    filterRaw ? '' : 'mg-search-clear--hidden',
                   ].join(' ')}
                   onClick={() => setFilterRaw('')}
                   aria-label="Filter leeren"

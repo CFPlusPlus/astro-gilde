@@ -482,4 +482,13 @@ html[data-theme='dark'] {
     border: 2px solid transparent;
     background-clip: padding-box;
   }
+
+  /* Einheitlicher Reset-Button fuer Suchfelder */
+  .mg-search-clear {
+    @apply text-muted hover:text-fg inline-flex h-6 w-6 flex-none items-center justify-center rounded-md transition-colors;
+  }
+
+  .mg-search-clear--hidden {
+    @apply pointer-events-none opacity-0;
+  }
 }

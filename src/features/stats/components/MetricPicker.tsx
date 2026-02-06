@@ -33,20 +33,21 @@ export function MetricPicker({
           onChange={(e) => onFilterChange(e.target.value)}
           type="search"
           placeholder="Filtern…"
-          className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+          className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
           aria-label="Ranglisten filtern"
         />
-        {filter.trim().length > 0 ? (
-          <button
-            type="button"
-            onClick={() => onFilterChange('')}
-            className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-            aria-label="Ranglisten-Filter zurücksetzen"
-            title="Filter zurücksetzen"
-          >
-            <X size={14} />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => onFilterChange('')}
+          className={['mg-search-clear', filter.trim().length > 0 ? '' : 'mg-search-clear--hidden'].join(
+            ' ',
+          )}
+          aria-label="Ranglisten-Filter zurücksetzen"
+          title="Filter zurücksetzen"
+          tabIndex={filter.trim().length > 0 ? 0 : -1}
+        >
+          <X size={14} />
+        </button>
       </div>
 
       <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1">

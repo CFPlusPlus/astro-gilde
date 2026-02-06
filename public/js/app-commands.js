@@ -18,8 +18,7 @@
   const syncClear = () => {
     if (!clearBtn) return;
     const hasValue = norm(input.value).trim().length > 0;
-    clearBtn.classList.toggle('opacity-0', !hasValue);
-    clearBtn.classList.toggle('pointer-events-none', !hasValue);
+    clearBtn.classList.toggle('mg-search-clear--hidden', !hasValue);
     clearBtn.tabIndex = hasValue ? 0 : -1;
   };
 
@@ -62,8 +61,20 @@
   };
 
   input.addEventListener('input', apply);
+  root.addEventListener('click', (e) => {
+    if (!(e.target instanceof Element)) return;
+    const trigger = e.target.closest('[data-command-search-clear]');
+    if (!trigger || !clearBtn) return;
+    if (clearBtn.classList.contains('mg-search-clear--hidden')) return;
+    e.preventDefault();
+    input.value = '';
+    apply();
+    input.focus();
+  });
   if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
+    clearBtn.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault();
       input.value = '';
       apply();
       input.focus();

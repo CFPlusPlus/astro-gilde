@@ -49,23 +49,24 @@ export function PlayerAutocomplete({
           type="search"
           autoComplete="off"
           placeholder="Spieler suchen…"
-          className="placeholder:text-muted/70 text-fg w-full bg-transparent text-sm outline-none"
+          className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
         />
-        {value.trim().length > 0 ? (
-          <button
-            type="button"
-            onClick={() => {
-              onChange('');
-              onOpenChange(false);
-              onSelectedIndexChange(-1);
-            }}
-            className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-            aria-label="Spielersuche zurücksetzen"
-            title="Suche zurücksetzen"
-          >
-            <X size={14} />
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => {
+            onChange('');
+            onOpenChange(false);
+            onSelectedIndexChange(-1);
+          }}
+          className={['mg-search-clear', value.trim().length > 0 ? '' : 'mg-search-clear--hidden'].join(
+            ' ',
+          )}
+          aria-label="Spielersuche zurücksetzen"
+          title="Suche zurücksetzen"
+          tabIndex={value.trim().length > 0 ? 0 : -1}
+        >
+          <X size={14} />
+        </button>
       </div>
 
       {open ? (
