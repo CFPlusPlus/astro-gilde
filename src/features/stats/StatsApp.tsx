@@ -13,7 +13,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { getLeaderboard, getMetrics, getSummary, searchPlayers } from './api';
+import { getLeaderboard, getMetrics, getSummary } from './api';
 import type { MetricDef, MetricId, PlayersSearchItem } from './types';
 import { fmtDateBerlin, formatMetricValue, fmtNumber } from './format';
 import type { LeaderboardState, TabKey } from './types-ui';
@@ -23,347 +23,24 @@ import { PlayerAutocomplete } from './components/PlayerAutocomplete';
 import { KpiStrip, type KpiItem } from './components/KpiStrip';
 import { MetricPicker, type GroupedMetrics } from './components/MetricPicker';
 import { LeaderboardTable } from './components/LeaderboardTable';
-import { getPlayer, getTranslations } from '../player-stats/api';
-import type { PlayerTranslations } from '../player-stats/types';
-import { tLabel } from '../player-stats/i18n';
+import { getPlayer, getTranslations } from '../minecraft-stats/api';
+import {
+  buildVersusCatalog,
+  filterVersusCatalog,
+  formatVersusDiff,
+  formatVersusValue,
+  getQuickVersusSelection,
+  getVersusValue,
+  groupVersusCatalog,
+  type VersusGroupedMetrics,
+  type VersusMetricDef,
+} from './versus';
+import { filterMetricIds, groupMetricIds, pickDefaultRankMetricId } from './metric-utils';
+import { usePlayerAutocomplete } from './usePlayerAutocomplete';
+import { shouldShowWelcome, WELCOME_DISMISS_KEY, WELCOME_DISMISS_LEGACY_KEY } from './welcome';
 
 const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills', 'creeper'];
 const VERSUS_MAX_METRICS = 12;
-const WELCOME_DISMISS_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 Tage
-const WELCOME_DISMISS_KEY = 'mg_stats_welcome_dismissed_at';
-const WELCOME_DISMISS_LEGACY_KEY = 'mg_stats_welcome_closed';
-
-type VersusMetricKind = 'stat' | 'item' | 'mob';
-type VersusMetricDef = {
-  id: string;
-  label: string;
-  group: string;
-  unit?: string;
-  decimals?: number;
-  kind: VersusMetricKind;
-  key: string;
-  section?: string;
-  transform?: (raw: number) => number;
-};
-
-type VersusGroupedMetrics = Array<{ cat: string; items: VersusMetricDef[] }>;
-
-function isServerKingMetric(id: string, def?: MetricDef) {
-  const normalizedId = id.trim().toLowerCase();
-  if (normalizedId === 'king' || normalizedId === 'server_king' || normalizedId === 'server-king') {
-    return true;
-  }
-
-  const label = (def?.label || '').trim().toLowerCase();
-  const category = (def?.category || '').trim().toLowerCase();
-  if (category === 'king' || category === 'server-könig' || category === 'server-koenig') {
-    return true;
-  }
-
-  return label.includes('server-könig') || label.includes('server-koenig');
-}
-
-function pickDefaultRankMetricId(ids: string[], metrics: Record<string, MetricDef> | null) {
-  if (ids.length === 0) return null;
-
-  const preferredIds = ['hours', 'play_time', 'minecraft:play_time'];
-  for (const id of preferredIds) {
-    if (ids.includes(id)) return id;
-  }
-
-  if (metrics) {
-    const byLabel = ids.find((id) => {
-      const label = (metrics[id]?.label || '').toLowerCase();
-      return label.includes('spielstunden') || label.includes('spielzeit');
-    });
-    if (byLabel) return byLabel;
-  }
-
-  return ids[0];
-}
-
-function filterMetricIds(metrics: Record<string, MetricDef> | null, filter: string) {
-  if (!metrics) return [];
-  const q = filter.trim().toLowerCase();
-  const ids = Object.keys(metrics).filter((id) => !isServerKingMetric(id, metrics[id]));
-  if (!q) return ids;
-  return ids.filter((id) => {
-    const def = metrics[id];
-    return (
-      id.toLowerCase().includes(q) ||
-      (def?.label || '').toLowerCase().includes(q) ||
-      (def?.category || '').toLowerCase().includes(q)
-    );
-  });
-}
-
-function groupMetricIds(metrics: Record<string, MetricDef> | null, ids: string[]): GroupedMetrics {
-  if (!metrics) return [];
-  const map = new Map<string, string[]>();
-
-  for (const id of ids) {
-    const cat = metrics[id]?.category || 'Sonstiges';
-    const arr = map.get(cat) || [];
-    arr.push(id);
-    map.set(cat, arr);
-  }
-
-  const cats = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], 'de'));
-  return cats.map(([cat, entries]) => ({
-    cat,
-    ids: entries.sort((a, b) =>
-      (metrics[a]?.label || a).localeCompare(metrics[b]?.label || b, 'de'),
-    ),
-  }));
-}
-
-function filterVersusCatalog(catalog: VersusMetricDef[], filter: string) {
-  const q = filter.trim().toLowerCase();
-  if (!q) return catalog;
-  return catalog.filter((entry) => {
-    return (
-      entry.id.toLowerCase().includes(q) ||
-      entry.label.toLowerCase().includes(q) ||
-      entry.group.toLowerCase().includes(q)
-    );
-  });
-}
-
-function groupVersusCatalog(catalog: VersusMetricDef[]): VersusGroupedMetrics {
-  const map = new Map<string, VersusMetricDef[]>();
-  for (const entry of catalog) {
-    const arr = map.get(entry.group) || [];
-    arr.push(entry);
-    map.set(entry.group, arr);
-  }
-
-  const cats = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0], 'de'));
-  return cats.map(([cat, items]) => ({
-    cat,
-    items: items.sort((a, b) => a.label.localeCompare(b.label, 'de')),
-  }));
-}
-
-function getQuickVersusSelection(catalog: VersusMetricDef[]) {
-  const general = catalog.filter((entry) => entry.group === 'Allgemein');
-  const base = general.length > 0 ? general : catalog;
-  return base.slice(0, 4).map((entry) => entry.id);
-}
-
-function formatVersusValue(value: number, def?: VersusMetricDef) {
-  const unit = def?.unit || '';
-  const dec = def?.decimals ?? 0;
-  return unit ? `${fmtNumber(value, dec)} ${unit}` : fmtNumber(value, dec);
-}
-
-function formatVersusDiff(value: number, def?: VersusMetricDef) {
-  if (value === 0) return formatVersusValue(0, def);
-  const sign = value > 0 ? '+' : '-';
-  return `${sign}${formatVersusValue(Math.abs(value), def)}`;
-}
-
-function buildVersusCatalog(
-  statsA: Record<string, unknown> | null,
-  statsB: Record<string, unknown> | null,
-  translations: PlayerTranslations | null,
-): VersusMetricDef[] {
-  const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
-
-  const list: VersusMetricDef[] = [];
-  const HOUR_KEYS = new Set([
-    'minecraft:play_time',
-    'minecraft:sneak_time',
-    'minecraft:time_since_death',
-    'minecraft:time_since_rest',
-    'minecraft:total_world_time',
-  ]);
-
-  const customA = asObj(statsA?.['minecraft:custom']);
-  const customB = asObj(statsB?.['minecraft:custom']);
-  const customKeys = new Set([...Object.keys(customA || {}), ...Object.keys(customB || {})]);
-
-  for (const key of [...customKeys].sort((a, b) => a.localeCompare(b, 'de'))) {
-    let unit: string | undefined;
-    let decimals: number | undefined;
-    let transform: ((raw: number) => number) | undefined;
-
-    if (HOUR_KEYS.has(key)) {
-      unit = 'h';
-      decimals = 2;
-      transform = (raw) => raw / 72000;
-    } else if (key.endsWith('_one_cm')) {
-      unit = 'km';
-      decimals = 2;
-      transform = (raw) => raw / 100000;
-    }
-
-    list.push({
-      id: `stat:${key}`,
-      label: tLabel(key, 'stat', true, translations),
-      group: 'Allgemein',
-      unit,
-      decimals,
-      kind: 'stat',
-      key,
-      transform,
-    });
-  }
-
-  const itemSections = [
-    { key: 'mined', label: 'Abgebaut' },
-    { key: 'broken', label: 'Verbraucht' },
-    { key: 'crafted', label: 'Hergestellt' },
-    { key: 'used', label: 'Benutzt' },
-    { key: 'picked_up', label: 'Aufgesammelt' },
-    { key: 'dropped', label: 'Fallen gelassen' },
-    { key: 'placed', label: 'Platziert' },
-  ];
-
-  for (const sec of itemSections) {
-    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
-    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
-    const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
-    const group = `Gegenstände - ${sec.label}`;
-    for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
-      list.push({
-        id: `item:${sec.key}:${key}`,
-        label: `${tLabel(key, 'item', true, translations)} (${sec.label})`,
-        group,
-        kind: 'item',
-        key,
-        section: `minecraft:${sec.key}`,
-      });
-    }
-  }
-
-  const mobSections = [
-    { key: 'killed', label: 'Getötet' },
-    { key: 'killed_by', label: 'Gestorben durch' },
-  ];
-
-  for (const sec of mobSections) {
-    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
-    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
-    const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
-    const group = `Kreaturen - ${sec.label}`;
-    for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
-      list.push({
-        id: `mob:${sec.key}:${key}`,
-        label: `${tLabel(key, 'mob', true, translations)} (${sec.label})`,
-        group,
-        kind: 'mob',
-        key,
-        section: `minecraft:${sec.key}`,
-      });
-    }
-  }
-
-  return list;
-}
-
-function getVersusValue(stats: Record<string, unknown> | null, def?: VersusMetricDef) {
-  if (!stats || !def) return null;
-  const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
-
-  if (def.kind === 'stat') {
-    const custom = asObj(stats['minecraft:custom']);
-    const raw = custom?.[def.key];
-    if (typeof raw !== 'number') return null;
-    return def.transform ? def.transform(raw) : raw;
-  }
-
-  const sectionKey = def.section || '';
-  const sec = asObj(stats[sectionKey]);
-  const raw = sec?.[def.key];
-  if (typeof raw !== 'number') return null;
-  return def.transform ? def.transform(raw) : raw;
-}
-
-function usePlayerAutocomplete({
-  onGeneratedIso,
-  onError,
-}: {
-  onGeneratedIso?: (iso: string) => void;
-  onError?: (message: string | null) => void;
-}) {
-  const [value, setValueState] = useState('');
-  const [items, setItems] = useState<PlayersSearchItem[]>([]);
-  const [open, setOpen] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const abortRef = useRef<AbortController | null>(null);
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const suppressOpenForQueryRef = useRef<string | null>(null);
-
-  function setValue(next: string) {
-    suppressOpenForQueryRef.current = null;
-    setValueState(next);
-  }
-
-  function setValueWithoutAutoOpen(next: string) {
-    suppressOpenForQueryRef.current = next.trim().toLowerCase();
-    setValueState(next);
-    setOpen(false);
-    setSelectedIndex(-1);
-  }
-
-  useEffect(() => {
-    const onDown = (e: MouseEvent) => {
-      const el = wrapRef.current;
-      if (!el) return;
-      if (!el.contains(e.target as Node)) setOpen(false);
-    };
-    window.addEventListener('mousedown', onDown);
-    return () => window.removeEventListener('mousedown', onDown);
-  }, []);
-
-  useEffect(() => {
-    const q = value.trim();
-    if (q.length < 2) {
-      suppressOpenForQueryRef.current = null;
-      setItems([]);
-      setOpen(false);
-      setSelectedIndex(-1);
-      return;
-    }
-
-    const t = window.setTimeout(async () => {
-      abortRef.current?.abort();
-      const ac = new AbortController();
-      abortRef.current = ac;
-
-      try {
-        const data = await searchPlayers(q, 6, ac.signal);
-        if (typeof data.__generated === 'string') onGeneratedIso?.(data.__generated);
-        const nextItems = Array.isArray(data.items) ? data.items : [];
-        const suppressOpen = suppressOpenForQueryRef.current === q.toLowerCase();
-        setItems(nextItems);
-        setOpen(!suppressOpen && nextItems.length > 0);
-        if (suppressOpen) suppressOpenForQueryRef.current = null;
-        setSelectedIndex(-1);
-        onError?.(null);
-      } catch (e) {
-        if ((e as Error)?.name === 'AbortError') return;
-        console.warn('Autocomplete Fehler', e);
-        onError?.('Statistiken sind aktuell nicht erreichbar. Bitte versuche es später erneut.');
-      }
-    }, 180);
-
-    return () => window.clearTimeout(t);
-  }, [value, onGeneratedIso, onError]);
-
-  return {
-    value,
-    setValue,
-    setValueWithoutAutoOpen,
-    items,
-    setItems,
-    open,
-    setOpen,
-    selectedIndex,
-    setSelectedIndex,
-    wrapRef,
-  };
-}
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
@@ -377,29 +54,10 @@ function makeEmptyLeaderboardState(): LeaderboardState {
   };
 }
 
-function shouldShowWelcome(storage: Storage, now = Date.now()) {
-  const rawDismissedAt = storage.getItem(WELCOME_DISMISS_KEY);
-  if (rawDismissedAt) {
-    const dismissedAt = Number(rawDismissedAt);
-    if (Number.isFinite(dismissedAt) && now - dismissedAt < WELCOME_DISMISS_TTL_MS) {
-      return false;
-    }
-    // Abgelaufene oder ungueltige Werte bereinigen.
-    storage.removeItem(WELCOME_DISMISS_KEY);
-  }
-
-  // Legacy-Migration: alter "permanent geschlossen"-Key wird einmalig geloescht.
-  if (storage.getItem(WELCOME_DISMISS_LEGACY_KEY) === '1') {
-    storage.removeItem(WELCOME_DISMISS_LEGACY_KEY);
-  }
-
-  return true;
-}
-
 /**
  * Statistik-Island (React)
  * - keine DOM-Manipulationen
- * - Lazy Loading für Ranglisten / König
+ * - Lazy Loading fuer Ranglisten / Koenig
  * - Layout orientiert sich an bestehenden Tokens/Patterns (mg-container, mg-card, mg-callout, glass)
  */
 export default function StatsApp() {

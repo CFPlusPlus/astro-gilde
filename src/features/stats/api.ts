@@ -4,29 +4,15 @@ import type {
   PlayersSearchResponse,
   SummaryResponse,
 } from './types';
-
-/**
- * Einheitlicher JSON-Fetch mit sinnvollen Standardwerten.
- * - Accept: application/json
- * - Fehler werden als Exception geworfen
- */
-export async function fetchJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
-    signal,
-  });
-
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return (await res.json()) as T;
-}
+import { fetchJson } from '../../lib/http/fetchJson';
 
 export function getMetrics(signal?: AbortSignal) {
-  return fetchJson<MetricsResponse>('/api/metrics', signal);
+  return fetchJson<MetricsResponse>('/api/metrics', { signal });
 }
 
 export function getSummary(metrics: string[], signal?: AbortSignal) {
   const q = metrics.join(',');
-  return fetchJson<SummaryResponse>(`/api/summary?metrics=${encodeURIComponent(q)}`, signal);
+  return fetchJson<SummaryResponse>(`/api/summary?metrics=${encodeURIComponent(q)}`, { signal });
 }
 
 export function getLeaderboard(
@@ -39,10 +25,10 @@ export function getLeaderboard(
     String(limit),
   )}`;
   const url = cursor ? `${base}&cursor=${encodeURIComponent(cursor)}` : base;
-  return fetchJson<LeaderboardResponse>(url, signal);
+  return fetchJson<LeaderboardResponse>(url, { signal });
 }
 
 export function searchPlayers(query: string, limit = 6, signal?: AbortSignal) {
   const url = `/api/players?q=${encodeURIComponent(query)}&limit=${encodeURIComponent(String(limit))}`;
-  return fetchJson<PlayersSearchResponse>(url, signal);
+  return fetchJson<PlayersSearchResponse>(url, { signal });
 }

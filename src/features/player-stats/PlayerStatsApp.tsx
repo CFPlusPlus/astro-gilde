@@ -7,105 +7,32 @@ import {
   Map as MapIcon,
   Package,
   Search,
-  SearchX,
   Slash,
   Sparkles,
   Swords,
   Skull,
   X,
-  ChevronUp,
-  ChevronDown,
-  ChevronsUpDown,
 } from 'lucide-react';
 
 import { getPlayer, getTranslations } from './api';
-import type { PlayerApiResponse, PlayerTranslations } from './types';
-import { nf, nf2, matchQueries, parseFilter } from './format';
-import { tLabel, logMissingTranslations } from './i18n';
+import type { PlayerApiResponse, PlayerTranslations } from '../minecraft-stats/types';
+import { nf, nf2, parseFilter } from './format';
+import { logMissingTranslations } from '../minecraft-stats/i18n';
 import { compactUUID } from './uuid';
 import SkinViewerModal from './SkinViewerModal';
 import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
-
-type TabKey = 'allgemein' | 'items' | 'mobs';
-type SortDir = 'none' | 'asc' | 'desc';
-
-type GeneralRow = {
-  raw: string;
-  label: string;
-  value: number;
-  display: string;
-};
-
-type ItemsRow = {
-  key: string;
-  label: string;
-  mined: number;
-  broken: number;
-  crafted: number;
-  used: number;
-  picked_up: number;
-  dropped: number;
-};
-
-type MobsRow = {
-  key: string;
-  label: string;
-  killed: number;
-  killed_by: number;
-};
-
-type SortState<K extends string> = { key: K; dir: SortDir };
-
-function isTabKey(value: string | null): value is TabKey {
-  return value === 'allgemein' || value === 'items' || value === 'mobs';
-}
-
-function nextSort(dir: SortDir): SortDir {
-  if (dir === 'none') return 'asc';
-  if (dir === 'asc') return 'desc';
-  return 'none';
-}
-
-function fmtGenerated(iso: string) {
-  try {
-    const fmt = new Intl.DateTimeFormat('de-DE', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: 'Europe/Berlin',
-    });
-    return `Stand: ${fmt.format(new Date(iso))}`;
-  } catch {
-    return `Stand: ${iso}`;
-  }
-}
-
-function ApiAlert({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <div
-      className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-      role="alert"
-    >
-      <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
-      <span className="text-fg/90">{message}</span>
-    </div>
-  );
-}
-
-function NoResults() {
-  return (
-    <div className="bg-accent/10 border-accent/40 mt-3 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm shadow-sm">
-      <SearchX size={18} className="text-accent mt-0.5 flex-none" aria-hidden="true" />
-      <span className="text-fg/90">Keine Ergebnisse gefunden.</span>
-    </div>
-  );
-}
-
-function SortIcon({ dir }: { dir: SortDir }) {
-  if (dir === 'asc') return <ChevronUp size={14} className="text-muted" aria-hidden="true" />;
-  if (dir === 'desc') return <ChevronDown size={14} className="text-muted" aria-hidden="true" />;
-  return <ChevronsUpDown size={14} className="text-muted" aria-hidden="true" />;
-}
+import {
+  buildPlayerTables,
+  filterPlayerTables,
+  isTabKey,
+  nextSort,
+  sortPlayerTables,
+  type ItemsRow,
+  type MobsRow,
+  type SortState,
+  type TabKey,
+} from './table-model';
+import { ApiAlert, fmtGenerated, NoResults, SortIcon } from './ui';
 
 export default function PlayerStatsApp() {
   const [activeTab, setActiveTab] = useState<TabKey>('allgemein');
@@ -306,155 +233,20 @@ export default function PlayerStatsApp() {
     : '';
   const skinFullUrl = skinId ? `https://minotar.net/skin/${encodeURIComponent(skinId)}.png` : '';
 
-  const tables = useMemo(() => {
-    const s = stats;
-    if (!s) return { general: [] as GeneralRow[], items: [] as ItemsRow[], mobs: [] as MobsRow[] };
+  const tables = useMemo(
+    () => buildPlayerTables(stats, isGerman, translations),
+    [stats, isGerman, translations],
+  );
 
-    const asObj = (v: unknown) =>
-      v && typeof v === 'object' ? (v as Record<string, number>) : null;
+  const sorted = useMemo(
+    () => sortPlayerTables(tables, sortGeneral, sortItems, sortMobs),
+    [tables, sortGeneral, sortItems, sortMobs],
+  );
 
-    // Allgemein
-    const custom = asObj((s as Record<string, unknown>)['minecraft:custom']) || {};
-    const HOUR_KEYS = new Set([
-      'minecraft:play_time',
-      'minecraft:sneak_time',
-      'minecraft:time_since_death',
-      'minecraft:time_since_rest',
-      'minecraft:total_world_time',
-    ]);
-
-    const general: GeneralRow[] = Object.entries(custom)
-      .filter(([, v]) => typeof v === 'number')
-      .map(([raw, value]) => {
-        const label = tLabel(raw, 'stat', isGerman, translations);
-        const val = value as number;
-
-        let display = nf(val);
-        if (HOUR_KEYS.has(raw)) {
-          display = `${nf2(val / 72000)} h`;
-        } else if (raw.endsWith('_one_cm')) {
-          display = `${nf2(val / 100000)} km`;
-        }
-
-        return { raw, label, value: val, display };
-      });
-
-    // Gegenstaende
-    const mined = asObj((s as Record<string, unknown>)['minecraft:mined']) || {};
-    const broken = asObj((s as Record<string, unknown>)['minecraft:broken']) || {};
-    const crafted = asObj((s as Record<string, unknown>)['minecraft:crafted']) || {};
-    const used = asObj((s as Record<string, unknown>)['minecraft:used']) || {};
-    const picked = asObj((s as Record<string, unknown>)['minecraft:picked_up']) || {};
-    const dropped = asObj((s as Record<string, unknown>)['minecraft:dropped']) || {};
-
-    const itemKeys = new Set([
-      ...Object.keys(mined),
-      ...Object.keys(broken),
-      ...Object.keys(crafted),
-      ...Object.keys(used),
-      ...Object.keys(picked),
-      ...Object.keys(dropped),
-    ]);
-
-    const items: ItemsRow[] = [...itemKeys].map((k) => {
-      const label = tLabel(k, 'item', isGerman, translations);
-      return {
-        key: k,
-        label,
-        mined: mined[k] || 0,
-        broken: broken[k] || 0,
-        crafted: crafted[k] || 0,
-        used: used[k] || 0,
-        picked_up: picked[k] || 0,
-        dropped: dropped[k] || 0,
-      };
-    });
-
-    // Kreaturen
-    const killed = asObj((s as Record<string, unknown>)['minecraft:killed']) || {};
-    const killedBy = asObj((s as Record<string, unknown>)['minecraft:killed_by']) || {};
-    const mobKeys = new Set([...Object.keys(killed), ...Object.keys(killedBy)]);
-    const mobs: MobsRow[] = [...mobKeys].map((k) => {
-      const label = tLabel(k, 'mob', isGerman, translations);
-      return {
-        key: k,
-        label,
-        killed: killed[k] || 0,
-        killed_by: killedBy[k] || 0,
-      };
-    });
-
-    return { general, items, mobs };
-  }, [stats, isGerman, translations]);
-
-  const sorted = useMemo(() => {
-    const sortGeneralRows = (rows: GeneralRow[]) => {
-      const { key, dir } = sortGeneral;
-      const base = [...rows];
-      const factor = dir === 'desc' ? -1 : 1;
-      if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
-      return base.sort((a, b) => {
-        if (key === 'value') return (a.value - b.value) * factor;
-        const av = String(a[key]);
-        const bv = String(b[key]);
-        return av.localeCompare(bv, 'de') * factor;
-      });
-    };
-
-    const sortItemsRows = (rows: ItemsRow[]) => {
-      const { key, dir } = sortItems;
-      const base = [...rows];
-      const factor = dir === 'desc' ? -1 : 1;
-      if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
-
-      return base.sort((a, b) => {
-        const av = a[key];
-        const bv = b[key];
-        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * factor;
-        return String(av).localeCompare(String(bv), 'de') * factor;
-      });
-    };
-
-    const sortMobsRows = (rows: MobsRow[]) => {
-      const { key, dir } = sortMobs;
-      const base = [...rows];
-      const factor = dir === 'desc' ? -1 : 1;
-      if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
-
-      return base.sort((a, b) => {
-        const av = a[key];
-        const bv = b[key];
-        if (typeof av === 'number' && typeof bv === 'number') return (av - bv) * factor;
-        return String(av).localeCompare(String(bv), 'de') * factor;
-      });
-    };
-
-    return {
-      general: sortGeneralRows(tables.general),
-      items: sortItemsRows(tables.items),
-      mobs: sortMobsRows(tables.mobs),
-    };
-  }, [tables, sortGeneral, sortItems, sortMobs]);
-
-  const filtered = useMemo(() => {
-    const general = sorted.general.filter((r) =>
-      matchQueries(parsedQueries, r.label, `${r.label} ${r.display} ${r.raw}`),
-    );
-
-    const items = sorted.items.filter((r) =>
-      matchQueries(
-        parsedQueries,
-        r.label,
-        `${r.label} ${r.mined} ${r.broken} ${r.crafted} ${r.used} ${r.picked_up} ${r.dropped}`,
-      ),
-    );
-
-    const mobs = sorted.mobs.filter((r) =>
-      matchQueries(parsedQueries, r.label, `${r.label} ${r.killed} ${r.killed_by}`),
-    );
-
-    return { general, items, mobs };
-  }, [sorted, parsedQueries]);
+  const filtered = useMemo(
+    () => filterPlayerTables(sorted, parsedQueries),
+    [sorted, parsedQueries],
+  );
 
   const kpiItems = useMemo<KpiItem[]>(() => {
     const asObj = (v: unknown) =>

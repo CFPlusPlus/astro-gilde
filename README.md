@@ -81,6 +81,7 @@ Alle Befehle werden im Projekt-Root in einem Terminal ausgeführt:
 | `npm run lint`            | Linting (ESLint)                                    |
 | `npm run lint:fix`        | Linting + Auto-Fixes (ESLint)                       |
 | `npm run check`           | Type-/Template-Check (Astro)                        |
+| `npm run test`            | Unit-Tests (Vitest)                                 |
 | `npm run astro ...`       | CLI-Befehle wie `astro add`, `astro check`          |
 | `npm run astro -- --help` | Hilfe zur Astro-CLI anzeigen                        |
 
@@ -93,6 +94,7 @@ Das Repository enthält Quality-Gates, damit Code-Style und Typen stabil bleiben
 - **Format-Check:** `npm run format:check`
 - **Linting:** `npm run lint`
 - **Type-/Template-Check:** `npm run check` (entspricht `astro check`)
+- **Unit-Tests:** `npm run test` (Vitest)
 
 In **GitHub Actions** läuft das automatisch bei **Push** und **Pull Requests** über `.github/workflows/quality.yml`.
 

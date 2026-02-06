@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
+import CommandsInlineScripts from '../components/commands/CommandsInlineScripts.astro';
 import { getEntry } from 'astro:content';
 import { Search, TerminalSquare, Copy, X } from '@lucide/astro';
 
@@ -86,4 +87,6 @@ const categories = commandsEntry.data.categories;
       }
     </div>
   </section>
+
+  <CommandsInlineScripts slot="afterScripts" />
 </BaseLayout>

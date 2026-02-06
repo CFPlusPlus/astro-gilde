@@ -33,3 +33,6 @@ jobs:
 
       - name: Type / Template check (Astro)
         run: npm run check
+
+      - name: Unit tests (Vitest)
+        run: npm run test

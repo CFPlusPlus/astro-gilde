@@ -47,20 +47,24 @@ interface MinecraftStatusResponse {
     if (toastTimer != null) window.clearTimeout(toastTimer);
 
     toastEl.classList.remove('hidden');
-    toastEl.innerHTML = `
-      <div
-        class="pointer-events-auto mg-card px-4 py-3 shadow-sm ${
-          variant === 'error' ? 'border-accent/30 bg-accent/10' : ''
-        }"
-        role="status"
-      >
-        <p class="text-sm text-fg/90">${String(message)}</p>
-      </div>
-    `;
+    toastEl.replaceChildren();
+
+    const card = document.createElement('div');
+    card.className = `pointer-events-auto mg-card px-4 py-3 shadow-sm ${
+      variant === 'error' ? 'border-accent/30 bg-accent/10' : ''
+    }`.trim();
+    card.setAttribute('role', 'status');
+
+    const text = document.createElement('p');
+    text.className = 'text-sm text-fg/90';
+    text.textContent = String(message);
+
+    card.appendChild(text);
+    toastEl.appendChild(card);
 
     toastTimer = window.setTimeout(() => {
       toastEl.classList.add('hidden');
-      toastEl.innerHTML = '';
+      toastEl.replaceChildren();
     }, 2200);
   };
 
