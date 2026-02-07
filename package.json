@@ -2,6 +2,9 @@
   "name": "c-users-chris-documents-github-astro-gilde",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build && node scripts/postbuild-404.mjs",

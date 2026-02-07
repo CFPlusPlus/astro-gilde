@@ -22,8 +22,11 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Enforce Node engine constraints
+        run: npm config set engine-strict true
+
       - name: Install project dependencies
-        run: npm install
+        run: npm ci
 
       - name: Check formatting (Prettier)
         run: npm run format:check
@@ -36,3 +39,6 @@ jobs:
 
       - name: Unit tests (Vitest)
         run: npm run test
+
+      - name: Build
+        run: npm run build
