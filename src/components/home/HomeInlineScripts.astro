@@ -1,75 +1,10 @@
 ---
 // Home-spezifische Skripte
 // - src/scripts/app-home.ts: Player-Liste, World-Age, Galerie
-// - Inline: Reveal-Animationen (IntersectionObserver)
+// - src/scripts/home-reveal.ts: Reveal-Animationen (IntersectionObserver)
 ---
 
 <script>
   import '../../scripts/app-home.ts';
-</script>
-
-<script is:inline>
-  // Subtiles Reveal (IntersectionObserver) ohne Extra-Bibliotheken.
-  // Respektiert prefers-reduced-motion und bleibt auf die Startseite begrenzt.
-  (() => {
-    try {
-      const root = document.querySelector('[data-home]');
-      if (!root) return;
-
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-      const els = Array.from(root.querySelectorAll('[data-reveal]'));
-
-      if (reduce) {
-        els.forEach((el) => el.classList.add('is-revealed'));
-        return;
-      }
-
-      // iOS/Safari kann bei `rootMargin` mit Prozentangaben zickig sein.
-      // Daher: erst modern versuchen, bei Fehlern auf Pixel-Fallback gehen.
-      const observerCallback = (entries, io) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-
-          const el = entry.target;
-          const delayAttr = el.getAttribute('data-reveal-delay');
-
-          if (delayAttr) {
-            const delay = Number.parseInt(delayAttr, 10);
-            if (!Number.isNaN(delay) && delay > 0) {
-              el.style.setProperty('--reveal-delay', `${delay}ms`);
-            }
-          }
-
-          el.classList.add('is-revealed');
-          io.unobserve(el);
-        }
-      };
-
-      const makeObserver = (rootMargin) =>
-        new IntersectionObserver(observerCallback, {
-          threshold: 0.12,
-          rootMargin,
-        });
-
-      let io;
-      try {
-        io = makeObserver('0px 0px -10% 0px');
-      } catch {
-        // Fallback: konservativ in Pixeln
-        io = makeObserver('0px 0px -120px 0px');
-      }
-
-      els.forEach((el) => io.observe(el));
-    } catch {
-      // Falls etwas schiefgeht: keine harte Abhaengigkeit.
-      // Fallback: Alle Reveal-Elemente sofort einblenden, damit die Seite nicht leer wirkt.
-      try {
-        const root = document.querySelector('[data-home]');
-        if (!root) return;
-        root.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-revealed'));
-      } catch {
-        // Absichtlich leer.
-      }
-    }
-  })();
+  import '../../scripts/home-reveal.ts';
 </script>

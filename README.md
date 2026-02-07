@@ -66,6 +66,15 @@ Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://do
 
 ---
 
+## Inline-Script Konvention
+
+- Inline-Skripte in `.astro` sind nur als kleine Bootstraps erlaubt (z. B. Theme vor Paint, globale Config-Bridge).
+- Fachlogik, DOM-Logik und Event-Handling liegen in `src/scripts/*`.
+- Seiten/Komponenten importieren diese Skripte nur noch ueber kurze Bootstrap-Imports.
+- Keine grossen JS-Bloecke direkt in `src/pages/*`.
+
+---
+
 ## Befehle
 
 Alle Befehle werden im Projekt-Root in einem Terminal ausgeführt:

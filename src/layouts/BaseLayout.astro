@@ -142,32 +142,8 @@ const ldBase = buildBaseGraph({
       }
     </script>
 
-    <script is:inline>
-      // Theme-Farbe mit dem aktiven Theme synchron halten (nutzt CSS-Variable --bg).
-      try {
-        const meta = document.querySelector('meta[name="theme-color"]');
-        const root = document.documentElement;
-
-        const update = () => {
-          const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
-          if (meta && bg) meta.setAttribute('content', bg);
-        };
-
-        // Erstes Update (nach dem Theme-Bootstrap oben)
-        update();
-
-        // Auf manuelle Theme-Wechsel reagieren (data-theme)
-        const obs = new MutationObserver(update);
-        obs.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-
-        // Auf System-Theme-Wechsel reagieren (wenn kein Override gesetzt ist)
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        mq.addEventListener?.('change', update);
-
-        window.addEventListener('DOMContentLoaded', update);
-      } catch {
-        // Optional: Fehler ignorieren, damit das Rendering nicht blockiert.
-      }
+    <script>
+      import '../scripts/theme-color-sync.ts';
     </script>
 
     <script is:inline define:vars={{ browserAppConfig }}>
