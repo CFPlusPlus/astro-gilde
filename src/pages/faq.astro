@@ -8,6 +8,7 @@ import { ArrowRight, BookOpen, Hammer, Shield, Cpu, Users, ScrollText } from '@l
 import { getEntry } from 'astro:content';
 import { renderMarkdown } from '../utils/renderMarkdown';
 import { canonicalFor, site } from '../config/site';
+import { minecraftGilde } from '../config/minecraftGilde';
 
 type FaqItem = { q: string; a: string };
 
@@ -34,6 +35,7 @@ const faqLd = buildFaqPage({
   canonicalUrl,
   items: groups.flatMap((g) => g.items),
 });
+const DISCORD_URL = minecraftGilde.discord.url;
 ---
 
 <BaseLayout
@@ -115,7 +117,7 @@ const faqLd = buildFaqPage({
               <ScrollText size={16} /> Serverinfos
             </Button>
             <Button
-              href="https://discord.minecraft-gilde.de"
+              href={DISCORD_URL}
               external
               variant="primary"
               size="sm"

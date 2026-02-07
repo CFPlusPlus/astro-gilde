@@ -7,23 +7,24 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
 import { ArrowRight, BadgeCheck, Gift, ShoppingBag, ExternalLink, Info } from '@lucide/astro';
 import { canonicalFor } from '../config/site';
+import { minecraftGilde } from '../config/minecraftGilde';
 
 const voteSites = [
   {
     name: 'minecraft-server.eu',
-    href: 'https://minecraft-server.eu/vote/index/2321D',
+    href: minecraftGilde.voting.minecraftServerEuVoteUrl,
     desc: 'Vote auf minecraft-server.eu und sichere dir Belohnungen ingame.',
     active: true,
   },
   {
     name: 'minecraft-serverlist.net',
-    href: 'https://www.minecraft-serverlist.net/vote/59253',
+    href: minecraftGilde.voting.minecraftServerlistNetVoteUrl,
     desc: 'Vote auf minecraft-serverlist.net und sammle Vote-Punkte.',
     active: true,
   },
   {
     name: 'serverliste.net',
-    href: 'https://serverliste.net/vote/5142',
+    href: minecraftGilde.voting.serverlisteNetVoteUrl,
     desc: 'Vote auf serverliste.net – jeder Vote hilft beim Ranking.',
     active: true,
   },

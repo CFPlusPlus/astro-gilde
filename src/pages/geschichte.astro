@@ -8,8 +8,9 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle } from '../lib/structuredData';
 import { ArrowRight, Flag, Globe, Rocket, Cpu, Paintbrush } from '@lucide/astro';
 import { canonicalFor, site } from '../config/site';
+import { minecraftGilde } from '../config/minecraftGilde';
 
-const DISCORD_URL = 'https://discord.minecraft-gilde.de';
+const DISCORD_URL = minecraftGilde.discord.url;
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
 

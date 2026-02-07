@@ -2,9 +2,10 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import { ArrowRight, Users } from '@lucide/astro';
+import { minecraftGilde } from '../config/minecraftGilde';
 
 const PARTNER_URL = 'https://www.anti-corona-kartell.de';
-const DISCORD_URL = 'https://discord.minecraft-gilde.de';
+const DISCORD_URL = minecraftGilde.discord.url;
 ---
 
 <BaseLayout

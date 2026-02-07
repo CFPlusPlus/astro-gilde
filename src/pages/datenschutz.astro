@@ -4,8 +4,9 @@ import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import { ArrowRight } from '@lucide/astro';
 import datenschutzHtml from '../partials/datenschutz.html?raw';
+import { minecraftGilde } from '../config/minecraftGilde';
 
-const DISCORD_URL = 'https://discord.minecraft-gilde.de';
+const DISCORD_URL = minecraftGilde.discord.url;
 ---
 
 <BaseLayout

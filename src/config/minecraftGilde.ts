@@ -1,7 +1,20 @@
-// Zentrale Projekt-Konfiguration für minecraft-gilde.de
+// Zentrale Projekt-Konfiguration fuer minecraft-gilde.de
 // -----------------------------------------------------
-// Ziel: Strings (URLs, IP, Version) nicht über das Projekt verteilen,
+// Ziel: Strings (URLs, IP, Version) nicht ueber das Projekt verteilen,
 // sondern an einer Stelle pflegen.
+
+export const externalLinks = {
+  discord: 'https://discord.minecraft-gilde.de',
+  map: 'https://map.minecraft-gilde.de',
+  status: 'https://stats.uptimerobot.com/OnyzM9GmG2',
+  voteMinecraftServerEu: 'https://minecraft-server.eu/vote/index/2321D',
+  voteMinecraftServerlistNet: 'https://www.minecraft-serverlist.net/vote/59253',
+  voteServerlisteNet: 'https://serverliste.net/vote/5142',
+} as const;
+
+export type ExternalLinkKey = keyof typeof externalLinks;
+
+export const getExternalLink = (key: ExternalLinkKey): string => externalLinks[key];
 
 export const minecraftGilde = {
   serverIp: 'minecraft-gilde.de',
@@ -12,16 +25,18 @@ export const minecraftGilde = {
   repoUrl: 'https://github.com/CFPlusPlus/minecraft-gilde-web',
 
   discord: {
-    url: 'https://discord.minecraft-gilde.de',
+    url: externalLinks.discord,
     guildId: '1219625244906754093',
     inviteCode: 'gCNfmWKFSp',
   },
 
-  mapUrl: 'https://map.minecraft-gilde.de',
-  statusUrl: 'https://stats.uptimerobot.com/OnyzM9GmG2',
+  mapUrl: externalLinks.map,
+  statusUrl: externalLinks.status,
 
   voting: {
-    minecraftServerEuVoteUrl: 'https://minecraft-server.eu/vote/index/2321D',
+    minecraftServerEuVoteUrl: externalLinks.voteMinecraftServerEu,
+    minecraftServerlistNetVoteUrl: externalLinks.voteMinecraftServerlistNet,
+    serverlisteNetVoteUrl: externalLinks.voteServerlisteNet,
   },
 } as const;
 

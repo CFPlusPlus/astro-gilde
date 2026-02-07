@@ -7,17 +7,20 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle, buildGameServer } from '../lib/structuredData';
 import { Cpu, Shield, Gamepad2, Copy, Map, ArrowRight } from '@lucide/astro';
 import { canonicalFor, site } from '../config/site';
+import { minecraftGilde } from '../config/minecraftGilde';
 
-const DISCORD_URL = 'https://discord.minecraft-gilde.de';
-const DYMAP_URL = 'https://map.minecraft-gilde.de';
+const DISCORD_URL = minecraftGilde.discord.url;
+const DYNMAP_URL = minecraftGilde.mapUrl;
+const SERVER_IP = minecraftGilde.serverIp;
+const MC_VERSION = minecraftGilde.mcVersion;
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
 const gameServerLd = buildGameServer({
   site,
   canonicalUrl,
-  ip: 'minecraft-gilde.de',
+  ip: SERVER_IP,
   port: 25565,
-  version: '1.21.x',
+  version: MC_VERSION,
   maxPlayers: 100,
 });
 
@@ -55,14 +58,14 @@ const articleLd = buildArticle({
         <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
           Discord <ArrowRight size={18} />
         </Button>
-        <Button href={DYMAP_URL} external variant="ghost" class="gap-2"
+        <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
           ><Map size={18} /> Dynmap</Button
         >
       </div>
     </div>
 
     <div class="mt-6 flex flex-wrap gap-2">
-      <Badge variant="accent">1.21.x</Badge>
+      <Badge variant="accent">{MC_VERSION}</Badge>
       <Badge>Folia (Paper Fork)</Badge>
       <Badge>Ohne Resets</Badge>
     </div>
@@ -80,7 +83,7 @@ const articleLd = buildArticle({
           </div>
           <dl class="mt-3 grid gap-2 text-sm">
             <div class="flex items-center justify-between gap-4">
-              <dt class="text-muted">IP</dt><dd class="font-semibold">minecraft-gilde.de</dd>
+              <dt class="text-muted">IP</dt><dd class="font-semibold">{SERVER_IP}</dd>
             </div>
             <div class="flex items-center justify-between gap-4">
               <dt class="text-muted">Version</dt><dd>Folia 1.21.11</dd>

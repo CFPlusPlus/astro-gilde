@@ -8,9 +8,12 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
 import { ArrowRight, Copy, Wand, Shield, Hammer, Map, Vote, UserRound } from '@lucide/astro';
 import { canonicalFor } from '../config/site';
+import { minecraftGilde } from '../config/minecraftGilde';
 
-const DISCORD_URL = 'https://discord.minecraft-gilde.de';
-const DYNMAP_URL = 'https://map.minecraft-gilde.de';
+const DISCORD_URL = minecraftGilde.discord.url;
+const DYNMAP_URL = minecraftGilde.mapUrl;
+const SERVER_IP = minecraftGilde.serverIp;
+const MC_VERSION = minecraftGilde.mcVersion;
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
 
@@ -22,7 +25,7 @@ const howToLd = buildHowTo({
   steps: [
     {
       name: 'Mit dem Server verbinden',
-      text: 'Starte Minecraft Java (1.21.x) und verbinde dich mit der Adresse minecraft-gilde.de (Standard-Port 25565).',
+      text: `Starte Minecraft Java (${MC_VERSION}) und verbinde dich mit der Adresse ${SERVER_IP} (Standard-Port 25565).`,
     },
     {
       name: 'Startpunkt wählen',
@@ -70,7 +73,7 @@ const howToLd = buildHowTo({
 
       <ol class="text-muted mt-4 list-decimal space-y-2 pl-5 text-sm">
         <li>
-          <span class="text-fg/90 font-medium">Verbinden</span> mit <code>minecraft-gilde.de</code>.
+          <span class="text-fg/90 font-medium">Verbinden</span> mit <code>{SERVER_IP}</code>.
           Wenn du neu bist: kurz am Spawn umschauen, dann <code>/rtp</code>.
         </li>
         <li>
