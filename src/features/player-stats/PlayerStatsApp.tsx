@@ -14,10 +14,10 @@ import {
   X,
 } from 'lucide-react';
 
-import { getPlayer, getTranslations } from './api';
-import type { PlayerApiResponse, PlayerTranslations } from '../minecraft-stats/types';
+import { getPlayer, getTranslations } from '../stats-core/api';
+import { logMissingTranslations } from '../stats-core/i18n';
+import type { PlayerApiResponse, PlayerTranslations } from '../stats-core/types';
 import { nf, nf2, parseFilter } from './format';
-import { logMissingTranslations } from '../minecraft-stats/i18n';
 import { compactUUID } from './uuid';
 import SkinViewerModal from './SkinViewerModal';
 import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';

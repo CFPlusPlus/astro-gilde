@@ -1,19 +1,11 @@
 import React from 'react';
 import { ChevronDown, ChevronsUpDown, ChevronUp, SearchX } from 'lucide-react';
 
+import { formatBerlinDateTime } from '../stats-core/format';
 import type { SortDir } from './table-model';
 
 export function fmtGenerated(iso: string) {
-  try {
-    const fmt = new Intl.DateTimeFormat('de-DE', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: 'Europe/Berlin',
-    });
-    return `Stand: ${fmt.format(new Date(iso))}`;
-  } catch {
-    return `Stand: ${iso}`;
-  }
+  return `Stand: ${formatBerlinDateTime(iso)}`;
 }
 
 export function ApiAlert({ message }: { message: string | null }) {

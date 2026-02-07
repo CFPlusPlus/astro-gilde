@@ -52,19 +52,19 @@ export function logMissingTranslations(
     'minecraft:placed',
   ];
 
-  for (const sec of itemSections) {
-    const o = asObj((stats as Record<string, unknown>)[sec]);
-    if (!o) continue;
-    for (const key of Object.keys(o)) {
+  for (const sectionKey of itemSections) {
+    const section = asObj((stats as Record<string, unknown>)[sectionKey]);
+    if (!section) continue;
+    for (const key of Object.keys(section)) {
       if (!translations?.items?.[key]) missing.items.add(key);
     }
   }
 
   const mobSections = ['minecraft:killed', 'minecraft:killed_by'];
-  for (const sec of mobSections) {
-    const o = asObj((stats as Record<string, unknown>)[sec]);
-    if (!o) continue;
-    for (const key of Object.keys(o)) {
+  for (const sectionKey of mobSections) {
+    const section = asObj((stats as Record<string, unknown>)[sectionKey]);
+    if (!section) continue;
+    for (const key of Object.keys(section)) {
       if (!translations?.mobs?.[key]) missing.mobs.add(key);
     }
   }

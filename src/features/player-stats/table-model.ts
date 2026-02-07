@@ -1,6 +1,6 @@
-import { transformRawMinecraftValue } from '../minecraft-stats/metrics';
-import { tLabel } from '../minecraft-stats/i18n';
-import type { PlayerTranslations } from '../minecraft-stats/types';
+import { tLabel } from '../stats-core/i18n';
+import { transformRawMinecraftValue } from '../stats-core/metrics';
+import type { PlayerTranslations } from '../stats-core/types';
 import { matchQueries, nf, nf2, type ParsedQuery } from './format';
 
 export type TabKey = 'allgemein' | 'items' | 'mobs';

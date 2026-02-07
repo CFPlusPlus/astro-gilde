@@ -1,6 +1,6 @@
-import { tLabel } from '../minecraft-stats/i18n';
-import type { PlayerTranslations } from '../minecraft-stats/types';
-import { transformRawMinecraftValue } from '../minecraft-stats/metrics';
+import { tLabel } from '../stats-core/i18n';
+import { transformRawMinecraftValue } from '../stats-core/metrics';
+import type { PlayerTranslations } from '../stats-core/types';
 import { fmtNumber } from './format';
 
 export type VersusMetricKind = 'stat' | 'item' | 'mob';

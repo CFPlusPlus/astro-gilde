@@ -1,10 +1,8 @@
-export const nf = (x: number) => new Intl.NumberFormat('de-DE').format(x);
+import { formatDeNumber, formatDeNumber2 } from '../stats-core/format';
 
-export const nf2 = (x: number) =>
-  new Intl.NumberFormat('de-DE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(x);
+export const nf = (x: number) => formatDeNumber(x);
+
+export const nf2 = (x: number) => formatDeNumber2(x);
 
 export function norm(s: string): string {
   return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
@@ -13,12 +11,15 @@ export function norm(s: string): string {
 export type ParsedQuery = { type: 'exact' | 'partial'; value: string };
 
 /**
- * Filter-Parsen wie in der Legacy-Version:
- * - Komma = ODER
- * - "..." = exakte Suche in der ersten Spalte
+ * Filter parser behavior from legacy:
+ * - comma = OR
+ * - "..." = exact search on first column
  */
 export function parseFilter(input: string): ParsedQuery[] {
-  const raw = String(input || '').replace(/[“”„‟«»‚‛’"]/g, '"');
+  const raw = String(input || '').replace(
+    /[\u201C\u201D\u201E\u201F\u00AB\u00BB\u201A\u201B\u2019"]/g,
+    '"',
+  );
 
   return raw
     .split(',')

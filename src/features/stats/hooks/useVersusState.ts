@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getPlayer, getTranslations } from '../../minecraft-stats/api';
+import { getPlayer, getTranslations } from '../../stats-core/api';
 import { VERSUS_MAX_METRICS } from '../constants';
 import type { PlayersSearchItem } from '../types';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
