@@ -7,11 +7,12 @@ import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
 import { ArrowRight, Copy, Wand, Shield, Hammer, Map, Vote, UserRound } from '@lucide/astro';
+import { canonicalFor } from '../config/site';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
 const DYNMAP_URL = 'https://map.minecraft-gilde.de';
 
-const canonicalUrl = 'https://minecraft-gilde.de/tutorial/';
+const canonicalUrl = canonicalFor(Astro.url.pathname);
 
 const howToLd = buildHowTo({
   canonicalUrl,
@@ -38,7 +39,7 @@ const howToLd = buildHowTo({
     {
       name: 'Regeln & Farmwelten checken',
       text: 'Rohstoffe werden in den Farmwelten gesammelt (werden regelmäßig zurückgesetzt). Regeln findest du hier.',
-      url: 'https://minecraft-gilde.de/regeln/',
+      url: canonicalFor('/regeln/'),
     },
   ],
 });

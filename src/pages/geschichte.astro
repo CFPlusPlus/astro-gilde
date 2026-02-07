@@ -7,11 +7,11 @@ import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle } from '../lib/structuredData';
 import { ArrowRight, Flag, Globe, Rocket, Cpu, Paintbrush } from '@lucide/astro';
+import { canonicalFor, site } from '../config/site';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
 
-const site = new URL('https://minecraft-gilde.de');
-const canonicalUrl = 'https://minecraft-gilde.de/geschichte/';
+const canonicalUrl = canonicalFor(Astro.url.pathname);
 
 const articleLd = buildArticle({
   site,
@@ -20,7 +20,7 @@ const articleLd = buildArticle({
   headline: 'Unsere Geschichte – Minecraft Gilde',
   description:
     'Von minecraft.falkner.info zum Folia-Vanilla-Server: die wichtigsten Meilensteine der Minecraft Gilde seit Februar 2024.',
-  image: 'https://minecraft-gilde.de/images/logo.webp',
+  image: new URL('/images/logo.webp', site).toString(),
   authorName: 'Christian Falkner',
   authorUrl: 'https://www.falkner.info',
   articleSection: 'Geschichte',

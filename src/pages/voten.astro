@@ -6,6 +6,7 @@ import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
 import { ArrowRight, BadgeCheck, Gift, ShoppingBag, ExternalLink, Info } from '@lucide/astro';
+import { canonicalFor } from '../config/site';
 
 const voteSites = [
   {
@@ -34,7 +35,7 @@ const voteSites = [
   },
 ];
 
-const canonicalUrl = 'https://minecraft-gilde.de/voten/';
+const canonicalUrl = canonicalFor(Astro.url.pathname);
 const howToLd = buildHowTo({
   canonicalUrl,
   name: 'Für Minecraft Gilde voten',

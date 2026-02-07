@@ -7,6 +7,7 @@ import { buildFaqPage } from '../lib/structuredData';
 import { ArrowRight, BookOpen, Hammer, Shield, Cpu, Users, ScrollText } from '@lucide/astro';
 import { getEntry } from 'astro:content';
 import { renderMarkdown } from '../utils/renderMarkdown';
+import { canonicalFor, site } from '../config/site';
 
 type FaqItem = { q: string; a: string };
 
@@ -27,8 +28,7 @@ const groups = (faqEntry.data as FaqGroupJson[]).map((g) => ({
   icon: ICONS[g.icon],
 }));
 
-const site = new URL('https://minecraft-gilde.de');
-const canonicalUrl = 'https://minecraft-gilde.de/faq/';
+const canonicalUrl = canonicalFor(Astro.url.pathname);
 const faqLd = buildFaqPage({
   site,
   canonicalUrl,
@@ -38,7 +38,7 @@ const faqLd = buildFaqPage({
 
 <BaseLayout
   title="Minecraft Gilde - FAQ"
-  canonical="https://minecraft-gilde.de/faq/"
+  canonical={canonicalUrl}
   description="FAQ zur Minecraft Gilde: Erststart, Grundstücke, Updates, PvP, Technik & Community – übersichtlich gruppiert."
 >
   <JsonLd slot="head" data={faqLd} />

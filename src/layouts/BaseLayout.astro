@@ -9,6 +9,7 @@ import Footer from '../components/Footer.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildBaseGraph } from '../lib/structuredData';
 import { browserAppConfig } from '../config/minecraftGilde';
+import { canonicalFor, site as canonicalSite } from '../config/site';
 
 export interface Props {
   title?: string;
@@ -57,8 +58,8 @@ const {
 } = Astro.props as Props;
 
 // Absolute URLs (wichtig fuer OG/Twitter)
-const site = Astro.site ?? new URL('https://minecraft-gilde.de');
-const canonicalUrl = canonical ?? new URL(Astro.url.pathname, site).toString();
+const site = Astro.site ?? canonicalSite;
+const canonicalUrl = canonical ? canonicalFor(canonical) : canonicalFor(Astro.url.pathname);
 
 const metaTitle = title;
 const metaDescription =

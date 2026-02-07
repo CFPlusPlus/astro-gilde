@@ -6,12 +6,12 @@ import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle, buildGameServer } from '../lib/structuredData';
 import { Cpu, Shield, Gamepad2, Copy, Map, ArrowRight } from '@lucide/astro';
+import { canonicalFor, site } from '../config/site';
 
 const DISCORD_URL = 'https://discord.minecraft-gilde.de';
 const DYMAP_URL = 'https://map.minecraft-gilde.de';
 
-const site = new URL('https://minecraft-gilde.de');
-const canonicalUrl = 'https://minecraft-gilde.de/serverinfos/';
+const canonicalUrl = canonicalFor(Astro.url.pathname);
 const gameServerLd = buildGameServer({
   site,
   canonicalUrl,
@@ -28,7 +28,7 @@ const articleLd = buildArticle({
   headline: 'Serverinfos & Folia-Setup – Minecraft Gilde (Vanilla SMP 1.21.x)',
   description:
     'Technische Details zum Setup der Minecraft Gilde: Folia 1.21.x, Hardware & Kernfeatures – optimiert für Vanilla Survival & Freebuild ohne Pay2Win.',
-  image: 'https://minecraft-gilde.de/images/logo.webp',
+  image: new URL('/images/logo.webp', site).toString(),
   authorName: 'Christian Falkner',
   authorUrl: 'https://www.falkner.info',
   articleSection: 'Serverinformationen',
