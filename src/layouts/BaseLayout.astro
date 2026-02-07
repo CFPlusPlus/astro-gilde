@@ -156,8 +156,8 @@ const ldBase = buildBaseGraph({
 
   <body class={`min-h-dvh flex flex-col bg-transparent text-fg antialiased ${bodyClass}`.trim()}>
     <a
-      href="#main"
-      class="bg-surface-solid text-fg border-border sr-only rounded-lg border px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50"
+      href="#main-content"
+      class="bg-surface-solid text-fg border-border focus-visible:ring-offset-bg sr-only rounded-lg border px-3 py-2 text-sm font-medium focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[70] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       Zum Inhalt springen
     </a>
@@ -168,7 +168,7 @@ const ldBase = buildBaseGraph({
 
     {showNav ? <Navbar /> : null}
 
-    <main id="main" class="flex-1">
+    <main id="main-content" tabindex="-1" class="flex-1">
       <slot />
     </main>
 

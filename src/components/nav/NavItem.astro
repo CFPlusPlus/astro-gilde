@@ -6,6 +6,7 @@ interface Props {
   external?: boolean;
   class?: string;
   ariaLabel?: string;
+  ariaCurrent?: 'page';
   showExternalHint?: boolean;
 }
 
@@ -14,6 +15,7 @@ const {
   external = false,
   class: className,
   ariaLabel,
+  ariaCurrent,
   showExternalHint = true,
 } = Astro.props;
 ---
@@ -23,6 +25,7 @@ const {
   target={external ? '_blank' : undefined}
   rel={external ? 'noopener noreferrer' : undefined}
   aria-label={ariaLabel}
+  aria-current={ariaCurrent}
   class={className}
 >
   <slot />
