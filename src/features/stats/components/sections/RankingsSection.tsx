@@ -41,7 +41,7 @@ export function RankingsSection({
       <div className="mt-6">
         <SectionTitle
           title="Ranglisten"
-          subtitle="Waehle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
+          subtitle="W&auml;hle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
         />
 
         {hasNoRanklistResults ? (
@@ -95,9 +95,9 @@ export function RankingsSection({
               </div>
             ) : (
               <div className="mg-card p-6">
-                <p className="text-fg font-semibold">Keine Rangliste ausgewaehlt</p>
+                <p className="text-fg font-semibold">Keine Rangliste ausgew&auml;hlt</p>
                 <p className="text-muted mt-2 text-sm">
-                  Waehle links eine Kategorie aus, um die Top-Werte zu sehen.
+                  W&auml;hle links eine Kategorie aus, um die Top-Werte zu sehen.
                 </p>
               </div>
             )}

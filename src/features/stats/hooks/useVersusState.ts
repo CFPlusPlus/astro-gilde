@@ -172,12 +172,12 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
     const playerB = versusPlayerB;
 
     if (!playerA || !playerB) {
-      setVersusError('Bitte waehle zwei Spieler fuer den Vergleich aus.');
+      setVersusError('Bitte w\u00e4hle zwei Spieler f\u00fcr den Vergleich aus.');
       return;
     }
 
     if (playerA.uuid === playerB.uuid) {
-      setVersusError('Bitte waehle zwei unterschiedliche Spieler.');
+      setVersusError('Bitte w\u00e4hle zwei unterschiedliche Spieler.');
       return;
     }
 
@@ -245,7 +245,7 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
     } catch (error) {
       if ((error as Error)?.name === 'AbortError') return;
       console.warn('Versus Fehler', error);
-      setVersusError('Versus konnte nicht geladen werden. Bitte versuche es spaeter erneut.');
+      setVersusError('Versus konnte nicht geladen werden. Bitte versuche es sp\u00e4ter erneut.');
     } finally {
       setVersusLoading(false);
     }

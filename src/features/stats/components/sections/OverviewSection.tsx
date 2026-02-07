@@ -39,7 +39,7 @@ export function OverviewSection({
   }, [kpiIcons, totals]);
 
   return (
-    <section aria-label="Uebersicht" className="mg-container pb-12">
+    <section aria-label="&Uuml;bersicht" className="mg-container pb-12">
       {showWelcome ? (
         <div className="mg-callout relative flex items-start gap-3" data-variant="info">
           <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
@@ -49,13 +49,14 @@ export function OverviewSection({
             <p className="text-fg font-semibold">Willkommen auf der Statistik-Seite!</p>
             <p className="text-muted mt-1 text-sm leading-relaxed">
               Nutze die Suche oben, um direkt zur Spielerstatistik zu springen. In den Ranglisten
-              findest du die Top-Werte je Kategorie, von Spielzeit ueber Distanz bis zu Kreaturen.
+              findest du die Top-Werte je Kategorie, von Spielzeit &uuml;ber Distanz bis zu
+              Kreaturen.
             </p>
           </div>
           <button
             type="button"
             className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-            aria-label="Schliessen"
+            aria-label="Schlie&szlig;en"
             onClick={onDismissWelcome}
           >
             <X size={18} />
@@ -66,7 +67,7 @@ export function OverviewSection({
       <div className="mt-8">
         <SectionTitle
           title="Die Geschichte unserer Welt - in Zahlen"
-          subtitle="Von langen Reisen ueber gefaehrliche Naechte bis zu grossen Projekten: Hier siehst du den Puls des Servers."
+          subtitle="Von langen Reisen &uuml;ber gef&auml;hrliche N&auml;chte bis zu gro&szlig;en Projekten: Hier siehst du den Puls des Servers."
         />
       </div>
 

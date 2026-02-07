@@ -97,7 +97,7 @@ export function VersusSection({
       <div className="mt-6 space-y-6">
         <SectionTitle
           title="Versus"
-          subtitle="Vergleiche zwei Spieler in ausgewaehlten Kategorien."
+          subtitle="Vergleiche zwei Spieler in ausgew&auml;hlten Kategorien."
         />
 
         <div className="mg-card relative z-20 overflow-visible p-5">
@@ -109,8 +109,8 @@ export function VersusSection({
               <div className="min-w-0">
                 <p className="text-fg font-semibold">Spieler-Vergleich</p>
                 <p className="text-muted mt-1 text-sm leading-relaxed">
-                  Waehle zwei Spieler und starte den Vergleich. Fuer beste Ergebnisse nutze konkrete
-                  Kategorien.
+                  W&auml;hle zwei Spieler und starte den Vergleich. F&uuml;r beste Ergebnisse nutze
+                  konkrete Kategorien.
                 </p>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function VersusSection({
                   </button>
                 </div>
               ) : (
-                <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                <p className="text-muted mt-2 text-xs">W&auml;hle einen Spieler aus der Liste.</p>
               )}
             </div>
 
@@ -249,7 +249,7 @@ export function VersusSection({
                   </button>
                 </div>
               ) : (
-                <p className="text-muted mt-2 text-xs">Waehle einen Spieler aus der Liste.</p>
+                <p className="text-muted mt-2 text-xs">W&auml;hle einen Spieler aus der Liste.</p>
               )}
             </div>
           </div>
@@ -269,7 +269,7 @@ export function VersusSection({
               onClick={onResetVersus}
               className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
             >
-              Zuruecksetzen
+              Zur&uuml;cksetzen
             </button>
             <span className="text-muted text-xs sm:ml-auto">
               Maximal {maxMetrics} Kategorien gleichzeitig.
@@ -282,7 +282,7 @@ export function VersusSection({
               role="status"
             >
               <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-              <span className="text-fg/90">Bitte waehle zwei unterschiedliche Spieler.</span>
+              <span className="text-fg/90">Bitte w&auml;hle zwei unterschiedliche Spieler.</span>
             </div>
           ) : null}
 
@@ -307,7 +307,7 @@ export function VersusSection({
             <div className="mg-card min-w-0 p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
-                <span className="text-muted text-xs">{versusCatalog.length} Eintraege</span>
+                <span className="text-muted text-xs">{versusCatalog.length} Eintr&auml;ge</span>
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -335,7 +335,7 @@ export function VersusSection({
                   Keine
                 </button>
                 <span className="text-muted text-xs">
-                  {versusMetricIds.length}/{maxMetrics} ausgewaehlt
+                  {versusMetricIds.length}/{maxMetrics} ausgew&auml;hlt
                 </span>
               </div>
 
@@ -356,8 +356,8 @@ export function VersusSection({
                     'mg-search-clear',
                     versusMetricFilter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
                   ].join(' ')}
-                  aria-label="Versus-Kategorien-Filter zuruecksetzen"
-                  title="Filter zuruecksetzen"
+                  aria-label="Versus-Kategorien-Filter zur&uuml;cksetzen"
+                  title="Filter zur&uuml;cksetzen"
                   tabIndex={versusMetricFilter.trim().length > 0 ? 0 : -1}
                 >
                   <X size={14} />
@@ -434,16 +434,16 @@ export function VersusSection({
               <div className="mg-card p-4">
                 <p className="text-fg font-semibold">Spielerstatistiken werden geladen...</p>
                 <p className="text-muted mt-1 text-sm">
-                  Je mehr Daten vorhanden sind, desto laenger dauert der Vergleich.
+                  Je mehr Daten vorhanden sind, desto l&auml;nger dauert der Vergleich.
                 </p>
               </div>
             ) : null}
 
             {!versusPlayerA || !versusPlayerB ? (
               <div className="mg-card p-6">
-                <p className="text-fg font-semibold">Bitte zwei Spieler waehlen</p>
+                <p className="text-fg font-semibold">Bitte zwei Spieler w&auml;hlen</p>
                 <p className="text-muted mt-2 text-sm">
-                  Nutze die Suche oben, um Spieler A und B auszuwaehlen.
+                  Nutze die Suche oben, um Spieler A und B auszuw&auml;hlen.
                 </p>
               </div>
             ) : !hasVersusData ? (
@@ -455,16 +455,16 @@ export function VersusSection({
               </div>
             ) : versusMetricIds.length === 0 ? (
               <div className="mg-card p-6">
-                <p className="text-fg font-semibold">Keine Kategorien ausgewaehlt</p>
+                <p className="text-fg font-semibold">Keine Kategorien ausgew&auml;hlt</p>
                 <p className="text-muted mt-2 text-sm">
-                  Waehle links die Kategorien aus, die du vergleichen moechtest.
+                  W&auml;hle links die Kategorien aus, die du vergleichen m&ouml;chtest.
                 </p>
               </div>
             ) : !hasVersusResults ? (
               <div className="mg-card p-6">
                 <p className="text-fg font-semibold">Vergleich bereit</p>
                 <p className="text-muted mt-2 text-sm">
-                  Waehle Kategorien aus, um die Werte zu sehen.
+                  W&auml;hle Kategorien aus, um die Werte zu sehen.
                 </p>
               </div>
             ) : (
@@ -573,7 +573,7 @@ export function VersusSection({
                   {versusLoading ? (
                     <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
                       <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
-                        Laedt...
+                        L&auml;dt...
                       </span>
                     </div>
                   ) : null}

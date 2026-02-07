@@ -53,6 +53,7 @@ export default function StatsApp() {
   const versus = useVersusState({
     onGeneratedIso: setGeneratedIso,
   });
+  const tabsDisabled = Boolean(apiError);
 
   useEffect(() => {
     const y = consumeScrollToRestore();
@@ -65,6 +66,7 @@ export default function StatsApp() {
       <StatsHeader
         activeTab={activeTab}
         onTabChange={setTab}
+        tabsDisabled={tabsDisabled}
         search={mainSearch}
         onChoosePlayer={goToPlayer}
         playerCount={playerCount}

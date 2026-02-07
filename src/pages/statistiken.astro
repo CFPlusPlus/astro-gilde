@@ -7,7 +7,7 @@ import StatsApp from '../features/stats/StatsApp';
   title="Minecraft Gilde - Statistiken"
   description="Live-Spielerstatistiken für Minecraft Gilde – Ranglisten, Server-König und Spielerübersicht."
 >
-  <!-- Performance: Avatar-CDN frueh aufloesen -->
+  <!-- Performance: Avatar-CDN fr&uuml;h aufl&ouml;sen -->
   <link slot="head" rel="preconnect" href="https://minotar.net" crossorigin />
   <link slot="head" rel="dns-prefetch" href="//minotar.net" />
 
@@ -15,10 +15,10 @@ import StatsApp from '../features/stats/StatsApp';
     <h1 class="text-3xl font-semibold tracking-tight">Statistiken</h1>
     <p class="text-muted mt-2 max-w-3xl">
       Suche nach Spielern, entdecke Ranglisten und sieh, wer aktuell die meisten Punkte sammelt. Die
-      Daten werden serverseitig generiert und können leicht verzögert sein.
+      Daten werden serverseitig generiert und k&ouml;nnen leicht verz&ouml;gert sein.
     </p>
   </section>
 
-  <!-- React-Island: laedt die interaktive Statistik-App -->
+  <!-- React-Island: l&auml;dt die interaktive Statistik-App -->
   <StatsApp client:load />
 </BaseLayout>

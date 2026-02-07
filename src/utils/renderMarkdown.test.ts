@@ -30,7 +30,11 @@ describe('renderMarkdown', () => {
   it('auto-links naked URLs but not markdown link targets', () => {
     const html = renderMarkdown('Docs: https://example.com und [Mehr](https://example.org).');
 
-    expect(html).toContain('<a href="https://example.com" target="_blank" rel="noopener noreferrer">');
-    expect(html).toContain('<a href="https://example.org" target="_blank" rel="noopener noreferrer">Mehr</a>');
+    expect(html).toContain(
+      '<a href="https://example.com" target="_blank" rel="noopener noreferrer">',
+    );
+    expect(html).toContain(
+      '<a href="https://example.org" target="_blank" rel="noopener noreferrer">Mehr</a>',
+    );
   });
 });

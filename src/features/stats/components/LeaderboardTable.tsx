@@ -49,7 +49,7 @@ export function LeaderboardTable({
             {state.loaded && page.length === 0 ? (
               <tr>
                 <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
-                  Keine Daten verfügbar.
+                  {'Keine Daten verf\u00fcgbar.'}
                 </td>
               </tr>
             ) : null}

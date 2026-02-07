@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 
 /**
  * Kleine UI-Helfer fuer die Statistik-Seite.
@@ -20,7 +21,12 @@ export function ApiAlert({ message }: { message: string | null }) {
       className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
       role="alert"
     >
-      <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
+      <span
+        className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+        aria-hidden="true"
+      >
+        <Info size={14} />
+      </span>
       <span className="text-fg/90">{message}</span>
     </div>
   );

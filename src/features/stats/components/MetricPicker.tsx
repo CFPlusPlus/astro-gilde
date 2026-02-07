@@ -25,7 +25,9 @@ export function MetricPicker({
     <div className="mg-card p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
-        <span className="text-muted text-xs">{visibleCount} Einträge</span>
+        <span className="text-muted text-xs">
+          {visibleCount} {'Eintr\u00e4ge'}
+        </span>
       </div>
 
       <div className="bg-surface-solid/30 border-border mt-3 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
@@ -34,7 +36,7 @@ export function MetricPicker({
           value={filter}
           onChange={(e) => onFilterChange(e.target.value)}
           type="search"
-          placeholder="Filtern…"
+          placeholder={'Filtern\u2026'}
           className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
           aria-label="Ranglisten filtern"
         />
@@ -45,8 +47,8 @@ export function MetricPicker({
             'mg-search-clear',
             filter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
           ].join(' ')}
-          aria-label="Ranglisten-Filter zurücksetzen"
-          title="Filter zurücksetzen"
+          aria-label={'Ranglisten-Filter zur\u00fccksetzen'}
+          title={'Filter zur\u00fccksetzen'}
           tabIndex={filter.trim().length > 0 ? 0 : -1}
         >
           <X size={14} />

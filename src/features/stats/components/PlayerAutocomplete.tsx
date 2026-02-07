@@ -48,7 +48,7 @@ export function PlayerAutocomplete({
           }}
           type="search"
           autoComplete="off"
-          placeholder="Spieler suchen…"
+          placeholder={'Spieler suchen\u2026'}
           className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
         />
         <button
@@ -62,8 +62,8 @@ export function PlayerAutocomplete({
             'mg-search-clear',
             value.trim().length > 0 ? '' : 'mg-search-clear--hidden',
           ].join(' ')}
-          aria-label="Spielersuche zurücksetzen"
-          title="Suche zurücksetzen"
+          aria-label={'Spielersuche zur\u00fccksetzen'}
+          title={'Suche zur\u00fccksetzen'}
           tabIndex={value.trim().length > 0 ? 0 : -1}
         >
           <X size={14} />
@@ -80,7 +80,7 @@ export function PlayerAutocomplete({
                   <button
                     type="button"
                     onMouseDown={(e) => {
-                      // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten nicht stört.
+                      // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten nicht stoert.
                       e.preventDefault();
                       onChoose(it.uuid);
                     }}

@@ -2,6 +2,7 @@ import { tLabel } from '../stats-core/i18n';
 import { transformRawMinecraftValue } from '../stats-core/metrics';
 import type { PlayerTranslations } from '../stats-core/types';
 import { fmtNumber } from './format';
+import { normalizeUmlauts } from './normalizeUmlauts';
 
 export type VersusMetricKind = 'stat' | 'item' | 'mob';
 
@@ -85,7 +86,7 @@ export function buildVersusCatalog(
 
     list.push({
       id: `stat:${key}`,
-      label: tLabel(key, 'stat', true, translations),
+      label: normalizeUmlauts(tLabel(key, 'stat', true, translations)),
       group: 'Allgemein',
       unit: transformed.unit,
       decimals: transformed.decimals,
@@ -109,11 +110,11 @@ export function buildVersusCatalog(
     const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
     const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
     const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
-    const group = `Gegenstaende - ${sec.label}`;
+    const group = normalizeUmlauts(`Gegenst\u00e4nde - ${sec.label}`);
     for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
       list.push({
         id: `item:${sec.key}:${key}`,
-        label: `${tLabel(key, 'item', true, translations)} (${sec.label})`,
+        label: normalizeUmlauts(`${tLabel(key, 'item', true, translations)} (${sec.label})`),
         group,
         kind: 'item',
         key,
@@ -123,7 +124,7 @@ export function buildVersusCatalog(
   }
 
   const mobSections = [
-    { key: 'killed', label: 'Getoetet' },
+    { key: 'killed', label: 'Get\u00f6tet' },
     { key: 'killed_by', label: 'Gestorben durch' },
   ];
 
@@ -131,11 +132,11 @@ export function buildVersusCatalog(
     const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
     const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
     const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
-    const group = `Kreaturen - ${sec.label}`;
+    const group = normalizeUmlauts(`Kreaturen - ${sec.label}`);
     for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
       list.push({
         id: `mob:${sec.key}:${key}`,
-        label: `${tLabel(key, 'mob', true, translations)} (${sec.label})`,
+        label: normalizeUmlauts(`${tLabel(key, 'mob', true, translations)} (${sec.label})`),
         group,
         kind: 'mob',
         key,

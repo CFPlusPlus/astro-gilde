@@ -68,7 +68,9 @@ export function usePlayerAutocomplete({
       } catch (e) {
         if ((e as Error)?.name === 'AbortError') return;
         console.warn('Autocomplete Fehler', e);
-        onError?.('Statistiken sind aktuell nicht erreichbar. Bitte versuche es spaeter erneut.');
+        onError?.(
+          'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.',
+        );
       }
     }, 180);
 

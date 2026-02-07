@@ -3,13 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getLeaderboard, getMetrics, getSummary } from '../api';
 import { KPI_METRICS } from '../constants';
 import { filterMetricIds, groupMetricIds, pickDefaultRankMetricId } from '../metric-utils';
+import { normalizeUmlauts } from '../normalizeUmlauts';
 import type { MetricDef } from '../types';
 import type { LeaderboardState, TabKey } from '../types-ui';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
 
 const API_ERROR_MESSAGE =
-  'Statistiken sind aktuell nicht erreichbar. Bitte versuche es spaeter erneut.';
+  'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
@@ -202,7 +203,18 @@ export function useStatsData({
       try {
         const data = await getMetrics(ac.signal);
         if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
-        setMetrics((data.metrics || {}) as Record<string, MetricDef>);
+        const rawMetrics = (data.metrics || {}) as Record<string, MetricDef>;
+        const normalized = Object.fromEntries(
+          Object.entries(rawMetrics).map(([id, def]) => [
+            id,
+            {
+              ...def,
+              label: normalizeUmlauts(def?.label || id),
+              category: normalizeUmlauts(def?.category || ''),
+            },
+          ]),
+        ) as Record<string, MetricDef>;
+        setMetrics(normalized);
         setApiError(null);
       } catch (error) {
         console.warn('Metrics Fehler', error);

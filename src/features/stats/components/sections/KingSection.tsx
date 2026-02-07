@@ -20,11 +20,11 @@ export function KingSection({
   onLoadMore: () => void;
 }) {
   return (
-    <section aria-label="Server-Koenig" className="mg-container pb-12">
+    <section aria-label="Server-K&ouml;nig" className="mg-container pb-12">
       <div className="mt-6">
         <SectionTitle
-          title="Server-Koenig"
-          subtitle="Wer sammelt die meisten Punkte ueber alle Kategorien hinweg?"
+          title="Server-K&ouml;nig"
+          subtitle="Wer sammelt die meisten Punkte &uuml;ber alle Kategorien hinweg?"
         />
 
         <div className="mt-5 grid gap-4 lg:grid-cols-[360px_1fr]">
@@ -36,8 +36,8 @@ export function KingSection({
               <div className="min-w-0 flex-1">
                 <p className="text-fg font-semibold">Wie werden die Punkte berechnet?</p>
                 <p className="text-muted mt-1 text-sm leading-relaxed">
-                  Fuer jede Kategorie bekommen die Top 3 Spieler Punkte (3 / 2 / 1). Ab Platz 4 gibt
-                  es keine Punkte. Die Punkte werden ueber alle Kategorien addiert.
+                  F&uuml;r jede Kategorie bekommen die Top 3 Spieler Punkte (3 / 2 / 1). Ab Platz 4
+                  gibt es keine Punkte. Die Punkte werden &uuml;ber alle Kategorien addiert.
                 </p>
               </div>
             </div>

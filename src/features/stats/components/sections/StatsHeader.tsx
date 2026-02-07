@@ -21,6 +21,7 @@ type AutocompleteViewModel = {
 export function StatsHeader({
   activeTab,
   onTabChange,
+  tabsDisabled,
   search,
   onChoosePlayer,
   playerCount,
@@ -32,6 +33,7 @@ export function StatsHeader({
 }: {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
+  tabsDisabled: boolean;
   search: AutocompleteViewModel;
   onChoosePlayer: (uuid: string) => void;
   playerCount: number | null;
@@ -44,7 +46,7 @@ export function StatsHeader({
   return (
     <section className="mg-container pb-8">
       <div className="mt-2 space-y-4">
-        <StatsNavPills active={activeTab} onChange={onTabChange} />
+        <StatsNavPills active={activeTab} onChange={onTabChange} disabled={tabsDisabled} />
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
           <PlayerAutocomplete
@@ -65,12 +67,12 @@ export function StatsHeader({
 
             {showPageSize ? (
               <label className="bg-surface border-border text-fg inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md">
-                <span className="text-muted">Eintraege</span>
+                <span className="text-muted">{'Eintr\u00e4ge'}</span>
                 <select
                   value={pageSize}
                   onChange={(event) => onPageSizeChange(Number(event.target.value) || 10)}
                   className="text-fg bg-transparent text-xs leading-none font-semibold outline-none"
-                  aria-label="Eintraege pro Seite"
+                  aria-label={'Eintr\u00e4ge pro Seite'}
                 >
                   {[10, 20, 30, 50].map((value) => (
                     <option key={value} value={value}>
