@@ -1,3 +1,5 @@
+import { siteUrl } from './site';
+
 // Zentrale Projekt-Konfiguration fuer minecraft-gilde.de
 // -----------------------------------------------------
 // Ziel: Strings (URLs, IP, Version) nicht ueber das Projekt verteilen,
@@ -16,7 +18,38 @@ export type ExternalLinkKey = keyof typeof externalLinks;
 
 export const getExternalLink = (key: ExternalLinkKey): string => externalLinks[key];
 
+const communityProfiles = {
+  minecraftServerEu:
+    'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
+  minecraftServerlistNet: 'https://www.minecraft-serverlist.net/server/59253',
+  serverlisteNet: 'https://serverliste.net/server/5142',
+} as const;
+
+export const brandConfig = {
+  siteUrl,
+  name: 'Minecraft Gilde',
+  alternateName: 'Minecraft Gilde - Vanilla SMP (DE)',
+  defaultMetaDescription:
+    'Minecraft Gilde - Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort.',
+  websiteDescription:
+    'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - ohne Resets, ohne Pay2Win, Community-first.',
+  logo: {
+    path: '/images/logo.webp',
+    width: 512,
+    height: 512,
+    alt: 'Minecraft Gilde',
+  },
+  sameAs: [
+    externalLinks.discord,
+    externalLinks.map,
+    communityProfiles.minecraftServerEu,
+    communityProfiles.minecraftServerlistNet,
+    communityProfiles.serverlisteNet,
+  ],
+} as const;
+
 export const minecraftGilde = {
+  brand: brandConfig,
   serverIp: 'minecraft-gilde.de',
   mcVersion: '1.21.x',
 

@@ -1,16 +1,32 @@
+import { minecraftGilde } from '../config/minecraftGilde';
+
 type JsonLd = Record<string, unknown>;
 
+const trimTrailingSlash = (value: string): string => String(value ?? '').replace(/\/$/, '');
+
+const siteUrlFromConfigOrFallback = (fallbackSite: URL): string => {
+  const configuredSiteUrl = String(minecraftGilde.brand.siteUrl ?? '').trim();
+  return trimTrailingSlash(configuredSiteUrl || fallbackSite.toString());
+};
+
+const siteBaseFromSiteUrl = (siteUrl: string): URL => new URL(`${trimTrailingSlash(siteUrl)}/`);
+
+const resolveSiteBase = (fallbackSite: URL): URL =>
+  siteBaseFromSiteUrl(siteUrlFromConfigOrFallback(fallbackSite));
+
+const absoluteUrlFromConfigSite = (pathOrUrl: string, fallbackSite: URL): string =>
+  new URL(pathOrUrl, resolveSiteBase(fallbackSite)).toString();
+
+const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const stripSiteName = (title: string): string => {
-  // Brand-Teil entfernen, damit Breadcrumbs/Labels kuerzer und lesbarer bleiben.
-  // Uebliche Titel-Muster in diesem Projekt:
-  // - "Minecraft Gilde – ..."
-  // - "Minecraft Gilde - ..."
-  // - "... – Minecraft Gilde"
   const t = String(title || '').trim();
   if (!t) return '';
+
+  const brandName = escapeRegex(minecraftGilde.brand.name);
   return t
-    .replace(/^Minecraft Gilde\s*[–-]\s*/i, '')
-    .replace(/\s*[–-]\s*Minecraft Gilde$/i, '')
+    .replace(new RegExp(`^${brandName}\\s*[\\u2013\\u2014-]\\s*`, 'i'), '')
+    .replace(new RegExp(`\\s*[\\u2013\\u2014-]\\s*${brandName}$`, 'i'), '')
     .trim();
 };
 
@@ -38,7 +54,7 @@ export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string)
   // Erst versuchen: Titel ohne Site-Name verwenden.
   const fromTitle = stripSiteName(fallbackTitle ?? '');
   if (fromTitle) return fromTitle;
-  // Letzter Fallback: aus dem Pfad ableiten
+  // Letzter Fallback: aus dem Pfad ableiten.
   const seg = path.replace(/^\//, '').replace(/\/$/, '').split('/').filter(Boolean).pop();
   return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Home';
 };
@@ -50,12 +66,13 @@ export const buildBreadcrumbList = (args: {
 }): JsonLd | null => {
   const { site, pathname, pageTitle } = args;
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
-  // Keine Breadcrumbs auf Home/404 (wuerde nur redundant wirken).
+  // Keine Breadcrumbs auf Home/404 (waere nur redundant).
   if (path === '/' || path === '/404/') return null;
 
+  const siteBase = resolveSiteBase(site);
   const label = breadcrumbLabelForPath(path, pageTitle);
-  const homeUrl = new URL('/', site).toString();
-  const pageUrl = new URL(path, site).toString();
+  const homeUrl = new URL('/', siteBase).toString();
+  const pageUrl = new URL(path, siteBase).toString();
 
   return {
     '@type': 'BreadcrumbList',
@@ -86,58 +103,52 @@ export const buildBaseGraph = (args: {
   ogImage?: string;
 }): JsonLd => {
   const { site, canonicalUrl, pathname, title, description, ogImage } = args;
-  const siteUrl = site.toString().replace(/\/$/, '');
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+  const siteBase = siteBaseFromSiteUrl(siteUrl);
 
-  // Stabile IDs, damit alle Knoten im Graph sauber referenzieren koennen.
+  // Stabile IDs, damit Knoten im Graph sauber referenziert werden koennen.
   const websiteId = `${siteUrl}/#website`;
   const orgId = `${siteUrl}/#org`;
 
   const breadcrumb = buildBreadcrumbList({ site, pathname, pageTitle: title });
-
   const webPageId = `${canonicalUrl}#webpage`;
+  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
 
   // Kern-Graph: Website, Organisation und die konkrete Seite.
   const graph: JsonLd[] = [
     {
       '@type': 'WebSite',
       '@id': websiteId,
-      url: `${siteUrl}/`,
-      name: 'Minecraft Gilde',
-      alternateName: 'Minecraft Gilde – Vanilla SMP (DE)',
-      description:
-        'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild – ohne Resets, ohne Pay2Win, Community-first.',
+      url: siteBase.toString(),
+      name: minecraftGilde.brand.name,
+      alternateName: minecraftGilde.brand.alternateName,
+      description: minecraftGilde.brand.websiteDescription,
       inLanguage: 'de',
       isAccessibleForFree: true,
       publisher: { '@id': orgId },
       potentialAction: {
         '@type': 'SearchAction',
-        target: `${siteUrl}/?s={search_term_string}`,
+        target: `${siteBase.toString()}?s={search_term_string}`,
         'query-input': 'required name=search_term_string',
       },
     },
     {
       '@type': 'Organization',
       '@id': orgId,
-      name: 'Minecraft Gilde',
-      url: `${siteUrl}/`,
+      name: minecraftGilde.brand.name,
+      url: siteBase.toString(),
       logo: {
         '@type': 'ImageObject',
-        url: `${siteUrl}/images/logo.webp`,
-        width: 512,
-        height: 512,
+        url: logoUrl,
+        width: minecraftGilde.brand.logo.width,
+        height: minecraftGilde.brand.logo.height,
       },
-      sameAs: [
-        'https://discord.minecraft-gilde.de',
-        'https://map.minecraft-gilde.de',
-        'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
-        'https://www.minecraft-serverlist.net/server/59253',
-        'https://serverliste.net/server/5142',
-      ],
+      sameAs: [...minecraftGilde.brand.sameAs],
       contactPoint: [
         {
           '@type': 'ContactPoint',
           contactType: 'Community / Support',
-          url: 'https://discord.minecraft-gilde.de',
+          url: minecraftGilde.discord.url,
           availableLanguage: ['de'],
         },
       ],
@@ -180,6 +191,7 @@ export const buildFaqPage = (args: {
   items: Array<{ q: string; a: string }>;
 }): JsonLd => {
   const { canonicalUrl, site, items } = args;
+  const siteBase = resolveSiteBase(site);
 
   const absolutizeInternal = (text: string) => {
     const src = String(text ?? '');
@@ -187,10 +199,10 @@ export const buildFaqPage = (args: {
     const toAbs = (href: string) => {
       // Relative Links fuer JSON-LD absolut machen.
       const h = String(href ?? '').trim();
-      return h.startsWith('/') ? new URL(h, site).toString() : h;
+      return h.startsWith('/') ? new URL(h, siteBase).toString() : h;
     };
 
-    // Markdown-Links in lesbaren Klartext wandeln (und relative URLs absolut setzen).
+    // Markdown-Links in Klartext wandeln (und relative URLs absolut setzen).
     const withMdLinks = src.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label, href) => {
       const url = toAbs(href);
       return `${String(label).trim()}: ${url}`;
@@ -198,14 +210,14 @@ export const buildFaqPage = (args: {
 
     return (
       withMdLinks
-        // Inline-Code -> Klartext
+        // Inline-Code -> Klartext.
         .replace(/`([^`]+)`/g, '$1')
-        // Antworten fuer JSON-LD kompakt halten
+        // Antworten fuer JSON-LD kompakt halten.
         .replace(/\n\n/g, '\n')
         .replace(/\s+\n/g, '\n')
-        // Uebrige interne Pfade wie "/tutorial" absolut setzen
+        // Uebrige interne Pfade wie "/tutorial" absolut setzen.
         .replace(/(\s|^)(\/[a-z0-9/-]+\/?)(?=\s|$)/gi, (_m, p1, p2) => {
-          const abs = new URL(p2, site).toString();
+          const abs = new URL(p2, siteBase).toString();
           return `${p1}${abs}`;
         })
     );
@@ -277,7 +289,7 @@ export const buildArticle = (args: {
     articleSection,
   } = args;
 
-  const siteUrl = site.toString().replace(/\/$/, '');
+  const siteUrl = siteUrlFromConfigOrFallback(site);
   const orgId = `${siteUrl}/#org`;
 
   // Optionalfelder nur setzen, wenn vorhanden, um JSON-LD schlank zu halten.
@@ -317,15 +329,17 @@ export const buildGameServer = (args: {
     ip,
     port = 25565,
     version,
-    name = 'Minecraft Gilde – Vanilla SMP (DE)',
+    name = minecraftGilde.brand.alternateName,
     maxPlayers,
   } = args;
-  const siteUrl = site.toString().replace(/\/$/, '');
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+  const siteBase = siteBaseFromSiteUrl(siteUrl);
   const orgId = `${siteUrl}/#org`;
   const gameId = `${siteUrl}/#game`;
   const serverId = `${siteUrl}/#gameserver`;
+  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
 
-  // Zwei Knoten im Graph: Game + GameServer (schema.org Empfehlung).
+  // Zwei Knoten im Graph: Game + GameServer.
   return {
     '@context': 'https://schema.org',
     '@graph': [
@@ -336,7 +350,7 @@ export const buildGameServer = (args: {
         genre: ['Sandbox', 'Multiplayer', 'Survival'],
         gamePlatform: ['PC', 'macOS', 'Linux'],
         inLanguage: 'de',
-        image: `${siteUrl}/images/logo.webp`,
+        image: logoUrl,
         keywords:
           'Minecraft, Vanilla SMP, Survival, Freebuild, Folia, deutsch, Community, ohne Reset, ohne Pay2Win',
         gameServer: { '@id': serverId },
@@ -345,7 +359,7 @@ export const buildGameServer = (args: {
         '@type': 'GameServer',
         '@id': serverId,
         name,
-        url: `${siteUrl}/`,
+        url: siteBase.toString(),
         game: { '@id': gameId },
         availableLanguage: ['de'],
         serverLocation: {
