@@ -62,9 +62,7 @@ const site = Astro.site ?? canonicalSite;
 const canonicalUrl = canonical ? canonicalFor(canonical) : canonicalFor(Astro.url.pathname);
 
 const metaTitle = title;
-const metaDescription =
-  description ??
-  minecraftGilde.brand.defaultMetaDescription;
+const metaDescription = description ?? minecraftGilde.brand.defaultMetaDescription;
 
 const finalOgTitle = ogTitle ?? metaTitle;
 const finalOgDescription = ogDescription ?? metaDescription;
