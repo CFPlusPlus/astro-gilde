@@ -28,6 +28,7 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 
 - **Befehle:** `src/content/commands/list.json`
 - **Regeln:** `src/content/rules/main.json`
+- **Tutorial-Abschnitte:** `src/content/tutorial/*.md`
 
 > Hinweis: In den Regeln werden Abschnitte als HTML-Strings gespeichert (z. B. für Formatierung/Listen). Bitte entsprechend sauber escapen.
 

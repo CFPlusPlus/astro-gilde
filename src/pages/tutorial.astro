@@ -1,401 +1,196 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
+import { getCollection } from 'astro:content';
+import { ArrowRight, Copy, Hammer, Map, Shield, UserRound, Vote, Wand } from '@lucide/astro';
 import Button from '../components/ui/Button.astro';
-import RoleBadge from '../components/ui/RoleBadge.astro';
 import Callout from '../components/ui/Callout.astro';
+import Card from '../components/ui/Card.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
-import { buildHowTo } from '../lib/structuredData';
-import { ArrowRight, Copy, Wand, Shield, Hammer, Map, Vote, UserRound } from '@lucide/astro';
-import { canonicalFor } from '../config/site';
 import { minecraftGilde } from '../config/minecraftGilde';
-
-const DISCORD_URL = minecraftGilde.discord.url;
-const DYNMAP_URL = minecraftGilde.mapUrl;
-const SERVER_IP = minecraftGilde.serverIp;
-const MC_VERSION = minecraftGilde.mcVersion;
+import { canonicalFor } from '../config/site';
+import {
+  isTutorialExternalTarget,
+  resolveTutorialLink,
+  tutorialFinalCallout,
+  tutorialHeaderActions,
+  tutorialHeaderIntro,
+  tutorialHowTo,
+  tutorialQuickstart,
+  tutorialQuickstartActions,
+} from '../data/tutorial';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { buildHowTo } from '../lib/structuredData';
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
 
+const SERVER_IP = minecraftGilde.serverIp;
+
 const howToLd = buildHowTo({
   canonicalUrl,
-  name: 'Minecraft Gilde beitreten – Erststart in 2 Minuten',
-  description:
-    'Kompakter Einstieg: verbinden, /rtp nutzen, Zuhause setzen, Grundstück (Claim) schützen und wichtige Regeln kennen.',
-  steps: [
-    {
-      name: 'Mit dem Server verbinden',
-      text: `Starte Minecraft Java (${MC_VERSION}) und verbinde dich mit der Adresse ${SERVER_IP} (Standard-Port 25565).`,
-    },
-    {
-      name: 'Startpunkt wählen',
-      text: 'Nutze /rtp, um dich an einen zufälligen Ort in der Hauptwelt zu teleportieren (perfekt für den ersten Bauplatz).',
-    },
-    {
-      name: 'Zuhause setzen',
-      text: 'Sobald du ankommst: /sethome <Name>. So kommst du jederzeit mit /home <Name> zurück.',
-    },
-    {
-      name: 'Grundstück sichern (Claim)',
-      text: 'Halte eine Holzschaufel und markiere zwei Ecken mit Rechtsklick, um deinen Claim zu erstellen.',
-    },
-    {
-      name: 'Regeln & Farmwelten checken',
-      text: 'Rohstoffe werden in den Farmwelten gesammelt (werden regelmäßig zurückgesetzt). Regeln findest du hier.',
-      url: canonicalFor('/regeln/'),
-    },
-  ],
+  name: tutorialHowTo.name,
+  description: tutorialHowTo.description,
+  steps: tutorialHowTo.steps.map((step) => ({
+    name: step.name,
+    text: step.text,
+    ...(step.target
+      ? {
+          url: isTutorialExternalTarget(step.target)
+            ? resolveTutorialLink(step.target)
+            : canonicalFor(resolveTutorialLink(step.target)),
+        }
+      : null),
+  })),
 });
+
+const SECTION_ICONS = {
+  Wand,
+  Shield,
+  Hammer,
+  UserRound,
+  Map,
+  Vote,
+} as const;
+
+const ACTION_ICONS = {
+  ArrowRight,
+  Shield,
+  Hammer,
+  Map,
+  Vote,
+} as const;
+
+type SectionIconName = keyof typeof SECTION_ICONS;
+type ActionIconName = keyof typeof ACTION_ICONS;
+
+const sectionEntries = (await getCollection('tutorial')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const sections = await Promise.all(
+  sectionEntries.map(async (entry) => {
+    const { Content } = await entry.render();
+
+    return {
+      ...entry.data,
+      Content,
+    };
+  }),
+);
 ---
 
 <BaseLayout title="Minecraft Gilde - Tutorial" canonical={canonicalUrl}>
   <JsonLd slot="head" data={howToLd} />
 
   <section class="mg-container pt-12 pb-6">
-    <h1 class="text-3xl font-semibold tracking-tight">Tutorial</h1>
-    <p class="text-muted mt-2">
-      In 2 Minuten startklar – darunter findest du alle Themen als Kapitel zum Nachschlagen.
-    </p>
+    <h1 class="text-3xl font-semibold tracking-tight">{tutorialHeaderIntro.title}</h1>
+    <p class="text-muted mt-2">{tutorialHeaderIntro.subtitle}</p>
 
     <div class="mt-6 flex flex-wrap gap-3">
       <Button variant="primary" class="gap-2" data-copy-ip><Copy size={18} /> IP kopieren</Button>
-      <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-        Discord <ArrowRight size={18} />
-      </Button>
-      <Button href="/regeln" variant="ghost">Regeln</Button>
+      {
+        tutorialHeaderActions.map((action) => {
+          const Icon = action.icon ? ACTION_ICONS[action.icon as ActionIconName] : null;
+
+          return (
+            <Button
+              href={resolveTutorialLink(action.target)}
+              external={isTutorialExternalTarget(action.target)}
+              variant={action.variant}
+              class="gap-2"
+            >
+              {action.label}
+              {Icon && <Icon size={18} />}
+            </Button>
+          );
+        })
+      }
     </div>
   </section>
 
   <section class="mg-container pb-16">
     <Card class="p-6">
-      <h2 class="text-xl font-semibold tracking-tight">Schnellstart (2 Minuten)</h2>
-      <p class="text-muted mt-2 text-sm">Das reicht für den ersten Abend:</p>
+      <h2 class="text-xl font-semibold tracking-tight">{tutorialQuickstart.title}</h2>
+      <p class="text-muted mt-2 text-sm">{tutorialQuickstart.subtitle}</p>
 
       <ol class="text-muted mt-4 list-decimal space-y-2 pl-5 text-sm">
-        <li>
-          <span class="text-fg/90 font-medium">Verbinden</span> mit <code>{SERVER_IP}</code>. Wenn
-          du neu bist: kurz am Spawn umschauen, dann <code>/rtp</code>.
-        </li>
-        <li>
-          <span class="text-fg/90 font-medium">Zuhause setzen</span>: <code
-            >/sethome &lt;Name&gt;</code
-          > &rarr; zurück mit <code>/home &lt;Name&gt;</code>.
-        </li>
-        <li>
-          <span class="text-fg/90 font-medium">Claim erstellen</span>: Holzschaufel nehmen, zwei
-          Ecken per Rechtsklick markieren.
-        </li>
-        <li>
-          <span class="text-fg/90 font-medium">Rohstoffe</span> nur in Farmwelten sammeln (werden zurückgesetzt):
-          <code>/farmwelt</code>, <code>/netherfarm</code>, <code>/endfarm</code>.
-        </li>
+        {
+          tutorialQuickstart.steps.map((step) => (
+            <li>
+              <span class="text-fg/90 font-medium">{step.title}</span>: {step.text}
+            </li>
+          ))
+        }
       </ol>
 
       <div class="mt-5 flex flex-wrap gap-2">
-        <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
-          ><Map size={18} /> Dynmap</Button
-        >
-        <Button href="/befehle" variant="secondary">Befehle</Button>
-        <Button href="/voten" variant="ghost">Voten</Button>
+        {
+          tutorialQuickstartActions.map((action) => {
+            const Icon = action.icon ? ACTION_ICONS[action.icon as ActionIconName] : null;
+
+            return (
+              <Button
+                href={resolveTutorialLink(action.target)}
+                external={isTutorialExternalTarget(action.target)}
+                variant={action.variant}
+                class="gap-2"
+              >
+                {Icon && <Icon size={18} />}
+                {action.label}
+              </Button>
+            );
+          })
+        }
       </div>
     </Card>
 
     <div class="mt-6 space-y-3">
-      <details class="mg-accordion" open>
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Wand size={18} /> Abenteuerstart</span
-          >
-          <span class="text-muted text-xs">/rtp · home · ankommen</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Am Spawn kannst du kurz ankommen &ndash; für den richtigen Start empfehlen wir dann
-            <strong>/rtp</strong>. Du landest irgendwo in der Hauptwelt und kannst direkt losbauen.
-            Wenn du dich zwischendurch verlaufen solltest, bringt dich <code>/spawn</code> jederzeit zurück.
-          </p>
-          <p>
-            Sobald du einen Ort gefunden hast: <strong><code>/sethome &lt;Name&gt;</code></strong> setzen.
-            Damit kommst du mit
-            <code>/home &lt;Name&gt;</code> jederzeit zurück.
-          </p>
-          <Callout variant="info" title="Performance-Hinweis (Folia)">
-            <Wand size={18} slot="icon" />
-            <p>
-              Damit der Server für alle flüssig bleibt: Baue deine Basis nicht direkt neben anderen
-              Spielern &ndash; besonders nicht mit großen Farmen. Ein paar hundert Blöcke Abstand
-              helfen, die Performance stabil zu halten.
-            </p>
-          </Callout>
-          <p>
-            Du willst einen Bauplatz vorher anschauen? Nutze die <a
-              href={DYNMAP_URL}
-              target="_blank"
-              rel="noopener noreferrer">Dynmap</a
-            >
-            (Marker ein-/ausblenden) und such dir eine schöne Gegend.
-          </p>
-        </div>
-      </details>
+      {
+        sections.map((section) => {
+          const SectionIcon = SECTION_ICONS[section.icon as SectionIconName];
 
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Shield size={18} /> Grundstück sichern (Claim)</span
-          >
-          <span class="text-muted text-xs">GriefPrevention</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Damit deine Kisten, Tiere und Bauten geschützt sind, nutzt die Minecraft Gilde <strong
-              >GriefPrevention</strong
-            >. Ein Claim verhindert, dass andere Spieler in deinem Bereich bauen, abbauen oder
-            Container öffnen.
-          </p>
+          return (
+            <details class="mg-accordion" open={section.open}>
+              <summary class="flex items-center justify-between gap-3">
+                <span class="inline-flex items-center gap-2 text-sm font-semibold">
+                  <SectionIcon size={18} /> {section.title}
+                </span>
+                <span class="text-muted text-xs">{section.meta}</span>
+              </summary>
 
-          <h3>So erstellst du einen Claim</h3>
-          <ul>
-            <li>Halte eine <strong>Holzschaufel</strong> in der Hand.</li>
-            <li>Rechtsklick &rarr; erste Ecke.</li>
-            <li>Rechtsklick &rarr; zweite Ecke (diagonal gegenüber).</li>
-            <li>Fertig &ndash; dein Grundstück ist geschützt (Ecken werden kurz markiert).</li>
-          </ul>
+              <div class="mg-prose mt-4">
+                <section.Content />
+              </div>
 
-          <h3>Claim prüfen</h3>
-          <ul>
-            <li>Halte einen <strong>Stock</strong> in der Hand.</li>
-            <li>
-              Rechtsklick auf einen Block &ndash; du siehst, ob du in einem Claim bist und wem er
-              gehört.
-            </li>
-          </ul>
+              {section.actions?.length ? (
+                <div class="mt-3 flex flex-wrap gap-2">
+                  {section.actions.map((action) => {
+                    const ActionIcon = action.icon
+                      ? ACTION_ICONS[action.icon as ActionIconName]
+                      : null;
 
-          <p>
-            Du erhältst automatisch <strong>1.000 Claim-Blöcke pro Stunde</strong> (maximal <strong
-              >120.000</strong
-            >). Größe anpassen? Einfach die Eckpunkte mit der Holzschaufel verschieben.
-          </p>
+                    return (
+                      <Button
+                        href={resolveTutorialLink(action.target)}
+                        external={isTutorialExternalTarget(action.target)}
+                        variant={action.variant}
+                        class="gap-2"
+                      >
+                        {ActionIcon && <ActionIcon size={18} />}
+                        {action.label}
+                      </Button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </details>
+          );
+        })
+      }
 
-          <h3>Video: Grundstücks-Verwaltung</h3>
-          <div class="border-border bg-surface mt-3 overflow-hidden rounded-xl border">
-            <div class="relative w-full pt-[56.25%]">
-              <iframe
-                class="absolute inset-0 h-full w-full"
-                src="https://www.youtube-nocookie.com/embed/tK15LgTwvjI"
-                title="Grundstücks-Verwaltung (Tutorial)"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowfullscreen
-                referrerpolicy="strict-origin-when-cross-origin"></iframe>
-            </div>
-          </div>
-
-          <h3 class="mt-6">Freunde hinzufügen / Rechte geben</h3>
-          <p>Du kannst anderen Spielern Rechte geben &ndash; je nach Bedarf:</p>
-          <ul>
-            <li>
-              <code>/trust &lt;Spieler&gt;</code> &ndash; volle Rechte (bauen, abbauen, öffnen).
-            </li>
-            <li>
-              <code>/accesstrust &lt;Spieler&gt;</code> &ndash; Türen/Buttons/Schalter nutzen.
-            </li>
-            <li>
-              <code>/containertrust &lt;Spieler&gt;</code> &ndash; Kisten &amp; Container öffnen.
-            </li>
-            <li>
-              <code>/permissiontrust &lt;Spieler&gt;</code> &ndash; darf selbst Trust-Rechte vergeben.
-            </li>
-          </ul>
-
-          <Callout variant="warning" title="Sei vorsichtig bei Berechtigungen">
-            <Shield size={18} slot="icon" />
-            <p>
-              Vergib Rechte nur an Spieler, denen du vertraust. Trust-Rechte gelten auch für Truhen
-              &amp; Redstone im Claim.
-            </p>
-          </Callout>
-
-          <p>
-            Mit <code>/trustlist</code> siehst du, wer in deinem Claim welche Rechte hat. Tipp: Wenn du
-            einem Spieler Rechte auf <strong>allen</strong> Claims geben willst, gib den Befehl außerhalb
-            eines Claims ein &ndash; innerhalb gilt er nur für den aktuellen Claim.
-          </p>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Hammer size={18} /> Wichtige Befehle</span
-          >
-          <span class="text-muted text-xs">Homes · RTP · Hilfe</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>Eine vollständige Liste findest du auf der Befehle-Seite. Hier die wichtigsten:</p>
-          <ul>
-            <li><code>/spawn</code> &ndash; zurück zum Spawn.</li>
-            <li>
-              <code>/sethome &lt;Name&gt;</code> · <code>/home &lt;Name&gt;</code> &ndash; Zuhause setzen
-              und teleportieren.
-            </li>
-            <li><code>/rtp</code> &ndash; zufälliger Teleport in die Hauptwelt.</li>
-            <li><code>/msg &lt;Spieler&gt; &lt;Nachricht&gt;</code> &ndash; private Nachricht.</li>
-            <li>
-              <code>/helpop &lt;Nachricht&gt;</code> &ndash; Hilfe an das Team (wenn&rsquo;s dringend
-              ist).
-            </li>
-          </ul>
-          <div class="mt-3">
-            <Button href="/befehle" variant="secondary">Alle Befehle</Button>
-          </div>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Shield size={18} /> Regeln</span
-          >
-          <span class="text-muted text-xs">fair play</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Bitte lies dir die Regeln kurz durch &ndash; sie sind bewusst übersichtlich gehalten.
-            Griefing, Cheating und toxisches Verhalten sind tabu.
-          </p>
-          <Callout variant="warning" title="Wichtig am Anfang">
-            <Shield size={18} slot="icon" />
-            <p>
-              Ressourcenabbau ist <strong>nur in den Farmwelten</strong> erlaubt. Die Hauptwelt bleibt
-              als Langzeitwelt erhalten.
-            </p>
-          </Callout>
-          <div class="mt-3">
-            <Button href="/regeln" variant="secondary">Regeln ansehen</Button>
-          </div>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><UserRound size={18} /> Wer ist wer?</span
-          >
-          <span class="text-muted text-xs">Rollen</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>Im Chat erkennst du Rollen an farbigen Namen. Kurz erklärt:</p>
-          <div class="mt-4 space-y-3">
-            <div class="flex flex-wrap items-center gap-3">
-              <RoleBadge role="admin" />
-              <span class="text-muted text-sm">Technik &amp; Verwaltung.</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-              <RoleBadge role="moderator" />
-              <span class="text-muted text-sm">Hilft Spielern und achtet auf die Regeln.</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-              <RoleBadge role="streamer" />
-              <span class="text-muted text-sm">Spieler, die regelmäßig live streamen.</span>
-            </div>
-            <div class="flex flex-wrap items-center gap-3">
-              <RoleBadge role="player" />
-              <span class="text-muted text-sm">Normale Mitglieder der Community.</span>
-            </div>
-          </div>
-          <Callout class="mt-4" variant="info" title="Hilfe bekommen">
-            <UserRound size={18} slot="icon" />
-            <p>
-              Team im Chat anschreiben. Privat: <code>/msg &lt;Spieler&gt; &lt;Nachricht&gt;</code>.
-              Dringend: <code>/helpop &lt;Nachricht&gt;</code>.
-            </p>
-          </Callout>
-          <p>Für längere Themen: einfach auf Discord melden.</p>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Hammer size={18} /> Die Farmwelten</span
-          >
-          <span class="text-muted text-xs">Rohstoffe</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Für den Abbau von Ressourcen gibt es separate <strong>Farmwelten</strong>. Nutze diese
-            Befehle:
-          </p>
-          <ul>
-            <li><strong>/farmwelt</strong> &ndash; Holz, Steine, Erze usw.</li>
-            <li><strong>/netherfarm</strong> &ndash; Netherquarz, Glowstone &amp; Co.</li>
-            <li><strong>/endfarm</strong> &ndash; Endstone, Elytra-/Shulker-Loot usw.</li>
-          </ul>
-          <Callout variant="info" title="Hinweis">
-            <Map size={18} slot="icon" />
-            <p>
-              Die Farmwelten werden regelmäßig <strong>zurückgesetzt</strong>. Nimm vor einem Reset
-              alle wichtigen Items mit. Baue dort am besten nichts, was du langfristig behalten
-              möchtest.
-            </p>
-          </Callout>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Map size={18} /> Unsere Dynmap</span
-          >
-          <span class="text-muted text-xs">Karte</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Die <strong>Dynmap</strong> ist unsere interaktive Online-Karte. Du kannst dort alle Welten
-            erkunden und Marker ein- oder ausblenden.
-          </p>
-          <ul>
-            <li>Sehenswürdigkeiten und besondere Orte</li>
-            <li>Shops / Marker (wenn aktiv)</li>
-            <li>Orientierung bei der Bauplatz-Suche</li>
-          </ul>
-          <p>
-            Wenn du einen freien Bauplatz suchst, ist die Dynmap oft der schnellste Weg, schöne
-            Gegenden zu entdecken.
-          </p>
-          <div class="mt-3">
-            <Button href={DYNMAP_URL} external variant="secondary" class="gap-2"
-              ><Map size={18} /> Dynmap öffnen</Button
-            >
-          </div>
-        </div>
-      </details>
-
-      <details class="mg-accordion">
-        <summary class="flex items-center justify-between gap-3">
-          <span class="inline-flex items-center gap-2 text-sm font-semibold"
-            ><Vote size={18} /> Voten</span
-          >
-          <span class="text-muted text-xs">Belohnungen</span>
-        </summary>
-        <div class="mg-prose mt-4">
-          <p>
-            Du möchtest den Server unterstützen und dabei selbst eine Belohnung erhalten? Dann vote
-            für die Minecraft Gilde.
-          </p>
-          <p>Auf der Vote-Seite findest du die aktuellen Links und Infos zu den Belohnungen.</p>
-          <div class="mt-3">
-            <Button href="/voten" variant="secondary">Zur Vote-Seite</Button>
-          </div>
-        </div>
-      </details>
-
-      <Callout variant="info" title="Noch Fragen?">
-        <p>
-          Danke, dass du dir die Zeit genommen hast. Wenn noch etwas offen ist: frag gerne im Spiel
-          oder auf Discord &ndash; die Community hilft.
-        </p>
+      <Callout variant={tutorialFinalCallout.variant} title={tutorialFinalCallout.title}>
+        <p>{tutorialFinalCallout.text}</p>
       </Callout>
+
+      <p class="text-muted text-xs">IP: {SERVER_IP}</p>
     </div>
   </section>
 </BaseLayout>
