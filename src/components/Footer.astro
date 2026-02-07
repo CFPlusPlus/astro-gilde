@@ -1,36 +1,16 @@
 ---
-import { hrefFor } from '../lib/links';
 import { minecraftGilde } from '../config/minecraftGilde';
+import { FOOTER_COPY, FOOTER_LINKS } from '../data/footer';
+import { getRepoInfo } from '../lib/repoInfo';
+import FooterLinkGroup from './footer/FooterLinkGroup.astro';
+import NavItem from './nav/NavItem.astro';
+
 const year = new Date().getFullYear();
-
-const repoUrl = minecraftGilde.repoUrl || import.meta.env.GIT_REPO_URL || '';
-const commitHash = import.meta.env.GIT_COMMIT_HASH || '';
-const shortCommit = commitHash ? commitHash.slice(0, 7) : '';
-const showCommit = Boolean(commitHash && commitHash !== 'dev');
-const commitHref =
-  repoUrl && commitHash && commitHash !== 'dev' ? `${repoUrl}/commit/${commitHash}` : '';
-
-// Repo-Label (owner/repo) aus der URL ableiten, damit wir das gewünschte Format anzeigen können.
-// Fallback: Falls parsing fehlschlägt, zeigen wir einfach "GitHub".
-let repoLabel = 'GitHub';
-try {
-  if (repoUrl) {
-    const url = new URL(repoUrl);
-    const cleaned = url.pathname.replace(/^\/+|\/+$/g, '');
-    const parts = cleaned.split('/').filter(Boolean);
-    if (parts.length >= 2) repoLabel = `${parts[0]}/${parts[1]}`;
-  }
-} catch {
-  // Ignorieren: Repo-URL ist evtl. kein gültiger URL-String.
-}
-
-const LINKS = [
-  { href: '/datenschutz/', label: 'Datenschutz' },
-  { href: '/impressum/', label: 'Impressum' },
-  { href: '/team/', label: 'Team' },
-  { href: minecraftGilde.discord.url, label: 'Discord', external: true },
-  { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true },
-];
+const repoInfo = getRepoInfo({
+  configRepoUrl: minecraftGilde.repoUrl,
+  envRepoUrl: import.meta.env.GIT_REPO_URL,
+  commitHash: import.meta.env.GIT_COMMIT_HASH,
+});
 ---
 
 <footer class="w-full">
@@ -38,53 +18,42 @@ const LINKS = [
     <div class="mx-auto max-w-6xl px-4 py-10">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div class="text-muted text-sm">
-          © {year}
-          <span class="text-fg/90 font-medium">Christian Falkner</span>
-          <span class="text-fg/60"> · Minecraft Gilde</span>
+          &copy; {year}
+          <span class="text-fg/90 font-medium">{FOOTER_COPY.owner}</span>
+          <span class="text-fg/60"> &middot; {FOOTER_COPY.brand}</span>
         </div>
 
         <div class="flex flex-col gap-2 sm:items-end">
-          <nav aria-label="Footer" class="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:justify-end">
-            {
-              LINKS.map((l) => (
-                <a
-                  href={hrefFor(l.href)}
-                  target={l.external ? '_blank' : undefined}
-                  rel={l.external ? 'noopener noreferrer' : undefined}
-                  class="text-fg/80 hover:text-fg hover:decoration-accent/60 underline decoration-transparent underline-offset-4 transition-colors"
-                >
-                  {l.label}
-                </a>
-              ))
-            }
-          </nav>
+          <FooterLinkGroup
+            links={FOOTER_LINKS}
+            class="flex flex-wrap gap-x-4 gap-y-2 text-sm sm:justify-end"
+            linkClass="text-fg/80 hover:text-fg hover:decoration-accent/60 underline decoration-transparent underline-offset-4 transition-colors"
+          />
 
           {
-            repoUrl ? (
+            repoInfo.repoUrl ? (
               <div class="text-fg/60 text-xs sm:text-right">
-                <a
-                  href={hrefFor(repoUrl)}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <NavItem
+                  href={repoInfo.repoUrl}
+                  external
                   class="hover:text-fg hover:decoration-accent/50 underline decoration-transparent underline-offset-4 transition-colors"
                 >
-                  {repoLabel}
-                </a>
+                  {repoInfo.repoLabel}
+                </NavItem>
 
-                {showCommit ? (
+                {repoInfo.showCommit ? (
                   <>
                     <span aria-hidden="true"> {' @ '} </span>
-                    {commitHref ? (
-                      <a
-                        href={hrefFor(commitHref)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    {repoInfo.commitHref ? (
+                      <NavItem
+                        href={repoInfo.commitHref}
+                        external
                         class="hover:text-fg hover:decoration-accent/50 underline decoration-transparent underline-offset-4 transition-colors"
                       >
-                        {shortCommit || commitHash}
-                      </a>
+                        {repoInfo.shortCommit || repoInfo.commitHash}
+                      </NavItem>
                     ) : (
-                      <span>{shortCommit || commitHash}</span>
+                      <span>{repoInfo.shortCommit || repoInfo.commitHash}</span>
                     )}
                   </>
                 ) : null}
@@ -95,7 +64,7 @@ const LINKS = [
       </div>
 
       <p class="text-muted mt-4 text-xs">
-        Wir sind weder mit Mojang AB noch mit Microsoft verbunden.
+        {FOOTER_COPY.disclaimer}
       </p>
     </div>
   </div>

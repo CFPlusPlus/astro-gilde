@@ -1,0 +1,30 @@
+---
+import { hrefFor } from '../../lib/links';
+
+interface Props {
+  href: string;
+  external?: boolean;
+  class?: string;
+  ariaLabel?: string;
+  showExternalHint?: boolean;
+}
+
+const {
+  href,
+  external = false,
+  class: className,
+  ariaLabel,
+  showExternalHint = true,
+} = Astro.props;
+---
+
+<a
+  href={hrefFor(href)}
+  target={external ? '_blank' : undefined}
+  rel={external ? 'noopener noreferrer' : undefined}
+  aria-label={ariaLabel}
+  class={className}
+>
+  <slot />
+  {external && showExternalHint ? <span class="sr-only"> (extern)</span> : null}
+</a>

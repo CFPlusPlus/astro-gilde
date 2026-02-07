@@ -1,5 +1,4 @@
 ---
-import { hrefFor } from '../lib/links';
 import {
   Menu,
   X,
@@ -24,43 +23,16 @@ import {
   FileText,
 } from '@lucide/astro';
 import Button from './ui/Button.astro';
-import { minecraftGilde } from '../config/minecraftGilde';
+import NavItem from './nav/NavItem.astro';
+import {
+  NAV_DISCORD_LINK,
+  NAV_MEGA_MENU_SECTIONS,
+  NAV_PRIMARY_LINKS,
+  type NavMenuIcon,
+} from '../data/nav';
+import { hrefFor } from '../lib/links';
 
-type NavItem = { href: string; label: string; external?: boolean };
-type MenuIcon =
-  | 'home'
-  | 'tutorial'
-  | 'rules'
-  | 'stats'
-  | 'vote'
-  | 'team'
-  | 'server'
-  | 'commands'
-  | 'faq'
-  | 'history'
-  | 'status'
-  | 'map'
-  | 'partner'
-  | 'privacy'
-  | 'imprint';
-type MenuItem = NavItem & { icon: MenuIcon };
-type MenuSection = { title: string; items: MenuItem[] };
-
-const PRIMARY_LINKS: NavItem[] = [
-  { href: '/', label: 'Start' },
-  { href: '/tutorial/', label: 'Tutorial' },
-  { href: '/regeln/', label: 'Regeln' },
-  { href: '/statistiken/', label: 'Statistiken' },
-  { href: '/voten/', label: 'Voten' },
-];
-
-const DISCORD: NavItem = {
-  href: minecraftGilde.discord.url,
-  label: 'Discord',
-  external: true,
-};
-
-const MENU_ICONS = {
+const MENU_ICONS: Record<NavMenuIcon, typeof House> = {
   home: House,
   tutorial: GraduationCap,
   rules: ScrollText,
@@ -76,40 +48,7 @@ const MENU_ICONS = {
   partner: Handshake,
   privacy: ShieldCheck,
   imprint: FileText,
-} as const;
-
-const MEGA_MENU_SECTIONS: MenuSection[] = [
-  {
-    title: 'Hauptmenü',
-    items: [
-      { href: '/', label: 'Start', icon: 'home' },
-      { href: '/tutorial/', label: 'Tutorial', icon: 'tutorial' },
-      { href: '/regeln/', label: 'Regeln', icon: 'rules' },
-      { href: '/statistiken/', label: 'Statistiken', icon: 'stats' },
-      { href: '/voten/', label: 'Voten', icon: 'vote' },
-      { href: '/team/', label: 'Team', icon: 'team' },
-    ],
-  },
-  {
-    title: 'Server',
-    items: [
-      { href: '/serverinfos/', label: 'Serverinfo', icon: 'server' },
-      { href: '/befehle/', label: 'Befehle', icon: 'commands' },
-      { href: '/faq/', label: 'FAQ', icon: 'faq' },
-      { href: '/geschichte/', label: 'Geschichte', icon: 'history' },
-      { href: minecraftGilde.statusUrl, label: 'Status', external: true, icon: 'status' },
-      { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true, icon: 'map' },
-    ],
-  },
-  {
-    title: 'Mehr aus der Gilde',
-    items: [
-      { href: '/partner/', label: 'Partner', icon: 'partner' },
-      { href: '/datenschutz/', label: 'Datenschutz', icon: 'privacy' },
-      { href: '/impressum/', label: 'Impressum', icon: 'imprint' },
-    ],
-  },
-];
+};
 
 const normalize = (p: string) => {
   if (!p) return '/';
@@ -159,13 +98,14 @@ const linkClassMega = (active: boolean) =>
 
         <nav class="hidden items-center gap-1 md:flex" aria-label="Hauptnavigation">
           {
-            PRIMARY_LINKS.map((item) => (
-              <a
-                href={hrefFor(item.href)}
+            NAV_PRIMARY_LINKS.map((item) => (
+              <NavItem
+                href={item.href}
+                external={item.external}
                 class={linkClassDesktop(isActive(item.href, item.external))}
               >
                 {item.label}
-              </a>
+              </NavItem>
             ))
           }
         </nav>
@@ -184,18 +124,17 @@ const linkClassMega = (active: boolean) =>
 
           <!-- Discord-Status (Desktop) + Hover-Card -->
           <div class="group relative hidden sm:inline-block">
-            <a
-              href={DISCORD.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Discord (extern)"
+            <NavItem
+              href={NAV_DISCORD_LINK.href}
+              external
+              ariaLabel="Discord (extern)"
               class="border-accent/70 hover:border-accent text-fg/90 hover:text-fg hover:bg-surface/60 focus-visible:ring-offset-bg inline-flex h-10 items-center gap-2 rounded-lg border bg-transparent px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
             >
               <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
               <span class="tabular-nums" data-discord-members>-</span>
               <span>Mitglieder</span>
               <span class="sr-only">Discord beitreten</span>
-            </a>
+            </NavItem>
 
             <div
               class="invisible absolute top-full left-0 z-50 mt-2 w-[15rem] max-w-[85vw] translate-y-1 opacity-0 transition-all duration-150 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100"
@@ -207,14 +146,13 @@ const linkClassMega = (active: boolean) =>
                   <span class="font-semibold tabular-nums" data-discord-members>-</span>
                 </div>
                 <div class="mt-3">
-                  <a
-                    href={DISCORD.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <NavItem
+                    href={NAV_DISCORD_LINK.href}
+                    external
                     class="text-accent hover:text-accent2 hover:decoration-accent/60 text-sm font-semibold whitespace-nowrap underline decoration-transparent underline-offset-4 transition-colors"
                   >
                     Discord beitreten
-                  </a>
+                  </NavItem>
                 </div>
               </div>
             </div>
@@ -251,7 +189,7 @@ const linkClassMega = (active: boolean) =>
                 >
                   <div class="space-y-4">
                     {
-                      MEGA_MENU_SECTIONS.map((section, sectionIndex) => (
+                      NAV_MEGA_MENU_SECTIONS.map((section, sectionIndex) => (
                         <section
                           class:list={[
                             sectionIndex > 0 ? 'border-border/70 mt-4 border-t pt-4' : undefined,
@@ -266,10 +204,10 @@ const linkClassMega = (active: boolean) =>
                               const active = isActive(item.href, item.external);
 
                               return (
-                                <a
-                                  href={hrefFor(item.href)}
-                                  target={item.external ? '_blank' : undefined}
-                                  rel={item.external ? 'noopener noreferrer' : undefined}
+                                <NavItem
+                                  href={item.href}
+                                  external={item.external}
+                                  showExternalHint={false}
                                   class={linkClassMega(active)}
                                 >
                                   <span
@@ -287,7 +225,7 @@ const linkClassMega = (active: boolean) =>
                                     ) : null}
                                   </span>
                                   {item.external ? <span class="sr-only"> (extern)</span> : null}
-                                </a>
+                                </NavItem>
                               );
                             })}
                           </div>
@@ -301,7 +239,12 @@ const linkClassMega = (active: boolean) =>
                   <div
                     class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <Button href={DISCORD.href} external variant="primary" class="w-full sm:w-auto">
+                    <Button
+                      href={NAV_DISCORD_LINK.href}
+                      external
+                      variant="primary"
+                      class="w-full sm:w-auto"
+                    >
                       <span class="inline-flex items-center gap-2">
                         Discord beitreten
                         <ExternalLink size={16} />
