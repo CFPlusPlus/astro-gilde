@@ -34,14 +34,16 @@ const sizes: Record<ButtonSize, string> = {
   md: 'h-10 px-4 text-sm',
 };
 
-const outline =
+const secondary =
   'bg-transparent border border-accent/60 text-fg hover:bg-[var(--accent-soft)] hover:border-accent';
+const ghost = 'bg-transparent text-fg/85 hover:bg-[var(--accent-soft)] hover:text-fg';
 
+// Semantik: primary = Hauptaktion, secondary = gleichwertige Alternative, ghost = unaufdringliche Nebenaktion.
 const variants: Record<ButtonVariant, string> = {
   primary:
     'bg-accent text-black border border-accent hover:bg-[var(--accent-dark)] hover:border-[var(--accent-dark)]',
-  secondary: outline,
-  ghost: outline,
+  secondary,
+  ghost,
 };
 
 const attrs = href
