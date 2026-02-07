@@ -226,7 +226,23 @@ interface MinecraftStatusResponse {
       if (e.key === 'Escape' && isMenuOpen()) closeMenu();
     });
 
-    window.addEventListener('resize', () => closeMenu());
+    let lastMobileState = isMobile();
+    window.addEventListener('resize', () => {
+      const mobileState = isMobile();
+
+      // Keep the menu open on mobile viewport-height changes (address bar/show-hide),
+      // but close it when crossing the mobile/desktop breakpoint.
+      if (mobileState !== lastMobileState) {
+        closeMenu();
+        lastMobileState = mobileState;
+        return;
+      }
+
+      if (!isMenuOpen()) return;
+      if (overlay) overlay.classList.toggle('hidden', !mobileState);
+      if (mobileState) lockScroll();
+      else unlockScroll();
+    });
   }
 
   const fallbackCopy = (text: string): boolean => {

@@ -132,10 +132,8 @@ const isActive = (href: string, external?: boolean) => {
 const linkClassDesktop = (active: boolean) => `site-nav-link ${active ? 'is-active' : ''}`.trim();
 
 const linkClassMega = (active: boolean) =>
-  `group flex items-center gap-2.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
-    active
-      ? 'border-accent/45 bg-accent/10 text-fg'
-      : 'border-border/75 bg-surface/45 text-fg/90 hover:border-accent/35 hover:bg-surface-solid/70 hover:text-fg'
+  `group flex min-w-0 items-center gap-2 rounded-md px-2 py-2 text-[13px] leading-tight font-medium transition-colors md:gap-3 md:text-sm ${
+    active ? 'bg-accent/10 text-fg' : 'text-fg/90 hover:bg-surface/45 hover:text-fg'
   }`;
 ---
 
@@ -242,60 +240,67 @@ const linkClassMega = (active: boolean) =>
             >
             </div>
 
-            <div class="fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-6 left-6 z-50 md:absolute md:top-3 md:right-0 md:left-auto md:w-[min(22rem,calc(100vw-2rem))]">
-              <div class="glass-strong relative isolate overflow-hidden rounded-[var(--radius)] bg-surface-solid/96 p-0 shadow-xl supports-[backdrop-filter]:bg-surface-solid/92">
-                <div class="pointer-events-none absolute inset-0 bg-bg/50"></div>
-                <div class="relative z-10 h-0.5 w-full bg-gradient-to-r from-accent via-accent2 to-accent/10"></div>
-
-                <div class="relative z-10 max-h-[calc(100dvh-9rem)] overflow-y-auto p-2.5 sm:p-3">
+            <div
+              class="fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-0 left-0 z-50 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:absolute md:top-3 md:right-0 md:left-auto md:w-[min(23rem,calc(100vw-2rem))] md:px-0 md:pb-0"
+            >
+              <div
+                class="border-border/80 bg-surface-solid/98 supports-[backdrop-filter]:bg-surface-solid/94 md:supports-[backdrop-filter]:bg-surface-solid/88 relative overflow-hidden rounded-2xl border shadow-lg supports-[backdrop-filter]:backdrop-blur-xl supports-[backdrop-filter]:backdrop-saturate-150 md:shadow-2xl md:supports-[backdrop-filter]:backdrop-blur-2xl md:supports-[backdrop-filter]:backdrop-saturate-180"
+              >
+                <div
+                  class="max-h-[calc(100dvh-6rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 md:max-h-[calc(100dvh-9rem)] md:p-3"
+                >
                   <div class="space-y-4">
                     {
-                      MEGA_MENU_SECTIONS.map((section) => (
-                        <section>
-                          <h2 class="text-accent text-lg font-semibold">{section.title}</h2>
-                          <div class="mt-2 grid gap-1.5 sm:grid-cols-2">
-                            {
-                              section.items.map((item) => {
-                                const Icon = MENU_ICONS[item.icon];
-                                const active = isActive(item.href, item.external);
+                      MEGA_MENU_SECTIONS.map((section, sectionIndex) => (
+                        <section
+                          class:list={[
+                            sectionIndex > 0 ? 'border-border/70 mt-4 border-t pt-4' : undefined,
+                          ]}
+                        >
+                          <h2 class="text-muted text-[11px] font-semibold tracking-[0.14em] uppercase">
+                            {section.title}
+                          </h2>
+                          <div class="mt-2 grid grid-cols-2 gap-0.5">
+                            {section.items.map((item) => {
+                              const Icon = MENU_ICONS[item.icon];
+                              const active = isActive(item.href, item.external);
 
-                                return (
-                                  <a
-                                    href={hrefFor(item.href)}
-                                    target={item.external ? '_blank' : undefined}
-                                    rel={item.external ? 'noopener noreferrer' : undefined}
-                                    class={linkClassMega(active)}
+                              return (
+                                <a
+                                  href={hrefFor(item.href)}
+                                  target={item.external ? '_blank' : undefined}
+                                  rel={item.external ? 'noopener noreferrer' : undefined}
+                                  class={linkClassMega(active)}
+                                >
+                                  <span
+                                    class:list={[
+                                      'inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors md:h-7 md:w-7',
+                                      active ? 'text-accent' : 'text-muted group-hover:text-accent',
+                                    ]}
                                   >
-                                    <span
-                                      class:list={[
-                                        'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border',
-                                        active
-                                          ? 'border-accent/35 bg-accent/16 text-accent'
-                                          : 'border-border/70 bg-bg/45 text-muted group-hover:border-accent/35 group-hover:text-accent',
-                                      ]}
-                                    >
-                                      <Icon size={14} />
-                                    </span>
-                                    <span class="inline-flex min-w-0 items-center gap-1.5">
-                                      <span class="truncate">{item.label}</span>
-                                      {item.external ? (
-                                        <ExternalLink size={13} class="shrink-0 opacity-70" />
-                                      ) : null}
-                                    </span>
-                                    {item.external ? <span class="sr-only"> (extern)</span> : null}
-                                  </a>
-                                );
-                              })
-                            }
+                                    <Icon size={14} />
+                                  </span>
+                                  <span class="inline-flex min-w-0 items-center gap-1.5">
+                                    <span class="truncate">{item.label}</span>
+                                    {item.external ? (
+                                      <ExternalLink size={13} class="shrink-0 opacity-70" />
+                                    ) : null}
+                                  </span>
+                                  {item.external ? <span class="sr-only"> (extern)</span> : null}
+                                </a>
+                              );
+                            })}
                           </div>
                         </section>
                       ))
                     }
                   </div>
 
-                  <div class="bg-border/80 mt-3 h-px"></div>
+                  <div class="bg-border/70 mt-4 h-px"></div>
 
-                  <div class="mt-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div
+                    class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
                     <Button href={DISCORD.href} external variant="primary" class="w-full sm:w-auto">
                       <span class="inline-flex items-center gap-2">
                         Discord beitreten
