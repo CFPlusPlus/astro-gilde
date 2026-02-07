@@ -15,7 +15,10 @@ export function renderMarkdown(input: string): string {
   const source = String(input ?? '');
 
   // Nackte URLs klickbar machen (ohne Markdown-Link-Ziele "(https://...)" oder bestehende "<https://...>").
-  const withAutoLinks = source.replace(/(?<![<(])https?:\/\/[^\s>]+/g, (url) => `<${url}>`);
+  const withAutoLinks = source.replace(
+    /(^|[^<(])(https?:\/\/[^\s>]+)/g,
+    (_match, prefix: string, url: string) => `${prefix}<${url}>`,
+  );
 
   const rawHtml = marked.parse(withAutoLinks) as string;
   const clean = DOMPurify.sanitize(rawHtml);

@@ -11,6 +11,7 @@
 
 type ThemeMode = 'system' | 'light' | 'dark';
 type ToastVariant = 'default' | 'error';
+const UNKNOWN_FALLBACK = 'unbekannt';
 
 interface DiscordWidgetResponse {
   presence_count?: number;
@@ -300,16 +301,16 @@ interface MinecraftStatusResponse {
   const fetchDiscordMemberCount = async (): Promise<string> => {
     try {
       const code = config.discordInviteCode;
-      if (!code) return '�';
+      if (!code) return UNKNOWN_FALLBACK;
 
       const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
       const response = await fetch(apiUrl, { cache: 'no-store' });
       const data = (await response.json()) as DiscordInviteResponse;
       const count = data.approximate_member_count;
 
-      return count != null ? String(count) : '�';
+      return count != null ? String(count) : UNKNOWN_FALLBACK;
     } catch {
-      return '�';
+      return UNKNOWN_FALLBACK;
     }
   };
 
