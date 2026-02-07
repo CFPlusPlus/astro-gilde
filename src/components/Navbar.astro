@@ -1,10 +1,50 @@
 ---
 import { hrefFor } from '../lib/links';
-import { Menu, X, ExternalLink, Sun, Moon, SunMoon } from '@lucide/astro';
+import {
+  Menu,
+  X,
+  ExternalLink,
+  Sun,
+  Moon,
+  SunMoon,
+  House,
+  GraduationCap,
+  ScrollText,
+  ChartColumn,
+  Vote,
+  Users,
+  Server,
+  TerminalSquare,
+  CircleHelp,
+  BookOpen,
+  Activity,
+  Map as MapIcon,
+  Handshake,
+  ShieldCheck,
+  FileText,
+} from '@lucide/astro';
 import Button from './ui/Button.astro';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 type NavItem = { href: string; label: string; external?: boolean };
+type MenuIcon =
+  | 'home'
+  | 'tutorial'
+  | 'rules'
+  | 'stats'
+  | 'vote'
+  | 'team'
+  | 'server'
+  | 'commands'
+  | 'faq'
+  | 'history'
+  | 'status'
+  | 'map'
+  | 'partner'
+  | 'privacy'
+  | 'imprint';
+type MenuItem = NavItem & { icon: MenuIcon };
+type MenuSection = { title: string; items: MenuItem[] };
 
 const PRIMARY_LINKS: NavItem[] = [
   { href: '/', label: 'Start' },
@@ -14,24 +54,62 @@ const PRIMARY_LINKS: NavItem[] = [
   { href: '/voten/', label: 'Voten' },
 ];
 
-const MORE_LINKS: NavItem[] = [
-  { href: '/serverinfos/', label: 'Serverinfo' },
-  { href: '/befehle/', label: 'Befehle' },
-  { href: '/faq/', label: 'FAQ' },
-  { href: '/geschichte/', label: 'Geschichte' },
-  { href: '/team/', label: 'Team' },
-  { href: '/partner/', label: 'Partner' },
-  { href: '/datenschutz/', label: 'Datenschutz' },
-  { href: '/impressum/', label: 'Impressum' },
-  { href: minecraftGilde.statusUrl, label: 'Status', external: true },
-  { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true },
-];
-
 const DISCORD: NavItem = {
   href: minecraftGilde.discord.url,
   label: 'Discord',
   external: true,
 };
+
+const MENU_ICONS = {
+  home: House,
+  tutorial: GraduationCap,
+  rules: ScrollText,
+  stats: ChartColumn,
+  vote: Vote,
+  team: Users,
+  server: Server,
+  commands: TerminalSquare,
+  faq: CircleHelp,
+  history: BookOpen,
+  status: Activity,
+  map: MapIcon,
+  partner: Handshake,
+  privacy: ShieldCheck,
+  imprint: FileText,
+} as const;
+
+const MEGA_MENU_SECTIONS: MenuSection[] = [
+  {
+    title: 'Hauptmenü',
+    items: [
+      { href: '/', label: 'Start', icon: 'home' },
+      { href: '/tutorial/', label: 'Tutorial', icon: 'tutorial' },
+      { href: '/regeln/', label: 'Regeln', icon: 'rules' },
+      { href: '/statistiken/', label: 'Statistiken', icon: 'stats' },
+      { href: '/voten/', label: 'Voten', icon: 'vote' },
+      { href: '/team/', label: 'Team', icon: 'team' },
+    ],
+  },
+  {
+    title: 'Server',
+    items: [
+      { href: '/serverinfos/', label: 'Serverinfo', icon: 'server' },
+      { href: '/befehle/', label: 'Befehle', icon: 'commands' },
+      { href: '/faq/', label: 'FAQ', icon: 'faq' },
+      { href: '/geschichte/', label: 'Geschichte', icon: 'history' },
+      { href: minecraftGilde.statusUrl, label: 'Status', external: true, icon: 'status' },
+      { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true, icon: 'map' },
+    ],
+  },
+  {
+    title: 'Mehr aus der Gilde',
+    items: [
+      { href: '/partner/', label: 'Partner', icon: 'partner' },
+      { href: '/datenschutz/', label: 'Datenschutz', icon: 'privacy' },
+      { href: '/impressum/', label: 'Impressum', icon: 'imprint' },
+    ],
+  },
+];
 
 const normalize = (p: string) => {
   if (!p) return '/';
@@ -53,11 +131,11 @@ const isActive = (href: string, external?: boolean) => {
 
 const linkClassDesktop = (active: boolean) => `site-nav-link ${active ? 'is-active' : ''}`.trim();
 
-const linkClassMobile = (active: boolean) =>
-  `rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+const linkClassMega = (active: boolean) =>
+  `group flex items-center gap-2.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${
     active
-      ? 'bg-surface border-border text-fg'
-      : 'text-fg/90 border-transparent hover:text-fg hover:bg-surface hover:border-border'
+      ? 'border-accent/45 bg-accent/10 text-fg'
+      : 'border-border/75 bg-surface/45 text-fg/90 hover:border-accent/35 hover:bg-surface-solid/70 hover:text-fg'
   }`;
 ---
 
@@ -77,7 +155,7 @@ const linkClassMobile = (active: boolean) =>
           />
           <div class="hidden leading-tight sm:block">
             <span class="text-sm font-semibold">Minecraft Gilde</span>
-            <div class="text-muted text-xs">Vanilla SMP · 1.21.x</div>
+            <div class="text-muted text-xs">Vanilla SMP - 1.21.x</div>
           </div>
         </a>
 
@@ -116,7 +194,7 @@ const linkClassMobile = (active: boolean) =>
               class="border-accent/70 hover:border-accent text-fg/90 hover:text-fg hover:bg-surface/60 focus-visible:ring-offset-bg inline-flex h-10 items-center gap-2 rounded-lg border bg-transparent px-3 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
             >
               <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-              <span class="tabular-nums" data-discord-members>—</span>
+              <span class="tabular-nums" data-discord-members>-</span>
               <span>Mitglieder</span>
               <span class="sr-only">Discord beitreten</span>
             </a>
@@ -128,7 +206,7 @@ const linkClassMobile = (active: boolean) =>
                 <div class="text-sm font-semibold">Discord Status</div>
                 <div class="mt-3 flex items-center justify-between text-sm">
                   <span class="text-muted">Mitglieder:</span>
-                  <span class="font-semibold tabular-nums" data-discord-members>—</span>
+                  <span class="font-semibold tabular-nums" data-discord-members>-</span>
                 </div>
                 <div class="mt-3">
                   <a
@@ -147,7 +225,7 @@ const linkClassMobile = (active: boolean) =>
           <button
             type="button"
             class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-10 w-10 items-center justify-center rounded-lg border backdrop-blur-md transition-colors"
-            aria-label="Menü öffnen"
+            aria-label="Menue oeffnen"
             aria-controls="nav-panel"
             aria-expanded="false"
             data-nav-toggle
@@ -164,56 +242,72 @@ const linkClassMobile = (active: boolean) =>
             >
             </div>
 
-            <div
-              class="fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-4 left-4 z-50 md:left-auto md:w-[22rem]"
-            >
-              <div class="glass-strong rounded-[var(--radius)] p-3 shadow-lg">
-                <div class="grid gap-1 md:hidden">
-                  {
-                    PRIMARY_LINKS.map((item) => (
-                      <a
-                        href={hrefFor(item.href)}
-                        class={linkClassMobile(isActive(item.href, item.external))}
-                      >
-                        {item.label}
-                      </a>
-                    ))
-                  }
-                </div>
+            <div class="fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-6 left-6 z-50 md:absolute md:top-3 md:right-0 md:left-auto md:w-[min(22rem,calc(100vw-2rem))]">
+              <div class="glass-strong relative isolate overflow-hidden rounded-[var(--radius)] bg-surface-solid/96 p-0 shadow-xl supports-[backdrop-filter]:bg-surface-solid/92">
+                <div class="pointer-events-none absolute inset-0 bg-bg/50"></div>
+                <div class="relative z-10 h-0.5 w-full bg-gradient-to-r from-accent via-accent2 to-accent/10"></div>
 
-                <div class="bg-border my-3 h-px md:hidden"></div>
+                <div class="relative z-10 max-h-[calc(100dvh-9rem)] overflow-y-auto p-2.5 sm:p-3">
+                  <div class="space-y-4">
+                    {
+                      MEGA_MENU_SECTIONS.map((section) => (
+                        <section>
+                          <h2 class="text-accent text-lg font-semibold">{section.title}</h2>
+                          <div class="mt-2 grid gap-1.5 sm:grid-cols-2">
+                            {
+                              section.items.map((item) => {
+                                const Icon = MENU_ICONS[item.icon];
+                                const active = isActive(item.href, item.external);
 
-                <div class="grid gap-1 sm:grid-cols-2 md:grid-cols-1">
-                  {
-                    MORE_LINKS.map((item) => (
-                      <a
-                        href={hrefFor(item.href)}
-                        target={item.external ? '_blank' : undefined}
-                        rel={item.external ? 'noopener noreferrer' : undefined}
-                        class="text-fg/90 hover:text-fg hover:bg-surface hover:border-border rounded-lg border border-transparent px-3 py-2 text-sm transition-colors"
-                      >
-                        {item.label}
-                        {item.external ? <span class="sr-only"> (extern)</span> : null}
-                      </a>
-                    ))
-                  }
-                </div>
+                                return (
+                                  <a
+                                    href={hrefFor(item.href)}
+                                    target={item.external ? '_blank' : undefined}
+                                    rel={item.external ? 'noopener noreferrer' : undefined}
+                                    class={linkClassMega(active)}
+                                  >
+                                    <span
+                                      class:list={[
+                                        'inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border',
+                                        active
+                                          ? 'border-accent/35 bg-accent/16 text-accent'
+                                          : 'border-border/70 bg-bg/45 text-muted group-hover:border-accent/35 group-hover:text-accent',
+                                      ]}
+                                    >
+                                      <Icon size={14} />
+                                    </span>
+                                    <span class="inline-flex min-w-0 items-center gap-1.5">
+                                      <span class="truncate">{item.label}</span>
+                                      {item.external ? (
+                                        <ExternalLink size={13} class="shrink-0 opacity-70" />
+                                      ) : null}
+                                    </span>
+                                    {item.external ? <span class="sr-only"> (extern)</span> : null}
+                                  </a>
+                                );
+                              })
+                            }
+                          </div>
+                        </section>
+                      ))
+                    }
+                  </div>
 
-                <div class="mt-3">
-                  <Button
-                    href={DISCORD.href}
-                    external
-                    variant="primary"
-                    class="w-full justify-between sm:hidden"
-                  >
-                    <span class="inline-flex items-center gap-2">
+                  <div class="bg-border/80 mt-3 h-px"></div>
+
+                  <div class="mt-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <Button href={DISCORD.href} external variant="primary" class="w-full sm:w-auto">
+                      <span class="inline-flex items-center gap-2">
+                        Discord beitreten
+                        <ExternalLink size={16} />
+                      </span>
+                    </Button>
+
+                    <p class="text-muted text-[11px] sm:text-xs">
+                      <span class="text-fg tabular-nums" data-discord-members>-</span> Mitglieder auf
                       Discord
-                      <ExternalLink size={16} />
-                    </span>
-                    <span class="text-xs font-semibold text-black/80">
-                      <span data-discord-members>—</span> Mitglieder
-                    </span>
-                  </Button>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
