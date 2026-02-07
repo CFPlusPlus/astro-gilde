@@ -30,6 +30,7 @@ import {
   NAV_PRIMARY_LINKS,
   type NavMenuIcon,
 } from '../data/nav';
+import { appRoutes } from '../config/routes';
 import { hrefFor } from '../lib/links';
 
 const MENU_ICONS: Record<NavMenuIcon, typeof House> = {
@@ -80,7 +81,11 @@ const linkClassMega = (active: boolean) =>
   <div class="mx-auto max-w-6xl px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
     <div class="glass relative z-10 rounded-[var(--radius)] px-4 py-3 shadow-sm">
       <div class="flex items-center justify-between gap-4">
-        <a href="/" class="flex items-center gap-3" aria-label="Minecraft Gilde (Start)">
+        <a
+          href={appRoutes.home}
+          class="flex items-center gap-3"
+          aria-label="Minecraft Gilde (Start)"
+        >
           <img
             src="/images/logo.webp"
             width="36"

@@ -1,4 +1,5 @@
 import { minecraftGilde } from '../config/minecraftGilde';
+import { appRoutes, getRouteLabelByPath } from '../config/routes';
 
 type JsonLd = Record<string, unknown>;
 
@@ -32,25 +33,9 @@ const stripSiteName = (title: string): string => {
 
 export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string): string => {
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
-  // Bekannte statische Routen -> feste Labels (kein Rate-Guessing).
-  const map: Record<string, string> = {
-    '/': 'Home',
-    '/befehle/': 'Befehle',
-    '/datenschutz/': 'Datenschutz',
-    '/faq/': 'FAQ',
-    '/geschichte/': 'Geschichte',
-    '/impressum/': 'Impressum',
-    '/partner/': 'Partner',
-    '/regeln/': 'Regeln',
-    '/serverinfos/': 'Serverinfos',
-    '/statistiken/': 'Statistiken',
-    '/team/': 'Team',
-    '/tutorial/': 'Tutorial',
-    '/voten/': 'Voten',
-    '/404/': '404',
-  };
-
-  if (map[path]) return map[path];
+  const routeLabel = getRouteLabelByPath(path, 'breadcrumb');
+  if (routeLabel) return routeLabel;
+  if (path === '/404/') return '404';
   // Erst versuchen: Titel ohne Site-Name verwenden.
   const fromTitle = stripSiteName(fallbackTitle ?? '');
   if (fromTitle) return fromTitle;
@@ -71,7 +56,7 @@ export const buildBreadcrumbList = (args: {
 
   const siteBase = resolveSiteBase(site);
   const label = breadcrumbLabelForPath(path, pageTitle);
-  const homeUrl = new URL('/', siteBase).toString();
+  const homeUrl = new URL(appRoutes.home, siteBase).toString();
   const pageUrl = new URL(path, siteBase).toString();
 
   return {

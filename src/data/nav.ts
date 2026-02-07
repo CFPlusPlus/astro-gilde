@@ -1,4 +1,5 @@
 import { minecraftGilde } from '../config/minecraftGilde';
+import { appRoutes, getRouteLabel, type AppRouteKey } from '../config/routes';
 
 export type NavLink = {
   href: string;
@@ -32,12 +33,22 @@ export type NavMenuSection = {
   items: NavMenuItem[];
 };
 
+const navLinkForRoute = (route: AppRouteKey): NavLink => ({
+  href: appRoutes[route],
+  label: getRouteLabel(route, 'nav'),
+});
+
+const navMenuItemForRoute = (route: AppRouteKey, icon: NavMenuIcon): NavMenuItem => ({
+  ...navLinkForRoute(route),
+  icon,
+});
+
 export const NAV_PRIMARY_LINKS: NavLink[] = [
-  { href: '/', label: 'Start' },
-  { href: '/tutorial/', label: 'Tutorial' },
-  { href: '/regeln/', label: 'Regeln' },
-  { href: '/statistiken/', label: 'Statistiken' },
-  { href: '/voten/', label: 'Voten' },
+  navLinkForRoute('home'),
+  navLinkForRoute('tutorial'),
+  navLinkForRoute('rules'),
+  navLinkForRoute('stats'),
+  navLinkForRoute('vote'),
 ];
 
 export const NAV_DISCORD_LINK: NavLink = {
@@ -50,21 +61,21 @@ export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
   {
     title: 'Hauptmen\u00fc',
     items: [
-      { href: '/', label: 'Start', icon: 'home' },
-      { href: '/tutorial/', label: 'Tutorial', icon: 'tutorial' },
-      { href: '/regeln/', label: 'Regeln', icon: 'rules' },
-      { href: '/statistiken/', label: 'Statistiken', icon: 'stats' },
-      { href: '/voten/', label: 'Voten', icon: 'vote' },
-      { href: '/team/', label: 'Team', icon: 'team' },
+      navMenuItemForRoute('home', 'home'),
+      navMenuItemForRoute('tutorial', 'tutorial'),
+      navMenuItemForRoute('rules', 'rules'),
+      navMenuItemForRoute('stats', 'stats'),
+      navMenuItemForRoute('vote', 'vote'),
+      navMenuItemForRoute('team', 'team'),
     ],
   },
   {
     title: 'Server',
     items: [
-      { href: '/serverinfos/', label: 'Serverinfo', icon: 'server' },
-      { href: '/befehle/', label: 'Befehle', icon: 'commands' },
-      { href: '/faq/', label: 'FAQ', icon: 'faq' },
-      { href: '/geschichte/', label: 'Geschichte', icon: 'history' },
+      navMenuItemForRoute('serverInfo', 'server'),
+      navMenuItemForRoute('commands', 'commands'),
+      navMenuItemForRoute('faq', 'faq'),
+      navMenuItemForRoute('history', 'history'),
       { href: minecraftGilde.statusUrl, label: 'Status', external: true, icon: 'status' },
       { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true, icon: 'map' },
     ],
@@ -72,9 +83,9 @@ export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
   {
     title: 'Mehr aus der Gilde',
     items: [
-      { href: '/partner/', label: 'Partner', icon: 'partner' },
-      { href: '/datenschutz/', label: 'Datenschutz', icon: 'privacy' },
-      { href: '/impressum/', label: 'Impressum', icon: 'imprint' },
+      navMenuItemForRoute('partner', 'partner'),
+      navMenuItemForRoute('privacy', 'privacy'),
+      navMenuItemForRoute('imprint', 'imprint'),
     ],
   },
 ];
