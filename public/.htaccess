@@ -16,40 +16,40 @@ AddCharset UTF-8 .txt
 
 # 404-Seite (kompatibel: /404.html wird beim Build erzeugt)
 ErrorDocument 404 /404.html
-# HTML nie aus dem Cache zeigen
+# Caching-Strategie:
+# - HTML: no-cache + must-revalidate, damit Clients immer revalidieren (ohne no-store Widerspruch).
+# - JSON/API: kurze TTL + Revalidierung, damit Daten zeitnah aktualisiert werden.
+# - CSS/JS: lange TTL mit immutable fuer Astro-Build-Assets (gehashte Dateien in /_astro/),
+#           sonst moderates Caching fuer ungehashte Dateien.
+# - Images/Fonts: lange TTL fuer statische Dateien.
 <IfModule mod_headers.c>
+  # HTML-Dokumente: immer revalidieren
   <FilesMatch "\.(?:html?)$">
-    Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header set Cache-Control "no-cache, must-revalidate"
     Header set Pragma "no-cache"
   </FilesMatch>
-</IfModule>
 
-# JSON (Stats-Daten) kurz cachen + revalidieren
-<IfModule mod_headers.c>
+  # JSON/API: kurz cachen, dann revalidieren
   <FilesMatch "\.(?:json)$">
-    # Kurzzeit-Cache + schnelle Revalidierung
     Header set Cache-Control "max-age=300, must-revalidate, stale-while-revalidate=86400"
   </FilesMatch>
-</IfModule>
 
-#Caching
-<IfModule mod_headers.c>
-  # HTML: häufig aktualisiert
-  <FilesMatch "\.(?:html)$">
-    Header set Cache-Control "no-cache"
-  </FilesMatch>
+  # Gehashte Build-Assets (Astro: /_astro/) markieren
+  <IfModule mod_setenvif.c>
+    SetEnvIfNoCase Request_URI "^/_astro/.*\.(?:css|js|mjs)$" IS_HASHED_ASTRO_ASSET=1
+  </IfModule>
 
-  # CSS/JS: kurz bis mittel
+  # CSS/JS: gehashte Assets lang+immutable, ungehashte moderat
   <FilesMatch "\.(?:css|js|mjs)$">
-    Header set Cache-Control "public, max-age=3600"
+    Header set Cache-Control "public, max-age=31536000, immutable" env=IS_HASHED_ASTRO_ASSET
+    Header set Cache-Control "public, max-age=3600, must-revalidate" env=!IS_HASHED_ASTRO_ASSET
   </FilesMatch>
 
-  # Fonts/Bilder: etwas länger
-  <FilesMatch "\.(?:woff2?|ttf|eot|gif|png|jpg|jpeg|webp|svg)$">
-    Header set Cache-Control "public, max-age=604800"
+  # Bilder/Fonts: lange cachen
+  <FilesMatch "\.(?:woff2?|ttf|eot|gif|png|jpg|jpeg|webp|avif|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000"
   </FilesMatch>
 </IfModule>
-
 # Kompression aktivieren
 <IfModule mod_deflate.c>
     # Text, HTML, JavaScript, CSS, XML und JSON komprimieren
