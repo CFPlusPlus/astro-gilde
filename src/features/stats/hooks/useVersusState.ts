@@ -21,11 +21,31 @@ export type VersusRow = {
   valueB: number | null;
 };
 
-export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: string) => void }) {
-  const [versusMetricFilter, setVersusMetricFilter] = useState('');
-  const [versusMetricIds, setVersusMetricIds] = useState<string[]>([]);
-  const [versusPlayerA, setVersusPlayerA] = useState<PlayersSearchItem | null>(null);
-  const [versusPlayerB, setVersusPlayerB] = useState<PlayersSearchItem | null>(null);
+type InitialVersusState = {
+  playerA?: PlayersSearchItem | null;
+  playerB?: PlayersSearchItem | null;
+  metricFilter?: string;
+  metricIds?: string[];
+  autoCompare?: boolean;
+};
+
+export function useVersusState({
+  onGeneratedIso,
+  initialState,
+}: {
+  onGeneratedIso: (iso: string) => void;
+  initialState?: InitialVersusState;
+}) {
+  const [versusMetricFilter, setVersusMetricFilter] = useState(initialState?.metricFilter || '');
+  const [versusMetricIds, setVersusMetricIds] = useState<string[]>(
+    Array.from(new Set(initialState?.metricIds || [])).slice(0, VERSUS_MAX_METRICS),
+  );
+  const [versusPlayerA, setVersusPlayerA] = useState<PlayersSearchItem | null>(
+    initialState?.playerA || null,
+  );
+  const [versusPlayerB, setVersusPlayerB] = useState<PlayersSearchItem | null>(
+    initialState?.playerB || null,
+  );
   const [versusStatsA, setVersusStatsA] = useState<Record<string, unknown> | null>(null);
   const [versusStatsB, setVersusStatsB] = useState<Record<string, unknown> | null>(null);
   const [versusCatalog, setVersusCatalog] = useState<VersusMetricDef[]>([]);
@@ -36,6 +56,8 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
 
   const versusAbortRef = useRef<AbortController | null>(null);
   const versusSwapFxTimeoutRef = useRef<number | null>(null);
+  const initializedSearchRef = useRef(false);
+  const shouldAutoCompareRef = useRef(Boolean(initialState?.autoCompare));
   const playerNamesRef = useRef<Record<string, string>>({});
 
   const searchA = usePlayerAutocomplete({
@@ -47,6 +69,21 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
     onGeneratedIso,
     onError: setVersusError,
   });
+
+  useEffect(() => {
+    if (initializedSearchRef.current) return;
+    initializedSearchRef.current = true;
+
+    if (versusPlayerA) {
+      searchA.setValueWithoutAutoOpen(versusPlayerA.name);
+      playerNamesRef.current[versusPlayerA.uuid] = versusPlayerA.name;
+    }
+
+    if (versusPlayerB) {
+      searchB.setValueWithoutAutoOpen(versusPlayerB.name);
+      playerNamesRef.current[versusPlayerB.uuid] = versusPlayerB.name;
+    }
+  }, [searchA, searchB, versusPlayerA, versusPlayerB]);
 
   useEffect(() => {
     return () => {
@@ -251,6 +288,13 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
     }
   }, [onGeneratedIso, versusPlayerA, versusPlayerB]);
 
+  useEffect(() => {
+    if (!shouldAutoCompareRef.current) return;
+    if (!versusPlayerA || !versusPlayerB) return;
+    shouldAutoCompareRef.current = false;
+    void runVersusCompare();
+  }, [runVersusCompare, versusPlayerA, versusPlayerB]);
+
   const applyVersusSelection = useCallback((next: string[]) => {
     const unique = Array.from(new Set(next));
 
@@ -284,6 +328,8 @@ export function useVersusState({ onGeneratedIso }: { onGeneratedIso: (iso: strin
   const resetVersus = useCallback(() => {
     clearVersusPlayer('A');
     clearVersusPlayer('B');
+    setVersusMetricFilter('');
+    setVersusMetricIds([]);
     setVersusError(null);
     setVersusNotice(null);
   }, [clearVersusPlayer]);

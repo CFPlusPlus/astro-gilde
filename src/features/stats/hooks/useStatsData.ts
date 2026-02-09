@@ -28,10 +28,12 @@ export function useStatsData({
   activeTab,
   pageSize,
   metricFilter,
+  initialActiveMetricId,
 }: {
   activeTab: TabKey;
   pageSize: number;
   metricFilter: string;
+  initialActiveMetricId?: string | null;
 }) {
   const [generatedIso, setGeneratedIso] = useState<string | null>(null);
   const [playerCount, setPlayerCount] = useState<number | null>(null);
@@ -41,7 +43,9 @@ export function useStatsData({
 
   const [king, setKing] = useState<LeaderboardState>(makeEmptyLeaderboardState);
   const [boards, setBoards] = useState<Record<string, LeaderboardState>>({});
-  const [activeMetricId, setActiveMetricId] = useState<string | null>(null);
+  const [activeMetricId, setActiveMetricId] = useState<string | null>(
+    initialActiveMetricId || null,
+  );
 
   const playerNamesRef = useRef<Record<string, string>>({});
   const kingRef = useRef(king);

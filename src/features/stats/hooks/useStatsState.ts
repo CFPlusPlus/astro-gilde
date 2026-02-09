@@ -1,12 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { STATS_PAGE_SIZES } from '../constants';
 import { WELCOME_DISMISS_KEY, WELCOME_DISMISS_LEGACY_KEY, shouldShowWelcome } from '../welcome';
 import { useQuerySync } from './useQuerySync';
 
-export function useStatsState() {
+function sanitizePageSize(next: number): number {
+  return STATS_PAGE_SIZES.includes(next as (typeof STATS_PAGE_SIZES)[number])
+    ? next
+    : STATS_PAGE_SIZES[0];
+}
+
+export function useStatsState(initialPageSize: number = STATS_PAGE_SIZES[0]) {
   const querySync = useQuerySync('uebersicht');
 
-  const [pageSize, setPageSizeState] = useState(10);
+  const [pageSize, setPageSizeState] = useState(() => sanitizePageSize(initialPageSize));
   const [metricFilter, setMetricFilter] = useState('');
   const [showWelcome, setShowWelcome] = useState(true);
 
@@ -19,7 +26,7 @@ export function useStatsState() {
   }, []);
 
   const setPageSize = useCallback((next: number) => {
-    setPageSizeState(Math.max(1, Math.min(100, Number(next) || 10)));
+    setPageSizeState(sanitizePageSize(Number(next)));
   }, []);
 
   const dismissWelcome = useCallback(() => {

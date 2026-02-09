@@ -1,5 +1,6 @@
 import type { RefObject } from 'react';
 
+import { STATS_PAGE_SIZES } from '../../constants';
 import { fmtDateBerlin, fmtNumber } from '../../format';
 import type { PlayersSearchItem } from '../../types';
 import type { TabKey } from '../../types-ui';
@@ -74,7 +75,7 @@ export function StatsHeader({
                   className="text-fg bg-transparent text-xs leading-none font-semibold outline-none"
                   aria-label={'Eintr\u00e4ge pro Seite'}
                 >
-                  {[10, 20, 30, 50].map((value) => (
+                  {STATS_PAGE_SIZES.map((value) => (
                     <option key={value} value={value}>
                       {value}
                     </option>

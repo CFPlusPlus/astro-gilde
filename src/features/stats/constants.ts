@@ -1,5 +1,6 @@
 import type { MetricDef, MetricId } from './types';
 
+export const STATS_PAGE_SIZES = [10, 20, 30, 50] as const;
 export const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills', 'creeper'];
 export const VERSUS_MAX_METRICS = 12;
 

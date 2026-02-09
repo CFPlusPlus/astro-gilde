@@ -15,6 +15,7 @@ export function RankingsSection({
   onMetricFilterChange,
   activeMetricId,
   onSelectMetric,
+  onReset,
   hasNoRanklistResults,
   activeMetricState,
   pageSize,
@@ -29,6 +30,7 @@ export function RankingsSection({
   onMetricFilterChange: (next: string) => void;
   activeMetricId: string | null;
   onSelectMetric: (id: string) => void;
+  onReset: () => void;
   hasNoRanklistResults: boolean;
   activeMetricState: LeaderboardState;
   pageSize: number;
@@ -61,10 +63,19 @@ export function RankingsSection({
   return (
     <section aria-label="Ranglisten" className="mg-container pb-12">
       <div className="mt-6">
-        <SectionTitle
-          title="Ranglisten"
-          subtitle="W&auml;hle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
-        />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <SectionTitle
+            title="Ranglisten"
+            subtitle="W&auml;hle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
+          />
+          <button
+            type="button"
+            onClick={onReset}
+            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
+          >
+            Zur&uuml;cksetzen
+          </button>
+        </div>
 
         {hasNoRanklistResults ? (
           <div

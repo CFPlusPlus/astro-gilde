@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
@@ -8,8 +8,22 @@ import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
 import { useVersusState } from './hooks/useVersusState';
+import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
+import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
 
 export default function StatsApp() {
+  const initialUrlState = useMemo(
+    () =>
+      typeof window === 'undefined'
+        ? parseStatsUrlState('')
+        : parseStatsUrlState(window.location.search),
+    [],
+  );
+  const canAutoCompareFromUrl = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return window.location.hash.replace('#', '').trim() === 'versus';
+  }, []);
+
   const {
     activeTab,
     setTab,
@@ -47,10 +61,18 @@ export default function StatsApp() {
     activeTab,
     pageSize,
     metricFilter,
+    initialActiveMetricId: initialUrlState.rankMetricId,
   });
 
   const versus = useVersusState({
     onGeneratedIso: setGeneratedIso,
+    initialState: {
+      playerA: initialUrlState.versus.playerA,
+      playerB: initialUrlState.versus.playerB,
+      metricFilter: initialUrlState.versus.metricFilter,
+      metricIds: initialUrlState.versus.metricIds,
+      autoCompare: initialUrlState.versus.shouldAutoCompare && canAutoCompareFromUrl,
+    },
   });
   const tabsDisabled = Boolean(apiError);
   const handleSelectMetric = useCallback(
@@ -60,12 +82,62 @@ export default function StatsApp() {
     },
     [activeMetricId, setActiveMetricId],
   );
+  const defaultRankMetricId = useMemo(() => {
+    if (!metrics) return null;
+    return pickDefaultRankMetricId(filterMetricIds(metrics, ''), metrics);
+  }, [metrics]);
+  const rankMetricIdForUrl = useMemo(() => {
+    if (!activeMetricId) return null;
+    if (metricFilter.trim().length > 0) return activeMetricId;
+    return activeMetricId === defaultRankMetricId ? null : activeMetricId;
+  }, [activeMetricId, defaultRankMetricId, metricFilter]);
+  const handleResetRankings = useCallback(() => {
+    setMetricFilter('');
+    setActiveMetricId(defaultRankMetricId);
+  }, [defaultRankMetricId, setActiveMetricId, setMetricFilter]);
 
   useEffect(() => {
     const y = consumeScrollToRestore();
     if (y === null) return;
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [activeTab, consumeScrollToRestore]);
+
+  useEffect(() => {
+    const nextSearch =
+      activeTab === 'ranglisten'
+        ? buildStatsUrlSearch({
+            activeMetricId: rankMetricIdForUrl,
+            versusMetricFilter: '',
+            versusMetricIds: [],
+            versusPlayerA: null,
+            versusPlayerB: null,
+          })
+        : activeTab === 'versus'
+          ? buildStatsUrlSearch({
+              activeMetricId: null,
+              versusMetricFilter: versus.versusMetricFilter,
+              versusMetricIds: versus.versusMetricIds,
+              versusPlayerA: versus.versusPlayerA,
+              versusPlayerB: versus.versusPlayerB,
+            })
+          : '';
+
+    if (window.location.search === nextSearch) return;
+
+    try {
+      const nextUrl = `${window.location.pathname}${nextSearch}${window.location.hash}`;
+      window.history.replaceState({}, '', nextUrl);
+    } catch {
+      // Unkritisch: History-API kann blockiert sein.
+    }
+  }, [
+    activeTab,
+    rankMetricIdForUrl,
+    versus.versusMetricFilter,
+    versus.versusMetricIds,
+    versus.versusPlayerA,
+    versus.versusPlayerB,
+  ]);
 
   return (
     <div>
@@ -112,6 +184,7 @@ export default function StatsApp() {
           onMetricFilterChange={setMetricFilter}
           activeMetricId={activeMetricId}
           onSelectMetric={handleSelectMetric}
+          onReset={handleResetRankings}
           hasNoRanklistResults={hasNoRanklistResults}
           activeMetricState={activeMetricState}
           pageSize={pageSize}
