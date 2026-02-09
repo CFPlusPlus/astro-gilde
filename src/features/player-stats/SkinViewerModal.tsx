@@ -68,6 +68,27 @@ type MojangProfile = {
   properties?: Array<{ name?: string; value?: string }>;
 };
 
+type MinetoolsProfile = {
+  decoded?: {
+    textures?: {
+      CAPE?: { url?: string };
+    };
+  };
+  raw?: MojangProfile;
+};
+
+type CapeCacheEntry = {
+  capeUrl: string | null;
+  expiresAt: number;
+};
+
+type CapeApiResponse = {
+  capeUrl?: string | null;
+  cape?: string | { url?: string | null } | null;
+  url?: string | null;
+  hasCape?: boolean;
+};
+
 const ANIMATION_OPTIONS: Array<{ id: AnimationMode; label: string }> = [
   { id: 'none', label: 'Keine' },
   { id: 'idle', label: 'Idle' },
@@ -82,6 +103,10 @@ const BACK_OPTIONS: Array<{ id: BackMode; label: string }> = [
   { id: 'cape', label: 'Cape' },
   { id: 'elytra', label: 'Elytra' },
 ];
+
+const CAPE_CACHE_KEY_PREFIX = 'mg:skin-viewer:cape:';
+const CAPE_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
+const CAPE_EMPTY_CACHE_TTL_MS = 1000 * 60 * 30;
 
 function decodeCapeFromProfile(profile: MojangProfile): string | null {
   const texturesProp = profile.properties?.find(
@@ -100,6 +125,116 @@ function decodeCapeFromProfile(profile: MojangProfile): string | null {
     return typeof capeUrl === 'string' && capeUrl ? capeUrl : null;
   } catch {
     return null;
+  }
+}
+
+function capeCacheKey(uuidCompact: string): string {
+  return `${CAPE_CACHE_KEY_PREFIX}${uuidCompact}`;
+}
+
+function readCapeCache(uuidCompact: string): string | null | undefined {
+  if (typeof window === 'undefined') return undefined;
+  try {
+    const raw = window.localStorage.getItem(capeCacheKey(uuidCompact));
+    if (!raw) return undefined;
+    const parsed = JSON.parse(raw) as CapeCacheEntry;
+    if (!parsed || typeof parsed.expiresAt !== 'number' || parsed.expiresAt <= Date.now()) {
+      window.localStorage.removeItem(capeCacheKey(uuidCompact));
+      return undefined;
+    }
+    return typeof parsed.capeUrl === 'string' && parsed.capeUrl ? parsed.capeUrl : null;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeCapeCache(uuidCompact: string, capeUrl: string | null, ttlMs: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload: CapeCacheEntry = {
+      capeUrl,
+      expiresAt: Date.now() + ttlMs,
+    };
+    window.localStorage.setItem(capeCacheKey(uuidCompact), JSON.stringify(payload));
+  } catch {
+    // Unkritisch: Cache kann in Private-Mode/Storage-Limits fehlschlagen.
+  }
+}
+
+async function fetchCapeFromMojangProfile(
+  uuidCompact: string,
+  signal: AbortSignal,
+): Promise<string | null> {
+  const res = await fetch(`https://api.minetools.eu/profile/${encodeURIComponent(uuidCompact)}`, {
+    signal,
+    cache: 'no-store',
+  });
+
+  if (!res.ok) {
+    if (res.status === 204 || res.status === 404) return null;
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const data = (await res.json()) as MinetoolsProfile;
+
+  const decodedCape = data?.decoded?.textures?.CAPE?.url;
+  if (typeof decodedCape === 'string' && decodedCape) return decodedCape;
+
+  if (data?.raw) return decodeCapeFromProfile(data.raw);
+  return null;
+}
+
+function parseCapeApiResponse(data: CapeApiResponse): string | null | undefined {
+  if (!data || typeof data !== 'object') return undefined;
+
+  if ('capeUrl' in data) {
+    if (typeof data.capeUrl === 'string' && data.capeUrl) return data.capeUrl;
+    if (data.capeUrl === null) return null;
+  }
+
+  if ('cape' in data) {
+    if (typeof data.cape === 'string' && data.cape) return data.cape;
+    if (data.cape && typeof data.cape === 'object') {
+      const nested = data.cape.url;
+      if (typeof nested === 'string' && nested) return nested;
+      if (nested === null) return null;
+    }
+    if (data.cape === null) return null;
+  }
+
+  if ('url' in data) {
+    if (typeof data.url === 'string' && data.url) return data.url;
+    if (data.url === null) return null;
+  }
+
+  if (data.hasCape === false) return null;
+  return undefined;
+}
+
+async function fetchCapeFromServerCache(
+  uuidCompact: string,
+  signal: AbortSignal,
+): Promise<string | null | undefined> {
+  try {
+    const res = await fetch(`/api/cape?uuid=${encodeURIComponent(uuidCompact)}`, {
+      signal,
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (res.status === 404 || res.status === 405 || res.status === 501) {
+      return undefined;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const payload = (await res.json()) as CapeApiResponse;
+    return parseCapeApiResponse(payload);
+  } catch (e) {
+    if (signal.aborted) return undefined;
+    console.warn('Server-Cape-Cache nicht verfuegbar, fallback aktiv:', e);
+    return undefined;
   }
 }
 
@@ -126,7 +261,7 @@ export default function SkinViewerModal({
   const [capeUrl, setCapeUrl] = useState<string | null>(null);
   const [capeState, setCapeState] = useState<CapeState>('idle');
 
-  const dialogTitle = title || (playerName ? `Skin: ${playerName}` : 'Spielerskin');
+  const dialogTitle = title || (playerName ? `Skin von ${playerName}` : 'Skin von Spieler');
 
   const resizeViewer = () => {
     const stage = stageRef.current;
@@ -284,36 +419,45 @@ export default function SkinViewerModal({
     let cancelled = false;
     const ac = new AbortController();
 
+    const cachedCape = readCapeCache(compact);
+    if (cachedCape !== undefined) {
+      setCapeUrl(cachedCape);
+      setCapeState(cachedCape ? 'ready' : 'unavailable');
+      return () => {
+        cancelled = true;
+        ac.abort();
+      };
+    }
+
     setCapeState('loading');
 
     (async () => {
       try {
-        const res = await fetch(
-          `https://sessionserver.mojang.com/session/minecraft/profile/${encodeURIComponent(compact)}`,
-          {
-            signal: ac.signal,
-          },
-        );
+        const cachedByServer = await fetchCapeFromServerCache(compact, ac.signal);
+        if (cancelled) return;
 
-        if (!res.ok) {
-          if (res.status === 204 || res.status === 404) {
-            if (!cancelled) {
-              setCapeUrl(null);
-              setCapeState('unavailable');
-            }
-            return;
+        if (cachedByServer !== undefined) {
+          if (cachedByServer) {
+            writeCapeCache(compact, cachedByServer, CAPE_CACHE_TTL_MS);
+            setCapeUrl(cachedByServer);
+            setCapeState('ready');
+          } else {
+            writeCapeCache(compact, null, CAPE_EMPTY_CACHE_TTL_MS);
+            setCapeUrl(null);
+            setCapeState('unavailable');
           }
-          throw new Error(`HTTP ${res.status}`);
+          return;
         }
 
-        const data = (await res.json()) as MojangProfile;
-        const resolvedCape = decodeCapeFromProfile(data);
+        const resolvedCape = await fetchCapeFromMojangProfile(compact, ac.signal);
         if (cancelled) return;
 
         if (resolvedCape) {
+          writeCapeCache(compact, resolvedCape, CAPE_CACHE_TTL_MS);
           setCapeUrl(resolvedCape);
           setCapeState('ready');
         } else {
+          writeCapeCache(compact, null, CAPE_EMPTY_CACHE_TTL_MS);
           setCapeUrl(null);
           setCapeState('unavailable');
         }
@@ -413,7 +557,7 @@ export default function SkinViewerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]"
       role="dialog"
       aria-modal="true"
       aria-label={dialogTitle}
@@ -421,7 +565,7 @@ export default function SkinViewerModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-bg border-border w-full max-w-5xl overflow-hidden rounded-[var(--radius)] border shadow-xl outline-none">
+      <div className="glass-strong border-border w-full max-w-5xl overflow-hidden rounded-[var(--radius)] border shadow-xl outline-none">
         <header className="border-border flex items-center justify-between gap-3 border-b px-4 py-3">
           <h3 className="text-fg text-base font-semibold">{dialogTitle}</h3>
           <button
@@ -437,7 +581,7 @@ export default function SkinViewerModal({
         <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div
             ref={stageRef}
-            className="border-border relative overflow-hidden rounded-[var(--radius)] border bg-black/20"
+            className="glass border-border relative overflow-hidden rounded-[var(--radius)] border"
           >
             <div className="aspect-square w-full">
               <canvas ref={canvasRef} width={720} height={720} className="block h-full w-full" />
@@ -445,7 +589,7 @@ export default function SkinViewerModal({
           </div>
 
           <aside className="space-y-4">
-            <div className="bg-surface border-border rounded-[var(--radius)] border p-3">
+            <div className="glass border-border rounded-[var(--radius)] border p-3">
               <p className="text-fg text-xs font-semibold tracking-wide uppercase">Animation</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {ANIMATION_OPTIONS.map((option) => {
@@ -480,13 +624,13 @@ export default function SkinViewerModal({
                   value={animationSpeed}
                   disabled={animationMode === 'none'}
                   onChange={(e) => setAnimationSpeed(Number(e.currentTarget.value))}
-                  className="mt-1 w-full"
+                  className="mg-range mt-1 w-full"
                 />
               </label>
             </div>
 
-            <div className="bg-surface border-border rounded-[var(--radius)] border p-3">
-              <p className="text-fg text-xs font-semibold tracking-wide uppercase">Ruecken-Item</p>
+            <div className="glass border-border rounded-[var(--radius)] border p-3">
+              <p className="text-fg text-xs font-semibold tracking-wide uppercase">Rücken-Item</p>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {BACK_OPTIONS.map((option) => {
                   const active = backMode === option.id;

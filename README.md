@@ -126,6 +126,7 @@ Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 - `/api/leaderboard?metric=...&limit=...&cursor=...` (Ranglisten / Pagination via Cursor)
 - `/api/players?q=...&limit=...` (Autocomplete)
 - `/api/player?uuid=...` (Spieler-Detail)
+- `/api/cape?uuid=...` (optional, empfohlen: serverseitiger Cape-Cache)
 
 Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
 
@@ -133,7 +134,33 @@ Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
 
 Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
 
-Beispiel für einen Dev-Proxy (optional):
+### Empfohlener Cape-Endpoint
+
+Das Frontend versucht beim Skin-Viewer zuerst:
+
+- `/api/cape?uuid=<32-hex-ohne-bindestriche>`
+
+Wenn der Endpoint nicht verfuegbar ist (`404/405/501`) oder fehlschlaegt, wird automatisch auf den externen Fallback zurueckgegriffen.
+
+Empfohlene Response (JSON):
+
+```json
+{ "capeUrl": "https://textures.minecraft.net/texture/..." }
+```
+
+oder ohne Cape:
+
+```json
+{ "capeUrl": null, "hasCape": false }
+```
+
+Empfohlene Caching-Strategie im Backend:
+
+- Mit Cape: TTL 6-24h
+- Ohne Cape (negative cache): TTL 15-60min
+- `Cache-Control` fuer CDN/Reverse-Proxy setzen (`s-maxage` + `stale-while-revalidate`)
+
+Beispiel fuer einen Dev-Proxy (optional):
 
 ```js
 // astro.config.mjs
