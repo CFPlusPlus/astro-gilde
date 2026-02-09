@@ -630,7 +630,7 @@ html[data-theme='dark'] {
   /* Skin-Viewer: einheitliche Toggle-Buttons mit klarer Hover/Active-Rueckmeldung */
   .mg-viewer-option {
     border: 1px solid color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
-    border-radius: 999px;
+    border-radius: 0.7rem;
     background: color-mix(in oklab, var(--surface-solid) 24%, transparent);
     color: color-mix(in oklab, var(--fg) 88%, transparent);
     transition:
@@ -663,6 +663,33 @@ html[data-theme='dark'] {
     cursor: not-allowed;
     opacity: 0.5;
     box-shadow: none;
+  }
+
+  /* Skin-Viewer: dezentes Schachbrett fuer mehr Tiefenwirkung im Stage-Hintergrund */
+  .mg-viewer-stage-pattern {
+    background-color: color-mix(in oklab, var(--surface-solid) 94%, var(--bg) 6%);
+    background-image:
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%) 75%,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%)
+      ),
+      linear-gradient(
+        45deg,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%) 25%,
+        transparent 25%,
+        transparent 75%,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%) 75%,
+        color-mix(in oklab, var(--surface-solid) 74%, var(--fg) 26%)
+      );
+    background-size: 44px 44px;
+    background-position:
+      0 0,
+      22px 22px;
+    opacity: 0.24;
   }
 
   /* Einheitlicher Reset-Button fuer Suchfelder */
