@@ -22,17 +22,27 @@ const DISCORD_URL = minecraftGilde.discord.url;
 
     <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <div class="glass overflow-hidden rounded-[28px]">
-        <img
-          src="/images/ack.webp"
-          alt="ANTI-CORONA-KARTELL"
-          loading="lazy"
-          decoding="async"
-          class="h-[260px] w-full object-cover"
-        />
+        <div class="flex items-center justify-center bg-black/10 p-5 sm:p-6">
+          <img
+            src="/images/ack.png"
+            alt="ANTI-CORONA-KARTELL"
+            loading="lazy"
+            decoding="async"
+            class="aspect-square w-full max-w-[320px] object-contain"
+          />
+        </div>
         <div class="p-6 sm:p-7">
           <h2 class="text-xl font-semibold">ANTI-CORONA-KARTELL</h2>
           <p class="text-muted mt-2 text-sm">
-            Seit April 2024 ist die Minecraft Gilde Partner des ANTI-CORONA-KARTELL.
+            Seit April 2024 ist die Minecraft Gilde stolzer Partner des ANTI-CORONA-KARTELL - einer
+            engagierten, jungen Gaming-Community, die verschiedene Spiele spielt und eigene
+            Game-Server betreibt.
+          </p>
+          <p class="text-muted mt-3 text-sm">
+            Durch die Partnerschaft finden regelmäßig Community-Events, Spielsessions und entspannte
+            Treffen statt, bei denen du neue Mitspieler*innen kennenlernen kannst. Ob im Spiel oder
+            im Voice-Chat: Teamgeist und Miteinander stehen immer im Mittelpunkt. Neugierig
+            geworden? Dann schau vorbei und werde Teil einer aktiven, freundlichen Community.
           </p>
           <div class="mt-5 flex flex-wrap gap-3">
             <Button href={PARTNER_URL} external variant="primary" class="gap-2">
