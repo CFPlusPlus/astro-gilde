@@ -132,6 +132,13 @@ Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
 
 - `/js/translations.de.json`
 
+Optionaler Debug-Check für fehlende Übersetzungen in `/statistiken/spieler`:
+
+- In `dev` ist die Konsolen-Ausgabe standardmäßig aktiv.
+- In Produktion kann sie gezielt per URL aktiviert werden:
+  `/statistiken/spieler?uuid=<UUID>&i18ncheck=1`
+- Die Ausgabe erscheint in der Browser-Konsole unter `Übersetzungsprüfung`.
+
 Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
 
 ### Empfohlener Cape-Endpoint

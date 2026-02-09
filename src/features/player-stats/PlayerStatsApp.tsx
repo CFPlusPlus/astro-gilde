@@ -37,6 +37,7 @@ import { ApiAlert, fmtGenerated, NoResults, SortIcon } from './ui';
 export default function PlayerStatsApp() {
   const [activeTab, setActiveTab] = useState<TabKey>('allgemein');
   const [isGerman, setIsGerman] = useState(true);
+  const [forceTranslationCheck, setForceTranslationCheck] = useState(false);
 
   const [uuidParam, setUuidParam] = useState<string>('');
   const [uuidFull, setUuidFull] = useState<string>('');
@@ -78,9 +79,13 @@ export default function PlayerStatsApp() {
     const uuid = (qp.get('uuid') || '').trim();
     const tab = qp.get('tab');
     const filter = qp.get('filter') || '';
+    const i18nCheck = (qp.get('i18ncheck') || '').trim().toLowerCase();
     setUuidParam(uuid);
     if (isTabKey(tab)) setActiveTab(tab);
     if (filter) setFilterRaw(filter);
+    if (i18nCheck === '1' || i18nCheck === 'true' || i18nCheck === 'yes') {
+      setForceTranslationCheck(true);
+    }
   }, []);
 
   useEffect(() => {
@@ -195,7 +200,9 @@ export default function PlayerStatsApp() {
     // Konsolen-Helper fuer Uebersetzungen (hilft bei Pflege, stoert Nutzer nicht)
     try {
       if (data.player && typeof data.player === 'object') {
-        logMissingTranslations(data.player as Record<string, unknown>, t);
+        logMissingTranslations(data.player as Record<string, unknown>, t, {
+          enabled: import.meta.env.DEV || forceTranslationCheck,
+        });
       }
     } catch {
       // Unkritisch: Debug-Logging darf fehlschlagen.

@@ -4,6 +4,10 @@ function rawFallback(rawId: string): string {
   return rawId.replace(/^minecraft:/, '').replaceAll('_', ' ');
 }
 
+interface MissingTranslationLogOptions {
+  enabled?: boolean;
+}
+
 export function tLabel(
   rawId: string,
   kind: TranslationKind,
@@ -22,8 +26,10 @@ export function tLabel(
 export function logMissingTranslations(
   stats: Record<string, unknown>,
   translations: PlayerTranslations | null,
+  options: MissingTranslationLogOptions = {},
 ) {
-  if (!import.meta.env.DEV) return;
+  const enabled = options.enabled ?? import.meta.env.DEV;
+  if (!enabled) return;
   if (!stats) return;
 
   const missing = {
@@ -69,7 +75,7 @@ export function logMissingTranslations(
     }
   }
 
-  console.group('Uebersetzungspruefung');
+  console.group('Übersetzungsprüfung');
   console.info('Fehlende Stats:', [...missing.stats]);
   console.info('Fehlende Items:', [...missing.items]);
   console.info('Fehlende Mobs:', [...missing.mobs]);
