@@ -544,4 +544,17 @@ html[data-theme='dark'] {
   .mg-search-clear--hidden {
     @apply pointer-events-none opacity-0;
   }
+
+  @keyframes mg-fade-in {
+    from {
+      opacity: 0.55;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .mg-fade-in {
+    animation: mg-fade-in 170ms ease-out both;
+  }
 }

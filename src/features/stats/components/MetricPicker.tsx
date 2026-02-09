@@ -4,7 +4,7 @@ import type { MetricDef } from '../types';
 
 export type GroupedMetrics = Array<{ cat: string; ids: string[] }>;
 
-export function MetricPicker({
+function MetricPickerImpl({
   metrics,
   grouped,
   filter,
@@ -55,7 +55,7 @@ export function MetricPicker({
         </button>
       </div>
 
-      <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1">
+      <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1 [overflow-anchor:none]">
         <div className="space-y-5">
           {grouped.map(({ cat, ids }) => (
             <div key={cat} className="space-y-2">
@@ -79,9 +79,17 @@ export function MetricPicker({
                         ].join(' ')}
                       >
                         <div className="flex items-start justify-between gap-3">
-                          <span className="min-w-0 truncate">{def?.label || id}</span>
-                          <span className="flex items-center gap-2">
-                            {isActive ? <Check size={16} className="text-accent" /> : null}
+                          <span className="min-w-0 flex-1 truncate">{def?.label || id}</span>
+                          <span className="mt-0.5 inline-flex min-w-[1.25rem] flex-none items-center justify-end gap-2">
+                            <span className="inline-flex w-4 justify-center" aria-hidden="true">
+                              <Check
+                                size={16}
+                                className={[
+                                  'transition-opacity',
+                                  isActive ? 'text-accent opacity-100' : 'text-accent opacity-0',
+                                ].join(' ')}
+                              />
+                            </span>
                             {def?.unit ? (
                               <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
                                 {def.unit}
@@ -102,3 +110,5 @@ export function MetricPicker({
     </div>
   );
 }
+
+export const MetricPicker = React.memo(MetricPickerImpl);

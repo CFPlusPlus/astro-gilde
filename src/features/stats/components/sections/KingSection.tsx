@@ -45,6 +45,7 @@ export function KingSection({
 
           <div className="min-w-0">
             <LeaderboardTable
+              metricKey="king"
               def={{ label: 'Punkte', category: 'King' }}
               state={king}
               pageSize={pageSize}

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
@@ -20,7 +20,6 @@ export default function StatsApp() {
     showWelcome,
     dismissWelcome,
     showPageSize,
-    markScrollForRestore,
     consumeScrollToRestore,
   } = useStatsState();
 
@@ -54,12 +53,19 @@ export default function StatsApp() {
     onGeneratedIso: setGeneratedIso,
   });
   const tabsDisabled = Boolean(apiError);
+  const handleSelectMetric = useCallback(
+    (id: string) => {
+      if (id === activeMetricId) return;
+      setActiveMetricId(id);
+    },
+    [activeMetricId, setActiveMetricId],
+  );
 
   useEffect(() => {
     const y = consumeScrollToRestore();
     if (y === null) return;
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
-  }, [activeTab, activeMetricId, consumeScrollToRestore]);
+  }, [activeTab, consumeScrollToRestore]);
 
   return (
     <div>
@@ -105,11 +111,7 @@ export default function StatsApp() {
           metricFilter={metricFilter}
           onMetricFilterChange={setMetricFilter}
           activeMetricId={activeMetricId}
-          onSelectMetric={(id) => {
-            if (id === activeMetricId) return;
-            markScrollForRestore();
-            setActiveMetricId(id);
-          }}
+          onSelectMetric={handleSelectMetric}
           hasNoRanklistResults={hasNoRanklistResults}
           activeMetricState={activeMetricState}
           pageSize={pageSize}
