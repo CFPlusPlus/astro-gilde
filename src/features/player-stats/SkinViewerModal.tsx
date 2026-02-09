@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { RefreshCcw, X } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AlertCircle, RefreshCcw, X } from 'lucide-react';
 
 type Props = {
   open: boolean;
   onClose: () => void;
   title?: string;
   skinUrl: string;
+  skinFallbackUrls?: string[];
   playerUuid?: string;
   playerName?: string;
 };
@@ -107,6 +108,15 @@ const BACK_OPTIONS: Array<{ id: BackMode; label: string }> = [
 const CAPE_CACHE_KEY_PREFIX = 'mg:skin-viewer:cape:';
 const CAPE_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const CAPE_EMPTY_CACHE_TTL_MS = 1000 * 60 * 30;
+const FALLBACK_SKIN_URL = '/images/steve.png';
+const FALLBACK_ELYTRA_URL = '/images/elytra.png';
+
+type BackLoadRequest = {
+  source: string | null;
+  options?: {
+    backEquipment?: 'cape' | 'elytra';
+  };
+};
 
 function decodeCapeFromProfile(profile: MojangProfile): string | null {
   const texturesProp = profile.properties?.find(
@@ -238,11 +248,67 @@ async function fetchCapeFromServerCache(
   }
 }
 
+function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+
+  for (const value of values) {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    normalized.push(trimmed);
+  }
+
+  return normalized;
+}
+
+function loadImageProbe(url: string, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException('Aborted', 'AbortError'));
+      return;
+    }
+
+    const img = new Image();
+    let done = false;
+
+    const cleanup = () => {
+      img.onload = null;
+      img.onerror = null;
+      signal.removeEventListener('abort', onAbort);
+    };
+
+    const finishResolve = () => {
+      if (done) return;
+      done = true;
+      cleanup();
+      resolve();
+    };
+
+    const finishReject = (error: Error) => {
+      if (done) return;
+      done = true;
+      cleanup();
+      reject(error);
+    };
+
+    const onAbort = () => {
+      finishReject(new DOMException('Aborted', 'AbortError'));
+    };
+
+    signal.addEventListener('abort', onAbort, { once: true });
+    img.onload = finishResolve;
+    img.onerror = () => finishReject(new Error(`Image load failed: ${url}`));
+    img.src = url;
+  });
+}
+
 export default function SkinViewerModal({
   open,
   onClose,
   title,
   skinUrl,
+  skinFallbackUrls = [],
   playerUuid,
   playerName,
 }: Props) {
@@ -260,6 +326,39 @@ export default function SkinViewerModal({
   const [backMode, setBackMode] = useState<BackMode>('none');
   const [capeUrl, setCapeUrl] = useState<string | null>(null);
   const [capeState, setCapeState] = useState<CapeState>('idle');
+  const [resolvedSkinUrl, setResolvedSkinUrl] = useState<string>(FALLBACK_SKIN_URL);
+
+  const skinCandidates = useMemo(
+    () => uniqueNonEmpty([skinUrl, ...skinFallbackUrls, FALLBACK_SKIN_URL]),
+    [skinUrl, skinFallbackUrls],
+  );
+
+  const resolveBackLoad = useCallback((): BackLoadRequest => {
+    if (animationMode === 'fly') {
+      return {
+        source: capeUrl || FALLBACK_ELYTRA_URL,
+        options: { backEquipment: 'elytra' },
+      };
+    }
+
+    if (backMode === 'cape') {
+      return capeUrl
+        ? {
+            source: capeUrl,
+            options: { backEquipment: 'cape' },
+          }
+        : { source: null };
+    }
+
+    if (backMode === 'elytra') {
+      return {
+        source: capeUrl || FALLBACK_ELYTRA_URL,
+        options: { backEquipment: 'elytra' },
+      };
+    }
+
+    return { source: null };
+  }, [animationMode, backMode, capeUrl]);
 
   const dialogTitle = title || (playerName ? `Skin von ${playerName}` : 'Skin von Spieler');
 
@@ -336,7 +435,7 @@ export default function SkinViewerModal({
           canvas,
           width: 720,
           height: 720,
-          skin: skinUrl,
+          skin: FALLBACK_SKIN_URL,
         });
 
         viewerRef.current = viewer;
@@ -397,14 +496,45 @@ export default function SkinViewerModal({
   useEffect(() => {
     if (!open) return;
     const viewer = viewerRef.current;
-    if (!viewer || !skinUrl) return;
+    if (!viewer?.loadSkin || skinCandidates.length === 0) return;
 
-    try {
-      void viewer.loadSkin?.(skinUrl);
-    } catch {
-      // Unkritisch: Skin-Reload darf fehlschlagen.
-    }
-  }, [open, skinUrl, viewerVersion]);
+    let cancelled = false;
+    const ac = new AbortController();
+
+    (async () => {
+      for (const candidate of skinCandidates) {
+        if (cancelled || ac.signal.aborted) return;
+
+        try {
+          await loadImageProbe(candidate, ac.signal);
+          if (cancelled || ac.signal.aborted) return;
+
+          await Promise.resolve(viewer.loadSkin?.(candidate));
+          if (cancelled || ac.signal.aborted) return;
+
+          setResolvedSkinUrl(candidate);
+          return;
+        } catch {
+          // Naechsten Skin-Kandidaten versuchen.
+        }
+      }
+
+      try {
+        await Promise.resolve(viewer.loadSkin?.(FALLBACK_SKIN_URL));
+      } catch {
+        // Unkritisch: Lokaler Fallback sollte verfuegbar sein.
+      }
+
+      if (!cancelled && !ac.signal.aborted) {
+        setResolvedSkinUrl(FALLBACK_SKIN_URL);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      ac.abort();
+    };
+  }, [open, viewerVersion, skinCandidates]);
 
   useEffect(() => {
     if (!open) return;
@@ -508,20 +638,25 @@ export default function SkinViewerModal({
 
   useEffect(() => {
     if (!open) return;
+    setBackMode('none');
+  }, [open, playerUuid]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (capeState !== 'ready' || !capeUrl) return;
+
+    setBackMode((current) => (current === 'none' ? 'cape' : current));
+  }, [open, capeState, capeUrl]);
+
+  useEffect(() => {
+    if (!open) return;
 
     const viewer = viewerRef.current;
     if (!viewer?.loadCape) return;
 
-    if (backMode === 'none') {
-      try {
-        void viewer.loadCape(null);
-      } catch {
-        // Unkritisch: Cape-Clear darf fehlschlagen.
-      }
-      return;
-    }
+    const backRequest = resolveBackLoad();
 
-    if (!capeUrl) {
+    if (!backRequest.source) {
       try {
         void viewer.loadCape(null);
       } catch {
@@ -531,22 +666,24 @@ export default function SkinViewerModal({
     }
 
     try {
-      void viewer.loadCape(capeUrl, { backEquipment: backMode });
+      void viewer.loadCape(backRequest.source, backRequest.options);
     } catch {
       setLoadError('Cape/Elytra konnte nicht geladen werden.');
     }
-  }, [open, viewerVersion, backMode, capeUrl]);
+  }, [open, viewerVersion, resolveBackLoad]);
 
   if (!open) return null;
 
   const onReset = () => {
     try {
       controlsRef.current?.reset?.();
-      void viewerRef.current?.loadSkin?.(skinUrl);
-      if (backMode === 'none') {
+      void viewerRef.current?.loadSkin?.(resolvedSkinUrl);
+
+      const backRequest = resolveBackLoad();
+      if (!backRequest.source) {
         void viewerRef.current?.loadCape?.(null);
-      } else if (capeUrl) {
-        void viewerRef.current?.loadCape?.(capeUrl, { backEquipment: backMode });
+      } else {
+        void viewerRef.current?.loadCape?.(backRequest.source, backRequest.options);
       }
     } catch {
       // Unkritisch: Reset darf fehlschlagen.
@@ -554,6 +691,8 @@ export default function SkinViewerModal({
   };
 
   const capeUnavailable = capeState === 'unavailable' || capeState === 'error';
+  const fallbackElytraActive =
+    !capeUrl && capeState !== 'loading' && (animationMode === 'fly' || backMode === 'elytra');
 
   return (
     <div
@@ -599,12 +738,8 @@ export default function SkinViewerModal({
                       key={option.id}
                       type="button"
                       onClick={() => setAnimationMode(option.id)}
-                      className={[
-                        'rounded-lg border px-2.5 py-2 text-xs font-semibold transition-colors',
-                        active
-                          ? 'bg-surface-solid/70 border-accent/50 text-fg'
-                          : 'bg-surface-solid/30 border-border/70 text-fg/85 hover:bg-surface-solid/45',
-                      ].join(' ')}
+                      data-active={active}
+                      className="mg-viewer-option px-2.5 py-2 text-xs font-semibold"
                     >
                       {option.label}
                     </button>
@@ -634,7 +769,8 @@ export default function SkinViewerModal({
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {BACK_OPTIONS.map((option) => {
                   const active = backMode === option.id;
-                  const disabled = option.id !== 'none' && (capeState === 'loading' || !capeUrl);
+                  const disabled =
+                    option.id === 'cape' ? capeState === 'loading' || !capeUrl : false;
 
                   return (
                     <button
@@ -642,12 +778,8 @@ export default function SkinViewerModal({
                       type="button"
                       disabled={disabled}
                       onClick={() => setBackMode(option.id)}
-                      className={[
-                        'rounded-lg border px-2 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                        active
-                          ? 'bg-surface-solid/70 border-accent/50 text-fg'
-                          : 'bg-surface-solid/30 border-border/70 text-fg/85 hover:bg-surface-solid/45',
-                      ].join(' ')}
+                      data-active={active}
+                      className="mg-viewer-option px-2 py-2 text-xs font-semibold"
                     >
                       {option.label}
                     </button>
@@ -657,8 +789,13 @@ export default function SkinViewerModal({
 
               <p className="text-muted mt-2 text-xs">
                 {capeState === 'loading' ? 'Cape wird geladen...' : null}
-                {capeState === 'ready' ? 'Cape verfuegbar.' : null}
-                {capeUnavailable ? 'Kein Cape verfuegbar oder Abruf fehlgeschlagen.' : null}
+                {capeState === 'ready' ? 'Cape verfügbar.' : null}
+                {capeUnavailable || fallbackElytraActive ? (
+                  <span className="inline-flex items-center gap-1">
+                    <AlertCircle size={12} aria-hidden="true" />
+                    Kein Cape verfügbar
+                  </span>
+                ) : null}
               </p>
             </div>
           </aside>

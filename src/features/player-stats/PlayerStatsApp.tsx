@@ -232,6 +232,7 @@ export default function PlayerStatsApp() {
     ? `https://mc-heads.net/avatar/${encodeURIComponent(skinId)}/512`
     : '';
   const skinFullUrl = skinId ? `https://minotar.net/skin/${encodeURIComponent(skinId)}.png` : '';
+  const skinFullFallback = skinId ? `https://mc-heads.net/skin/${encodeURIComponent(skinId)}` : '';
 
   const tables = useMemo(
     () => buildPlayerTables(stats, isGerman, translations),
@@ -396,8 +397,15 @@ export default function PlayerStatsApp() {
                   className="border-border/70 h-14 w-14 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
                   onError={(e) => {
                     const img = e.currentTarget;
-                    if (!skinHeadFallback) return;
-                    if (img.src !== skinHeadFallback) img.src = skinHeadFallback;
+                    const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+
+                    if (!fallbackAttempted && skinHeadFallback && img.src !== skinHeadFallback) {
+                      img.dataset.fallbackAttempted = '1';
+                      img.src = skinHeadFallback;
+                      return;
+                    }
+
+                    img.onerror = null;
                   }}
                 />
                 <span className="text-muted inline-flex items-center gap-2 text-xs">
@@ -735,6 +743,7 @@ export default function PlayerStatsApp() {
         open={skinOpen}
         onClose={() => setSkinOpen(false)}
         skinUrl={skinFullUrl}
+        skinFallbackUrls={skinFullFallback ? [skinFullFallback] : undefined}
         playerUuid={uuidFull}
         playerName={playerName}
       />

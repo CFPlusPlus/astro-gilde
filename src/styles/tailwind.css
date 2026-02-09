@@ -627,6 +627,44 @@ html[data-theme='dark'] {
       0 0 0 4px color-mix(in oklab, var(--ring) 82%, transparent);
   }
 
+  /* Skin-Viewer: einheitliche Toggle-Buttons mit klarer Hover/Active-Rueckmeldung */
+  .mg-viewer-option {
+    border: 1px solid color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--surface-solid) 24%, transparent);
+    color: color-mix(in oklab, var(--fg) 88%, transparent);
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      box-shadow 150ms ease;
+    cursor: pointer;
+  }
+
+  .mg-viewer-option:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--accent) 16%, var(--surface-solid) 84%);
+    border-color: color-mix(in oklab, var(--accent) 56%, var(--border) 44%);
+    box-shadow: 0 8px 18px -16px color-mix(in oklab, var(--fg) 35%, transparent);
+  }
+
+  .mg-viewer-option[data-active='true'] {
+    background: color-mix(in oklab, var(--accent) 20%, var(--surface-solid) 80%);
+    border-color: color-mix(in oklab, var(--accent) 64%, var(--border) 36%);
+    color: var(--fg);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 36%, transparent);
+  }
+
+  .mg-viewer-option:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .mg-viewer-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    box-shadow: none;
+  }
+
   /* Einheitlicher Reset-Button fuer Suchfelder */
   .mg-search-clear {
     @apply text-muted hover:text-fg inline-flex h-6 w-6 flex-none items-center justify-center rounded-md transition-colors;
