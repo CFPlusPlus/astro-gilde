@@ -11,9 +11,9 @@ export function norm(s: string): string {
 export type ParsedQuery = { type: 'exact' | 'partial'; value: string };
 
 /**
- * Filter parser behavior from legacy:
- * - comma = OR
- * - "..." = exact search on first column
+ * Filter-Parser-Verhalten aus Legacy:
+ * - Komma = ODER
+ * - "..." = exakte Suche in der ersten Spalte
  */
 export function parseFilter(input: string): ParsedQuery[] {
   const raw = String(input || '').replace(

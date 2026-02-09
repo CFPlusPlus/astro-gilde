@@ -28,7 +28,7 @@ const resolveRepoLabel = (repoUrl: string): string => {
       return `${parts[0]}/${parts[1]}`;
     }
   } catch {
-    // Ignore URL parsing errors and fall back to default label.
+    // URL-Parsingfehler ignorieren und auf Standard-Label zurueckfallen.
   }
 
   return DEFAULT_REPO_LABEL;

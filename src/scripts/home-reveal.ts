@@ -1,8 +1,4 @@
-/*
-  home-reveal.ts
-  --------------
-  Home-specific reveal animation via IntersectionObserver.
-*/
+/* Home-spezifische Reveal-Animation via IntersectionObserver. */
 
 const REVEAL_ROOT_SELECTOR = '[data-home]';
 const REVEAL_SELECTOR = '[data-reveal]';
@@ -74,7 +70,7 @@ const initHomeReveal = (): (() => void) => {
       if (!root) return () => {};
       revealAll(root);
     } catch {
-      // no-op
+      // absichtlich leer
     }
     return () => {};
   }

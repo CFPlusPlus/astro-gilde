@@ -1,8 +1,4 @@
-/*
-  theme-color-sync.ts
-  -------------------
-  Keeps <meta name="theme-color"> in sync with CSS variable --bg.
-*/
+/* Haelt <meta name="theme-color"> mit der CSS-Variable --bg synchron. */
 
 interface ThemeColorSyncState {
   cleanup: (() => void) | null;

@@ -1,7 +1,6 @@
 import { siteUrl } from './site';
 
 // Zentrale Projekt-Konfiguration fuer minecraft-gilde.de
-// -----------------------------------------------------
 // Ziel: Strings (URLs, IP, Version) nicht ueber das Projekt verteilen,
 // sondern an einer Stelle pflegen.
 
@@ -73,7 +72,7 @@ export const minecraftGilde = {
   },
 } as const;
 
-// Wird im Browser via window.__APP_CONFIG__ genutzt (ohne sensitive Daten).
+// Wird im Browser via window.__APP_CONFIG__ genutzt (ohne sensible Daten).
 export const browserAppConfig = {
   serverIp: minecraftGilde.serverIp,
   discordGuildId: minecraftGilde.discord.guildId,

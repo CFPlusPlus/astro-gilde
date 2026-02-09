@@ -6,24 +6,24 @@ import globals from 'globals';
 
 /**
  * ESLint Flat Config (ESLint v9)
- * - Lints Astro + TS/JS source files
- * - Leaves formatting to Prettier (checked separately via `npm run format:check`)
+ * - Prueft Astro- sowie TS/JS-Quellcode
+ * - Ueberlaesst Formatierung Prettier (separat via `npm run format:check`)
  */
 export default [
   {
     ignores: ['dist/**', '.astro/**', 'node_modules/**', 'public/**', 'src/partials/**'],
   },
 
-  // Base JS rules
+  // Basisregeln fuer JavaScript
   js.configs.recommended,
 
-  // TypeScript rules (only applies to TS/TSX by default)
+  // TypeScript-Regeln (greifen standardmaessig fuer TS/TSX)
   ...tseslint.configs.recommended,
 
-  // Astro rules (includes parser/processor for .astro)
+  // Astro-Regeln (inklusive Parser/Processor fuer .astro)
   ...astro.configs['flat/recommended'],
 
-  // Common language options + globals for this project
+  // Gemeinsame Sprachoptionen + Globals fuer dieses Projekt
   {
     files: ['**/*.{js,mjs,cjs,ts,tsx,astro}'],
     languageOptions: {
@@ -36,6 +36,6 @@ export default [
     },
   },
 
-  // Disable formatting-related rules that conflict with Prettier
+  // Deaktiviert Formatierungsregeln, die mit Prettier kollidieren
   eslintConfigPrettier,
 ];

@@ -1,9 +1,4 @@
-/*
-  email-obfuscate.ts
-  ------------------
-  E-mail obfuscation (CSP friendly).
-  The full address is assembled only in the browser.
-*/
+/* E-Mail-Obfuskation (CSP-freundlich); die volle Adresse wird nur im Browser zusammengesetzt. */
 
 (() => {
   const safePart = (value: unknown): string | null => {

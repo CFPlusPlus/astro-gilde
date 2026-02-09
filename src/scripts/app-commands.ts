@@ -1,9 +1,4 @@
-/*
-  app-commands.ts
-  ---------------
-  Client-side search for /befehle.
-  Filters command cards inside categories.
-*/
+/* Sucht clientseitig auf /befehle und filtert Command-Karten innerhalb der Kategorien. */
 
 (() => {
   const input = document.getElementById('commandSearch');
@@ -26,7 +21,7 @@
     const q = norm(input.value).trim();
     syncClear();
 
-    // No query -> show all
+    // Keine Suche -> alles anzeigen
     if (!q) {
       cats.forEach((cat) => {
         cat.classList.remove('hidden');

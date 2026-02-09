@@ -5,8 +5,8 @@ export type FetchJsonOptions = {
 };
 
 /**
- * Shared JSON fetch helper for browser calls.
- * Throws on non-2xx to keep call-sites explicit about failure handling.
+ * Gemeinsamer JSON-Fetch-Helper fuer Browser-Aufrufe.
+ * Wirft bei non-2xx, damit Aufrufer Fehlerbehandlung explizit machen.
  */
 export async function fetchJson<T>(url: string, options: FetchJsonOptions = {}): Promise<T> {
   const { signal, cache, headers } = options;

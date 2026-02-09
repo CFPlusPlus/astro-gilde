@@ -69,9 +69,7 @@ const finalOgDescription = ogDescription ?? metaDescription;
 
 const finalOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, site).toString();
 
-// ---
 // Strukturierte Daten (JSON-LD)
-// ---
 const ldBase = buildBaseGraph({
   site,
   canonicalUrl,

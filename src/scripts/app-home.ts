@@ -1,11 +1,4 @@
-/*
-  app-home.ts
-  -----------
-  Home-specific behavior:
-  - Player list (mcsrvstat.us)
-  - World age counter
-  - Gallery
-*/
+/* Home-spezifisches Verhalten: Spielerliste, Weltenalter-Zaehler und Galerie. */
 
 interface PlayerEntry {
   uuid?: string;
@@ -458,7 +451,7 @@ function initHomeApp(): () => void {
     const el = qs<HTMLElement>('#world-age');
     if (!el) return;
 
-    const worldStart = new Date(2024, 1, 26); // 26 Feb 2024
+    const worldStart = new Date(2024, 1, 26); // 26. Feb 2024
     let now = new Date();
 
     try {
@@ -469,7 +462,7 @@ function initHomeApp(): () => void {
         if (!Number.isNaN(parsed.getTime())) now = parsed;
       }
     } catch {
-      // fallback to client time
+      // Fallback auf Client-Zeit
     }
 
     const totalMonths = diffInFullMonths(worldStart, now);

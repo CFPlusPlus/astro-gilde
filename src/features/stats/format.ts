@@ -12,7 +12,7 @@ export function fmtNumber(value: number, decimals = 0): string {
 export function formatMetricValue(value: number, def?: MetricDef): string {
   const unit = def?.unit || '';
 
-  // Decimals from metric_def; otherwise use default heuristics.
+  // Nachkommastellen aus metric_def; sonst Standard-Heuristik.
   let dec = def?.decimals;
   if (dec === null || dec === undefined) {
     if (unit === 'h' || unit === 'km') dec = 2;

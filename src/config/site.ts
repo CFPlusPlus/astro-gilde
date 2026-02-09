@@ -17,7 +17,7 @@ const normalizePathname = (value: string): string => {
   try {
     pathname = new URL(pathname).pathname;
   } catch {
-    // Relative path input is expected and handled below.
+    // Relative Pfade sind hier erwartet und werden unten behandelt.
   }
 
   pathname = pathname.replace(/\\/g, '/').replace(/\/{2,}/g, '/');

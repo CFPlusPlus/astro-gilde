@@ -1,12 +1,10 @@
 /*
-  app.ts
-  ------
-  Global behavior for the site:
-  - Theme toggle (system/light/dark) with localStorage
-  - Navbar menu toggle + click-outside + escape
-  - Copy server IP helper
-  - Online counters (Discord + Minecraft)
-  - Lightweight toast
+  Globales Verhalten der Seite:
+  - Theme-Toggle (system/light/dark) mit localStorage
+  - Navbar-Menue-Toggle + Click-Outside + Escape
+  - Helper zum Kopieren der Server-IP
+  - Online-Zaehler (Discord + Minecraft)
+  - Schlanker Toast
 */
 
 type ThemeMode = 'system' | 'light' | 'dark';
@@ -93,7 +91,7 @@ interface MinecraftStatusResponse {
     try {
       localStorage.setItem(THEME_KEY, mode);
     } catch {
-      // ignore localStorage write errors
+      // Schreibfehler bei localStorage ignorieren
     }
 
     qsa<HTMLElement>('[data-theme-icon]').forEach((el) => {
@@ -231,8 +229,8 @@ interface MinecraftStatusResponse {
     window.addEventListener('resize', () => {
       const mobileState = isMobile();
 
-      // Keep the menu open on mobile viewport-height changes (address bar/show-hide),
-      // but close it when crossing the mobile/desktop breakpoint.
+      // Menue bei mobilen Hoehenaenderungen (Adressleiste ein/aus) offen lassen,
+      // aber beim Wechsel ueber den Mobile/Desktop-Breakpoint schliessen.
       if (mobileState !== lastMobileState) {
         closeMenu();
         lastMobileState = mobileState;

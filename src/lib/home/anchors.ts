@@ -1,8 +1,7 @@
 import type { AnchorItem } from '../../components/home/HomeAnchorNav.astro';
 
 // Onepager-Sprungnavigation (Startseite)
-// ------------------------------------
-// Hinweis: Als eigene Datei, damit index.astro & Komponenten "clean" bleiben.
+// Hinweis: Als eigene Datei, damit index.astro und Komponenten uebersichtlich bleiben.
 
 export const HOME_ANCHORS: AnchorItem[] = [
   { href: '#about', label: 'Worum geht’s?' },

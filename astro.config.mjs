@@ -43,7 +43,7 @@ const tailwindPlugin = /** @type {any} */ (tailwindcss());
 
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
-  // Directory-style output (no .html in URLs)
+  // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
   trailingSlash: 'always',
   integrations: [
