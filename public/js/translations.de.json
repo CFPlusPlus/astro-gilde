@@ -73,7 +73,10 @@
     "minecraft:walk_one_cm": "Strecke gelaufen",
     "minecraft:walk_under_water_one_cm": "Strecke unter Wasser gelaufen",
     "minecraft:happy_ghast_one_cm": "Strecke auf glücklichem Ghast geflogen",
-    "minecraft:clean_shulker_box": "Shulker-Kisten gewaschen"
+    "minecraft:clean_shulker_box": "Shulker-Kisten gewaschen",
+    "minecraft:clean_armor": "Rüstungsteile gewaschen",
+    "minecraft:damage_dealt_resisted": "Schaden zugefügt (widerstanden)",
+    "minecraft:nautilus_one_cm": "Strecke auf Nautilus geritten"
   },
   "items": {
     "minecraft:acacia_boat": "Akazienholzboot",
@@ -1732,7 +1735,27 @@
     "minecraft:zoglin_spawn_egg": "Zoglin-Spawn-Ei",
     "minecraft:zombie_horse_spawn_egg": "Zombiepferde-Spawn-Ei",
     "minecraft:zombie_villager_spawn_egg": "Zombiedorfbewohner-Spawn-Ei",
-    "minecraft:zombified_piglin_spawn_egg": "Zombifizierter-Piglin-Spawn-Ei"
+    "minecraft:zombified_piglin_spawn_egg": "Zombifizierter-Piglin-Spawn-Ei",
+    "minecraft:golden_dandelion": "Goldlöwenzahn",
+    "minecraft:iron_chain": "Eisenkette",
+    "minecraft:potted_golden_dandelion": "Eingetopfter Goldlöwenzahn",
+    "minecraft:camel_husk_spawn_egg": "Zombiedromedar-Spawn-Ei",
+    "minecraft:copper_nautilus_armor": "Kupferner Nautiluspanzer",
+    "minecraft:copper_spear": "Kupferspeer",
+    "minecraft:diamond_nautilus_armor": "Diamantener Nautiluspanzer",
+    "minecraft:diamond_spear": "Diamantspeer",
+    "minecraft:golden_nautilus_armor": "Goldener Nautiluspanzer",
+    "minecraft:golden_spear": "Goldspeer",
+    "minecraft:iron_nautilus_armor": "Eiserner Nautiluspanzer",
+    "minecraft:iron_spear": "Eisenspeer",
+    "minecraft:nautilus_spawn_egg": "Nautilus-Spawn-Ei",
+    "minecraft:netherite_horse_armor": "Netheritener Rossharnisch",
+    "minecraft:netherite_nautilus_armor": "Netheritener Nautiluspanzer",
+    "minecraft:netherite_spear": "Netheritspeer",
+    "minecraft:parched_spawn_egg": "Vertrockneten-Spawn-Ei",
+    "minecraft:stone_spear": "Steinspeer",
+    "minecraft:wooden_spear": "Holzspeer",
+    "minecraft:zombie_nautilus_spawn_egg": "Zombienautilus-Spawn-Ei"
   },
   "mobs": {
     "minecraft:allay": "Hilfsgeist",
@@ -1814,6 +1837,14 @@
     "minecraft:zombie": "Zombie",
     "minecraft:zombie_villager": "Zombiedorfbewohner",
     "minecraft:zombified_piglin": "Zombifizierter Piglin",
-    "minecraft:happy_ghast": "Glücklicher Ghast"
+    "minecraft:happy_ghast": "Glücklicher Ghast",
+    "minecraft:camel_husk": "Zombiedromedar",
+    "minecraft:copper_golem": "Kupfergolem",
+    "minecraft:mule": "Maultier",
+    "minecraft:nautilus": "Nautilus",
+    "minecraft:parched": "Vertrockneter",
+    "minecraft:zoglin": "Zoglin",
+    "minecraft:zombie_horse": "Zombiepferd",
+    "minecraft:zombie_nautilus": "Zombienautilus"
   }
 }
