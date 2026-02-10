@@ -5,9 +5,13 @@ import { VERSUS_MAX_METRICS } from '../constants';
 import type { PlayersSearchItem } from '../types';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import {
+  sanitizeVersusMetricIds,
+  summarizeVersusRows,
+  syncVersusMetricIdsWithCatalog,
+} from './versus-helpers';
+import {
   buildVersusCatalog,
   filterVersusCatalog,
-  getQuickVersusSelection,
   getVersusValue,
   groupVersusCatalog,
   type VersusGroupedMetrics,
@@ -38,7 +42,7 @@ export function useVersusState({
 }) {
   const [versusMetricFilter, setVersusMetricFilter] = useState(initialState?.metricFilter || '');
   const [versusMetricIds, setVersusMetricIds] = useState<string[]>(
-    Array.from(new Set(initialState?.metricIds || [])).slice(0, VERSUS_MAX_METRICS),
+    sanitizeVersusMetricIds(initialState?.metricIds),
   );
   const [versusPlayerA, setVersusPlayerA] = useState<PlayersSearchItem | null>(
     initialState?.playerA || null,
@@ -104,13 +108,7 @@ export function useVersusState({
 
   useEffect(() => {
     if (versusCatalog.length === 0) return;
-
-    setVersusMetricIds((previous) => {
-      const available = new Set(versusCatalog.map((entry) => entry.id));
-      const filtered = previous.filter((id) => available.has(id));
-      if (filtered.length > 0) return filtered.slice(0, VERSUS_MAX_METRICS);
-      return getQuickVersusSelection(versusCatalog).slice(0, VERSUS_MAX_METRICS);
-    });
+    setVersusMetricIds((previous) => syncVersusMetricIdsWithCatalog(previous, versusCatalog));
   }, [versusCatalog]);
 
   const setVersusPlayer = useCallback(
@@ -272,13 +270,7 @@ export function useVersusState({
 
       const catalog = buildVersusCatalog(statsA, statsB, translations);
       setVersusCatalog(catalog);
-
-      setVersusMetricIds((previous) => {
-        const available = new Set(catalog.map((entry) => entry.id));
-        const filtered = previous.filter((id) => available.has(id));
-        if (filtered.length > 0) return filtered.slice(0, VERSUS_MAX_METRICS);
-        return getQuickVersusSelection(catalog).slice(0, VERSUS_MAX_METRICS);
-      });
+      setVersusMetricIds((previous) => syncVersusMetricIdsWithCatalog(previous, catalog));
     } catch (error) {
       if ((error as Error)?.name === 'AbortError') return;
       console.warn('Versus Fehler', error);
@@ -376,22 +368,7 @@ export function useVersusState({
       .filter((row): row is VersusRow => row !== null);
   }, [catalogMap, versusMetricIds, versusStatsA, versusStatsB]);
 
-  const versusSummary = useMemo(() => {
-    let winsA = 0;
-    let winsB = 0;
-    let ties = 0;
-    let counted = 0;
-
-    for (const row of versusRows) {
-      if (row.valueA === null || row.valueB === null) continue;
-      counted += 1;
-      if (row.valueA > row.valueB) winsA += 1;
-      else if (row.valueB > row.valueA) winsB += 1;
-      else ties += 1;
-    }
-
-    return { winsA, winsB, ties, counted };
-  }, [versusRows]);
+  const versusSummary = useMemo(() => summarizeVersusRows(versusRows), [versusRows]);
 
   const hasVersusResults = hasVersusData && versusRows.length > 0;
   const hasMissingVersusValues = versusRows.some(
