@@ -701,6 +701,46 @@ html[data-theme='dark'] {
     @apply pointer-events-none opacity-0;
   }
 
+  .mg-live-counter {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1em;
+    border-radius: 0.4rem;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .mg-live-counter[data-live-state='loading'] {
+    min-width: 3.8ch;
+    padding-inline: 0.35rem;
+    color: transparent;
+    user-select: none;
+    background: color-mix(in oklab, var(--surface-solid) 55%, var(--fg) 45%);
+    animation: mg-counter-pulse 1.25s ease-in-out infinite;
+  }
+
+  .mg-live-counter[data-live-state='error'] {
+    color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
+  }
+
+  @keyframes mg-counter-pulse {
+    0%,
+    100% {
+      opacity: 0.42;
+    }
+    50% {
+      opacity: 0.9;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .mg-live-counter[data-live-state='loading'] {
+      animation: none;
+      opacity: 0.8;
+    }
+  }
+
   @keyframes mg-fade-in {
     from {
       opacity: 0.55;
