@@ -1,4 +1,5 @@
 import { tLabel } from '../stats-core/i18n';
+import { MOB_SECTION_DEFS, PLAYER_TABLE_ITEM_SECTION_KEYS } from '../stats-core/minecraft-sections';
 import { transformRawMinecraftValue } from '../stats-core/metrics';
 import type { PlayerTranslations } from '../stats-core/types';
 import { matchQueries, nf, nf2, type ParsedQuery } from './format';
@@ -54,6 +55,7 @@ export function buildPlayerTables(
   if (!s) return { general: [], items: [], mobs: [] };
 
   const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
+  type PlayerTableItemSectionKey = (typeof PLAYER_TABLE_ITEM_SECTION_KEYS)[number];
 
   const custom = asObj((s as Record<string, unknown>)['minecraft:custom']) || {};
   const general: GeneralRow[] = Object.entries(custom)
@@ -73,38 +75,41 @@ export function buildPlayerTables(
       return { raw, label, value: rawNumber, display };
     });
 
-  const mined = asObj((s as Record<string, unknown>)['minecraft:mined']) || {};
-  const broken = asObj((s as Record<string, unknown>)['minecraft:broken']) || {};
-  const crafted = asObj((s as Record<string, unknown>)['minecraft:crafted']) || {};
-  const used = asObj((s as Record<string, unknown>)['minecraft:used']) || {};
-  const picked = asObj((s as Record<string, unknown>)['minecraft:picked_up']) || {};
-  const dropped = asObj((s as Record<string, unknown>)['minecraft:dropped']) || {};
+  const itemSections = PLAYER_TABLE_ITEM_SECTION_KEYS.reduce(
+    (acc, key) => {
+      acc[key] = asObj((s as Record<string, unknown>)[`minecraft:${key}`]) || {};
+      return acc;
+    },
+    {} as Record<PlayerTableItemSectionKey, Record<string, number>>,
+  );
 
-  const itemKeys = new Set([
-    ...Object.keys(mined),
-    ...Object.keys(broken),
-    ...Object.keys(crafted),
-    ...Object.keys(used),
-    ...Object.keys(picked),
-    ...Object.keys(dropped),
-  ]);
+  const itemKeys = new Set(
+    PLAYER_TABLE_ITEM_SECTION_KEYS.flatMap((key) => Object.keys(itemSections[key])),
+  );
 
   const items: ItemsRow[] = [...itemKeys].map((k) => {
     const label = tLabel(k, 'item', isGerman, translations);
     return {
       key: k,
       label,
-      mined: mined[k] || 0,
-      broken: broken[k] || 0,
-      crafted: crafted[k] || 0,
-      used: used[k] || 0,
-      picked_up: picked[k] || 0,
-      dropped: dropped[k] || 0,
+      mined: itemSections.mined[k] || 0,
+      broken: itemSections.broken[k] || 0,
+      crafted: itemSections.crafted[k] || 0,
+      used: itemSections.used[k] || 0,
+      picked_up: itemSections.picked_up[k] || 0,
+      dropped: itemSections.dropped[k] || 0,
     };
   });
 
-  const killed = asObj((s as Record<string, unknown>)['minecraft:killed']) || {};
-  const killedBy = asObj((s as Record<string, unknown>)['minecraft:killed_by']) || {};
+  const mobSections = MOB_SECTION_DEFS.reduce(
+    (acc, section) => {
+      acc[section.key] = asObj((s as Record<string, unknown>)[section.statKey]) || {};
+      return acc;
+    },
+    {} as Record<(typeof MOB_SECTION_DEFS)[number]['key'], Record<string, number>>,
+  );
+  const killed = mobSections.killed;
+  const killedBy = mobSections.killed_by;
   const mobKeys = new Set([...Object.keys(killed), ...Object.keys(killedBy)]);
   const mobs: MobsRow[] = [...mobKeys].map((k) => {
     const label = tLabel(k, 'mob', isGerman, translations);

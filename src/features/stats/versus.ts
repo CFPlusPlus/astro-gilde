@@ -1,5 +1,6 @@
 import { tLabel } from '../stats-core/i18n';
 import { transformRawMinecraftValue } from '../stats-core/metrics';
+import { ITEM_SECTION_DEFS, MOB_SECTION_DEFS } from '../stats-core/minecraft-sections';
 import type { PlayerTranslations } from '../stats-core/types';
 import { fmtNumber } from './format';
 import { normalizeUmlauts } from './normalizeUmlauts';
@@ -96,19 +97,9 @@ export function buildVersusCatalog(
     });
   }
 
-  const itemSections = [
-    { key: 'mined', label: 'Abgebaut' },
-    { key: 'broken', label: 'Verbraucht' },
-    { key: 'crafted', label: 'Hergestellt' },
-    { key: 'used', label: 'Benutzt' },
-    { key: 'picked_up', label: 'Aufgesammelt' },
-    { key: 'dropped', label: 'Fallen gelassen' },
-    { key: 'placed', label: 'Platziert' },
-  ];
-
-  for (const sec of itemSections) {
-    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
-    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
+  for (const sec of ITEM_SECTION_DEFS) {
+    const objA = asObj(statsA?.[sec.statKey]);
+    const objB = asObj(statsB?.[sec.statKey]);
     const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
     const group = normalizeUmlauts(`Gegenst\u00e4nde - ${sec.label}`);
     for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
@@ -118,19 +109,14 @@ export function buildVersusCatalog(
         group,
         kind: 'item',
         key,
-        section: `minecraft:${sec.key}`,
+        section: sec.statKey,
       });
     }
   }
 
-  const mobSections = [
-    { key: 'killed', label: 'Get\u00f6tet' },
-    { key: 'killed_by', label: 'Gestorben durch' },
-  ];
-
-  for (const sec of mobSections) {
-    const objA = asObj(statsA?.[`minecraft:${sec.key}`]);
-    const objB = asObj(statsB?.[`minecraft:${sec.key}`]);
+  for (const sec of MOB_SECTION_DEFS) {
+    const objA = asObj(statsA?.[sec.statKey]);
+    const objB = asObj(statsB?.[sec.statKey]);
     const keys = new Set([...Object.keys(objA || {}), ...Object.keys(objB || {})]);
     const group = normalizeUmlauts(`Kreaturen - ${sec.label}`);
     for (const key of [...keys].sort((a, b) => a.localeCompare(b, 'de'))) {
@@ -140,7 +126,7 @@ export function buildVersusCatalog(
         group,
         kind: 'mob',
         key,
-        section: `minecraft:${sec.key}`,
+        section: sec.statKey,
       });
     }
   }

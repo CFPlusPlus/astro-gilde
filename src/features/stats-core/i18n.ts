@@ -1,4 +1,5 @@
 import type { PlayerTranslations, TranslationKind } from './types';
+import { ITEM_SECTION_DEFS, MOB_SECTION_DEFS } from './minecraft-sections';
 
 function rawFallback(rawId: string): string {
   return rawId.replace(/^minecraft:/, '').replaceAll('_', ' ');
@@ -48,27 +49,16 @@ export function logMissingTranslations(
     }
   }
 
-  const itemSections = [
-    'minecraft:used',
-    'minecraft:mined',
-    'minecraft:crafted',
-    'minecraft:dropped',
-    'minecraft:picked_up',
-    'minecraft:broken',
-    'minecraft:placed',
-  ];
-
-  for (const sectionKey of itemSections) {
-    const section = asObj((stats as Record<string, unknown>)[sectionKey]);
+  for (const sectionDef of ITEM_SECTION_DEFS) {
+    const section = asObj((stats as Record<string, unknown>)[sectionDef.statKey]);
     if (!section) continue;
     for (const key of Object.keys(section)) {
       if (!translations?.items?.[key]) missing.items.add(key);
     }
   }
 
-  const mobSections = ['minecraft:killed', 'minecraft:killed_by'];
-  for (const sectionKey of mobSections) {
-    const section = asObj((stats as Record<string, unknown>)[sectionKey]);
+  for (const sectionDef of MOB_SECTION_DEFS) {
+    const section = asObj((stats as Record<string, unknown>)[sectionDef.statKey]);
     if (!section) continue;
     for (const key of Object.keys(section)) {
       if (!translations?.mobs?.[key]) missing.mobs.add(key);
