@@ -22,7 +22,6 @@ import {
   ShieldCheck,
   FileText,
 } from '@lucide/astro';
-import { Image } from 'astro:assets';
 import Button from './ui/Button.astro';
 import NavItem from './nav/NavItem.astro';
 import {
@@ -88,8 +87,8 @@ const linkClassMega = (active: boolean) =>
           class="flex items-center gap-3"
           aria-label="Minecraft Gilde (Start)"
         >
-          <Image
-            src={logoImage}
+          <img
+            src={logoImage.src}
             width="36"
             height="36"
             alt="Minecraft Gilde"

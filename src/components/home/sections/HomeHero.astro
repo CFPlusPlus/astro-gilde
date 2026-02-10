@@ -19,8 +19,6 @@ const HERO_BACKGROUND_WIDTH = 1920;
 const HERO_BACKGROUND_HEIGHT = Math.round(
   (headerBackgroundImage.height / headerBackgroundImage.width) * HERO_BACKGROUND_WIDTH,
 );
-const HERO_LOGO_WIDTH = 1040;
-const HERO_LOGO_HEIGHT = Math.round((logoBigImage.height / logoBigImage.width) * HERO_LOGO_WIDTH);
 ---
 
 <!--
@@ -79,10 +77,10 @@ const HERO_LOGO_HEIGHT = Math.round((logoBigImage.height / logoBigImage.width) *
       </div>
 
       <div class="relative" data-reveal="right" data-reveal-delay="140">
-        <Image
-          src={logoBigImage}
-          width={HERO_LOGO_WIDTH}
-          height={HERO_LOGO_HEIGHT}
+        <img
+          src={logoBigImage.src}
+          width={logoBigImage.width}
+          height={logoBigImage.height}
           alt="Minecraft Gilde Logo"
           loading="eager"
           decoding="async"
