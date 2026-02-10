@@ -116,6 +116,7 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     const qs = qp.toString();
     const nextUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
+    // URL-Parameter synchron halten, ohne einen neuen Verlaufseintrag zu erzeugen.
     if (nextUrl !== currentUrl) {
       window.history.replaceState({}, '', nextUrl);
     }

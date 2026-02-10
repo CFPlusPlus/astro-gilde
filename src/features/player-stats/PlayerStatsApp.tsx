@@ -182,7 +182,6 @@ export default function PlayerStatsApp() {
         <div className="space-y-6">
           <KpiStrip items={kpiItems} variant="inline" />
 
-          {/* Spieler-Skin + Filter */}
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <button
@@ -200,6 +199,7 @@ export default function PlayerStatsApp() {
                   className="border-border/70 h-14 w-14 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
                   onError={(e) => {
                     const img = e.currentTarget;
+                    // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
                     const fallbackAttempted = img.dataset.fallbackAttempted === '1';
 
                     if (!fallbackAttempted && skinHeadFallback && img.src !== skinHeadFallback) {
@@ -286,7 +286,6 @@ export default function PlayerStatsApp() {
             </div>
           </div>
 
-          {/* Tabellen */}
           {activeTab === 'allgemein' ? (
             <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
               <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
