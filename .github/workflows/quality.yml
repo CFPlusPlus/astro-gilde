@@ -1,4 +1,4 @@
-name: Quality
+name: Build & Quality
 
 on:
   push:
@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   quality:
+    name: Quality Gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
