@@ -712,17 +712,17 @@ export default function SkinViewerModal({
           <button
             type="button"
             aria-label="Schliessen"
-            className="text-muted hover:text-fg rounded-lg p-1.5 transition-colors sm:p-2"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-red-500/70 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-400 focus-visible:ring-2 focus-visible:ring-red-500/40 focus-visible:outline-none"
             onClick={onClose}
           >
-            <X size={18} />
+            <X size={12} />
           </button>
         </header>
 
         <div className="grid gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div
             ref={stageRef}
-            className="glass border-border relative mx-auto w-full max-w-[18.5rem] overflow-hidden rounded-[var(--radius)] border sm:max-w-[22rem] md:max-w-[24rem] lg:mx-0 lg:max-w-none"
+            className="glass border-border relative w-full overflow-hidden rounded-[var(--radius)] border"
           >
             <div className="relative aspect-square w-full">
               <div className="mg-viewer-stage-pattern absolute inset-0" aria-hidden="true" />
