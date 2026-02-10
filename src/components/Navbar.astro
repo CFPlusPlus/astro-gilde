@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   FileText,
 } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import Button from './ui/Button.astro';
 import NavItem from './nav/NavItem.astro';
 import {
@@ -32,6 +33,7 @@ import {
 } from '../data/nav';
 import { appRoutes } from '../config/routes';
 import { hrefFor } from '../lib/links';
+import logoImage from '../assets/images/branding/logo.webp';
 
 const MENU_ICONS: Record<NavMenuIcon, typeof House> = {
   home: House,
@@ -86,8 +88,8 @@ const linkClassMega = (active: boolean) =>
           class="flex items-center gap-3"
           aria-label="Minecraft Gilde (Start)"
         >
-          <img
-            src="/images/logo.webp"
+          <Image
+            src={logoImage}
             width="36"
             height="36"
             alt="Minecraft Gilde"

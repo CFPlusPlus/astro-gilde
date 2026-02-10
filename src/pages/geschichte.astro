@@ -21,7 +21,7 @@ const articleLd = buildArticle({
   headline: 'Unsere Geschichte – Minecraft Gilde',
   description:
     'Von minecraft.falkner.info zum Folia-Vanilla-Server: die wichtigsten Meilensteine der Minecraft Gilde seit Februar 2024.',
-  image: new URL('/images/logo.webp', site).toString(),
+  image: new URL(minecraftGilde.brand.logo.path, site).toString(),
   authorName: 'Christian Falkner',
   authorUrl: 'https://www.falkner.info',
   articleSection: 'Geschichte',
@@ -40,7 +40,7 @@ type Milestone = {
 };
 
 // Tipp: Wenn du Bilder integrieren willst, lege sie z. B. unter
-// /public/images/geschichte/ ab und setze pro Milestone optional `image`.
+// /src/assets/images/history/ ab und setze pro Milestone optional `image`.
 const milestones: Milestone[] = [
   {
     id: 'feb-2024',

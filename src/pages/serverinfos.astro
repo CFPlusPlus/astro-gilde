@@ -4,15 +4,19 @@ import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
+import { Image } from 'astro:assets';
 import { buildArticle, buildGameServer } from '../lib/structuredData';
 import { Cpu, Shield, Gamepad2, Copy, Map, ArrowRight } from '@lucide/astro';
 import { canonicalFor, site } from '../config/site';
 import { minecraftGilde } from '../config/minecraftGilde';
+import foliaImage from '../assets/images/tech/folia.webp';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const FOLIA_IMAGE_WIDTH = 704;
+const FOLIA_IMAGE_HEIGHT = Math.round((foliaImage.height / foliaImage.width) * FOLIA_IMAGE_WIDTH);
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
 const gameServerLd = buildGameServer({
@@ -31,7 +35,7 @@ const articleLd = buildArticle({
   headline: 'Serverinfos & Folia-Setup – Minecraft Gilde (Vanilla SMP 1.21.x)',
   description:
     'Technische Details zum Setup der Minecraft Gilde: Folia 1.21.x, Hardware & Kernfeatures – optimiert für Vanilla Survival & Freebuild ohne Pay2Win.',
-  image: new URL('/images/logo.webp', site).toString(),
+  image: new URL(minecraftGilde.brand.logo.path, site).toString(),
   authorName: 'Christian Falkner',
   authorUrl: 'https://www.falkner.info',
   articleSection: 'Serverinformationen',
@@ -152,11 +156,11 @@ const articleLd = buildArticle({
       <figure
         class="border-border/70 bg-surface/25 h-full rounded-[var(--radius)] border p-5 sm:p-6"
       >
-        <img
-          src="/images/folia.webp"
+        <Image
+          src={foliaImage}
           alt="Folia Logo"
-          width="600"
-          height="320"
+          width={FOLIA_IMAGE_WIDTH}
+          height={FOLIA_IMAGE_HEIGHT}
           loading="lazy"
           class="mx-auto w-full max-w-[18rem] sm:max-w-[20rem] md:max-w-[22rem]"
         />

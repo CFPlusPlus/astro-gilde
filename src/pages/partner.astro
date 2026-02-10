@@ -2,11 +2,17 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import { ArrowRight, Users } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import { minecraftGilde } from '../config/minecraftGilde';
+import partnerAckImage from '../assets/images/partner/ack.png';
 
 const PARTNER_URL = 'https://www.anti-corona-kartell.de';
 const PARTNER_DISCORD_URL = 'https://discord.anti-corona-kartell.de';
 const DISCORD_URL = minecraftGilde.discord.url;
+const PARTNER_ACK_WIDTH = 640;
+const PARTNER_ACK_HEIGHT = Math.round(
+  (partnerAckImage.height / partnerAckImage.width) * PARTNER_ACK_WIDTH,
+);
 ---
 
 <BaseLayout
@@ -38,12 +44,14 @@ const DISCORD_URL = minecraftGilde.discord.url;
             >
             </div>
           </div>
-          <img
-            src="/images/ack.png"
+          <Image
+            src={partnerAckImage}
             alt="ANTI-CORONA-KARTELL"
+            width={PARTNER_ACK_WIDTH}
+            height={PARTNER_ACK_HEIGHT}
             loading="lazy"
             decoding="async"
-            class="relative z-10 aspect-square w-full max-w-[320px] object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.45)]"
+            class="relative z-10 aspect-square w-full max-w-[210px] object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.45)]"
           />
         </div>
         <div class="p-6 sm:p-7">

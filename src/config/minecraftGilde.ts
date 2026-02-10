@@ -1,4 +1,5 @@
 import { siteUrl } from './site';
+import logoImage from '../assets/images/branding/logo.webp';
 
 // Zentrale Projekt-Konfiguration fuer minecraft-gilde.de
 // Ziel: Strings (URLs, IP, Version) nicht ueber das Projekt verteilen,
@@ -33,9 +34,9 @@ export const brandConfig = {
   websiteDescription:
     'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - ohne Resets, ohne Pay2Win, Community-first.',
   logo: {
-    path: '/images/logo.webp',
-    width: 512,
-    height: 512,
+    path: logoImage.src,
+    width: logoImage.width,
+    height: logoImage.height,
     alt: 'Minecraft Gilde',
   },
   sameAs: [

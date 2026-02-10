@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://minecraft-gilde.de" target="_blank" rel="noopener noreferrer">
-    <img src="https://minecraft-gilde.de/images/logo-big.webp" alt="Minecraft Gilde" width="360" />
+    <img src="./src/assets/images/branding/logo-big.webp" alt="Minecraft Gilde" width="360" />
   </a>
 </p>
 

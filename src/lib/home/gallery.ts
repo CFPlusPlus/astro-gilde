@@ -1,5 +1,5 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import headerBackgroundImage from '../../assets/images/home/header-background.webp';
+import type { ImageMetadata } from 'astro';
 
 type HomeGallery = {
   urls: string[];
@@ -7,52 +7,34 @@ type HomeGallery = {
   initial: string;
 };
 
-// Build-Time: Galerie-Bilder aus /public/images/<ordner> einsammeln
-// Hinweis: Auf Linux-Runnern ist das Dateisystem case-sensitive. Daher suchen wir mehrere Varianten.
+type ImageUrlModule = {
+  default: ImageMetadata;
+};
+
+const galleryImageModules = import.meta.glob<ImageUrlModule>(
+  '../../assets/images/home/gallery/*.{png,jpg,jpeg,webp,avif}',
+  { eager: true },
+);
+
+const fileNameFromGlobPath = (value: string): string => {
+  const normalized = value.replace(/\\/g, '/');
+  const parts = normalized.split('/');
+  return parts[parts.length - 1] ?? '';
+};
+
+const toSortedGalleryUrls = (): string[] =>
+  Object.entries(galleryImageModules)
+    .sort((a, b) =>
+      fileNameFromGlobPath(a[0]).localeCompare(fileNameFromGlobPath(b[0]), 'de', {
+        numeric: true,
+      }),
+    )
+    .map((entry) => entry[1].default.src);
+
+// Build-Time: Galerie-Bilder aus src/assets/images/home/gallery einsammeln.
 export const getHomeGallery = (): HomeGallery => {
-  // Muss garantiert existieren (sonst sieht man in Safari nur den „broken image“-Platzhalter).
-  const fallback = '/images/header-background.webp';
-
-  // WICHTIG: Beim Astro-Build werden Module in `dist/` gebündelt.
-  // `import.meta.url` zeigt dann NICHT mehr auf den `src/`-Pfad.
-  // Ergebnis: Der Galerie-Scan findet im Build plötzlich keine Bilder -> `[]`.
-  // Deshalb nehmen wir einen stabilen Pfad ausgehend vom Projekt-Root.
-  const imagesRoot = path.resolve(process.cwd(), 'public', 'images');
-  const candidates = ['Galerie', 'galerie', 'Gallery', 'gallery'];
-
-  let foundDirName: string | null = null;
-  let foundDirPath: string | null = null;
-
-  for (const name of candidates) {
-    const p = path.join(imagesRoot, name);
-    try {
-      if (fs.existsSync(p) && fs.statSync(p).isDirectory()) {
-        foundDirName = name;
-        foundDirPath = p;
-        break;
-      }
-    } catch {
-      // Dateisystem-Fehler hier sind unkritisch.
-    }
-  }
-
-  let files: string[] = [];
-
-  if (foundDirPath) {
-    try {
-      files = fs
-        .readdirSync(foundDirPath)
-        .filter((f) => /\.(png|jpe?g|webp|avif)$/i.test(f))
-        .sort((a, b) => a.localeCompare(b, 'de', { numeric: true }));
-    } catch {
-      // Fallback: Bei Fehlern bleibt die Galerie leer.
-    }
-  }
-
-  // URLs müssen die tatsächliche Ordner-Schreibweise matchen (case-sensitive Server).
-  const baseUrl = foundDirName ? `/images/${foundDirName}` : '/images/Galerie';
-
-  const urls = files.map((f) => `${baseUrl}/${encodeURIComponent(f)}`);
+  const fallback = headerBackgroundImage.src;
+  const urls = toSortedGalleryUrls();
   const initial = urls[0] ?? fallback;
 
   return { urls, fallback, initial };

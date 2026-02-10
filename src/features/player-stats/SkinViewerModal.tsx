@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, RefreshCcw, X } from 'lucide-react';
+import steveImage from '../../assets/images/minecraft/steve.png';
+import elytraImage from '../../assets/images/minecraft/elytra.png';
 
 type Props = {
   open: boolean;
@@ -108,8 +110,8 @@ const BACK_OPTIONS: Array<{ id: BackMode; label: string }> = [
 const CAPE_CACHE_KEY_PREFIX = 'mg:skin-viewer:cape:';
 const CAPE_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 const CAPE_EMPTY_CACHE_TTL_MS = 1000 * 60 * 30;
-const FALLBACK_SKIN_URL = '/images/steve.png';
-const FALLBACK_ELYTRA_URL = '/images/elytra.png';
+const FALLBACK_SKIN_URL = steveImage.src;
+const FALLBACK_ELYTRA_URL = elytraImage.src;
 
 type BackLoadRequest = {
   source: string | null;

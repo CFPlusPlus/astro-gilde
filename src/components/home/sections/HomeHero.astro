@@ -2,15 +2,25 @@
 import Button from '../../ui/Button.astro';
 import Badge from '../../ui/Badge.astro';
 import HomeSection from '../HomeSection.astro';
+import { Image } from 'astro:assets';
 
 import { minecraftGilde } from '../../../config/minecraftGilde';
 import { Activity, ArrowRight, Copy, Map, Users } from '@lucide/astro';
+import headerBackgroundImage from '../../../assets/images/home/header-background.webp';
+import logoBigImage from '../../../assets/images/branding/logo-big.webp';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+
+const HERO_BACKGROUND_WIDTH = 1920;
+const HERO_BACKGROUND_HEIGHT = Math.round(
+  (headerBackgroundImage.height / headerBackgroundImage.width) * HERO_BACKGROUND_WIDTH,
+);
+const HERO_LOGO_WIDTH = 1040;
+const HERO_LOGO_HEIGHT = Math.round((logoBigImage.height / logoBigImage.width) * HERO_LOGO_WIDTH);
 ---
 
 <!--
@@ -19,9 +29,11 @@ const MC_VERSION = minecraftGilde.mcVersion;
 -->
 <section class="home-hero relative pt-28 pb-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36">
   <div class="home-hero-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
-    <img
-      src="/images/header-background.webp"
+    <Image
+      src={headerBackgroundImage}
       alt=""
+      width={HERO_BACKGROUND_WIDTH}
+      height={HERO_BACKGROUND_HEIGHT}
       loading="eager"
       decoding="async"
       class="h-full w-full [mask-image:radial-gradient(80%_65%_at_50%_22%,black_0%,black_55%,transparent_100%)] object-cover object-top opacity-25"
@@ -67,10 +79,10 @@ const MC_VERSION = minecraftGilde.mcVersion;
       </div>
 
       <div class="relative" data-reveal="right" data-reveal-delay="140">
-        <img
-          src="/images/logo-big.webp"
-          width="900"
-          height="900"
+        <Image
+          src={logoBigImage}
+          width={HERO_LOGO_WIDTH}
+          height={HERO_LOGO_HEIGHT}
           alt="Minecraft Gilde Logo"
           loading="eager"
           decoding="async"
