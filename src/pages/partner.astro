@@ -30,9 +30,12 @@ const PARTNER_ACK_HEIGHT = Math.round(
     <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <div class="glass overflow-hidden rounded-[28px]">
         <div
-          class="relative isolate flex [transform:translateZ(0)] items-center justify-center overflow-hidden rounded-t-[28px] bg-black/10 p-5 [-webkit-mask-image:-webkit-radial-gradient(white,black)] sm:p-6"
+          class="relative isolate flex items-center justify-center overflow-hidden rounded-t-[28px] bg-black/10 p-5 [clip-path:inset(0_round_28px_28px_0_0)] sm:p-6"
         >
-          <div aria-hidden="true" class="pointer-events-none absolute inset-0">
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-0 overflow-hidden rounded-t-[28px]"
+          >
             <div
               class="absolute top-1/2 -left-10 h-44 w-44 -translate-y-1/2 rounded-full bg-red-500/35 blur-3xl"
             >
@@ -51,7 +54,7 @@ const PARTNER_ACK_HEIGHT = Math.round(
             height={PARTNER_ACK_HEIGHT}
             loading="lazy"
             decoding="async"
-            class="relative z-10 aspect-square w-full max-w-[210px] object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.45)]"
+            class="relative z-10 aspect-square w-full max-w-[210px] object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.45)] [backface-visibility:hidden]"
           />
         </div>
         <div class="p-6 sm:p-7">
