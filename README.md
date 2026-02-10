@@ -76,6 +76,36 @@ Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://do
 
 ---
 
+## Content Security Policy (CSP)
+
+Die Seite liefert eine CSP aktuell bewusst als `Content-Security-Policy-Report-Only` aus (siehe `public/.htaccess`).
+
+Warum zuerst `Report-Only`:
+
+- potenzielle CSP-Verletzungen werden sichtbar, ohne produktive Funktionen zu blockieren
+- erlaubt schrittweise Einfuehrung, waehrend bestehende Inline-Skripte weiterlaufen
+- reduziert Risiko fuer Regressionen bei statischen Seiten mit eingebettetem Bootstrap/JSON-LD
+
+Aktuelle Start-Policy (Report-Only):
+
+- `default-src 'self';`
+- `img-src 'self' data: https:;`
+- `style-src 'self' 'unsafe-inline';`
+- `script-src 'self' 'unsafe-inline';`
+- `connect-src 'self' https:;`
+- `base-uri 'self';`
+- `object-src 'none';`
+- `frame-ancestors 'self';`
+
+Umspaeter auf Enforce umzustellen:
+
+1. CSP-Reports im Betrieb auswerten und legitime Ausnahmen in die Policy uebernehmen.
+2. Inline-Skripte schrittweise abbauen (insbesondere Theme-Bootstrap in externe Datei verlagern, falls ohne FOUC moeglich).
+3. Header in `public/.htaccess` von `Content-Security-Policy-Report-Only` auf `Content-Security-Policy` umstellen.
+4. Nach Umstellung erneut visuell und technisch pruefen (`npm run check`, `npm run build`).
+
+---
+
 ## Befehle
 
 Alle Befehle werden im Projekt-Root in einem Terminal ausgeführt:
