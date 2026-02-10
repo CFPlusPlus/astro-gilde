@@ -698,7 +698,7 @@ export default function SkinViewerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-[2px]"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-[2px] sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={dialogTitle}
@@ -706,23 +706,23 @@ export default function SkinViewerModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="glass-strong border-border w-full max-w-5xl overflow-hidden rounded-[var(--radius)] border shadow-xl outline-none">
-        <header className="border-border flex items-center justify-between gap-3 border-b px-4 py-3">
-          <h3 className="text-fg text-base font-semibold">{dialogTitle}</h3>
+      <div className="glass-strong border-border my-3 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-x-hidden overflow-y-auto rounded-[var(--radius)] border shadow-xl outline-none sm:my-4 sm:max-h-[calc(100dvh-2rem)]">
+        <header className="border-border flex items-center justify-between gap-2 border-b px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
+          <h3 className="text-fg text-sm font-semibold sm:text-base">{dialogTitle}</h3>
           <button
             type="button"
             aria-label="Schliessen"
-            className="text-muted hover:text-fg rounded-lg p-2 transition-colors"
+            className="text-muted hover:text-fg rounded-lg p-1.5 transition-colors sm:p-2"
             onClick={onClose}
           >
             <X size={18} />
           </button>
         </header>
 
-        <div className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="grid gap-3 p-3 sm:gap-4 sm:p-4 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div
             ref={stageRef}
-            className="glass border-border relative overflow-hidden rounded-[var(--radius)] border"
+            className="glass border-border relative mx-auto w-full max-w-[18.5rem] overflow-hidden rounded-[var(--radius)] border sm:max-w-[22rem] md:max-w-[24rem] lg:mx-0 lg:max-w-none"
           >
             <div className="relative aspect-square w-full">
               <div className="mg-viewer-stage-pattern absolute inset-0" aria-hidden="true" />
@@ -735,8 +735,8 @@ export default function SkinViewerModal({
             </div>
           </div>
 
-          <aside className="space-y-4">
-            <div className="glass border-border rounded-[var(--radius)] border p-3">
+          <aside className="space-y-3 sm:space-y-4">
+            <div className="glass border-border rounded-[var(--radius)] border p-2.5 sm:p-3">
               <p className="text-fg text-xs font-semibold tracking-wide uppercase">Animation</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {ANIMATION_OPTIONS.map((option) => {
@@ -747,7 +747,7 @@ export default function SkinViewerModal({
                       type="button"
                       onClick={() => setAnimationMode(option.id)}
                       data-active={active}
-                      className="mg-viewer-option px-2.5 py-2 text-xs font-semibold"
+                      className="mg-viewer-option px-2 py-1.5 text-xs font-semibold sm:px-2.5 sm:py-2"
                     >
                       {option.label}
                     </button>
@@ -755,7 +755,7 @@ export default function SkinViewerModal({
                 })}
               </div>
 
-              <label className="mt-3 block">
+              <label className="mt-2.5 block sm:mt-3">
                 <span className="text-muted text-xs">
                   Geschwindigkeit: {animationSpeed.toFixed(2)}x
                 </span>
@@ -772,7 +772,7 @@ export default function SkinViewerModal({
               </label>
             </div>
 
-            <div className="glass border-border rounded-[var(--radius)] border p-3">
+            <div className="glass border-border rounded-[var(--radius)] border p-2.5 sm:p-3">
               <p className="text-fg text-xs font-semibold tracking-wide uppercase">Rücken-Item</p>
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {BACK_OPTIONS.map((option) => {
@@ -787,7 +787,7 @@ export default function SkinViewerModal({
                       disabled={disabled}
                       onClick={() => setBackMode(option.id)}
                       data-active={active}
-                      className="mg-viewer-option px-2 py-2 text-xs font-semibold"
+                      className="mg-viewer-option px-2 py-1.5 text-xs font-semibold sm:py-2"
                     >
                       {option.label}
                     </button>
@@ -819,13 +819,13 @@ export default function SkinViewerModal({
           </div>
         ) : null}
 
-        <footer className="border-border flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="border-border flex flex-col gap-2 border-t px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3">
           <span className="text-muted text-xs">
             Ziehen zum Drehen, Mausrad zum Zoomen, ESC zum Schliessen.
           </span>
           <button
             type="button"
-            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors"
+            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors sm:px-3 sm:py-2 sm:text-sm"
             onClick={onReset}
           >
             <RefreshCcw size={16} /> Reset
