@@ -40,7 +40,7 @@ Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Cont
 /
 ├── public/
 │   ├── images/
-│   └── js/
+│   └── i18n/
 ├── src/
 │   ├── components/
 │   │   └── ui/
@@ -130,7 +130,7 @@ Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 
 Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
 
-- `/js/translations.de.json`
+- `/i18n/translations.de.json`
 
 Optionaler Debug-Check für fehlende Übersetzungen in `/statistiken/spieler`:
 
@@ -187,4 +187,4 @@ export default defineConfig({
 ## Deployment
 
 - `npm run build` erzeugt die statische Ausgabe in `dist/`.
-- Alles aus `public/` wird 1:1 nach `dist/` kopiert (z. B. `.htaccess`, `robots.txt`).
+- Alles aus `public/` wird 1:1 nach `dist/` kopiert (z. B. `.htaccess`, `favicons/*`, `i18n/*`).
