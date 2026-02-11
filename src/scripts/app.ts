@@ -519,6 +519,11 @@ interface LiveCounterCacheEntry {
         return;
       }
 
+      if (key === 'discord-members') {
+        setTargetsState(targets, 'ready', '-');
+        return;
+      }
+
       setTargetsState(targets, 'loading', 'Laden...');
     };
 

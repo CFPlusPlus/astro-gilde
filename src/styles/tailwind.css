@@ -302,7 +302,7 @@ html[data-theme='dark'] {
     backdrop-filter: blur(24px) saturate(130%);
   }
 
-  /* Top-Navigation: Akzent aktiv + animierte Unterstreichung beim Hover */
+  /* Top-Navigation: dezente Links + animierte Unterstreichung ohne Layout-Shift */
   .site-nav-link {
     position: relative;
     display: inline-flex;
@@ -312,6 +312,8 @@ html[data-theme='dark'] {
     font-size: 0.875rem;
     font-weight: 600;
     color: color-mix(in oklab, var(--fg) 88%, transparent);
+    text-decoration: none;
+    background: transparent;
     transition: color 150ms ease;
   }
 
@@ -319,18 +321,19 @@ html[data-theme='dark'] {
     content: '';
     position: absolute;
     left: 50%;
-    bottom: -0.02rem;
-    width: 50%;
-    height: 3px;
+    bottom: -0.06rem;
+    width: calc(100% - 1.4rem);
+    height: 2px;
     border-radius: 999px;
-    background: color-mix(in oklab, var(--fg) 85%, transparent);
+    background: color-mix(in oklab, white 92%, transparent);
     opacity: 0;
-    transform: translateX(-50%) scaleX(0);
+    transform: translateX(-50%) scaleX(0.35);
     transform-origin: center;
+    will-change: transform, opacity;
     transition:
-      transform 180ms ease,
-      opacity 180ms ease,
-      background-color 180ms ease;
+      transform 190ms ease,
+      opacity 190ms ease,
+      background-color 190ms ease;
   }
 
   .site-nav-link:hover {
@@ -354,8 +357,93 @@ html[data-theme='dark'] {
 
   .site-nav-link:focus-visible {
     outline: 2px solid var(--ring);
-    outline-offset: 4px;
+    outline-offset: 3px;
     border-radius: 999px;
+  }
+
+  .site-nav-link:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  .site-nav-row {
+    min-height: 2.75rem;
+  }
+
+  .site-nav-controls {
+    min-width: 0;
+  }
+
+  .site-brand-copy {
+    inline-size: 10.5rem;
+  }
+
+  .site-brand-copy > span,
+  .site-brand-copy > div {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .site-discord-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.12rem;
+    height: 2.5rem;
+    min-height: 2.5rem;
+    padding: 0 0.38rem 0 0.42rem;
+    max-inline-size: min(15rem, calc(100vw - 7rem));
+    border-radius: 0.7rem;
+    border: 1px solid color-mix(in oklab, var(--accent) 50%, var(--border) 50%);
+    background: color-mix(in oklab, var(--surface-solid) 22%, transparent);
+    color: color-mix(in oklab, var(--fg) 92%, transparent);
+    text-decoration: none;
+    line-height: 1;
+    font-size: 0.84rem;
+    font-weight: 650;
+    overflow: hidden;
+    transition:
+      color 150ms ease,
+      background-color 150ms ease,
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .site-discord-text {
+    min-width: 0;
+  }
+
+  .site-discord-link:hover {
+    color: var(--fg);
+    border-color: color-mix(in oklab, var(--accent) 70%, var(--border) 30%);
+    background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
+    box-shadow: 0 10px 18px -18px color-mix(in oklab, var(--fg) 65%, transparent);
+  }
+
+  .site-discord-link:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  .site-discord-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.34rem;
+    height: 1.34rem;
+    color: color-mix(in oklab, var(--fg) 90%, transparent);
+    flex: none;
+  }
+
+  .site-discord-icon > svg {
+    transform: scale(1.12);
+    transform-origin: center;
+  }
+
+  .site-discord-label {
+    color: color-mix(in oklab, var(--fg) 88%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Projekt-Designsystem-Aliasse ("mg" = Minecraft Gilde). */
@@ -718,6 +806,19 @@ html[data-theme='dark'] {
     user-select: none;
     background: color-mix(in oklab, var(--surface-solid) 55%, var(--fg) 45%);
     animation: mg-counter-pulse 1.25s ease-in-out infinite;
+  }
+
+  /* Navbar-Counter: feste Breite nur im Discord-Button, damit der Header stabil bleibt. */
+  .mg-discord-members {
+    display: inline-block;
+    inline-size: 4.4ch;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mg-discord-members.mg-live-counter[data-live-state='loading'] {
+    min-width: 0;
+    padding-inline: 0;
   }
 
   .mg-live-counter[data-live-state='error'] {
