@@ -9,6 +9,9 @@ export interface Props {
   external?: boolean;
   variant?: ButtonVariant;
   size?: ButtonSize;
+  disabled?: boolean;
+  loading?: boolean;
+  ariaLabel?: string;
   class?: string;
   type?: 'button' | 'submit' | 'reset';
 }
@@ -18,6 +21,9 @@ const {
   external = false,
   variant = 'secondary',
   size = 'md',
+  disabled = false,
+  loading = false,
+  ariaLabel,
   class: className = '',
   type = 'button',
   ...rest
@@ -25,6 +31,7 @@ const {
 
 const resolvedHref = href ? hrefFor(href) : undefined;
 const resolvedExternal = external || (href ? isExternalHref(href) : false);
+const isUnavailable = disabled || loading;
 
 const base =
   'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
@@ -46,22 +53,54 @@ const variants: Record<ButtonVariant, string> = {
   ghost,
 };
 
-const attrs = href
-  ? {
-      href: resolvedHref,
-      ...(resolvedExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
-      ...rest,
-    }
-  : { type, ...rest };
+const stateClasses = isUnavailable ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
+const classes = `${base} ${sizes[size]} ${variants[variant]} ${stateClasses} ${className}`.trim();
+
+const sharedAttrs = {
+  ...(ariaLabel ? { 'aria-label': ariaLabel } : {}),
+  ...(loading ? { 'aria-busy': true } : {}),
+  ...rest,
+};
+
+const linkAttrs = {
+  ...sharedAttrs,
+  href: resolvedHref,
+  ...(resolvedExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {}),
+  ...(isUnavailable
+    ? {
+        'aria-disabled': true,
+        tabindex: -1,
+        onclick: 'event.preventDefault(); return false;',
+      }
+    : {}),
+};
+
+const buttonAttrs = {
+  ...sharedAttrs,
+  type,
+  ...(isUnavailable ? { disabled: true } : {}),
+};
 ---
 
 {
   href ? (
-    <a class={`${base} ${sizes[size]} ${variants[variant]} ${className}`.trim()} {...attrs}>
+    <a class={classes} {...linkAttrs}>
+      {loading ? (
+        <span
+          class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+          aria-hidden="true"
+        ></span>
+      ) : null}
       <slot />
     </a>
   ) : (
-    <button class={`${base} ${sizes[size]} ${variants[variant]} ${className}`.trim()} {...attrs}>
+    <button class={classes} {...buttonAttrs}>
+      {loading ? (
+        <span
+          class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent"
+          aria-hidden="true"
+        ></span>
+      ) : null}
       <slot />
     </button>
   )
