@@ -23,6 +23,7 @@ import {
   FileText,
 } from '@lucide/astro';
 import Button from './ui/Button.astro';
+import IconButton from './ui/IconButton.astro';
 import NavItem from './nav/NavItem.astro';
 import {
   NAV_DISCORD_LINK,
@@ -122,16 +123,11 @@ const linkClassMega = (active: boolean) =>
         </nav>
 
         <div class="relative flex items-center gap-2">
-          <button
-            type="button"
-            class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-10 w-10 items-center justify-center rounded-lg border backdrop-blur-md transition-colors"
-            aria-label="Theme wechseln"
-            data-theme-toggle
-          >
+          <IconButton ariaLabel="Theme wechseln" class="backdrop-blur-md" data-theme-toggle>
             <Sun size={18} class="hidden" data-theme-icon="light" />
             <Moon size={18} class="hidden" data-theme-icon="dark" />
             <SunMoon size={18} data-theme-icon="system" />
-          </button>
+          </IconButton>
 
           <!-- Discord-Status (Desktop) + Hover-Card -->
           <div class="group relative hidden sm:inline-block">
@@ -169,17 +165,16 @@ const linkClassMega = (active: boolean) =>
             </div>
           </div>
 
-          <button
-            type="button"
-            class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-10 w-10 items-center justify-center rounded-lg border backdrop-blur-md transition-colors"
-            aria-label="Menue oeffnen"
+          <IconButton
+            ariaLabel="Menue oeffnen"
             aria-controls="nav-panel"
             aria-expanded="false"
+            class="backdrop-blur-md"
             data-nav-toggle
           >
             <Menu size={20} data-icon-open />
             <X size={20} class="hidden" data-icon-close />
-          </button>
+          </IconButton>
 
           <div id="nav-panel" class="absolute top-full right-0 z-50 hidden" data-nav-panel>
             <!-- Mobile-Overlay -->

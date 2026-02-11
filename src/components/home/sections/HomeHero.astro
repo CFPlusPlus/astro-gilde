@@ -1,5 +1,6 @@
 ---
 import Button from '../../ui/Button.astro';
+import IconButton from '../../ui/IconButton.astro';
 import Badge from '../../ui/Badge.astro';
 import HomeSection from '../HomeSection.astro';
 import { Image } from 'astro:assets';
@@ -100,14 +101,9 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
           <div class="text-muted text-xs font-medium">Server-IP</div>
           <div class="mt-1 flex items-center gap-2">
             <code class="text-sm font-semibold">{SERVER_IP}</code>
-            <button
-              type="button"
-              data-copy-ip
-              class="border-border bg-surface hover:bg-surface-solid/70 inline-flex h-8 w-8 items-center justify-center rounded-lg border transition-colors"
-              aria-label="Server-IP kopieren"
-            >
+            <IconButton ariaLabel="Server-IP kopieren" data-copy-ip>
               <Copy size={16} />
-            </button>
+            </IconButton>
           </div>
         </div>
 

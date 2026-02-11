@@ -1,0 +1,50 @@
+---
+export type IconButtonVariant = 'ghost' | 'secondary';
+export type IconButtonSize = 'sm' | 'md';
+
+export interface Props {
+  ariaLabel: string;
+  variant?: IconButtonVariant;
+  size?: IconButtonSize;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  class?: string;
+}
+
+const {
+  ariaLabel,
+  variant = 'secondary',
+  size = 'sm',
+  type = 'button',
+  disabled = false,
+  class: className = '',
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
+
+const base =
+  'inline-flex items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
+
+const sizes: Record<IconButtonSize, string> = {
+  sm: 'h-10 w-10 min-h-10 min-w-10',
+  md: 'h-11 w-11 min-h-10 min-w-10',
+};
+
+const variants: Record<IconButtonVariant, string> = {
+  secondary: 'border border-border bg-surface text-fg hover:bg-surface-solid/70',
+  ghost: 'bg-transparent text-fg/85 hover:bg-[var(--accent-soft)] hover:text-fg',
+};
+
+const stateClasses = disabled ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
+const classes = `${base} ${sizes[size]} ${variants[variant]} ${stateClasses} ${className}`.trim();
+
+const buttonAttrs = {
+  'aria-label': ariaLabel,
+  type,
+  ...(disabled ? { disabled: true } : {}),
+  ...rest,
+};
+---
+
+<button class={classes} {...buttonAttrs}>
+  <slot />
+</button>
