@@ -18,10 +18,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@lucide/astro": "^0.515.0",
+    "@lucide/astro": "^0.563.0",
     "astro": "^5.16.9",
     "isomorphic-dompurify": "^2.35.0",
-    "lucide-react": "^0.515.0",
+    "lucide-react": "^0.563.0",
     "marked": "^17.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
