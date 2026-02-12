@@ -74,6 +74,10 @@ export default defineConfig({
     },
   },
   vite: {
+    build: {
+      // skinview3d wird bereits dynamisch geladen und bleibt bewusst als eigener, groesserer Chunk erhalten.
+      chunkSizeWarningLimit: 700,
+    },
     define: {
       'import.meta.env.GIT_COMMIT_HASH': JSON.stringify(COMMIT_HASH),
       'import.meta.env.GIT_BRANCH': JSON.stringify(BRANCH_NAME),
