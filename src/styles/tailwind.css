@@ -387,10 +387,12 @@ html[data-theme='dark'] {
   .site-discord-link {
     display: inline-flex;
     align-items: center;
-    gap: 0.12rem;
+    justify-content: center;
+    gap: 0.34rem;
     height: 2.5rem;
     min-height: 2.5rem;
-    padding: 0 0.38rem 0 0.42rem;
+    min-inline-size: 8.9rem;
+    padding: 0 0.56rem;
     max-inline-size: min(15rem, calc(100vw - 7rem));
     border-radius: 0.7rem;
     border: 1px solid color-mix(in oklab, var(--accent) 50%, var(--border) 50%);
@@ -409,7 +411,10 @@ html[data-theme='dark'] {
   }
 
   .site-discord-text {
+    display: inline-flex;
+    gap: 0.24rem;
     min-width: 0;
+    align-items: center;
   }
 
   .site-discord-link:hover {
@@ -428,15 +433,10 @@ html[data-theme='dark'] {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.34rem;
-    height: 1.34rem;
+    width: 1.28rem;
+    height: 1.28rem;
     color: color-mix(in oklab, var(--fg) 90%, transparent);
     flex: none;
-  }
-
-  .site-discord-icon > svg {
-    transform: scale(1.12);
-    transform-origin: center;
   }
 
   .site-discord-label {
@@ -808,11 +808,9 @@ html[data-theme='dark'] {
     animation: mg-counter-pulse 1.25s ease-in-out infinite;
   }
 
-  /* Navbar-Counter: feste Breite nur im Discord-Button, damit der Header stabil bleibt. */
+  /* Navbar-Counter im Discord-Button: kompakt, ohne kuenstliche Ziffernspalte. */
   .mg-discord-members {
     display: inline-block;
-    inline-size: 4.4ch;
-    text-align: right;
     white-space: nowrap;
   }
 
