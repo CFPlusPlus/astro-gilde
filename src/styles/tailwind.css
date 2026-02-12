@@ -38,7 +38,6 @@
   --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
 
   --radius: 16px;
-  --site-nav-offset: calc(4.7rem + env(safe-area-inset-top));
 }
 
 @media (prefers-color-scheme: dark) {
@@ -367,25 +366,8 @@ html[data-theme='dark'] {
     transform: translateX(-50%) scaleX(1);
   }
 
-  .site-nav-shell {
-    padding-top: calc(0.78rem + env(safe-area-inset-top));
-    padding-bottom: 0.62rem;
-    transition:
-      padding-top 180ms ease,
-      padding-bottom 180ms ease;
-  }
-
   .site-nav-row {
-    min-height: 3.05rem;
-    transition: min-height 180ms ease;
-  }
-
-  .site-nav-logo {
-    width: 2.35rem;
-    height: 2.35rem;
-    transition:
-      width 180ms ease,
-      height 180ms ease;
+    min-height: 2.75rem;
   }
 
   .site-nav-controls {
