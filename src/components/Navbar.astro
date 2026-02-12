@@ -79,9 +79,11 @@ const linkClassMega = (active: boolean) =>
   }`;
 ---
 
-<header class="sticky top-0 z-50" data-site-nav>
-  <div class="mx-auto max-w-6xl px-4 pt-[calc(1.25rem+env(safe-area-inset-top))]">
-    <div class="glass relative z-10 rounded-[var(--radius)] px-4 py-3 shadow-sm">
+<header class="fixed top-0 right-0 left-0 z-50" data-site-nav>
+  <div
+    class="border-border/80 bg-surface/88 supports-[backdrop-filter]:bg-surface/72 relative border-b shadow-sm supports-[backdrop-filter]:backdrop-blur-xl supports-[backdrop-filter]:backdrop-saturate-150"
+  >
+    <div class="site-nav-shell mx-auto max-w-6xl px-4">
       <div class="site-nav-row flex items-center justify-between gap-4">
         <a
           href={appRoutes.home}
@@ -93,7 +95,7 @@ const linkClassMega = (active: boolean) =>
             width="36"
             height="36"
             alt="Minecraft Gilde"
-            class="h-9 w-9 object-contain"
+            class="site-nav-logo object-contain"
             decoding="async"
           />
           <div class="site-brand-copy hidden leading-tight md:block">
@@ -180,13 +182,13 @@ const linkClassMega = (active: boolean) =>
           <div id="nav-panel" class="absolute top-full right-0 z-50 hidden" data-nav-panel>
             <!-- Mobile-Overlay -->
             <div
-              class="bg-bg/90 supports-[backdrop-filter]:bg-bg/70 fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-0 bottom-0 left-0 z-40 hidden backdrop-blur-[64px] backdrop-contrast-90 backdrop-saturate-150 md:hidden dark:bg-black/80 dark:supports-[backdrop-filter]:bg-black/55"
+              class="bg-bg/90 supports-[backdrop-filter]:bg-bg/70 fixed top-[var(--site-nav-offset)] right-0 bottom-0 left-0 z-40 hidden backdrop-blur-[64px] backdrop-contrast-90 backdrop-saturate-150 md:hidden dark:bg-black/80 dark:supports-[backdrop-filter]:bg-black/55"
               data-nav-overlay
             >
             </div>
 
             <div
-              class="fixed top-[calc(4.75rem+env(safe-area-inset-top))] right-0 left-0 z-50 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:absolute md:top-3 md:right-0 md:left-auto md:w-[min(23rem,calc(100vw-2rem))] md:px-0 md:pb-0"
+              class="fixed top-[var(--site-nav-offset)] right-0 left-0 z-50 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:absolute md:top-3 md:right-0 md:left-auto md:w-[min(23rem,calc(100vw-2rem))] md:px-0 md:pb-0"
             >
               <div
                 class="border-border/80 bg-surface-solid/98 supports-[backdrop-filter]:bg-surface-solid/95 md:bg-surface-solid/99 md:supports-[backdrop-filter]:bg-surface-solid/97 relative overflow-hidden rounded-2xl border shadow-lg supports-[backdrop-filter]:backdrop-blur-xl supports-[backdrop-filter]:backdrop-saturate-150 md:shadow-2xl md:supports-[backdrop-filter]:backdrop-blur-[56px] md:supports-[backdrop-filter]:backdrop-brightness-90 md:supports-[backdrop-filter]:backdrop-contrast-75 md:supports-[backdrop-filter]:backdrop-saturate-200"
@@ -269,6 +271,12 @@ const linkClassMega = (active: boolean) =>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div aria-hidden="true" class="pointer-events-none absolute right-0 bottom-0 left-0">
+      <div
+        class="mx-auto h-px max-w-6xl bg-[linear-gradient(90deg,transparent_0%,color-mix(in_oklab,var(--accent)_22%,transparent)_18%,color-mix(in_oklab,var(--accent2)_62%,transparent)_50%,color-mix(in_oklab,var(--accent)_22%,transparent)_82%,transparent_100%)] opacity-80"
+      >
       </div>
     </div>
   </div>

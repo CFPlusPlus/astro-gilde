@@ -70,6 +70,9 @@ const finalOgTitle = ogTitle ?? metaTitle;
 const finalOgDescription = ogDescription ?? metaDescription;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const mainClass = showNav
+  ? 'flex-1 pt-[var(--site-nav-offset)] transition-[padding-top] duration-200'
+  : 'flex-1';
 
 const finalOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, site).toString();
 
@@ -163,7 +166,7 @@ const ldBase = buildBaseGraph({
 
     {showNav ? <Navbar /> : null}
 
-    <main id="main-content" tabindex="-1" class="flex-1">
+    <main id="main-content" tabindex="-1" class={mainClass}>
       <slot />
     </main>
 
