@@ -68,7 +68,6 @@ export default defineConfig({
         "connect-src 'self' https:",
         "base-uri 'self'",
         "object-src 'none'",
-        "frame-ancestors 'self'",
         "form-action 'self'",
       ],
     },
