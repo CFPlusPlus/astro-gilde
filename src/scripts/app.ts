@@ -142,8 +142,125 @@ interface LiveCounterCacheEntry {
   const overlay = qs<HTMLElement>('[data-nav-overlay]', panel ?? document);
   const iconOpen = qs<HTMLElement>('[data-icon-open]', toggle ?? document);
   const iconClose = qs<HTMLElement>('[data-icon-close]', toggle ?? document);
+  const menuBackgroundFallbackState = new WeakMap<
+    HTMLElement,
+    { ariaHidden: string | null; hadPointerEventsNone: boolean }
+  >();
 
   const isMobile = (): boolean => window.matchMedia('(max-width: 767px)').matches;
+  const menuSupportsInert = 'inert' in HTMLElement.prototype;
+  let menuLastFocusedEl: HTMLElement | null = null;
+  let menuFocusTrapBound = false;
+
+  const getMenuBackgroundTargets = (): HTMLElement[] => {
+    return Array.from(document.body.children).filter((child): child is HTMLElement => {
+      if (!(child instanceof HTMLElement)) return false;
+      if (!navRoot) return true;
+      return child !== navRoot && !child.contains(navRoot);
+    });
+  };
+
+  const setMenuBackgroundInert = (inert: boolean): void => {
+    const targets = getMenuBackgroundTargets();
+
+    if (menuSupportsInert) {
+      targets.forEach((el) => {
+        (el as HTMLElement & { inert: boolean }).inert = inert;
+      });
+      return;
+    }
+
+    if (inert) {
+      targets.forEach((el) => {
+        if (!menuBackgroundFallbackState.has(el)) {
+          menuBackgroundFallbackState.set(el, {
+            ariaHidden: el.getAttribute('aria-hidden'),
+            hadPointerEventsNone: el.classList.contains('pointer-events-none'),
+          });
+        }
+
+        el.setAttribute('aria-hidden', 'true');
+        if (!el.classList.contains('pointer-events-none')) {
+          el.classList.add('pointer-events-none');
+        }
+      });
+      return;
+    }
+
+    targets.forEach((el) => {
+      const prevState = menuBackgroundFallbackState.get(el);
+      if (!prevState) return;
+
+      if (prevState.ariaHidden === null) el.removeAttribute('aria-hidden');
+      else el.setAttribute('aria-hidden', prevState.ariaHidden);
+
+      if (!prevState.hadPointerEventsNone) {
+        el.classList.remove('pointer-events-none');
+      }
+      menuBackgroundFallbackState.delete(el);
+    });
+  };
+
+  const getMenuFocusable = (): HTMLElement[] => {
+    if (!panel) return [];
+
+    return qsa<HTMLElement>(
+      'a[href], area[href], button, input, select, textarea, details summary, [tabindex]:not([tabindex="-1"])',
+      panel,
+    ).filter((el) => {
+      if (el.hasAttribute('disabled')) return false;
+      if (el.getAttribute('aria-hidden') === 'true') return false;
+
+      const style = window.getComputedStyle(el);
+      if (style.display === 'none' || style.visibility === 'hidden') return false;
+      return true;
+    });
+  };
+
+  const trapMenuFocus = (e: KeyboardEvent): void => {
+    if (!panel || !isMenuOpen() || !isMobile() || e.key !== 'Tab') return;
+
+    const focusable = getMenuFocusable();
+    if (!focusable.length) {
+      e.preventDefault();
+      if (!panel.hasAttribute('tabindex')) panel.tabIndex = -1;
+      panel.focus();
+      return;
+    }
+
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+
+    if (!(active instanceof HTMLElement) || !panel.contains(active)) {
+      e.preventDefault();
+      (e.shiftKey ? last : first).focus();
+      return;
+    }
+
+    if (e.shiftKey && active === first) {
+      e.preventDefault();
+      last.focus();
+      return;
+    }
+
+    if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+
+  const bindMenuFocusTrap = (): void => {
+    if (menuFocusTrapBound) return;
+    document.addEventListener('keydown', trapMenuFocus);
+    menuFocusTrapBound = true;
+  };
+
+  const unbindMenuFocusTrap = (): void => {
+    if (!menuFocusTrapBound) return;
+    document.removeEventListener('keydown', trapMenuFocus);
+    menuFocusTrapBound = false;
+  };
 
   const root = document.documentElement;
   let lockedScrollY = 0;
@@ -193,24 +310,52 @@ interface LiveCounterCacheEntry {
     if (iconOpen) iconOpen.classList.remove('hidden');
     if (iconClose) iconClose.classList.add('hidden');
 
+    unbindMenuFocusTrap();
+    setMenuBackgroundInert(false);
     unlockScroll();
+
+    if (menuLastFocusedEl && document.contains(menuLastFocusedEl)) {
+      menuLastFocusedEl.focus();
+    }
+    menuLastFocusedEl = null;
   };
 
   const openMenu = (): void => {
     if (!panel || !toggle) return;
+    menuLastFocusedEl =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
     panel.classList.remove('hidden');
     if (overlay) overlay.classList.toggle('hidden', !isMobile());
     toggle.setAttribute('aria-expanded', 'true');
     if (iconOpen) iconOpen.classList.add('hidden');
     if (iconClose) iconClose.classList.remove('hidden');
 
-    if (isMobile()) lockScroll();
-    else unlockScroll();
+    if (isMobile()) {
+      lockScroll();
+      setMenuBackgroundInert(true);
+      bindMenuFocusTrap();
+
+      window.setTimeout(() => {
+        const firstFocusable = getMenuFocusable()[0];
+        if (firstFocusable) firstFocusable.focus();
+      }, 0);
+      return;
+    }
+
+    unlockScroll();
+    setMenuBackgroundInert(false);
+    unbindMenuFocusTrap();
   };
 
   const isMenuOpen = (): boolean => Boolean(panel && !panel.classList.contains('hidden'));
 
   if (toggle && panel) {
+    if (!toggle.hasAttribute('aria-controls') && panel.id) {
+      toggle.setAttribute('aria-controls', panel.id);
+    }
+    toggle.setAttribute('aria-expanded', isMenuOpen() ? 'true' : 'false');
+
     toggle.addEventListener('click', (e: MouseEvent) => {
       e.stopPropagation();
       if (isMenuOpen()) closeMenu();
