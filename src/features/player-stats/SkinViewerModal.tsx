@@ -2,6 +2,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AlertCircle, RefreshCcw, X } from 'lucide-react';
 import steveImage from '../../assets/images/minecraft/steve.png';
 import elytraImage from '../../assets/images/minecraft/elytra.png';
+import {
+  applyAnimationModeToViewer,
+  clearViewerAnimationState,
+  resetViewerToFront,
+  type AnimationHandleLike,
+  type AnimationMode,
+  type AnimationModuleLike,
+  type AnimationViewerLike,
+  type ViewerControlsLike,
+} from './skin-viewer-runtime';
 
 type Props = {
   open: boolean;
@@ -13,22 +23,19 @@ type Props = {
   playerName?: string;
 };
 
-type AnimationMode = 'none' | 'idle' | 'rotate' | 'walk' | 'run' | 'fly';
 type BackMode = 'none' | 'cape' | 'elytra';
 type CapeState = 'idle' | 'loading' | 'ready' | 'unavailable' | 'error';
 
-type OrbitControlsLike = {
+type OrbitControlsLike = ViewerControlsLike & {
   enableRotate?: boolean;
   enableZoom?: boolean;
   enablePan?: boolean;
   reset?: () => void;
   dispose?: () => void;
-};
-
-type AnimationHandleLike = {
-  speed?: number;
-  remove?: () => void;
-  resetAndRemove?: () => void;
+} & {
+  target?: {
+    set?: (x: number, y: number, z: number) => void;
+  };
 };
 
 type RootAnimationsLike = {
@@ -36,9 +43,17 @@ type RootAnimationsLike = {
   paused?: boolean;
 };
 
-type SkinViewerLike = {
+type SkinViewerLike = AnimationViewerLike & {
   width?: number;
   height?: number;
+  controls?: OrbitControlsLike;
+  resetCameraPose?: () => void;
+  playerWrapper?: {
+    rotation?: {
+      y?: number;
+      set?: (x: number, y: number, z: number) => void;
+    };
+  };
   animations?: RootAnimationsLike;
   dispose?: () => void;
   loadSkin?: (url: string) => Promise<void> | void;
@@ -57,14 +72,9 @@ type SkinViewerCtor = new (opts: {
   skin: string;
 }) => SkinViewerLike;
 
-type SkinviewModuleLike = {
+type SkinviewModuleLike = AnimationModuleLike & {
   SkinViewer: SkinViewerCtor;
   createOrbitControls?: (viewer: SkinViewerLike) => OrbitControlsLike;
-  IdleAnimation?: unknown;
-  RotatingAnimation?: unknown;
-  WalkingAnimation?: unknown;
-  RunningAnimation?: unknown;
-  FlyingAnimation?: unknown;
 };
 
 type MojangProfile = {
@@ -379,6 +389,15 @@ export default function SkinViewerModal({
   };
 
   const clearAnimation = () => {
+    const viewer = viewerRef.current;
+    if (viewer) {
+      try {
+        clearViewerAnimationState(viewer);
+      } catch {
+        // Unkritisch: Animation-Reset darf fehlschlagen.
+      }
+    }
+
     const handle = animationHandleRef.current;
     animationHandleRef.current = null;
     if (!handle) return;
@@ -448,6 +467,11 @@ export default function SkinViewerModal({
           controls.enableZoom = true;
           controls.enablePan = false;
           controlsRef.current = controls;
+        } else if (viewer.controls) {
+          viewer.controls.enableRotate = true;
+          viewer.controls.enableZoom = true;
+          viewer.controls.enablePan = false;
+          controlsRef.current = viewer.controls;
         } else {
           controlsRef.current = null;
         }
@@ -616,23 +640,9 @@ export default function SkinViewerModal({
 
     clearAnimation();
 
-    if (animationMode === 'none') return;
-
-    let animation: unknown;
-    if (animationMode === 'idle') animation = mod.IdleAnimation;
-    else if (animationMode === 'rotate') animation = mod.RotatingAnimation;
-    else if (animationMode === 'walk') animation = mod.WalkingAnimation;
-    else if (animationMode === 'run') animation = mod.RunningAnimation;
-    else if (animationMode === 'fly') animation = mod.FlyingAnimation;
-
-    if (!animation || !viewer.animations?.add) return;
-
     try {
-      const handle = viewer.animations.add(animation);
-      if (handle) {
-        handle.speed = animationSpeed;
-        animationHandleRef.current = handle;
-      }
+      const handle = applyAnimationModeToViewer({ viewer, mod, animationMode, animationSpeed });
+      if (handle) animationHandleRef.current = handle;
     } catch {
       // Unkritisch: Animation darf fehlschlagen.
     }
@@ -678,14 +688,15 @@ export default function SkinViewerModal({
 
   const onReset = () => {
     try {
-      controlsRef.current?.reset?.();
-      void viewerRef.current?.loadSkin?.(resolvedSkinUrl);
+      const viewer = viewerRef.current;
+      resetViewerToFront(viewer, controlsRef.current);
+      void viewer?.loadSkin?.(resolvedSkinUrl);
 
       const backRequest = resolveBackLoad();
       if (!backRequest.source) {
-        void viewerRef.current?.loadCape?.(null);
+        void viewer?.loadCape?.(null);
       } else {
-        void viewerRef.current?.loadCape?.(backRequest.source, backRequest.options);
+        void viewer?.loadCape?.(backRequest.source, backRequest.options);
       }
     } catch {
       // Unkritisch: Reset darf fehlschlagen.
