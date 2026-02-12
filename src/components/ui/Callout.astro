@@ -1,5 +1,5 @@
 ---
-import { Info, Lightbulb, TriangleAlert, CheckCircle2 } from '@lucide/astro';
+import { Info, Lightbulb, TriangleAlert, CircleCheck } from '@lucide/astro';
 
 const { variant = 'info', title, icon = true, class: className = '' } = Astro.props;
 
@@ -11,7 +11,7 @@ const DefaultIcon =
     : variant === 'tip'
       ? Lightbulb
       : variant === 'success'
-        ? CheckCircle2
+        ? CircleCheck
         : Info;
 
 const showIcon = icon || hasIcon;

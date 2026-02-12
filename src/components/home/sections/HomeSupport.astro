@@ -2,7 +2,7 @@
 import Button from '../../ui/Button.astro';
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { ArrowRight, BadgeCheck, HelpCircle } from '@lucide/astro';
+import { ArrowRight, BadgeCheck, CircleQuestionMark } from '@lucide/astro';
 
 const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
 ---
@@ -45,7 +45,7 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
       <div
         class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
       >
-        <HelpCircle class="h-7 w-7" />
+        <CircleQuestionMark class="h-7 w-7" />
       </div>
       <div class="min-w-0">
         <h3 class="text-lg font-semibold tracking-tight">FAQ</h3>
