@@ -55,7 +55,7 @@ export const tutorialHeaderActions: readonly TutorialAction[] = [
 
 export const tutorialQuickstart = {
   title: 'Schnellstart (2 Minuten)',
-  subtitle: 'Das reicht fuer den ersten Abend:',
+  subtitle: 'Das reicht für deinen ersten Abend:',
   steps: [
     {
       title: 'Verbinden',
@@ -63,7 +63,7 @@ export const tutorialQuickstart = {
     },
     {
       title: 'Zuhause setzen',
-      text: 'Mit /sethome <Name> speicherst du deinen Startpunkt, mit /home <Name> kommst du zurueck.',
+      text: 'Mit /sethome <Name> speicherst du deinen Startpunkt, mit /home <Name> kommst du jederzeit zurück.',
     },
     {
       title: 'Claim erstellen',
@@ -71,7 +71,7 @@ export const tutorialQuickstart = {
     },
     {
       title: 'Rohstoffe farmen',
-      text: 'Nutze dafuer nur die Farmwelten: /farmwelt, /netherfarm und /endfarm.',
+      text: 'Nutze dafür nur die Farmwelten: /farmwelt, /netherfarm und /endfarm.',
     },
   ],
 } as const;
@@ -102,27 +102,27 @@ export const tutorialHowTo: {
 } = {
   name: 'Minecraft Gilde beitreten - Erststart in 2 Minuten',
   description:
-    'Kompakter Einstieg: verbinden, /rtp nutzen, Zuhause setzen, Grundstueck sichern und wichtige Regeln kennen.',
+    'Kompakter Einstieg: verbinden, /rtp nutzen, Zuhause setzen, Grundstück sichern und wichtige Regeln kennen.',
   steps: [
     {
       name: 'Mit dem Server verbinden',
       text: `Starte Minecraft Java (${minecraftGilde.mcVersion}) und verbinde dich mit ${minecraftGilde.serverIp} (Port 25565).`,
     },
     {
-      name: 'Startpunkt waehlen',
+      name: 'Startpunkt wählen',
       text: 'Nutze /rtp, um dich in die Hauptwelt zu teleportieren und direkt einen Bauplatz zu suchen.',
     },
     {
       name: 'Zuhause setzen',
-      text: 'Setze mit /sethome <Name> ein Home, damit du mit /home <Name> jederzeit zurueckkommst.',
+      text: 'Setze mit /sethome <Name> ein Home, damit du mit /home <Name> jederzeit zurückkommst.',
     },
     {
-      name: 'Grundstueck sichern',
+      name: 'Grundstück sichern',
       text: 'Halte eine Holzschaufel und markiere zwei Ecken per Rechtsklick, um deinen Claim zu erstellen.',
     },
     {
-      name: 'Regeln pruefen',
-      text: 'Lies die Regeln und beachte vor allem die Vorgaben zu Farmwelten und Community-Verhalten.',
+      name: 'Regeln prüfen',
+      text: 'Lies die Regeln und beachte vor allem die Vorgaben zu Farmwelten und zum Community-Verhalten.',
       target: 'rules',
     },
   ],
@@ -130,6 +130,6 @@ export const tutorialHowTo: {
 
 export const tutorialFinalCallout = {
   title: 'Noch Fragen?',
-  text: 'Wenn noch etwas offen ist, frag im Spiel oder auf Discord - die Community hilft.',
+  text: 'Wenn noch etwas offen ist, frag im Spiel oder auf Discord - wir helfen dir gerne weiter.',
   variant: 'info' as const,
 } as const;

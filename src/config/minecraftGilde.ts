@@ -1,8 +1,8 @@
 import { siteUrl } from './site';
 import logoImage from '../assets/images/branding/logo.webp';
 
-// Zentrale Projekt-Konfiguration fuer minecraft-gilde.de
-// Ziel: Strings (URLs, IP, Version) nicht ueber das Projekt verteilen,
+// Zentrale Projekt-Konfiguration für minecraft-gilde.de
+// Ziel: Strings (URLs, IP, Version) nicht über das Projekt verteilen,
 // sondern an einer Stelle pflegen.
 
 export const externalLinks = {

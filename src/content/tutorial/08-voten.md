@@ -10,5 +10,5 @@ actions:
     variant: secondary
 ---
 
-Wenn du den Server unterstuetzen und Belohnungen erhalten willst, vote fuer die Minecraft Gilde.
-Die Vote-Seite enthaelt alle aktuellen Links und Infos zu den Belohnungen.
+Wenn du den Server unterstützen und Belohnungen erhalten willst, vote für die Minecraft Gilde.
+Auf der Vote-Seite findest du alle aktuellen Links und Infos zu den Belohnungen.

@@ -4,16 +4,16 @@
     "icon": "BookOpen",
     "items": [
       {
-        "q": "Ich bin neu auf dem Server – Gibt es ein Tutorial?",
-        "a": "Damit du dich schnell zurechtfindest, haben wir ein Tutorial für den Erststart vorbereitet. Dort erfährst du alles Wichtige rund um Regeln, Gameplay und Features. Außerdem findest du am Spawn überall Infotafeln – und im Chat hilft dir die Community gerne weiter.\n\nMehr dazu im [Tutorial](/tutorial/)."
+        "q": "Ich bin neu auf dem Server - gibt es ein Tutorial?",
+        "a": "Ja. Unser Tutorial führt dich Schritt für Schritt durch den Start und zeigt dir alles Wichtige zu Regeln, Befehlen und den ersten Schritten in der Welt. Am Spawn findest du zusätzlich Infotafeln, und im Chat hilft dir die Community ebenfalls gern weiter.\n\nMehr dazu im [Tutorial](/tutorial/)."
       },
       {
         "q": "Ist die Nutzung des Servers kostenlos?",
-        "a": "Ja! Die Nutzung ist vollständig kostenlos. Es gibt keinerlei kaufbare Ränge oder Items – alle Spieler haben die gleichen Chancen und Möglichkeiten."
+        "a": "Ja, komplett. Es gibt keine kaufbaren Ränge oder Items - alle spielen unter denselben Bedingungen."
       },
       {
-        "q": "Kann ich mit einem „gecrackten“ Minecraft spielen?",
-        "a": "Nein. Es können ausschließlich Spieler mit legal erworbenem Premium-Account joinen. Wir möchten keine Software-Piraterie unterstützen."
+        "q": "Kann ich mit einem \"gecrackten\" Minecraft spielen?",
+        "a": "Nein. Es können nur Spieler mit legal erworbenem Premium-Account joinen."
       },
       {
         "q": "Welche Minecraft-Version wird unterstützt?",
@@ -21,11 +21,11 @@
       },
       {
         "q": "Brauche ich Discord, um zu spielen?",
-        "a": "Discord ist nicht verpflichtend, aber sehr empfohlen – dort posten wir wichtige Infos, Updates und News zum Server."
+        "a": "Nein, Discord ist keine Pflicht. Wir empfehlen es dir aber, weil dort wichtige Updates, Hinweise und Events zuerst gepostet werden."
       },
       {
         "q": "Gibt es eine Karte (Live-Map/Dynmap/BlueMap)?",
-        "a": "Ja – hier findest du unsere Live-Map: [map.minecraft-gilde.de](https://map.minecraft-gilde.de)."
+        "a": "Ja - hier findest du unsere Live-Map: [map.minecraft-gilde.de](https://map.minecraft-gilde.de)."
       }
     ]
   },
@@ -35,19 +35,19 @@
     "items": [
       {
         "q": "Wie erstelle ich ein Grundstück?",
-        "a": "Mit einer Holzschaufel kannst du dir Grundstücke erstellen. Markiere die zwei gegenüberliegenden Ecken deines Grundstücks per Rechtsklick. Wenn du erstmalig eine Truhe platzierst, wird automatisch ein Grundstück erstellt, das du später erweitern kannst.\n\nVideo-Anleitung: [YouTube-Video](https://www.youtube.com/watch?v=tK15LgTwvjI)"
+        "a": "Mit einer Holzschaufel kannst du dein Grundstück markieren: Setze per Rechtsklick zwei gegenüberliegende Ecken. Wenn du zum ersten Mal eine Truhe platzierst, wird automatisch ein kleines Start-Grundstück erstellt, das du später erweitern kannst.\n\nVideo-Anleitung: [YouTube-Video](https://www.youtube.com/watch?v=tK15LgTwvjI)"
       },
       {
         "q": "Wie groß können meine Grundstücke werden und wie viele darf ich erstellen?",
-        "a": "Du kannst beliebig viele Grundstücke erstellen – es gibt kein Limit bei der Anzahl. Entscheidend ist die Gesamtfläche: Alle deine Grundstücke zusammen dürfen maximal 120.000 Blöcke groß sein. Pro Spielstunde bekommst du 1.000 Claim-Blöcke dazu, bis du das Maximum erreicht hast. Du kannst die Blöcke frei auf mehrere Claims verteilen."
+        "a": "Du kannst beliebig viele Grundstücke erstellen - es gibt kein Mengenlimit. Entscheidend ist nur die Gesamtfläche: Alle deine Grundstücke zusammen dürfen maximal 120.000 Blöcke groß sein. Pro Spielstunde bekommst du 1.000 Claim-Blöcke dazu, bis du das Maximum erreicht hast."
       },
       {
         "q": "Wie gebe ich anderen Zugriff auf meinen Claim?",
-        "a": "Du kannst andere Spieler zu deinem Grundstück hinzufügen, damit sie z. B. bauen oder Kisten öffnen können.\n\nBefehl: `/trust Spielername`\n\nMehr Details findest du auf der Seite [Befehle](/befehle) und im [Tutorial](/tutorial/)."
+        "a": "Du kannst andere Spieler zu deinem Grundstück hinzufügen, damit sie dort bauen oder Kisten öffnen können.\n\nBefehl: `/trust Spielername`\n\nMehr Details findest du auf der Seite [Befehle](/befehle) und im [Tutorial](/tutorial/)."
       },
       {
         "q": "Gibt es Vorgaben, wie ich bauen muss?",
-        "a": "Es gibt keine festen Vorgaben – du kannst frei bauen, wie du möchtest. Bestimmte „unschöne“ Bauwerke können aber entfernt werden (z. B. 1x1-Säulen, Erdklötze als Dauerlösung, offen liegende Tunnel, riesige unintegrierte Farmen oder verlassene Baustellen). Wenn du unsicher bist, frag gern das Team."
+        "a": "Du kannst grundsätzlich frei bauen. Sehr störende oder vernachlässigte Bauten können aber entfernt werden (z. B. 1x1-Säulen, provisorische Erdklotz-Konstruktionen, offen liegende Tunnel oder verlassene Großbaustellen). Wenn du unsicher bist, frag einfach kurz das Team."
       }
     ]
   },
@@ -57,11 +57,11 @@
     "items": [
       {
         "q": "Können mich andere Spieler angreifen?",
-        "a": "Das kommt darauf an: Auf deinem eigenen Grundstück bist du vor Angriffen geschützt. Außerhalb deines Grundstücks oder in einer Farmwelt können Spieler sich gegenseitig angreifen."
+        "a": "In deinem eigenen Grundstück bist du geschützt. Außerhalb deines Grundstücks oder in einer Farmwelt können Spieler einander angreifen."
       },
       {
         "q": "Gibt es KeepInventory / Was passiert beim Tod?",
-        "a": "Ja – KeepInventory ist aktiv. Du behältst deine Items beim Tod."
+        "a": "Ja - KeepInventory ist aktiv. Du behältst deine Items beim Tod."
       },
       {
         "q": "Wo finde ich Informationen zu den Server-Einstellungen?",
@@ -75,11 +75,11 @@
     "items": [
       {
         "q": "Es gibt eine neue Minecraft-Version. Soll ich das Update direkt durchführen?",
-        "a": "Bitte warte zunächst mit dem Update. Wir bringen den Server so schnell wie möglich auf die neueste Version, müssen aber erst abwarten, bis wichtige Plugins und die Server-Software stabil aktualisiert sind. Aktuelle Infos findest du immer auf Discord."
+        "a": "Warte am besten kurz mit dem Update. Wir ziehen den Server so schnell wie möglich nach, müssen aber zuerst prüfen, ob wichtige Plugins und die Server-Software stabil laufen. Den aktuellen Stand teilen wir immer auf Discord."
       },
       {
-        "q": "Gibt es eine Farmwelt – und wird sie resettet?",
-        "a": "Ja, für Ressourcen gibt es eine Farmwelt. Diese wird in unregelmäßigen Abständen zurückgesetzt (Infos dazu teilen wir rechtzeitig)."
+        "q": "Gibt es eine Farmwelt - und wird sie resettet?",
+        "a": "Ja, für Ressourcen gibt es Farmwelten. Diese werden in unregelmäßigen Abständen zurückgesetzt. Informationen dazu teilen wir rechtzeitig."
       },
       {
         "q": "Welche Mods/Clients sind erlaubt?",
@@ -91,7 +91,7 @@
       },
       {
         "q": "Darf ich ein YouTube-Video/Twitch-Stream machen und die Server-Adresse zeigen?",
-        "a": "Sehr gerne! Du darfst die IP-Adresse in deinen Videos oder Streams selbstverständlich zeigen. Wenn du Interesse hast, offizieller Streamer zu werden, melde dich gern bei einem Admin."
+        "a": "Sehr gerne. Du darfst die IP-Adresse in deinen Videos oder Streams selbstverständlich zeigen. Wenn du Interesse hast, offizieller Streamer zu werden, melde dich einfach bei einem Admin."
       }
     ]
   }

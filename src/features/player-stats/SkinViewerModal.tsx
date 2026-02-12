@@ -517,7 +517,7 @@ export default function SkinViewerModal({
           setResolvedSkinUrl(candidate);
           return;
         } catch {
-          // Naechsten Skin-Kandidaten versuchen.
+          // Nächsten Skin-Kandidaten versuchen.
         }
       }
 
@@ -711,7 +711,7 @@ export default function SkinViewerModal({
           <h3 className="text-fg text-sm font-semibold sm:text-base">{dialogTitle}</h3>
           <button
             type="button"
-            aria-label="Schliessen"
+            aria-label="Schließen"
             className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-red-500/70 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-400 focus-visible:ring-2 focus-visible:ring-red-500/40 focus-visible:outline-none"
             onClick={onClose}
           >
@@ -821,7 +821,7 @@ export default function SkinViewerModal({
 
         <footer className="border-border flex flex-col gap-2 border-t px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:px-4 sm:py-3">
           <span className="text-muted text-xs">
-            Ziehen zum Drehen, Mausrad zum Zoomen, ESC zum Schliessen.
+            Ziehen zum Drehen, Mausrad zum Zoomen, ESC zum Schließen.
           </span>
           <button
             type="button"

@@ -10,10 +10,10 @@ actions:
     variant: secondary
 ---
 
-Eine vollstaendige Liste findest du auf der Befehle-Seite. Fuer den Einstieg reichen meist diese:
+Eine vollständige Liste findest du auf der Befehle-Seite. Für den Einstieg reichen meistens diese:
 
-- `/spawn` - zurueck zum Spawn.
+- `/spawn` - zurück zum Spawn.
 - `/sethome <Name>` und `/home <Name>` - Home setzen und teleportieren.
-- `/rtp` - zufaelliger Teleport in die Hauptwelt.
+- `/rtp` - zufälliger Teleport in die Hauptwelt.
 - `/msg <Spieler> <Nachricht>` - private Nachricht.
 - `/helpop <Nachricht>` - Hilfe vom Team bei dringenden Themen.

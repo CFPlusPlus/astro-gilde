@@ -5,7 +5,7 @@
       "commands": [
         {
           "command": "/getpos",
-          "description": "Zeigt euch eure aktuelle Position (Koordinaten) und die Welt in der ihr seit an"
+          "description": "Zeigt dir deine aktuelle Position (Koordinaten) und die Welt, in der du gerade bist."
         },
         {
           "command": "/help",
@@ -13,7 +13,7 @@
         },
         {
           "command": "/helpop <nachricht>",
-          "description": "Mit diesem Befehl schreibt ihr einen Admin an"
+          "description": "Schickt dem Team eine Nachricht bei dringenden Themen."
         },
         {
           "command": "/afk",
@@ -21,31 +21,31 @@
         },
         {
           "command": "/back",
-          "description": "Teleportiert dich an deinen letzten Standort vor dem Tp- oder Spawn-Befehl"
+          "description": "Teleportiert dich zu deinem letzten Standort vor einem TP- oder Spawn-Befehl."
         },
         {
           "command": "/discord",
-          "description": "Zeigt euch den Discord-Einladungslink an"
+          "description": "Zeigt dir den Discord-Einladungslink an."
         },
         {
           "command": "/list",
-          "description": "Zeigt euch alle Spieler, die aktuell online auf dem Server sind"
+          "description": "Zeigt dir alle Spieler, die aktuell online sind."
         },
         {
           "command": "/map",
-          "description": "Zeigt dir den Link zur DynMap an"
+          "description": "Zeigt dir den Link zur Dynmap an."
         },
         {
           "command": "/motd",
-          "description": "Zeigt euch die Willkommensnachricht an"
+          "description": "Zeigt dir die Willkommensnachricht an."
         },
         {
           "command": "/msg <spieler> <nachricht>",
-          "description": "Sendet eine Private Nachricht an einen Spieler"
+          "description": "Sendet eine private Nachricht an einen Spieler."
         },
         {
           "command": "/r",
-          "description": "Schnelle Antwort auf die letzte Nachricht"
+          "description": "Antwortet schnell auf die letzte Nachricht."
         },
         {
           "command": "/rtp",
@@ -53,43 +53,43 @@
         },
         {
           "command": "/rules",
-          "description": "Zeigt die Serverregeln an"
+          "description": "Zeigt die Serverregeln an."
         },
         {
           "command": "/seen",
-          "description": "Zeigt die letzte Logout-Zeit eines Spielers an"
+          "description": "Zeigt die letzte Logout-Zeit eines Spielers an."
         },
         {
           "command": "/spawn",
-          "description": "Teleportiert dich zum Spawn"
+          "description": "Teleportiert dich zum Spawn."
         },
         {
           "command": "/time",
-          "description": "Zeigt euch die Ingame-Uhrzeit an"
+          "description": "Zeigt dir die Ingame-Uhrzeit an."
         },
         {
           "command": "/tpa <spieler>",
-          "description": "Stellt eine Anfrage, um sich zu einem Spieler zu teleportieren"
+          "description": "Stellt eine Anfrage, um dich zu einem Spieler zu teleportieren."
         },
         {
           "command": "/tpahere <spieler>",
-          "description": "Bittet den angegebenen Spieler, sich zu dir zu teleportieren"
+          "description": "Bittet den angegebenen Spieler, sich zu dir zu teleportieren."
         },
         {
           "command": "/tpaccept",
-          "description": "Eine Teleportanfrage annehmen"
+          "description": "Nimmt eine Teleportanfrage an."
         },
         {
           "command": "/tpauto",
-          "description": "Teleportanfragen automatisch annehmen"
+          "description": "Nimmt Teleportanfragen automatisch an."
         },
         {
           "command": "/tpcancel",
-          "description": "Eine Teleportanfrage abbrechen"
+          "description": "Bricht eine Teleportanfrage ab."
         },
         {
           "command": "/tpdeny",
-          "description": "Eine Teleportanfrage ablehnen"
+          "description": "Lehnt eine Teleportanfrage ab."
         },
         {
           "command": "/tutorial",
@@ -102,7 +102,7 @@
       "commands": [
         {
           "command": "/sethome <name>",
-          "description": "Setzt ein Home auf die aktuelle Position"
+          "description": "Setzt ein Home auf deiner aktuellen Position."
         },
         {
           "command": "/delhome <name>",
@@ -110,15 +110,15 @@
         },
         {
           "command": "/home <name>",
-          "description": "Teleportiert dich zu dem angegebenen Home"
+          "description": "Teleportiert dich zu dem angegebenen Home."
         },
         {
           "command": "/homes",
-          "description": "Zeigt deine Home-Punkte an"
+          "description": "Zeigt deine gesetzten Homes an."
         },
         {
           "command": "/renamehome",
-          "description": "Benennt ein Home-Punkt um"
+          "description": "Benennt ein Home um."
         }
       ]
     },
@@ -135,11 +135,11 @@
         },
         {
           "command": "/claimexplosions",
-          "description": "Schaltet um, ob Explosionen im Claim erlaubt sind"
+          "description": "Schaltet um, ob Explosionen im Claim erlaubt sind."
         },
         {
           "command": "/trust <spieler>",
-          "description": "Erteilt einem anderen Spieler die Erlaubnis, Ihren Claim zu bearbeiten"
+          "description": "Gibt einem anderen Spieler die Erlaubnis, deinen Claim zu bearbeiten."
         },
         {
           "command": "/untrust <spieler>",
@@ -151,7 +151,7 @@
         },
         {
           "command": "/accesstrust <spieler>",
-          "description": "Gibt einem Spieler die Erlaubnis, Ihre Tasten, Hebel und Betten zu benutzen"
+          "description": "Gibt einem Spieler Zugriff auf T?ren, Schalter und Buttons in deinem Claim."
         },
         {
           "command": "/containertrust <spieler>",
@@ -163,15 +163,15 @@
         },
         {
           "command": "/permissiontrust <spieler>",
-          "description": "Erlaubt einem Spieler, seine Berechtigungsstufe mit anderen zu teilen"
+          "description": "Erlaubt einem Spieler, seine Berechtigungsstufe in deinem Claim weiterzugeben."
         },
         {
           "command": "/claimslist",
-          "description": "Listet die Claims und Claim-Block-Details eines Spielers auf"
+          "description": "Listet die Claims und Claim-Block-Details eines Spielers auf."
         },
         {
           "command": "/trapped",
-          "description": "Befreit dich aus einem Claim, in dem du gefangen bist"
+          "description": "Befreit dich aus einem Claim, in dem du gefangen bist."
         },
         {
           "command": "/expandclaim <+/- Wert>",
@@ -179,7 +179,7 @@
         },
         {
           "command": "/subdivideclaims",
-          "description": "Schaltet deine Holz-Schaufel in den Unterteilungsmodus, damit du deine Claims unterteilen kannst"
+          "description": "Schaltet deine Holzschaufel in den Unterteilungsmodus, damit du Claims unterteilen kannst."
         }
       ]
     },
@@ -188,15 +188,15 @@
       "commands": [
         {
           "command": "/farmwelt",
-          "description": "Teleportiert dich in die normale Farmwelt"
+          "description": "Teleportiert dich in die normale Farmwelt."
         },
         {
           "command": "/netherfarm",
-          "description": "Teleportiert dich in die Nether-Farmwelt"
+          "description": "Teleportiert dich in die Nether-Farmwelt."
         },
         {
           "command": "/endfarm",
-          "description": "Teleportiert dich in die End-Farmwelt"
+          "description": "Teleportiert dich in die End-Farmwelt."
         }
       ]
     },
@@ -205,7 +205,7 @@
       "commands": [
         {
           "command": "/vote",
-          "description": "Zeigt dir alle Vote-Links an"
+          "description": "Zeigt dir alle Vote-Links an."
         },
         {
           "command": "/votegui",
@@ -217,7 +217,7 @@
         },
         {
           "command": "/votepoints",
-          "description": "Zeigt dir deinen aktuellen Punktestand an"
+          "description": "Zeigt dir deinen aktuellen Punktestand an."
         },
         {
           "command": "/votenext",
@@ -225,27 +225,27 @@
         },
         {
           "command": "/votetop",
-          "description": "Zeigt dir deine Bestenliste an"
+          "description": "Zeigt dir deinen Platz in der Bestenliste an."
         },
         {
           "command": "/votetoday",
-          "description": "Zeigt an, wer heute alles gevotet hat"
+          "description": "Zeigt an, wer heute alles gevotet hat."
         },
         {
           "command": "/votetotal",
-          "description": "Zeigt an, wie oft du gevotet hast"
+          "description": "Zeigt an, wie oft du gevotet hast."
         },
         {
           "command": "/votebest",
-          "description": "Zeigt dir deine Voting-Bestwerte an"
+          "description": "Zeigt dir deine Voting-Bestwerte an."
         },
         {
           "command": "/votehelp <seite>",
-          "description": "Zeigt dir die Hilfeseiten des Vote-Plug-in an"
+          "description": "Zeigt dir die Hilfeseiten des Vote-Plugins an."
         },
         {
           "command": "/votetogglereminders",
-          "description": "Vote-Erinnerungen aktivieren/deaktivieren"
+          "description": "Aktiviert oder deaktiviert Vote-Erinnerungen."
         }
       ]
     }

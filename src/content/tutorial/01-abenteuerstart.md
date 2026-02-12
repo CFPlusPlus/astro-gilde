@@ -6,14 +6,14 @@ meta: /rtp · home · ankommen
 open: true
 ---
 
-Am Spawn kannst du kurz ankommen. Fuer den eigentlichen Start empfehlen wir dann **`/rtp`**.
-Du landest in der Hauptwelt und kannst direkt losbauen.
+Am Spawn kannst du kurz ankommen und dich orientieren. Für deinen eigentlichen Start empfehlen
+wir dir dann **`/rtp`**. So landest du in der Hauptwelt und kannst direkt losbauen.
 
-Wenn du dich verlaufen solltest, bringt dich **`/spawn`** jederzeit zurueck.
+Wenn du dich verläufst, bringt dich **`/spawn`** jederzeit zurück.
 Sobald du einen Platz gefunden hast, setze mit **`/sethome <Name>`** dein Home.
-Mit **`/home <Name>`** kommst du spaeter direkt wieder dorthin.
+Mit **`/home <Name>`** kommst du später direkt wieder dorthin.
 
-> **Performance-Hinweis (Folia):** Baue deine Basis nicht direkt neben andere grosse Farmen.
-> Ein paar hundert Bloecke Abstand helfen, die Server-Performance stabil zu halten.
+> **Performance-Hinweis (Folia):** Baue deine Basis nicht direkt neben andere große Farmen.
+> Ein paar hundert Blöcke Abstand helfen, die Server-Performance stabil zu halten.
 
-Wenn du vorab Regionen pruefen willst, nutze die Dynmap fuer die Bauplatz-Suche.
+Wenn du vorab Regionen prüfen willst, nutze die Dynmap für die Bauplatz-Suche.

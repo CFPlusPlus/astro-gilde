@@ -6,11 +6,11 @@ meta: Rohstoffe
 open: false
 ---
 
-Fuer den Abbau von Ressourcen gibt es separate **Farmwelten**. Nutze diese Befehle:
+Für den Abbau von Ressourcen gibt es separate **Farmwelten**. Nutze dafür diese Befehle:
 
-- **`/farmwelt`** fuer Holz, Stein und Erze.
-- **`/netherfarm`** fuer Nether-Ressourcen.
-- **`/endfarm`** fuer End-Ressourcen.
+- **`/farmwelt`** für Holz, Stein und Erze.
+- **`/netherfarm`** für Nether-Ressourcen.
+- **`/endfarm`** für End-Ressourcen.
 
-Die Farmwelten werden regelmaessig zurueckgesetzt.
+Die Farmwelten werden regelmäßig zurückgesetzt.
 Nimm deshalb wichtige Items rechtzeitig mit und baue dort nichts, was dauerhaft bleiben soll.

@@ -6,11 +6,11 @@ meta: Rollen
 open: false
 ---
 
-Im Chat erkennst du Rollen an farbigen Namen. Kurzfassung:
+Im Chat erkennst du Rollen an farbigen Namen. Kurz erklärt:
 
 - **Admin:** Technik und Verwaltung.
 - **Moderator:** hilft Spielern und achtet auf die Regeln.
-- **Streamer:** Spieler, die regelmaessig live streamen.
+- **Streamer:** Spieler, die regelmäßig live streamen.
 - **Player:** normale Mitglieder der Community.
 
 Wenn du Hilfe brauchst:
@@ -19,4 +19,4 @@ Wenn du Hilfe brauchst:
 - Privat mit `/msg <Spieler> <Nachricht>`.
 - Dringend mit `/helpop <Nachricht>`.
 
-Fuer laengere Themen kannst du jederzeit auf Discord schreiben.
+Für längere Themen kannst du jederzeit auf Discord schreiben.

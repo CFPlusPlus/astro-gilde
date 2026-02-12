@@ -58,7 +58,7 @@ const {
   scripts = [],
 } = Astro.props as Props;
 
-// Absolute URLs (wichtig fuer OG/Twitter)
+// Absolute URLs (wichtig für OG/Twitter)
 const site = Astro.site ?? canonicalSite;
 const canonicalUrl = canonical ? canonicalFor(canonical) : canonicalFor(Astro.url.pathname);
 
@@ -131,7 +131,7 @@ const ldBase = buildBaseGraph({
 
     <script is:inline>
       // Theme-Bootstrap (verhindert Flash). Werte: 'light' | 'dark' | 'system'
-      // TODO(CSP): spaeter in externe Datei verschieben, um 'unsafe-inline' weiter reduzieren zu koennen.
+      // TODO(CSP): später in externe Datei verschieben, um 'unsafe-inline' weiter reduzieren zu können.
       try {
         const stored = localStorage.getItem('theme');
         const root = document.documentElement;
@@ -147,7 +147,7 @@ const ldBase = buildBaseGraph({
     </script>
 
     <script is:inline define:vars={{ browserAppConfig }}>
-      // Globale App-Config fuer Client-Skripte
+      // Globale App-Config für Client-Skripte
       window.__APP_CONFIG__ = browserAppConfig;
     </script>
 
