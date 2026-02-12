@@ -6,7 +6,7 @@ import HomeSection from '../HomeSection.astro';
 import { Image } from 'astro:assets';
 
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { Activity, ArrowRight, Copy, Map, Users } from '@lucide/astro';
+import { Activity, ArrowRight, Download, Map, Users } from '@lucide/astro';
 import headerBackgroundImage from '../../../assets/images/home/header-background.webp';
 import logoBigImage from '../../../assets/images/branding/logo-big.webp';
 
@@ -57,7 +57,7 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
 
         <div class="mt-12 flex flex-wrap items-center gap-3" data-reveal data-reveal-delay="140">
           <Button variant="primary" class="gap-2" data-copy-ip>
-            <Copy size={18} /> IP kopieren
+            <Download size={18} /> Jetzt Spielen
           </Button>
           <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
             Discord <ArrowRight size={18} />
@@ -102,8 +102,8 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
           <div class="text-muted text-xs font-medium">Server-IP</div>
           <div class="mt-1 flex items-center gap-2">
             <code class="text-sm font-semibold">{SERVER_IP}</code>
-            <IconButton ariaLabel="Server-IP kopieren" data-copy-ip>
-              <Copy size={16} />
+            <IconButton ariaLabel="Jetzt spielen" data-copy-ip>
+              <Download size={16} />
             </IconButton>
           </div>
         </div>

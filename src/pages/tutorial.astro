@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import { ArrowRight, Copy, Hammer, Map, Shield, UserRound, Vote, Wand } from '@lucide/astro';
+import { ArrowRight, Download, Hammer, Map, Shield, UserRound, Vote, Wand } from '@lucide/astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
 import Card from '../components/ui/Card.astro';
@@ -85,7 +85,9 @@ const sections = await Promise.all(
     <p class="text-muted mt-2">{tutorialHeaderIntro.subtitle}</p>
 
     <div class="mt-6 flex flex-wrap gap-3">
-      <Button variant="primary" class="gap-2" data-copy-ip><Copy size={18} /> IP kopieren</Button>
+      <Button variant="primary" class="gap-2" data-copy-ip>
+        <Download size={18} /> Jetzt Spielen
+      </Button>
       {
         tutorialHeaderActions.map((action) => {
           const Icon = action.icon ? ACTION_ICONS[action.icon as ActionIconName] : null;

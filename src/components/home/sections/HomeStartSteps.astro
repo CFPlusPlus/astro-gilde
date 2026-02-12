@@ -2,7 +2,7 @@
 import Button from '../../ui/Button.astro';
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { ArrowRight, Copy } from '@lucide/astro';
+import { ArrowRight, Download } from '@lucide/astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const MC_VERSION = minecraftGilde.mcVersion;
@@ -27,13 +27,13 @@ const MC_VERSION = minecraftGilde.mcVersion;
           1
         </div>
         <div>
-          <h3 class="text-base font-semibold">IP kopieren & joinen</h3>
+          <h3 class="text-base font-semibold">Jetzt spielen & joinen</h3>
           <p class="text-muted mt-2 text-sm">
             Server hinzufügen, verbinden und loslegen - <strong>Java {MC_VERSION}</strong>.
           </p>
           <div class="mt-4">
             <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
-              <Copy size={16} /> IP kopieren
+              <Download size={16} /> Jetzt Spielen
             </Button>
           </div>
         </div>

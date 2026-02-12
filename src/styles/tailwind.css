@@ -823,6 +823,26 @@ html[data-theme='dark'] {
     color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
   }
 
+  .mg-status-dot {
+    box-shadow: 0 0 0 0 color-mix(in oklab, #4ade80 44%, transparent);
+    animation: mg-status-pulse 2.8s ease-out infinite;
+  }
+
+  @keyframes mg-status-pulse {
+    0% {
+      transform: scale(0.98);
+      box-shadow: 0 0 0 0 color-mix(in oklab, #4ade80 46%, transparent);
+    }
+    55% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px color-mix(in oklab, #4ade80 0%, transparent);
+    }
+    100% {
+      transform: scale(0.98);
+      box-shadow: 0 0 0 0 color-mix(in oklab, #4ade80 0%, transparent);
+    }
+  }
+
   @keyframes mg-counter-pulse {
     0%,
     100% {
@@ -834,6 +854,10 @@ html[data-theme='dark'] {
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .mg-status-dot {
+      animation: none;
+    }
+
     .mg-live-counter[data-live-state='loading'] {
       animation: none;
       opacity: 0.8;

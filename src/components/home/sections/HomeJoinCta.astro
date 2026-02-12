@@ -2,7 +2,7 @@
 import Button from '../../ui/Button.astro';
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { ArrowRight, Copy } from '@lucide/astro';
+import { ArrowRight, Download } from '@lucide/astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const SERVER_IP = minecraftGilde.serverIp;
@@ -19,7 +19,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
       </p>
       <div class="mt-7 flex flex-wrap gap-3">
         <Button variant="primary" class="gap-2" data-copy-ip>
-          <Copy size={18} /> IP kopieren
+          <Download size={18} /> Jetzt Spielen
         </Button>
         <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
           Discord <ArrowRight size={18} />

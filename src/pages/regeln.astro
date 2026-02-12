@@ -4,7 +4,7 @@ import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
 import { getEntry } from 'astro:content';
-import { Book, MessageSquareText, Copy, ArrowRight } from '@lucide/astro';
+import { Book, MessageSquareText, Download, ArrowRight } from '@lucide/astro';
 
 const rules = await getEntry('rules', 'main');
 if (!rules) throw new Error('Rules entry "main" not found');
@@ -27,7 +27,7 @@ const ip = serverIp || 'minecraft-gilde.de';
 
     <div class="mt-6 flex flex-wrap gap-3">
       <Button variant="primary" class="gap-2" data-copy-ip>
-        <Copy size={18} /> IP kopieren
+        <Download size={18} /> Jetzt Spielen
       </Button>
       <Button href="/tutorial" variant="secondary" class="gap-2">
         <ArrowRight size={18} /> Tutorial

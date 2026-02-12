@@ -7,6 +7,7 @@ import '@fontsource-variable/space-grotesk';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
+import { Check, Copy, Download, Info, X } from '@lucide/astro';
 import { buildBaseGraph } from '../lib/structuredData';
 import { browserAppConfig, minecraftGilde } from '../config/minecraftGilde';
 import { canonicalFor, site as canonicalSite } from '../config/site';
@@ -67,6 +68,8 @@ const metaDescription = description ?? minecraftGilde.brand.defaultMetaDescripti
 
 const finalOgTitle = ogTitle ?? metaTitle;
 const finalOgDescription = ogDescription ?? metaDescription;
+const SERVER_IP = minecraftGilde.serverIp;
+const MC_VERSION = minecraftGilde.mcVersion;
 
 const finalOgImage = ogImage.startsWith('http') ? ogImage : new URL(ogImage, site).toString();
 
@@ -175,8 +178,142 @@ const ldBase = buildBaseGraph({
     {showFooter ? <Footer /> : null}
 
     <div
+      id="join-modal"
+      class="fixed inset-0 z-[70] hidden overflow-y-auto overscroll-contain p-2 sm:p-4"
+      data-join-modal
+      aria-hidden="true"
+    >
+      <div class="absolute inset-0 bg-black/65" data-join-modal-overlay></div>
+
+      <div class="relative mx-auto flex min-h-full w-full items-center justify-center py-2 sm:py-4">
+        <section
+          class="border-border/80 bg-surface-solid/95 max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-[calc(var(--radius)+6px)] border shadow-2xl backdrop-blur-md sm:max-h-[calc(100dvh-2rem)]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="join-modal-title"
+          data-join-modal-dialog
+          tabindex="-1"
+        >
+          <header
+            class="border-border/80 bg-surface/80 flex items-center justify-between border-b px-4 py-4 sm:px-6"
+          >
+            <h2
+              id="join-modal-title"
+              class="flex items-center gap-3 text-xl font-semibold tracking-tight"
+            >
+              <Download size={22} class="text-accent" /> Jetzt auf Minecraft Gilde spielen
+            </h2>
+
+            <button
+              type="button"
+              class="text-muted hover:text-accent focus-visible:ring-accent/40 inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
+              aria-label="Modal schließen"
+              data-join-modal-close
+            >
+              <X size={20} />
+            </button>
+          </header>
+
+          <div class="space-y-4 p-3 sm:p-5">
+            <article
+              class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5"
+            >
+              <h3 class="text-base font-semibold sm:text-xl">
+                Schritt 1: Minecraft Java installieren
+              </h3>
+              <p class="text-muted mt-3 text-sm leading-relaxed sm:text-base">
+                Starte den Minecraft Launcher und wähle die Java-Edition. Für unseren Server
+                brauchst du keine Bedrock-Version.
+              </p>
+            </article>
+
+            <article
+              class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5"
+            >
+              <h3 class="text-base font-semibold sm:text-xl">
+                Schritt 2: Mit unserem Java-Server verbinden
+              </h3>
+
+              <div class="border-border/70 bg-surface/55 mt-3 rounded-xl border p-3 sm:p-4">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="flex min-w-0 flex-col gap-2">
+                    <div class="text-muted text-xs font-semibold tracking-wide uppercase">
+                      Server-IP
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                      <code
+                        class="text-accent border-0 bg-transparent p-0 text-base font-semibold break-all sm:text-2xl"
+                      >
+                        {SERVER_IP}
+                      </code>
+                      <button
+                        type="button"
+                        class="border-border/80 bg-surface hover:border-accent/60 hover:bg-accent/10 hover:text-accent inline-flex h-9 min-w-[7.75rem] items-center justify-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors"
+                        aria-label="Server-IP kopieren"
+                        data-copy-ip-modal
+                      >
+                        <span data-copy-ip-modal-icon-default>
+                          <Copy size={16} />
+                        </span>
+                        <span class="hidden" data-copy-ip-modal-icon-success>
+                          <Check size={16} />
+                        </span>
+                        <span data-copy-ip-modal-label>IP kopieren</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="text-sm">
+                    <p class="text-muted">
+                      Version: <span class="text-fg font-semibold">Java {MC_VERSION}</span>
+                    </p>
+                    <p class="text-muted">
+                      Port: <span class="text-fg font-semibold">25565</span>
+                    </p>
+                    <div
+                      class="border-border/70 bg-surface mt-2 flex items-start gap-2 rounded-lg border p-2"
+                    >
+                      <Info size={14} class="text-accent mt-0.5 shrink-0" />
+                      <p class="text-muted text-xs">
+                        Meist reicht die Server-Adresse aus. Port <span class="text-fg font-medium"
+                          >25565</span
+                        > nur angeben, wenn dein Client es ausdrücklich verlangt.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article
+              class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5"
+            >
+              <div class="flex items-center gap-3">
+                <span class="mg-status-dot h-3 w-3 rounded-full bg-emerald-400"></span>
+                <h3 class="text-base font-semibold sm:text-xl">Serverstatus</h3>
+              </div>
+              <p class="text-muted mt-3 text-sm sm:text-base">
+                Aktuell online: <span class="text-fg font-semibold" data-mc-online>Keine</span> Spieler
+              </p>
+            </article>
+          </div>
+
+          <footer class="border-border/80 bg-surface/70 border-t px-4 py-4 text-right sm:px-6">
+            <button
+              type="button"
+              class="bg-accent inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-black transition-colors hover:bg-[var(--accent-dark)]"
+              data-join-modal-close
+            >
+              Verstanden
+            </button>
+          </footer>
+        </section>
+      </div>
+    </div>
+
+    <div
       id="toast"
-      class="pointer-events-none fixed bottom-4 left-1/2 z-[60] hidden -translate-x-1/2"
+      class="pointer-events-none fixed top-4 left-1/2 z-[90] hidden -translate-x-1/2"
       aria-live="polite"
       aria-atomic="true"
     >

@@ -6,7 +6,7 @@ import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { Image } from 'astro:assets';
 import { buildArticle, buildGameServer } from '../lib/structuredData';
-import { Cpu, Shield, Gamepad2, Copy, Map, ArrowRight } from '@lucide/astro';
+import { Cpu, Shield, Gamepad2, Download, Map, ArrowRight } from '@lucide/astro';
 import { canonicalFor, site } from '../config/site';
 import { minecraftGilde } from '../config/minecraftGilde';
 import foliaImage from '../assets/images/tech/folia.webp';
@@ -58,7 +58,9 @@ const articleLd = buildArticle({
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <Button variant="primary" class="gap-2" data-copy-ip><Copy size={18} /> IP kopieren</Button>
+        <Button variant="primary" class="gap-2" data-copy-ip>
+          <Download size={18} /> Jetzt Spielen
+        </Button>
         <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
           Discord <ArrowRight size={18} />
         </Button>
