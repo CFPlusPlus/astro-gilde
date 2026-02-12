@@ -20,6 +20,8 @@ const HERO_BACKGROUND_WIDTH = 1920;
 const HERO_BACKGROUND_HEIGHT = Math.round(
   (headerBackgroundImage.height / headerBackgroundImage.width) * HERO_BACKGROUND_WIDTH,
 );
+const HERO_BACKGROUND_WIDTHS = [640, 960, 1280, 1600, HERO_BACKGROUND_WIDTH];
+const HERO_BACKGROUND_SIZES = '100vw';
 ---
 
 <!--
@@ -33,7 +35,10 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
       alt=""
       width={HERO_BACKGROUND_WIDTH}
       height={HERO_BACKGROUND_HEIGHT}
+      widths={HERO_BACKGROUND_WIDTHS}
+      sizes={HERO_BACKGROUND_SIZES}
       loading="eager"
+      fetchpriority="high"
       decoding="async"
       class="h-full w-full [mask-image:radial-gradient(80%_65%_at_50%_22%,black_0%,black_55%,transparent_100%)] object-cover object-top opacity-25"
     />
@@ -84,7 +89,6 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
           width={logoBigImage.width}
           height={logoBigImage.height}
           alt="Minecraft Gilde Logo"
-          loading="eager"
           decoding="async"
           class="mx-auto w-[min(420px,85%)] opacity-95 drop-shadow-[0_24px_60px_rgba(0,0,0,0.32)] select-none sm:w-[min(460px,90%)] lg:w-[min(520px,95%)]"
         />
