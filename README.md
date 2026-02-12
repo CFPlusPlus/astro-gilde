@@ -69,7 +69,8 @@ Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://do
 
 ## Inline-Script Konvention
 
-- Inline-Skripte in `.astro` sind nur als kleine Bootstraps erlaubt (z. B. Theme vor Paint, globale Config-Bridge).
+- Inline-Skripte in `.astro` nach Moeglichkeit vermeiden.
+- Frueher Theme-/Config-Bootstraps wurden auf externe Dateien bzw. `data-*` Attribute verlagert.
 - Fachlogik, DOM-Logik und Event-Handling liegen in `src/scripts/*`.
 - Seiten/Komponenten importieren diese Skripte nur noch ueber kurze Bootstrap-Imports.
 - Keine grossen JS-Bloecke direkt in `src/pages/*`.
@@ -78,31 +79,24 @@ Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://do
 
 ## Content Security Policy (CSP)
 
-Die Seite liefert eine CSP aktuell bewusst als `Content-Security-Policy-Report-Only` aus (siehe `public/.htaccess`).
+Die Seite liefert eine aktive CSP ueber Astro `experimental.csp` (siehe `astro.config.mjs`).
+Fuer prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit auch Astro-interne Inline-Runtime-Skripte sauber abgedeckt sind.
 
-Warum zuerst `Report-Only`:
-
-- potenzielle CSP-Verletzungen werden sichtbar, ohne produktive Funktionen zu blockieren
-- erlaubt schrittweise Einfuehrung, waehrend bestehende Inline-Skripte weiterlaufen
-- reduziert Risiko fuer Regressionen bei statischen Seiten mit eingebettetem Bootstrap/JSON-LD
-
-Aktuelle Start-Policy (Report-Only):
+Aktuelle Policy:
 
 - `default-src 'self';`
 - `img-src 'self' data: https:;`
 - `style-src 'self' 'unsafe-inline';`
-- `script-src 'self' 'unsafe-inline';`
+- `script-src 'self';`
 - `connect-src 'self' https:;`
 - `base-uri 'self';`
 - `object-src 'none';`
 - `frame-ancestors 'self';`
+- `form-action 'self';`
 
-Umspaeter auf Enforce umzustellen:
+Hinweis:
 
-1. CSP-Reports im Betrieb auswerten und legitime Ausnahmen in die Policy uebernehmen.
-2. Inline-Skripte schrittweise abbauen (insbesondere Theme-Bootstrap in externe Datei verlagern, falls ohne FOUC moeglich).
-3. Header in `public/.htaccess` von `Content-Security-Policy-Report-Only` auf `Content-Security-Policy` umstellen.
-4. Nach Umstellung erneut visuell und technisch pruefen (`npm run check`, `npm run build`).
+- JSON-LD bleibt als nicht-ausfuehrender Script-Block im HTML eingebettet.
 
 ---
 

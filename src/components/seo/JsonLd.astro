@@ -14,7 +14,7 @@ const json = JSON.stringify(data ?? null).replace(/</g, '\\u003c');
 <!--
   WICHTIG: `set:html` nutzen, damit das JSON als roher Text injiziert wird.
   Das verhindert Faelle, in denen Templating/Escaping zu ungueltigem JSON-LD fuehrt.
-  Hinweis CSP: JSON-LD bleibt hier inline; die Policy laeuft daher zunaechst im Report-Only Modus mit 'unsafe-inline' fuer Skripte.
+  Hinweis CSP: JSON-LD bleibt hier als nicht-ausfuehrender Inline-Block.
   Astro-Doku: https://docs.astro.build/en/reference/directives-reference/#sethtml
 -->
 <script type="application/ld+json" set:html={json} is:inline />

@@ -85,7 +85,15 @@ const ldBase = buildBaseGraph({
 ---
 
 <!doctype html>
-<html lang="de">
+<html
+  lang="de"
+  data-server-ip={browserAppConfig.serverIp}
+  data-discord-guild-id={browserAppConfig.discordGuildId}
+  data-discord-invite={browserAppConfig.discordInvite}
+  data-discord-invite-code={browserAppConfig.discordInviteCode}
+  data-dynmap-url={browserAppConfig.dynmapUrl}
+  data-status-url={browserAppConfig.statusUrl}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -132,26 +140,10 @@ const ldBase = buildBaseGraph({
     {/* Strukturierte Daten (global + WebPage + Breadcrumbs/Navigationspfad) */}
     <JsonLd data={ldBase} />
 
-    <script is:inline>
-      // Theme-Bootstrap (verhindert Flash). Werte: 'light' | 'dark' | 'system'
-      // TODO(CSP): später in externe Datei verschieben, um 'unsafe-inline' weiter reduzieren zu können.
-      try {
-        const stored = localStorage.getItem('theme');
-        const root = document.documentElement;
-        if (stored === 'light' || stored === 'dark') root.dataset.theme = stored;
-        else root.removeAttribute('data-theme');
-      } catch {
-        // Optional: Fehler ignorieren, damit das Rendering nicht blockiert.
-      }
-    </script>
+    <script is:inline src="/theme-bootstrap.js"></script>
 
     <script>
       import '../scripts/theme-color-sync.ts';
-    </script>
-
-    <script is:inline define:vars={{ browserAppConfig }}>
-      // Globale App-Config für Client-Skripte
-      window.__APP_CONFIG__ = browserAppConfig;
     </script>
 
     <slot name="head" />

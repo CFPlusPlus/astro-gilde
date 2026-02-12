@@ -1,3 +1,5 @@
+import { readBrowserAppConfig } from './app-config';
+
 /*
   Globales Verhalten der Seite:
   - Theme-Toggle (system/light/dark) mit localStorage
@@ -39,12 +41,12 @@ interface LiveCounterCacheEntry {
 }
 
 (() => {
-  const config: BrowserAppConfig = window.__APP_CONFIG__ ?? {
+  const config = readBrowserAppConfig({
     serverIp: 'minecraft-gilde.de',
     discordGuildId: '1219625244906754093',
     discordInvite: 'https://discord.minecraft-gilde.de',
     dynmapUrl: 'https://map.minecraft-gilde.de',
-  };
+  });
 
   const qs = <T extends Element>(sel: string, root: ParentNode = document): T | null =>
     root.querySelector<T>(sel);

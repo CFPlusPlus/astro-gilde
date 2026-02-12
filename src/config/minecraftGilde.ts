@@ -73,7 +73,7 @@ export const minecraftGilde = {
   },
 } as const;
 
-// Wird im Browser via window.__APP_CONFIG__ genutzt (ohne sensible Daten).
+// Wird im Browser ueber data-* Attribute am <html>-Element genutzt (ohne sensible Daten).
 export const browserAppConfig = {
   serverIp: minecraftGilde.serverIp,
   discordGuildId: minecraftGilde.discord.guildId,

@@ -53,6 +53,26 @@ export default defineConfig({
       filter: (page) => !page.endsWith('/404/'),
     }),
   ],
+  experimental: {
+    // CSP-Hashes fuer Astro-inlinte Skripte/Styles automatisch erzeugen
+    csp: {
+      scriptDirective: {
+        resources: ["'self'"],
+      },
+      styleDirective: {
+        resources: ["'self'", "'unsafe-inline'"],
+      },
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' data: https:",
+        "connect-src 'self' https:",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'self'",
+        "form-action 'self'",
+      ],
+    },
+  },
   vite: {
     define: {
       'import.meta.env.GIT_COMMIT_HASH': JSON.stringify(COMMIT_HASH),

@@ -1,5 +1,7 @@
 /* Home-spezifisches Verhalten: Spielerliste, Weltenalter-Zaehler und Galerie. */
 
+import { readBrowserAppConfig } from './app-config';
+
 interface PlayerEntry {
   uuid?: string;
   name?: string;
@@ -409,7 +411,7 @@ function initGallery(): () => void {
 }
 
 function initHomeApp(): () => void {
-  const config: BrowserAppConfig = window.__APP_CONFIG__ ?? { serverIp: 'minecraft-gilde.de' };
+  const config = readBrowserAppConfig({ serverIp: 'minecraft-gilde.de' });
   let destroyed = false;
   let isFetchInFlight = false;
   let pollTimer: number | null = null;
