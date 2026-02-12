@@ -712,10 +712,10 @@ export default function SkinViewerModal({
           <button
             type="button"
             aria-label="Schließen"
-            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-red-500/70 text-red-500 transition-colors hover:bg-red-500/10 hover:text-red-400 focus-visible:ring-2 focus-visible:ring-red-500/40 focus-visible:outline-none"
+            className="text-fg hover:text-accent focus-visible:ring-accent/40 inline-flex h-6 w-6 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
             onClick={onClose}
           >
-            <X size={12} />
+            <X size={14} />
           </button>
         </header>
 
