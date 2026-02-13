@@ -863,7 +863,7 @@ html[data-theme='dark'] {
 
   /* Akkordeon */
   .mg-accordion {
-    @apply bg-surface border-border rounded-[var(--radius)] border p-4 shadow-sm backdrop-blur-md;
+    @apply bg-surface-solid border-border rounded-[var(--radius)] border p-4;
   }
 
   .mg-accordion summary {
@@ -877,13 +877,12 @@ html[data-theme='dark'] {
   }
 
   .mg-accordion[open] {
-    box-shadow: 0 12px 30px color-mix(in oklab, var(--fg) 12%, transparent);
+    box-shadow: none;
   }
 
   /* Einfaches Callout */
   .mg-callout {
-    /* An das "Glass-Card"-Design anlehnen: einheitlicher Border, weicher Schatten, gut lesbar. */
-    @apply bg-surface border-border rounded-[var(--radius)] border p-4 shadow-sm backdrop-blur-md;
+    @apply bg-surface-solid border-border rounded-[var(--radius)] border p-4;
   }
 
   .mg-callout__icon {
@@ -896,12 +895,12 @@ html[data-theme='dark'] {
 
   .mg-callout[data-variant='warning'] {
     border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
-    background: color-mix(in oklab, var(--accent) 10%, var(--surface) 90%);
+    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
   }
 
   .mg-callout[data-variant='info'] {
     border-color: color-mix(in oklab, var(--accent) 18%, var(--border) 82%);
-    background: color-mix(in oklab, var(--surface) 85%, transparent);
+    background: color-mix(in oklab, var(--accent) 6%, var(--surface-solid) 94%);
   }
 
   /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */
