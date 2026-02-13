@@ -1,5 +1,5 @@
 ---
-import HomeAnchorNav from './HomeAnchorNav.astro';
+import HomeQuickNav from './HomeQuickNav.astro';
 
 import HomeHero from './sections/HomeHero.astro';
 import HomeUsps from './sections/HomeUsps.astro';
@@ -11,7 +11,7 @@ import HomeSupport from './sections/HomeSupport.astro';
 import HomeQuickLinks from './sections/HomeQuickLinks.astro';
 import HomeJoinCta from './sections/HomeJoinCta.astro';
 
-import type { AnchorItem } from './HomeAnchorNav.astro';
+import type { AnchorItem } from './HomeQuickNav.astro';
 
 export interface Props {
   anchorItems: AnchorItem[];
@@ -26,7 +26,7 @@ const { anchorItems, galleryUrls, galleryInitial } = Astro.props as Props;
   <HomeHero />
 
   <div class="mt-6 mb-4" data-reveal data-reveal-delay="60">
-    <HomeAnchorNav items={anchorItems} />
+    <HomeQuickNav items={anchorItems} />
   </div>
 
   <HomeUsps />

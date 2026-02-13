@@ -1,4 +1,4 @@
-import type { AnchorItem } from '../../components/home/HomeAnchorNav.astro';
+import type { AnchorItem } from '../../components/home/HomeQuickNav.astro';
 
 // Onepager-Sprungnavigation (Startseite)
 // Hinweis: Als eigene Datei, damit index.astro und Komponenten übersichtlich bleiben.
