@@ -4,14 +4,28 @@ import steveImage from '../../assets/images/minecraft/steve.png';
 import elytraImage from '../../assets/images/minecraft/elytra.png';
 import {
   applyAnimationModeToViewer,
-  clearViewerAnimationState,
-  resetViewerToFront,
   type AnimationHandleLike,
   type AnimationMode,
-  type AnimationModuleLike,
-  type AnimationViewerLike,
-  type ViewerControlsLike,
+  clearViewerAnimationState,
+  resetViewerToFront,
 } from './skin-viewer-runtime';
+import {
+  CAPE_CACHE_TTL_MS,
+  CAPE_EMPTY_CACHE_TTL_MS,
+  fetchCapeFromMojangProfile,
+  fetchCapeFromServerCache,
+  readCapeCache,
+  writeCapeCache,
+} from './skin-viewer-cape';
+import type {
+  BackLoadRequest,
+  BackMode,
+  CapeState,
+  OrbitControlsLike,
+  SkinViewerLike,
+  SkinviewModuleLike,
+} from './skin-viewer-types';
+import { loadImageProbe, uniqueNonEmpty } from './skin-viewer-utils';
 
 type Props = {
   open: boolean;
@@ -21,85 +35,6 @@ type Props = {
   skinFallbackUrls?: string[];
   playerUuid?: string;
   playerName?: string;
-};
-
-type BackMode = 'none' | 'cape' | 'elytra';
-type CapeState = 'idle' | 'loading' | 'ready' | 'unavailable' | 'error';
-
-type OrbitControlsLike = ViewerControlsLike & {
-  enableRotate?: boolean;
-  enableZoom?: boolean;
-  enablePan?: boolean;
-  reset?: () => void;
-  dispose?: () => void;
-} & {
-  target?: {
-    set?: (x: number, y: number, z: number) => void;
-  };
-};
-
-type RootAnimationsLike = {
-  add?: (animation: unknown) => AnimationHandleLike;
-  paused?: boolean;
-};
-
-type SkinViewerLike = AnimationViewerLike & {
-  width?: number;
-  height?: number;
-  controls?: OrbitControlsLike;
-  resetCameraPose?: () => void;
-  playerWrapper?: {
-    rotation?: {
-      y?: number;
-      set?: (x: number, y: number, z: number) => void;
-    };
-  };
-  animations?: RootAnimationsLike;
-  dispose?: () => void;
-  loadSkin?: (url: string) => Promise<void> | void;
-  loadCape?: (
-    source: string | null,
-    options?: {
-      backEquipment?: 'cape' | 'elytra';
-    },
-  ) => Promise<void> | void;
-};
-
-type SkinViewerCtor = new (opts: {
-  canvas: HTMLCanvasElement;
-  width: number;
-  height: number;
-  skin: string;
-}) => SkinViewerLike;
-
-type SkinviewModuleLike = AnimationModuleLike & {
-  SkinViewer: SkinViewerCtor;
-  createOrbitControls?: (viewer: SkinViewerLike) => OrbitControlsLike;
-};
-
-type MojangProfile = {
-  properties?: Array<{ name?: string; value?: string }>;
-};
-
-type MinetoolsProfile = {
-  decoded?: {
-    textures?: {
-      CAPE?: { url?: string };
-    };
-  };
-  raw?: MojangProfile;
-};
-
-type CapeCacheEntry = {
-  capeUrl: string | null;
-  expiresAt: number;
-};
-
-type CapeApiResponse = {
-  capeUrl?: string | null;
-  cape?: string | { url?: string | null } | null;
-  url?: string | null;
-  hasCape?: boolean;
 };
 
 const ANIMATION_OPTIONS: Array<{ id: AnimationMode; label: string }> = [
@@ -117,203 +52,8 @@ const BACK_OPTIONS: Array<{ id: BackMode; label: string }> = [
   { id: 'elytra', label: 'Elytra' },
 ];
 
-const CAPE_CACHE_KEY_PREFIX = 'mg:skin-viewer:cape:';
-const CAPE_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
-const CAPE_EMPTY_CACHE_TTL_MS = 1000 * 60 * 30;
 const FALLBACK_SKIN_URL = steveImage.src;
 const FALLBACK_ELYTRA_URL = elytraImage.src;
-
-type BackLoadRequest = {
-  source: string | null;
-  options?: {
-    backEquipment?: 'cape' | 'elytra';
-  };
-};
-
-function decodeCapeFromProfile(profile: MojangProfile): string | null {
-  const texturesProp = profile.properties?.find(
-    (entry) => entry?.name === 'textures' && typeof entry.value === 'string',
-  );
-  if (!texturesProp?.value) return null;
-
-  try {
-    const decoded = atob(texturesProp.value);
-    const parsed = JSON.parse(decoded) as {
-      textures?: {
-        CAPE?: { url?: string };
-      };
-    };
-    const capeUrl = parsed?.textures?.CAPE?.url;
-    return typeof capeUrl === 'string' && capeUrl ? capeUrl : null;
-  } catch {
-    return null;
-  }
-}
-
-function capeCacheKey(uuidCompact: string): string {
-  return `${CAPE_CACHE_KEY_PREFIX}${uuidCompact}`;
-}
-
-function readCapeCache(uuidCompact: string): string | null | undefined {
-  if (typeof window === 'undefined') return undefined;
-  try {
-    const raw = window.localStorage.getItem(capeCacheKey(uuidCompact));
-    if (!raw) return undefined;
-    const parsed = JSON.parse(raw) as CapeCacheEntry;
-    if (!parsed || typeof parsed.expiresAt !== 'number' || parsed.expiresAt <= Date.now()) {
-      window.localStorage.removeItem(capeCacheKey(uuidCompact));
-      return undefined;
-    }
-    return typeof parsed.capeUrl === 'string' && parsed.capeUrl ? parsed.capeUrl : null;
-  } catch {
-    return undefined;
-  }
-}
-
-function writeCapeCache(uuidCompact: string, capeUrl: string | null, ttlMs: number): void {
-  if (typeof window === 'undefined') return;
-  try {
-    const payload: CapeCacheEntry = {
-      capeUrl,
-      expiresAt: Date.now() + ttlMs,
-    };
-    window.localStorage.setItem(capeCacheKey(uuidCompact), JSON.stringify(payload));
-  } catch {
-    // Unkritisch: Cache kann in Private-Mode/Storage-Limits fehlschlagen.
-  }
-}
-
-async function fetchCapeFromMojangProfile(
-  uuidCompact: string,
-  signal: AbortSignal,
-): Promise<string | null> {
-  const res = await fetch(`https://api.minetools.eu/profile/${encodeURIComponent(uuidCompact)}`, {
-    signal,
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    if (res.status === 204 || res.status === 404) return null;
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const data = (await res.json()) as MinetoolsProfile;
-
-  const decodedCape = data?.decoded?.textures?.CAPE?.url;
-  if (typeof decodedCape === 'string' && decodedCape) return decodedCape;
-
-  if (data?.raw) return decodeCapeFromProfile(data.raw);
-  return null;
-}
-
-function parseCapeApiResponse(data: CapeApiResponse): string | null | undefined {
-  if (!data || typeof data !== 'object') return undefined;
-
-  if ('capeUrl' in data) {
-    if (typeof data.capeUrl === 'string' && data.capeUrl) return data.capeUrl;
-    if (data.capeUrl === null) return null;
-  }
-
-  if ('cape' in data) {
-    if (typeof data.cape === 'string' && data.cape) return data.cape;
-    if (data.cape && typeof data.cape === 'object') {
-      const nested = data.cape.url;
-      if (typeof nested === 'string' && nested) return nested;
-      if (nested === null) return null;
-    }
-    if (data.cape === null) return null;
-  }
-
-  if ('url' in data) {
-    if (typeof data.url === 'string' && data.url) return data.url;
-    if (data.url === null) return null;
-  }
-
-  if (data.hasCape === false) return null;
-  return undefined;
-}
-
-async function fetchCapeFromServerCache(
-  uuidCompact: string,
-  signal: AbortSignal,
-): Promise<string | null | undefined> {
-  try {
-    const res = await fetch(`/api/cape?uuid=${encodeURIComponent(uuidCompact)}`, {
-      signal,
-      cache: 'no-store',
-      headers: {
-        Accept: 'application/json',
-      },
-    });
-
-    if (res.status === 404 || res.status === 405 || res.status === 501) {
-      return undefined;
-    }
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-    const payload = (await res.json()) as CapeApiResponse;
-    return parseCapeApiResponse(payload);
-  } catch (e) {
-    if (signal.aborted) return undefined;
-    console.warn('Server-Cape-Cache nicht verfuegbar, fallback aktiv:', e);
-    return undefined;
-  }
-}
-
-function uniqueNonEmpty(values: Array<string | null | undefined>): string[] {
-  const seen = new Set<string>();
-  const normalized: string[] = [];
-
-  for (const value of values) {
-    const trimmed = typeof value === 'string' ? value.trim() : '';
-    if (!trimmed || seen.has(trimmed)) continue;
-    seen.add(trimmed);
-    normalized.push(trimmed);
-  }
-
-  return normalized;
-}
-
-function loadImageProbe(url: string, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (signal.aborted) {
-      reject(new DOMException('Aborted', 'AbortError'));
-      return;
-    }
-
-    const img = new Image();
-    let done = false;
-
-    const cleanup = () => {
-      img.onload = null;
-      img.onerror = null;
-      signal.removeEventListener('abort', onAbort);
-    };
-
-    const finishResolve = () => {
-      if (done) return;
-      done = true;
-      cleanup();
-      resolve();
-    };
-
-    const finishReject = (error: Error) => {
-      if (done) return;
-      done = true;
-      cleanup();
-      reject(error);
-    };
-
-    const onAbort = () => {
-      finishReject(new DOMException('Aborted', 'AbortError'));
-    };
-
-    signal.addEventListener('abort', onAbort, { once: true });
-    img.onload = finishResolve;
-    img.onerror = () => finishReject(new Error(`Image load failed: ${url}`));
-    img.src = url;
-  });
-}
 
 export default function SkinViewerModal({
   open,
