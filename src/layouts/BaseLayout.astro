@@ -7,6 +7,7 @@ import '@fontsource-variable/space-grotesk';
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
 import JoinModal from '../components/modals/JoinModal.astro';
+import ToastHost from '../components/ui/ToastHost.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildBaseGraph } from '../lib/structuredData';
 import { browserAppConfig, minecraftGilde } from '../config/minecraftGilde';
@@ -168,14 +169,7 @@ const ldBase = buildBaseGraph({
     {showFooter ? <Footer /> : null}
 
     <JoinModal />
-
-    <div
-      id="toast"
-      class="pointer-events-none fixed top-4 left-1/2 z-[90] hidden -translate-x-1/2"
-      aria-live="polite"
-      aria-atomic="true"
-    >
-    </div>
+    <ToastHost />
 
     <script>
       import '../scripts/app.ts';
