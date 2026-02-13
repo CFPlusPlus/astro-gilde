@@ -68,6 +68,7 @@ export default defineConfig({
       directives: [
         "default-src 'self'",
         "img-src 'self' data: https:",
+        "frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com",
         "connect-src 'self' https:",
         "base-uri 'self'",
         "object-src 'none'",
