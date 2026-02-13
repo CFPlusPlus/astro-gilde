@@ -19,7 +19,7 @@ export const initToast = (query: Qs): ToastController => {
     toastEl.replaceChildren();
 
     const card = document.createElement('div');
-    card.className = `pointer-events-auto mg-card px-4 py-3 shadow-sm ${
+    card.className = `pointer-events-auto mg-card mg-card--glass px-4 py-3 shadow-sm ${
       variant === 'error' ? 'border-accent/30 bg-accent/10' : ''
     }`.trim();
     card.setAttribute('role', 'status');

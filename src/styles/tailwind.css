@@ -351,7 +351,8 @@ html[data-theme='dark'] {
   }
 
   /* Dezenter Glas-Helfer */
-  .glass {
+  .glass,
+  .mg-card--glass {
     background: color-mix(in oklab, var(--surface) 90%, transparent);
     border: 1px solid color-mix(in oklab, var(--border) 92%, white 8%);
     box-shadow:
@@ -537,7 +538,7 @@ html[data-theme='dark'] {
   }
 
   .mg-card {
-    @apply bg-surface border-border rounded-[var(--radius)] border shadow-sm backdrop-blur-md;
+    @apply bg-surface-solid border-border rounded-[var(--radius)] border shadow-sm;
   }
 
   /* Globale Button-Basis fuer Astro-Seiten und React-Islands. */

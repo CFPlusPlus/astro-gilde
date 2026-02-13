@@ -6,11 +6,12 @@ export interface Props {
   class?: string;
 }
 
-const { variant = 'glass', class: className = '' } = Astro.props as Props;
+// Solid ist der Standard fuer Content; Glass nur gezielt fuer Hero/Modal/Nav/Overlays einsetzen.
+const { variant = 'solid', class: className = '' } = Astro.props as Props;
 
 const variants: Record<CardVariant, string> = {
-  glass: 'glass shadow-sm',
   solid: 'bg-surface-solid border border-border shadow-sm',
+  glass: 'glass shadow-sm',
 };
 ---
 
