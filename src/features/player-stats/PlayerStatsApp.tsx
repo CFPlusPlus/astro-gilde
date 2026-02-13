@@ -139,7 +139,7 @@ export default function PlayerStatsApp() {
               type="button"
               aria-pressed={isGerman}
               title="Zwischen Deutsch und Original wechseln"
-              className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex h-10 items-center gap-2 self-start rounded-lg border px-3 text-sm font-semibold transition-colors"
+              className="mg-btn mg-btn--md mg-btn--surface self-start"
               onClick={() => setIsGerman((v) => !v)}
             >
               <Languages size={16} />
@@ -148,10 +148,7 @@ export default function PlayerStatsApp() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <a
-              href="/statistiken"
-              className="bg-accent hover:bg-accent2 focus-visible:ring-offset-bg inline-flex h-9 items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-black transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-            >
+            <a href="/statistiken" className="mg-btn mg-btn--sm mg-btn--primary">
               <ArrowLeft size={16} /> Zurück zur Statistik
             </a>
 

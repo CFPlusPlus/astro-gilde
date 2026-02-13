@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { SearchX } from 'lucide-react';
+import { RotateCcw, SearchX } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
 import { LeaderboardTable } from '../LeaderboardTable';
@@ -71,8 +71,9 @@ export function RankingsSection({
           <button
             type="button"
             onClick={onReset}
-            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
+            className="mg-btn mg-btn--sm mg-btn--surface group"
           >
+            <RotateCcw size={15} className="text-muted group-hover:text-accent transition-colors" />
             Zur&uuml;cksetzen
           </button>
         </div>

@@ -92,6 +92,8 @@ export function VersusSection({
   onResetVersus: () => void;
   onGoToPlayer: (uuid: string) => void;
 }) {
+  const selectedMetricIds = new Set(versusMetricIds);
+
   return (
     <section aria-label="Versus" className="mg-container pb-12">
       <div className="mt-6 space-y-6">
@@ -119,7 +121,7 @@ export function VersusSection({
               type="button"
               onClick={onSwapVersusPlayers}
               disabled={!versusPlayerA && !versusPlayerB}
-              className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm backdrop-blur-md transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+              className="mg-btn mg-btn--sm mg-btn--surface"
             >
               <ArrowLeftRight size={16} />
               Tauschen
@@ -178,7 +180,7 @@ export function VersusSection({
                   <button
                     type="button"
                     onClick={() => onGoToPlayer(versusPlayerA.uuid)}
-                    className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex w-fit shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                    className="mg-btn mg-btn--xs mg-btn--surface w-fit shrink-0"
                   >
                     Profil
                   </button>
@@ -243,7 +245,7 @@ export function VersusSection({
                   <button
                     type="button"
                     onClick={() => onGoToPlayer(versusPlayerB.uuid)}
-                    className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex w-fit shrink-0 items-center rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-sm transition-colors"
+                    className="mg-btn mg-btn--xs mg-btn--surface w-fit shrink-0"
                   >
                     Profil
                   </button>
@@ -259,7 +261,7 @@ export function VersusSection({
               type="button"
               onClick={onRunVersusCompare}
               disabled={!canRunVersus}
-              className="bg-accent hover:bg-accent2 focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-black transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+              className="mg-btn mg-btn--sm mg-btn--primary"
             >
               <Swords size={16} />
               Vergleichen
@@ -267,7 +269,7 @@ export function VersusSection({
             <button
               type="button"
               onClick={onResetVersus}
-              className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-2 text-sm font-semibold shadow-sm transition-colors"
+              className="mg-btn mg-btn--sm mg-btn--surface"
             >
               Zur&uuml;cksetzen
             </button>
@@ -314,7 +316,7 @@ export function VersusSection({
                 <button
                   type="button"
                   onClick={() => onApplyVersusSelection(getQuickVersusSelection(versusCatalog))}
-                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                  className="mg-btn mg-btn--xs mg-btn--surface"
                 >
                   Schnellwahl
                 </button>
@@ -323,14 +325,14 @@ export function VersusSection({
                   onClick={() =>
                     onApplyVersusSelection(versusFilteredCatalog.map((entry) => entry.id))
                   }
-                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                  className="mg-btn mg-btn--xs mg-btn--surface"
                 >
                   Alle
                 </button>
                 <button
                   type="button"
                   onClick={() => onApplyVersusSelection([])}
-                  className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm transition-colors"
+                  className="mg-btn mg-btn--xs mg-btn--surface"
                 >
                   Keine
                 </button>
@@ -381,49 +383,65 @@ export function VersusSection({
 
               <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1">
                 <div className="space-y-5">
-                  {versusGroupedMetrics.map(({ cat, items }) => (
-                    <div key={cat} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-muted min-w-0 text-xs font-semibold tracking-wide break-words uppercase">
-                          {cat}
-                        </p>
-                        <span className="text-muted text-xs">{items.length}</span>
-                      </div>
+                  {versusGroupedMetrics.map(({ cat, items }) => {
+                    const isCategoryActive = items.some((entry) => selectedMetricIds.has(entry.id));
 
-                      <ul className="space-y-1" role="list">
-                        {items.map((entry) => {
-                          const isActive = versusMetricIds.includes(entry.id);
-                          return (
-                            <li key={entry.id}>
-                              <button
-                                type="button"
-                                onClick={() => onToggleVersusMetric(entry.id)}
-                                className={[
-                                  'border-border/60 hover:bg-surface-solid/45 text-fg/90 w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors',
-                                  isActive
-                                    ? 'bg-surface-solid/55 border-accent/50'
-                                    : 'bg-surface-solid/30',
-                                ].join(' ')}
-                              >
-                                <div className="flex items-start justify-between gap-3">
-                                  <span className="min-w-0 break-words">{entry.label}</span>
-                                  <span className="flex items-center gap-2">
-                                    {entry.unit ? (
-                                      <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                                        {entry.unit}
-                                      </span>
-                                    ) : null}
-                                    {isActive ? <Check size={16} className="text-accent" /> : null}
-                                  </span>
-                                </div>
-                                <p className="text-muted mt-1 text-xs break-all">ID: {entry.id}</p>
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ))}
+                    return (
+                      <div key={cat} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p
+                            className={[
+                              'min-w-0 text-xs font-semibold tracking-wide break-words uppercase transition-colors',
+                              isCategoryActive ? 'text-accent/90' : 'text-muted',
+                            ].join(' ')}
+                          >
+                            {cat}
+                          </p>
+                          <span
+                            className={[
+                              'text-xs transition-colors',
+                              isCategoryActive ? 'text-accent/80' : 'text-muted',
+                            ].join(' ')}
+                          >
+                            {items.length}
+                          </span>
+                        </div>
+
+                        <ul className="space-y-1" role="list">
+                          {items.map((entry) => {
+                            const isActive = selectedMetricIds.has(entry.id);
+                            return (
+                              <li key={entry.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => onToggleVersusMetric(entry.id)}
+                                  className="mg-metric-option w-full rounded-lg px-3 py-2 text-left text-sm font-semibold"
+                                  data-active={isActive ? 'true' : 'false'}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <span className="min-w-0 break-words">{entry.label}</span>
+                                    <span className="flex items-center gap-2">
+                                      {entry.unit ? (
+                                        <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
+                                          {entry.unit}
+                                        </span>
+                                      ) : null}
+                                      {isActive ? (
+                                        <Check size={16} className="text-accent" />
+                                      ) : null}
+                                    </span>
+                                  </div>
+                                  <p className="text-muted mt-1 text-xs break-all">
+                                    ID: {entry.id}
+                                  </p>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>

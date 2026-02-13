@@ -33,24 +33,18 @@ const resolvedHref = href ? hrefFor(href) : undefined;
 const resolvedExternal = external || (href ? isExternalHref(href) : false);
 const isUnavailable = disabled || loading;
 
-const base =
-  'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-bg';
+const base = 'mg-btn';
 
 const sizes: Record<ButtonSize, string> = {
-  sm: 'h-9 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
+  sm: 'mg-btn--sm',
+  md: 'mg-btn--md',
 };
-
-const secondary =
-  'bg-transparent border border-accent/60 text-fg hover:bg-[var(--accent-soft)] hover:border-accent';
-const ghost = 'bg-transparent text-fg/85 hover:bg-[var(--accent-soft)] hover:text-fg';
 
 // Semantik: primary = Hauptaktion, secondary = gleichwertige Alternative, ghost = unaufdringliche Nebenaktion.
 const variants: Record<ButtonVariant, string> = {
-  primary:
-    'bg-accent text-black border border-accent hover:bg-[var(--accent-dark)] hover:border-[var(--accent-dark)]',
-  secondary,
-  ghost,
+  primary: 'mg-btn--primary',
+  secondary: 'mg-btn--secondary',
+  ghost: 'mg-btn--ghost',
 };
 
 const stateClasses = isUnavailable ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';

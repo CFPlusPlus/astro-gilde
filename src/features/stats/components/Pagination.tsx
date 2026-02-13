@@ -24,7 +24,7 @@ export function Pagination({
               type="button"
               onClick={() => onGo(i)}
               className={[
-                'bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors',
+                'mg-btn mg-btn--xs mg-btn--surface',
                 isActive ? 'border-accent bg-accent/10' : '',
               ].join(' ')}
             >
@@ -39,7 +39,7 @@ export function Pagination({
           <button
             type="button"
             onClick={onLoadMore}
-            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors"
+            className="mg-btn mg-btn--xs mg-btn--surface"
             disabled={state.loading}
           >
             <ArrowRight size={14} />

@@ -57,54 +57,70 @@ function MetricPickerImpl({
 
       <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1 [overflow-anchor:none]">
         <div className="space-y-5">
-          {grouped.map(({ cat, ids }) => (
-            <div key={cat} className="space-y-2">
-              <div className="flex items-center justify-between">
-                <p className="text-muted text-xs font-semibold tracking-wide uppercase">{cat}</p>
-                <span className="text-muted text-xs">{ids.length}</span>
-              </div>
+          {grouped.map(({ cat, ids }) => {
+            const isCategoryActive = !!activeMetricId && ids.includes(activeMetricId);
 
-              <ul className="space-y-1" role="list">
-                {ids.map((id) => {
-                  const def = metrics[id];
-                  const isActive = id === activeMetricId;
-                  return (
-                    <li key={id}>
-                      <button
-                        type="button"
-                        onClick={() => onSelectMetric(id)}
-                        className={[
-                          'border-border/60 hover:bg-surface-solid/45 text-fg/90 w-full rounded-lg border px-3 py-2 text-left text-sm font-semibold transition-colors',
-                          isActive ? 'bg-surface-solid/55 border-accent/50' : 'bg-surface-solid/30',
-                        ].join(' ')}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <span className="min-w-0 flex-1 truncate">{def?.label || id}</span>
-                          <span className="mt-0.5 inline-flex min-w-[1.25rem] flex-none items-center justify-end gap-2">
-                            <span className="inline-flex w-4 justify-center" aria-hidden="true">
-                              <Check
-                                size={16}
-                                className={[
-                                  'transition-opacity',
-                                  isActive ? 'text-accent opacity-100' : 'text-accent opacity-0',
-                                ].join(' ')}
-                              />
-                            </span>
-                            {def?.unit ? (
-                              <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                                {def.unit}
+            return (
+              <div key={cat} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p
+                    className={[
+                      'text-xs font-semibold tracking-wide uppercase transition-colors',
+                      isCategoryActive ? 'text-accent/90' : 'text-muted',
+                    ].join(' ')}
+                  >
+                    {cat}
+                  </p>
+                  <span
+                    className={[
+                      'text-xs transition-colors',
+                      isCategoryActive ? 'text-accent/80' : 'text-muted',
+                    ].join(' ')}
+                  >
+                    {ids.length}
+                  </span>
+                </div>
+
+                <ul className="space-y-1" role="list">
+                  {ids.map((id) => {
+                    const def = metrics[id];
+                    const isActive = id === activeMetricId;
+                    return (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onClick={() => onSelectMetric(id)}
+                          className="mg-metric-option w-full rounded-lg px-3 py-2 text-left text-sm font-semibold"
+                          data-active={isActive ? 'true' : 'false'}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <span className="min-w-0 flex-1 truncate">{def?.label || id}</span>
+                            <span className="mt-0.5 inline-flex min-w-[1.25rem] flex-none items-center justify-end gap-2">
+                              <span className="inline-flex w-4 justify-center" aria-hidden="true">
+                                <Check
+                                  size={16}
+                                  className={[
+                                    'transition-opacity',
+                                    isActive ? 'text-accent opacity-100' : 'text-accent opacity-0',
+                                  ].join(' ')}
+                                />
                               </span>
-                            ) : null}
-                          </span>
-                        </div>
-                        <p className="text-muted mt-1 text-xs break-all">ID: {id}</p>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ))}
+                              {def?.unit ? (
+                                <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
+                                  {def.unit}
+                                </span>
+                              ) : null}
+                            </span>
+                          </div>
+                          <p className="text-muted mt-1 text-xs break-all">ID: {id}</p>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
