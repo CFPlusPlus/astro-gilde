@@ -1,5 +1,7 @@
 import js from '@eslint/js';
 import astro from 'eslint-plugin-astro';
+import reactPlugin from 'eslint-plugin-react';
+import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
@@ -33,6 +35,26 @@ export default [
         ...globals.browser,
         ...globals.node,
       },
+    },
+  },
+
+  // React- und Hook-Regeln nur fuer TSX/JSX-Dateien
+  {
+    files: ['**/*.{tsx,jsx}'],
+    plugins: {
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
+    },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react/react-in-jsx-scope': 'off',
+      'react/jsx-uses-react': 'off',
     },
   },
 
