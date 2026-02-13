@@ -11,6 +11,5 @@ export function getPlayer(uuid: string, signal?: AbortSignal) {
 export function getTranslations(signal?: AbortSignal) {
   return fetchJson<PlayerTranslations>('/i18n/translations.de.json', {
     signal,
-    cache: 'no-store',
   });
 }

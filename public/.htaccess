@@ -31,7 +31,7 @@ ErrorDocument 404 /404.html
 
   # JSON/API: kurz cachen, dann revalidieren
   <FilesMatch "\.(?:json)$">
-    Header set Cache-Control "max-age=300, must-revalidate, stale-while-revalidate=86400"
+    Header set Cache-Control "max-age=900, must-revalidate, stale-while-revalidate=86400"
   </FilesMatch>
 
   # Gehashte Build-Assets (Astro: /_astro/) markieren
