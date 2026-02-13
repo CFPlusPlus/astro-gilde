@@ -20,9 +20,7 @@ const { items, class: className = '' } = Astro.props as Props;
   class={`z-40 md:sticky md:top-[calc(4.5rem+env(safe-area-inset-top))] ${className}`.trim()}
 >
   <div class="mg-container">
-    <div
-      class="border-border bg-surface/80 md:bg-surface/60 rounded-[var(--radius)] border px-4 py-3 shadow-sm backdrop-blur-sm sm:px-5 sm:py-4"
-    >
+    <div class="mg-glass rounded-[var(--radius)] px-4 py-3 shadow-sm sm:px-5 sm:py-4">
       <p
         class="text-muted mb-3 inline-flex items-center gap-2 text-[0.68rem] font-semibold tracking-[0.16em] uppercase"
       >

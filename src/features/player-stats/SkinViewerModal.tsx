@@ -66,7 +66,7 @@ export default function SkinViewerModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-[2px] sm:items-center sm:p-4"
+      className="mg-glass-overlay fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={dialogTitle}
@@ -74,7 +74,7 @@ export default function SkinViewerModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="glass-strong border-border my-3 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-x-hidden overflow-y-auto rounded-[var(--radius)] border shadow-xl outline-none sm:my-4 sm:max-h-[calc(100dvh-2rem)]">
+      <div className="mg-glass--strong my-3 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-x-hidden overflow-y-auto rounded-[var(--radius)] shadow-xl outline-none sm:my-4 sm:max-h-[calc(100dvh-2rem)]">
         <header className="border-border flex items-center justify-between gap-2 border-b px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
           <h3 className="text-fg text-sm font-semibold sm:text-base">{dialogTitle}</h3>
           <button
@@ -118,7 +118,7 @@ export default function SkinViewerModal({
           </span>
           <button
             type="button"
-            className="bg-surface border-border hover:bg-surface-solid/70 text-fg inline-flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs font-semibold shadow-sm backdrop-blur-md transition-colors sm:px-3 sm:py-2 sm:text-sm"
+            className="mg-btn mg-btn--surface rounded-lg px-2.5 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm"
             onClick={onReset}
           >
             <RefreshCcw size={16} /> Reset
