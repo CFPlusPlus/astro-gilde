@@ -23,6 +23,15 @@ export function PlayerAutocomplete({
   onChoose: (uuid: string) => void;
   wrapRef: React.RefObject<HTMLDivElement | null>;
 }) {
+  const itemRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+
+  React.useEffect(() => {
+    if (!open || selectedIndex < 0) return;
+    const activeItem = itemRefs.current[selectedIndex];
+    if (!activeItem) return;
+    activeItem.scrollIntoView({ block: 'nearest' });
+  }, [open, selectedIndex]);
+
   return (
     <div className="relative z-30 w-full lg:max-w-xl" ref={wrapRef}>
       <div className="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
@@ -32,14 +41,28 @@ export function PlayerAutocomplete({
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => onOpenChange(items.length > 0)}
           onKeyDown={(e) => {
-            if (!open) return;
+            const itemCount = items.length;
+            if (itemCount <= 0) return;
+
             if (e.key === 'ArrowDown') {
               e.preventDefault();
-              onSelectedIndexChange(Math.min((items?.length || 0) - 1, selectedIndex + 1));
+              if (!open) {
+                onOpenChange(true);
+                onSelectedIndexChange(0);
+                return;
+              }
+              onSelectedIndexChange(Math.min(itemCount - 1, Math.max(0, selectedIndex + 1)));
             } else if (e.key === 'ArrowUp') {
               e.preventDefault();
-              onSelectedIndexChange(Math.max(-1, selectedIndex - 1));
+              if (!open) {
+                onOpenChange(true);
+                onSelectedIndexChange(itemCount - 1);
+                return;
+              }
+              onSelectedIndexChange(Math.max(0, selectedIndex - 1));
             } else if (e.key === 'Enter') {
+              if (!open) return;
+              e.preventDefault();
               const it = items[selectedIndex] || items[0];
               if (it?.uuid) onChoose(it.uuid);
             } else if (e.key === 'Escape') {
@@ -72,12 +95,15 @@ export function PlayerAutocomplete({
 
       {open ? (
         <div className="border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
-          <ul className="max-h-72 overflow-auto py-1">
+          <ul className="mg-scrollbar-thin max-h-72 overflow-auto py-1">
             {items.map((it, idx) => {
               const isActive = idx === selectedIndex;
               return (
                 <li key={`${it.uuid}-${idx}`}>
                   <button
+                    ref={(el) => {
+                      itemRefs.current[idx] = el;
+                    }}
                     type="button"
                     onMouseDown={(e) => {
                       // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten nicht stoert.
@@ -86,9 +112,9 @@ export function PlayerAutocomplete({
                     }}
                     onMouseEnter={() => onSelectedIndexChange(idx)}
                     className={[
-                      'text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
-                      isActive ? 'bg-surface-solid/70' : 'hover:bg-surface-solid/60',
+                      'mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
                     ].join(' ')}
+                    data-active={isActive ? 'true' : 'false'}
                   >
                     <img
                       src={`https://minotar.net/helm/${encodeURIComponent(it.name)}/32.png`}
