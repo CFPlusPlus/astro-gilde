@@ -86,7 +86,7 @@ export function PlayerAutocomplete({
                     }}
                     onMouseEnter={() => onSelectedIndexChange(idx)}
                     className={[
-                      'text-fg/90 flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
+                      'text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors',
                       isActive ? 'bg-surface-solid/70' : 'hover:bg-surface-solid/60',
                     ].join(' ')}
                   >

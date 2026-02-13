@@ -107,7 +107,7 @@ export function LeaderboardTable({
                     <button
                       type="button"
                       onClick={() => onPlayerClick(row.uuid)}
-                      className="text-fg/90 group-hover:text-fg decoration-accent/60 focus-visible:ring-offset-bg inline-flex min-w-0 cursor-pointer items-center gap-2 rounded-md text-left underline-offset-4 transition-colors group-hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                      className="text-fg/90 group-hover:text-fg decoration-accent/60 focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2 rounded-md text-left underline-offset-4 transition-colors group-hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
                       title="Zur Spielerstatistik"
                     >
                       <img
