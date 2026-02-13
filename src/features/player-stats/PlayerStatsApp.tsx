@@ -107,6 +107,18 @@ export default function PlayerStatsApp() {
     activeTab === 'allgemein' ? 'Allgemein' : activeTab === 'items' ? 'Gegenstände' : 'Kreaturen';
 
   const uuidButtonText = uuidCopied ? 'Kopiert!' : uuidFull;
+  const isGeneralSortActive = (key: string) =>
+    sortGeneral.key === key && sortGeneral.dir !== 'none';
+  const isItemsSortActive = (key: string) => sortItems.key === key && sortItems.dir !== 'none';
+  const isMobsSortActive = (key: string) => sortMobs.key === key && sortMobs.dir !== 'none';
+  const sortHeaderClass = (isActive: boolean, nowrap = false) =>
+    [
+      'px-4 py-3 text-left font-semibold',
+      nowrap ? 'whitespace-nowrap' : '',
+      isActive ? 'bg-accent/10 text-fg' : '',
+    ].join(' ');
+  const sortCellClass = (isActive: boolean, baseClass = '') =>
+    [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
 
   return (
     <div>
@@ -296,14 +308,7 @@ export default function PlayerStatsApp() {
                 <table className="w-full min-w-[720px] text-sm">
                   <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                     <tr>
-                      <th
-                        className={
-                          'px-4 py-3 text-left font-semibold ' +
-                          (sortGeneral.key === 'label' && sortGeneral.dir !== 'none'
-                            ? 'bg-surface-solid/30'
-                            : '')
-                        }
-                      >
+                      <th className={sortHeaderClass(isGeneralSortActive('label'))}>
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
@@ -318,14 +323,7 @@ export default function PlayerStatsApp() {
                           <SortIcon dir={sortGeneral.key === 'label' ? sortGeneral.dir : 'none'} />
                         </button>
                       </th>
-                      <th
-                        className={
-                          'px-4 py-3 text-left font-semibold ' +
-                          (sortGeneral.key === 'value' && sortGeneral.dir !== 'none'
-                            ? 'bg-surface-solid/30'
-                            : '')
-                        }
-                      >
+                      <th className={sortHeaderClass(isGeneralSortActive('value'))}>
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
@@ -340,14 +338,7 @@ export default function PlayerStatsApp() {
                           <SortIcon dir={sortGeneral.key === 'value' ? sortGeneral.dir : 'none'} />
                         </button>
                       </th>
-                      <th
-                        className={
-                          'px-4 py-3 text-left font-semibold ' +
-                          (sortGeneral.key === 'raw' && sortGeneral.dir !== 'none'
-                            ? 'bg-surface-solid/30'
-                            : '')
-                        }
-                      >
+                      <th className={sortHeaderClass(isGeneralSortActive('raw'))}>
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
@@ -367,9 +358,14 @@ export default function PlayerStatsApp() {
                   <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
                     {filtered.general.map((r) => (
                       <tr key={r.raw}>
-                        <td>{r.label}</td>
-                        <td>{r.display}</td>
-                        <td className="text-muted text-xs font-medium whitespace-nowrap">
+                        <td className={sortCellClass(isGeneralSortActive('label'))}>{r.label}</td>
+                        <td className={sortCellClass(isGeneralSortActive('value'))}>{r.display}</td>
+                        <td
+                          className={sortCellClass(
+                            isGeneralSortActive('raw'),
+                            'text-muted text-xs font-medium whitespace-nowrap',
+                          )}
+                        >
                           {r.raw}
                         </td>
                       </tr>
@@ -401,7 +397,7 @@ export default function PlayerStatsApp() {
                 <table className="w-full min-w-[920px] text-sm">
                   <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                     <tr>
-                      <th className="px-4 py-3 text-left font-semibold">
+                      <th className={sortHeaderClass(isItemsSortActive('label'))}>
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
@@ -425,10 +421,7 @@ export default function PlayerStatsApp() {
                           ['dropped', 'Fallen gelassen'],
                         ] as const
                       ).map(([key, label]) => (
-                        <th
-                          key={key}
-                          className="px-4 py-3 text-left font-semibold whitespace-nowrap"
-                        >
+                        <th key={key} className={sortHeaderClass(isItemsSortActive(key), true)}>
                           <button
                             type="button"
                             className="inline-flex items-center gap-2"
@@ -449,13 +442,21 @@ export default function PlayerStatsApp() {
                   <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
                     {filtered.items.map((r) => (
                       <tr key={r.key}>
-                        <td>{r.label}</td>
-                        <td>{nf(r.mined)}</td>
-                        <td>{nf(r.broken)}</td>
-                        <td>{nf(r.crafted)}</td>
-                        <td>{nf(r.used)}</td>
-                        <td>{nf(r.picked_up)}</td>
-                        <td>{nf(r.dropped)}</td>
+                        <td className={sortCellClass(isItemsSortActive('label'))}>{r.label}</td>
+                        <td className={sortCellClass(isItemsSortActive('mined'))}>{nf(r.mined)}</td>
+                        <td className={sortCellClass(isItemsSortActive('broken'))}>
+                          {nf(r.broken)}
+                        </td>
+                        <td className={sortCellClass(isItemsSortActive('crafted'))}>
+                          {nf(r.crafted)}
+                        </td>
+                        <td className={sortCellClass(isItemsSortActive('used'))}>{nf(r.used)}</td>
+                        <td className={sortCellClass(isItemsSortActive('picked_up'))}>
+                          {nf(r.picked_up)}
+                        </td>
+                        <td className={sortCellClass(isItemsSortActive('dropped'))}>
+                          {nf(r.dropped)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -479,7 +480,7 @@ export default function PlayerStatsApp() {
                 <table className="w-full min-w-[620px] text-sm">
                   <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
                     <tr>
-                      <th className="px-4 py-3 text-left font-semibold">
+                      <th className={sortHeaderClass(isMobsSortActive('label'))}>
                         <button
                           type="button"
                           className="inline-flex items-center gap-2"
@@ -500,10 +501,7 @@ export default function PlayerStatsApp() {
                           ['killed_by', 'Gestorben durch'],
                         ] as const
                       ).map(([key, label]) => (
-                        <th
-                          key={key}
-                          className="px-4 py-3 text-left font-semibold whitespace-nowrap"
-                        >
+                        <th key={key} className={sortHeaderClass(isMobsSortActive(key), true)}>
                           <button
                             type="button"
                             className="inline-flex items-center gap-2"
@@ -523,9 +521,13 @@ export default function PlayerStatsApp() {
                   <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
                     {filtered.mobs.map((r) => (
                       <tr key={r.key}>
-                        <td>{r.label}</td>
-                        <td>{nf(r.killed)}</td>
-                        <td>{nf(r.killed_by)}</td>
+                        <td className={sortCellClass(isMobsSortActive('label'))}>{r.label}</td>
+                        <td className={sortCellClass(isMobsSortActive('killed'))}>
+                          {nf(r.killed)}
+                        </td>
+                        <td className={sortCellClass(isMobsSortActive('killed_by'))}>
+                          {nf(r.killed_by)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -134,7 +134,7 @@ export function sortPlayerTables(
     const { key, dir } = sortGeneral;
     const base = [...rows];
     const factor = dir === 'desc' ? -1 : 1;
-    if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+    if (dir === 'none') return base;
     return base.sort((a, b) => {
       if (key === 'value') return (a.value - b.value) * factor;
       const av = String(a[key]);
@@ -147,7 +147,7 @@ export function sortPlayerTables(
     const { key, dir } = sortItems;
     const base = [...rows];
     const factor = dir === 'desc' ? -1 : 1;
-    if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+    if (dir === 'none') return base;
 
     return base.sort((a, b) => {
       const av = a[key];
@@ -161,7 +161,7 @@ export function sortPlayerTables(
     const { key, dir } = sortMobs;
     const base = [...rows];
     const factor = dir === 'desc' ? -1 : 1;
-    if (dir === 'none') return base.sort((a, b) => a.label.localeCompare(b.label, 'de'));
+    if (dir === 'none') return base;
 
     return base.sort((a, b) => {
       const av = a[key];

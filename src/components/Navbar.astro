@@ -68,7 +68,7 @@ const isActive = (href: string, external?: boolean) => {
   if (external) return false;
   const h = normalize(hrefFor(href));
   if (h === '/') return current === '/' || current === '';
-  return h === current;
+  return current === h || current.startsWith(`${h}/`);
 };
 
 const linkClassDesktop = (active: boolean) => `site-nav-link ${active ? 'is-active' : ''}`.trim();

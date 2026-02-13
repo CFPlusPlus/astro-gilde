@@ -31,7 +31,7 @@ export function NoResults() {
 }
 
 export function SortIcon({ dir }: { dir: SortDir }) {
-  if (dir === 'asc') return <ChevronUp size={14} className="text-muted" aria-hidden="true" />;
-  if (dir === 'desc') return <ChevronDown size={14} className="text-muted" aria-hidden="true" />;
+  if (dir === 'asc') return <ChevronUp size={14} className="text-accent" aria-hidden="true" />;
+  if (dir === 'desc') return <ChevronDown size={14} className="text-accent" aria-hidden="true" />;
   return <ChevronsUpDown size={14} className="text-muted" aria-hidden="true" />;
 }

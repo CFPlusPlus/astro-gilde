@@ -79,13 +79,13 @@ export function usePlayerStatsState(): UsePlayerStatsState {
 
   const [sortGeneral, setSortGeneral] = useState<SortState<'label' | 'value' | 'raw'>>({
     key: 'label',
-    dir: 'asc',
+    dir: 'none',
   });
   const [sortItems, setSortItems] = useState<SortState<keyof ItemsRow>>({
     key: 'label',
-    dir: 'asc',
+    dir: 'none',
   });
-  const [sortMobs, setSortMobs] = useState<SortState<keyof MobsRow>>({ key: 'label', dir: 'asc' });
+  const [sortMobs, setSortMobs] = useState<SortState<keyof MobsRow>>({ key: 'label', dir: 'none' });
 
   const [uuidCopied, setUuidCopied] = useState(false);
   const uuidBtnRef = useRef<HTMLButtonElement | null>(null);
