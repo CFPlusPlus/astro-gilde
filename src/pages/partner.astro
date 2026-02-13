@@ -28,13 +28,14 @@ const PARTNER_ACK_HEIGHT = Math.round(
     </div>
 
     <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-      <div class="glass overflow-hidden rounded-[28px]">
+      <div class="glass overflow-hidden rounded-[var(--radius)]">
         <div
-          class="relative isolate flex items-center justify-center overflow-hidden rounded-t-[28px] bg-black/10 p-5 [clip-path:inset(0_round_28px_28px_0_0)] sm:p-6"
+          class="relative isolate flex items-center justify-center overflow-hidden rounded-t-[var(--radius)] bg-black/10 p-5 sm:p-6"
+          style="clip-path: inset(0 round var(--radius) var(--radius) 0 0);"
         >
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-0 overflow-hidden rounded-t-[28px]"
+            class="pointer-events-none absolute inset-0 overflow-hidden rounded-t-[var(--radius)]"
           >
             <div
               class="absolute top-1/2 -left-10 h-44 w-44 -translate-y-1/2 rounded-full bg-red-500/35 blur-3xl"
@@ -79,7 +80,7 @@ const PARTNER_ACK_HEIGHT = Math.round(
         </div>
       </div>
 
-      <div class="glass rounded-[28px] p-6 sm:p-7">
+      <div class="glass rounded-[var(--radius)] p-6 sm:p-7">
         <h2 class="text-xl font-semibold">Partner werden?</h2>
         <p class="text-muted mt-2 text-sm">
           Du möchtest mit uns kooperieren oder ein eigenes Projekt vorstellen? Dann schreib uns

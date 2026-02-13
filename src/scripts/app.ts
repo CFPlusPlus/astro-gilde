@@ -437,6 +437,8 @@ interface LiveCounterCacheEntry {
   );
   const joinModalCopyButtons = qsa<HTMLElement>('[data-copy-ip-modal]', joinModalRoot ?? document);
   const joinModalCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
+  const inlineCopyButtons = qsa<HTMLElement>('[data-copy-ip-inline]');
+  const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
 
   let modalLastFocusedEl: HTMLElement | null = null;
   let bodyOverflowBeforeModal = '';
@@ -517,16 +519,15 @@ interface LiveCounterCacheEntry {
   });
 
   const setModalCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
-    const label = qs<HTMLElement>('[data-copy-ip-modal-label]', btn);
-    const iconDefault = qs<HTMLElement>('[data-copy-ip-modal-icon-default]', btn);
-    const iconSuccess = qs<HTMLElement>('[data-copy-ip-modal-icon-success]', btn);
+    const stateDefault = qs<HTMLElement>('[data-copy-ip-modal-state-default]', btn);
+    const stateSuccess = qs<HTMLElement>('[data-copy-ip-modal-state-success]', btn);
 
-    if (label) label.textContent = copied ? 'Kopiert' : 'IP kopieren';
-    if (iconDefault) iconDefault.classList.toggle('hidden', copied);
-    if (iconSuccess) iconSuccess.classList.toggle('hidden', !copied);
+    if (copied) btn.dataset.copied = 'true';
+    else delete btn.dataset.copied;
 
-    btn.classList.toggle('border-emerald-400/70', copied);
-    btn.classList.toggle('text-emerald-300', copied);
+    if (stateDefault) stateDefault.classList.toggle('opacity-0', copied);
+    if (stateSuccess) stateSuccess.classList.toggle('opacity-0', !copied);
+
     btn.setAttribute('aria-label', copied ? 'Server-IP wurde kopiert' : 'Server-IP kopieren');
   };
 
@@ -548,6 +549,40 @@ interface LiveCounterCacheEntry {
       e.preventDefault();
       const ok = await copyIp({ silentSuccess: true });
       if (ok) flashModalCopyButton(btn);
+    });
+  });
+
+  const setInlineCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
+    const labelDefault = qs<HTMLElement>('[data-copy-ip-inline-label-default]', btn);
+    const labelSuccess = qs<HTMLElement>('[data-copy-ip-inline-label-success]', btn);
+
+    if (copied) btn.dataset.copied = 'true';
+    else delete btn.dataset.copied;
+
+    if (labelDefault) labelDefault.classList.toggle('opacity-0', copied);
+    if (labelSuccess) labelSuccess.classList.toggle('opacity-0', !copied);
+
+    btn.setAttribute('aria-label', copied ? 'Server-IP wurde kopiert' : 'Server-IP kopieren');
+  };
+
+  const flashInlineCopyButton = (btn: HTMLElement): void => {
+    const runningTimer = inlineCopyFeedbackTimers.get(btn);
+    if (runningTimer != null) window.clearTimeout(runningTimer);
+
+    setInlineCopyButtonState(btn, true);
+
+    const timer = window.setTimeout(() => {
+      setInlineCopyButtonState(btn, false);
+      inlineCopyFeedbackTimers.delete(btn);
+    }, 1600);
+    inlineCopyFeedbackTimers.set(btn, timer);
+  };
+
+  inlineCopyButtons.forEach((btn) => {
+    btn.addEventListener('click', async (e: MouseEvent) => {
+      e.preventDefault();
+      const ok = await copyIp({ silentSuccess: true });
+      if (ok) flashInlineCopyButton(btn);
     });
   });
 

@@ -36,8 +36,9 @@
   --ring: rgba(242, 201, 76, 0.45);
   --accent-dark: color-mix(in oklab, var(--accent) 85%, black 15%);
   --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+  --nav-underline-muted: color-mix(in oklab, var(--fg) 50%, transparent);
 
-  --radius: 16px;
+  --radius: 10px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -60,6 +61,7 @@
     --accent: #f2c94c;
     --accent2: #ffd56a;
     --ring: rgba(242, 201, 76, 0.3);
+    --nav-underline-muted: color-mix(in oklab, var(--fg) 62%, transparent);
   }
 }
 
@@ -82,6 +84,7 @@ html[data-theme='light'] {
   --accent: #f2c94c;
   --accent2: #ffd56a;
   --ring: rgba(242, 201, 76, 0.45);
+  --nav-underline-muted: color-mix(in oklab, var(--fg) 50%, transparent);
 }
 
 html[data-theme='dark'] {
@@ -102,6 +105,7 @@ html[data-theme='dark'] {
   --accent: #f2c94c;
   --accent2: #ffd56a;
   --ring: rgba(242, 201, 76, 0.3);
+  --nav-underline-muted: color-mix(in oklab, var(--fg) 62%, transparent);
 }
 
 /* Tokens in Tailwind v4 CSS-first Theme-Variablen spiegeln */
@@ -121,7 +125,10 @@ html[data-theme='dark'] {
   --color-accent2: var(--accent2);
   --color-ring: var(--ring);
 
+  --radius-md: var(--radius);
   --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
 }
 
 @layer base {
@@ -335,7 +342,7 @@ html[data-theme='dark'] {
     width: calc(100% - 1.4rem);
     height: 2px;
     border-radius: 999px;
-    background: color-mix(in oklab, white 92%, transparent);
+    background: var(--nav-underline-muted);
     opacity: 0;
     transform: translateX(-50%) scaleX(0.35);
     transform-origin: center;

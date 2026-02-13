@@ -6,7 +6,7 @@ import HomeSection from '../HomeSection.astro';
 import { Image } from 'astro:assets';
 
 import { minecraftGilde } from '../../../config/minecraftGilde';
-import { Activity, ArrowRight, Download, Map, Users } from '@lucide/astro';
+import { Activity, ArrowRight, Check, Download, Map, Users } from '@lucide/astro';
 import headerBackgroundImage from '../../../assets/images/home/header-background.webp';
 import logoBigImage from '../../../assets/images/branding/logo-big.webp';
 
@@ -105,8 +105,34 @@ const HERO_BACKGROUND_SIZES = '100vw';
         <div>
           <div class="text-muted text-xs font-medium">Server-IP</div>
           <div class="mt-1 flex items-center gap-2">
-            <code class="text-sm font-semibold">{SERVER_IP}</code>
-            <IconButton ariaLabel="Jetzt spielen" data-copy-ip>
+            <button
+              type="button"
+              class="border-border bg-surface text-fg focus-visible:ring-offset-bg hover:border-accent/60 inline-flex h-10 items-center rounded-[var(--radius)] border px-4 text-sm leading-none font-semibold transition-colors duration-200 hover:bg-[var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 data-[copied=true]:border-emerald-400/70 data-[copied=true]:bg-emerald-500/10 data-[copied=true]:text-emerald-300 data-[copied=true]:hover:border-emerald-400/70 data-[copied=true]:hover:bg-emerald-500/10"
+              aria-label="Server-IP kopieren"
+              data-copy-ip-inline
+            >
+              <span class="relative inline-flex items-center justify-center">
+                <span
+                  class="font-mono transition-opacity duration-150"
+                  data-copy-ip-inline-label-default
+                >
+                  {SERVER_IP}
+                </span>
+                <span
+                  class="pointer-events-none absolute inset-0 inline-flex items-center justify-center gap-1.5 opacity-0 transition-opacity duration-150"
+                  data-copy-ip-inline-label-success
+                  aria-hidden="true"
+                >
+                  <Check size={14} />
+                  <span>IP kopiert</span>
+                </span>
+              </span>
+            </button>
+            <IconButton
+              ariaLabel="Jetzt spielen"
+              class="hover:border-accent/60 duration-200 hover:bg-[var(--accent-soft)]"
+              data-copy-ip
+            >
               <Download size={16} />
             </IconButton>
           </div>

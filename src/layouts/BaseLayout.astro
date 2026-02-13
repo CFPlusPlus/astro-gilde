@@ -179,7 +179,7 @@ const ldBase = buildBaseGraph({
 
       <div class="relative mx-auto flex min-h-full w-full items-center justify-center py-2 sm:py-4">
         <section
-          class="border-border/80 bg-surface-solid/95 max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-[calc(var(--radius)+6px)] border shadow-2xl backdrop-blur-md sm:max-h-[calc(100dvh-2rem)]"
+          class="border-border/80 bg-surface-solid/95 max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-[var(--radius)] border shadow-2xl backdrop-blur-md sm:max-h-[calc(100dvh-2rem)]"
           role="dialog"
           aria-modal="true"
           aria-labelledby="join-modal-title"
@@ -240,17 +240,27 @@ const ldBase = buildBaseGraph({
                       </code>
                       <button
                         type="button"
-                        class="border-border/80 bg-surface hover:border-accent/60 hover:bg-accent/10 hover:text-accent inline-flex h-9 min-w-[7.75rem] items-center justify-center gap-2 rounded-lg border px-3 text-xs font-medium transition-colors"
+                        class="border-border/80 bg-surface hover:border-accent/60 hover:bg-accent/10 hover:text-accent inline-flex h-9 min-w-[7.75rem] items-center justify-center rounded-lg border px-3 text-xs font-medium transition-colors data-[copied=true]:border-emerald-400/70 data-[copied=true]:bg-emerald-500/10 data-[copied=true]:text-emerald-300 data-[copied=true]:hover:border-emerald-400/70 data-[copied=true]:hover:bg-emerald-500/10 data-[copied=true]:hover:text-emerald-300"
                         aria-label="Server-IP kopieren"
                         data-copy-ip-modal
                       >
-                        <span data-copy-ip-modal-icon-default>
-                          <Copy size={16} />
+                        <span class="relative inline-flex items-center justify-center">
+                          <span
+                            class="inline-flex items-center gap-2 transition-opacity duration-150"
+                            data-copy-ip-modal-state-default
+                          >
+                            <Copy size={16} />
+                            <span>IP kopieren</span>
+                          </span>
+                          <span
+                            class="pointer-events-none absolute inset-0 inline-flex items-center justify-center gap-2 opacity-0 transition-opacity duration-150"
+                            data-copy-ip-modal-state-success
+                            aria-hidden="true"
+                          >
+                            <Check size={16} />
+                            <span>IP kopiert</span>
+                          </span>
                         </span>
-                        <span class="hidden" data-copy-ip-modal-icon-success>
-                          <Check size={16} />
-                        </span>
-                        <span data-copy-ip-modal-label>IP kopieren</span>
                       </button>
                     </div>
                   </div>
