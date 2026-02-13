@@ -598,6 +598,31 @@ html[data-theme='dark'] {
     @apply pointer-events-none cursor-not-allowed opacity-60;
   }
 
+  .mg-copy-ip-btn {
+    @apply focus-visible:ring-offset-bg border-border bg-surface text-fg inline-flex items-center justify-center border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2;
+    border-radius: var(--radius);
+  }
+
+  .mg-copy-ip-btn:hover {
+    border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
+    background: var(--accent-soft);
+  }
+
+  .mg-copy-ip-btn[data-copied='true'],
+  .mg-copy-ip-btn[data-copied='true']:hover {
+    border-color: rgb(74 222 128 / 0.7);
+    background: rgb(16 185 129 / 0.1);
+    color: rgb(110 231 183);
+  }
+
+  .mg-copy-ip-btn--inline {
+    @apply h-10 px-4 text-sm leading-none font-semibold;
+  }
+
+  .mg-copy-ip-btn--modal {
+    @apply h-9 min-w-[7.75rem] px-3 text-xs font-medium;
+  }
+
   .mg-muted {
     color: var(--muted);
   }
