@@ -1,25 +1,13 @@
 import React, { useMemo, useState } from 'react';
-import {
-  ArrowLeft,
-  Clock3,
-  Info,
-  Languages,
-  Map as MapIcon,
-  Package,
-  Search,
-  Slash,
-  Sparkles,
-  Swords,
-  Skull,
-  X,
-} from 'lucide-react';
+import { Clock3, Map as MapIcon, Skull, Swords } from 'lucide-react';
 
 import { nf, nf2 } from './format';
+import { PlayerStatsHeader } from './PlayerStatsHeader';
+import { PlayerStatsTables } from './PlayerStatsTables';
+import { PlayerStatsToolbar } from './PlayerStatsToolbar';
 import SkinViewerModal from './SkinViewerModal';
-import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
-import { nextSort } from './table-model';
 import { usePlayerStatsState } from './usePlayerStatsState';
-import { ApiAlert, fmtGenerated, NoResults, SortIcon } from './ui';
+import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
 
 export default function PlayerStatsApp() {
   const {
@@ -102,441 +90,68 @@ export default function PlayerStatsApp() {
       : activeTab === 'items'
         ? filtered.items.length
         : filtered.mobs.length;
-
   const activeTabLabel =
     activeTab === 'allgemein' ? 'Allgemein' : activeTab === 'items' ? 'Gegenstände' : 'Kreaturen';
 
-  const uuidButtonText = uuidCopied ? 'Kopiert!' : uuidFull;
-  const isGeneralSortActive = (key: string) =>
-    sortGeneral.key === key && sortGeneral.dir !== 'none';
-  const isItemsSortActive = (key: string) => sortItems.key === key && sortItems.dir !== 'none';
-  const isMobsSortActive = (key: string) => sortMobs.key === key && sortMobs.dir !== 'none';
-  const sortHeaderClass = (isActive: boolean, nowrap = false) =>
-    [
-      'px-4 py-3 text-left font-semibold',
-      nowrap ? 'whitespace-nowrap' : '',
-      isActive ? 'bg-accent/10 text-fg' : '',
-    ].join(' ');
-  const sortCellClass = (isActive: boolean, baseClass = '') =>
-    [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
+  const handleCopyUuid = (): void => {
+    if (!uuidFull) return;
+    void navigator.clipboard
+      .writeText(uuidFull)
+      .then(() => {
+        setUuidCopied(true);
+        window.setTimeout(() => setUuidCopied(false), 1200);
+      })
+      .catch(() => {
+        // Clipboard kann blockiert sein (z. B. ohne User-Geste).
+      });
+  };
 
   return (
     <div>
-      <section className="mg-container pt-10 pb-6">
-        <div className="flex flex-col gap-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <h1 className="text-3xl font-semibold tracking-tight">
-                Spielerstatistik von{' '}
-                <span>{playerName ? playerName : canRender ? 'Lädt…' : ''}</span>
-              </h1>
-              <p className="text-muted mt-2 max-w-3xl">
-                Alle Werte, Items und Kreaturen eines Spielers – inklusive Filter und Sortierung.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              aria-pressed={isGerman}
-              title="Zwischen Deutsch und Original wechseln"
-              className="mg-btn mg-btn--md mg-btn--surface self-start"
-              onClick={() => setIsGerman((v) => !v)}
-            >
-              <Languages size={16} />
-              <span className="label">{isGerman ? 'DE' : 'EN'}</span>
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <a href="/statistiken" className="mg-btn mg-btn--sm mg-btn--primary">
-              <ArrowLeft size={16} /> Zurück zur Statistik
-            </a>
-
-            <button
-              ref={uuidBtnRef}
-              type="button"
-              title="UUID kopieren"
-              className="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition-colors"
-              style={
-                uuidMinWidthRef.current ? { minWidth: `${uuidMinWidthRef.current}px` } : undefined
-              }
-              onClick={() => {
-                if (!uuidFull) return;
-                void navigator.clipboard
-                  .writeText(uuidFull)
-                  .then(() => {
-                    setUuidCopied(true);
-                    window.setTimeout(() => setUuidCopied(false), 1200);
-                  })
-                  .catch(() => {
-                    // Clipboard kann blockiert sein (z. B. ohne User-Geste).
-                  });
-              }}
-            >
-              {uuidButtonText}
-            </button>
-
-            {generatedIso ? (
-              <span className="bg-surface border-border text-muted inline-flex h-9 items-center rounded-full border px-3 text-xs font-medium">
-                {fmtGenerated(generatedIso)}
-              </span>
-            ) : null}
-          </div>
-
-          <ApiAlert message={apiError} />
-        </div>
-      </section>
+      <PlayerStatsHeader
+        playerName={playerName}
+        canRender={canRender}
+        isGerman={isGerman}
+        onToggleGerman={() => setIsGerman((v) => !v)}
+        uuidFull={uuidFull}
+        uuidCopied={uuidCopied}
+        onCopyUuid={handleCopyUuid}
+        uuidBtnRef={uuidBtnRef}
+        uuidMinWidthRef={uuidMinWidthRef}
+        generatedIso={generatedIso}
+        apiError={apiError}
+      />
 
       <section className="mg-container pb-12">
         <div className="space-y-6">
           <KpiStrip items={kpiItems} variant="inline" />
 
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <button
-                type="button"
-                className="group inline-flex items-center gap-3 rounded-xl"
-                onClick={() => {
-                  if (!skinFullUrl) return;
-                  setSkinOpen(true);
-                }}
-                aria-label="3D Skin-Viewer öffnen"
-              >
-                <img
-                  src={skinHeadUrl}
-                  alt={playerName || uuidFull || ''}
-                  className="border-border/70 h-14 w-14 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
-                  onError={(e) => {
-                    const img = e.currentTarget;
-                    // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
-                    const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+          <PlayerStatsToolbar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            filterRaw={filterRaw}
+            setFilterRaw={setFilterRaw}
+            filterInputRef={filterInputRef}
+            activeResultCount={activeResultCount}
+            activeTabLabel={activeTabLabel}
+            skinHeadUrl={skinHeadUrl}
+            skinHeadFallback={skinHeadFallback}
+            skinFullUrl={skinFullUrl}
+            playerName={playerName}
+            uuidFull={uuidFull}
+            onOpenSkin={() => setSkinOpen(true)}
+          />
 
-                    if (!fallbackAttempted && skinHeadFallback && img.src !== skinHeadFallback) {
-                      img.dataset.fallbackAttempted = '1';
-                      img.src = skinHeadFallback;
-                      return;
-                    }
-
-                    img.onerror = null;
-                  }}
-                />
-                <span className="text-muted inline-flex items-center gap-2 text-xs">
-                  <Info size={16} className="shrink-0" /> Skin-Viewer öffnen
-                </span>
-              </button>
-            </div>
-
-            <nav aria-label="Spielerstatistik Navigation">
-              <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
-                <ul className="flex w-max items-center gap-1" role="list">
-                  {(
-                    [
-                      { key: 'allgemein', label: 'Allgemein', Icon: Sparkles },
-                      { key: 'items', label: 'Gegenstände', Icon: Package },
-                      { key: 'mobs', label: 'Kreaturen', Icon: Skull },
-                    ] as const
-                  ).map((it) => {
-                    const isActive = it.key === activeTab;
-                    const Icon = it.Icon;
-                    return (
-                      <li key={it.key}>
-                        <button
-                          type="button"
-                          onClick={() => setActiveTab(it.key)}
-                          className={[
-                            'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
-                            isActive
-                              ? 'bg-accent/15 border-accent/40 text-fg shadow-sm'
-                              : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
-                          ].join(' ')}
-                          aria-current={isActive ? 'page' : undefined}
-                        >
-                          <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
-                          {it.label}
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            </nav>
-
-            <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
-              <label className="bg-surface/55 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors">
-                <Search size={18} className="text-muted" />
-                <input
-                  ref={filterInputRef}
-                  value={filterRaw}
-                  onChange={(e) => setFilterRaw(e.target.value)}
-                  type="search"
-                  placeholder='Filtern… (z. B. dirt, "zombie", "diamond")'
-                  className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
-                />
-                <button
-                  type="button"
-                  className={['mg-search-clear', filterRaw ? '' : 'mg-search-clear--hidden'].join(
-                    ' ',
-                  )}
-                  onClick={() => setFilterRaw('')}
-                  aria-label="Filter leeren"
-                  tabIndex={filterRaw ? 0 : -1}
-                >
-                  <X size={14} />
-                </button>
-              </label>
-              <div className="text-muted flex flex-wrap items-center gap-3 text-xs lg:justify-end">
-                <span>
-                  {nf(activeResultCount)} Einträge in {activeTabLabel}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <Slash size={12} /> Suche fokussieren
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {activeTab === 'allgemein' ? (
-            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
-              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
-                <p className="text-fg text-sm font-semibold">Allgemein</p>
-                <p className="text-muted text-xs">{nf(filtered.general.length)} Einträge</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                    <tr>
-                      <th className={sortHeaderClass(isGeneralSortActive('label'))}>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2"
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
-                        >
-                          Eintrag{' '}
-                          <SortIcon dir={sortGeneral.key === 'label' ? sortGeneral.dir : 'none'} />
-                        </button>
-                      </th>
-                      <th className={sortHeaderClass(isGeneralSortActive('value'))}>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2"
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'value',
-                              dir: s.key === 'value' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
-                        >
-                          Wert{' '}
-                          <SortIcon dir={sortGeneral.key === 'value' ? sortGeneral.dir : 'none'} />
-                        </button>
-                      </th>
-                      <th className={sortHeaderClass(isGeneralSortActive('raw'))}>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2"
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'raw',
-                              dir: s.key === 'raw' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
-                        >
-                          Technischer Schlüssel{' '}
-                          <SortIcon dir={sortGeneral.key === 'raw' ? sortGeneral.dir : 'none'} />
-                        </button>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                    {filtered.general.map((r) => (
-                      <tr key={r.raw}>
-                        <td className={sortCellClass(isGeneralSortActive('label'))}>{r.label}</td>
-                        <td className={sortCellClass(isGeneralSortActive('value'))}>{r.display}</td>
-                        <td
-                          className={sortCellClass(
-                            isGeneralSortActive('raw'),
-                            'text-muted text-xs font-medium whitespace-nowrap',
-                          )}
-                        >
-                          {r.raw}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {filtered.general.length === 0 ? (
-                <div className="px-4 pb-4">
-                  <NoResults />
-                </div>
-              ) : null}
-
-              <div className="border-border/70 text-muted border-t px-4 py-3 text-sm">
-                Einige Werte werden zur besseren Lesbarkeit formatiert (z. B. Spielzeit in Stunden,{' '}
-                <em>one_cm</em> in Kilometern).
-              </div>
-            </section>
-          ) : null}
-
-          {activeTab === 'items' ? (
-            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
-              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
-                <p className="text-fg text-sm font-semibold">Gegenstände</p>
-                <p className="text-muted text-xs">{nf(filtered.items.length)} Einträge</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[920px] text-sm">
-                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                    <tr>
-                      <th className={sortHeaderClass(isItemsSortActive('label'))}>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2"
-                          onClick={() =>
-                            setSortItems((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
-                        >
-                          Item <SortIcon dir={sortItems.key === 'label' ? sortItems.dir : 'none'} />
-                        </button>
-                      </th>
-                      {(
-                        [
-                          ['mined', 'Abgebaut'],
-                          ['broken', 'Verbraucht'],
-                          ['crafted', 'Hergestellt'],
-                          ['used', 'Benutzt'],
-                          ['picked_up', 'Aufgesammelt'],
-                          ['dropped', 'Fallen gelassen'],
-                        ] as const
-                      ).map(([key, label]) => (
-                        <th key={key} className={sortHeaderClass(isItemsSortActive(key), true)}>
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-2"
-                            onClick={() =>
-                              setSortItems((s) => ({
-                                key,
-                                dir: s.key === key ? nextSort(s.dir) : 'asc',
-                              }))
-                            }
-                          >
-                            {label}{' '}
-                            <SortIcon dir={sortItems.key === key ? sortItems.dir : 'none'} />
-                          </button>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                    {filtered.items.map((r) => (
-                      <tr key={r.key}>
-                        <td className={sortCellClass(isItemsSortActive('label'))}>{r.label}</td>
-                        <td className={sortCellClass(isItemsSortActive('mined'))}>{nf(r.mined)}</td>
-                        <td className={sortCellClass(isItemsSortActive('broken'))}>
-                          {nf(r.broken)}
-                        </td>
-                        <td className={sortCellClass(isItemsSortActive('crafted'))}>
-                          {nf(r.crafted)}
-                        </td>
-                        <td className={sortCellClass(isItemsSortActive('used'))}>{nf(r.used)}</td>
-                        <td className={sortCellClass(isItemsSortActive('picked_up'))}>
-                          {nf(r.picked_up)}
-                        </td>
-                        <td className={sortCellClass(isItemsSortActive('dropped'))}>
-                          {nf(r.dropped)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {filtered.items.length === 0 ? (
-                <div className="px-4 pb-4">
-                  <NoResults />
-                </div>
-              ) : null}
-            </section>
-          ) : null}
-
-          {activeTab === 'mobs' ? (
-            <section className="border-border/70 overflow-hidden rounded-[var(--radius)] border">
-              <div className="border-border/70 flex items-center justify-between gap-2 border-b px-4 py-3">
-                <p className="text-fg text-sm font-semibold">Kreaturen</p>
-                <p className="text-muted text-xs">{nf(filtered.mobs.length)} Einträge</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[620px] text-sm">
-                  <thead className="bg-surface-solid/85 text-muted sticky top-0 z-10 text-xs backdrop-blur-md">
-                    <tr>
-                      <th className={sortHeaderClass(isMobsSortActive('label'))}>
-                        <button
-                          type="button"
-                          className="inline-flex items-center gap-2"
-                          onClick={() =>
-                            setSortMobs((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
-                        >
-                          Kreatur{' '}
-                          <SortIcon dir={sortMobs.key === 'label' ? sortMobs.dir : 'none'} />
-                        </button>
-                      </th>
-                      {(
-                        [
-                          ['killed', 'Getötet'],
-                          ['killed_by', 'Gestorben durch'],
-                        ] as const
-                      ).map(([key, label]) => (
-                        <th key={key} className={sortHeaderClass(isMobsSortActive(key), true)}>
-                          <button
-                            type="button"
-                            className="inline-flex items-center gap-2"
-                            onClick={() =>
-                              setSortMobs((s) => ({
-                                key,
-                                dir: s.key === key ? nextSort(s.dir) : 'asc',
-                              }))
-                            }
-                          >
-                            {label} <SortIcon dir={sortMobs.key === key ? sortMobs.dir : 'none'} />
-                          </button>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                    {filtered.mobs.map((r) => (
-                      <tr key={r.key}>
-                        <td className={sortCellClass(isMobsSortActive('label'))}>{r.label}</td>
-                        <td className={sortCellClass(isMobsSortActive('killed'))}>
-                          {nf(r.killed)}
-                        </td>
-                        <td className={sortCellClass(isMobsSortActive('killed_by'))}>
-                          {nf(r.killed_by)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              {filtered.mobs.length === 0 ? (
-                <div className="px-4 pb-4">
-                  <NoResults />
-                </div>
-              ) : null}
-            </section>
-          ) : null}
+          <PlayerStatsTables
+            activeTab={activeTab}
+            filtered={filtered}
+            sortGeneral={sortGeneral}
+            setSortGeneral={setSortGeneral}
+            sortItems={sortItems}
+            setSortItems={setSortItems}
+            sortMobs={sortMobs}
+            setSortMobs={setSortMobs}
+          />
         </div>
       </section>
 

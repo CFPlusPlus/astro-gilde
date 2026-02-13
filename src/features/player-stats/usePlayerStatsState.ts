@@ -25,7 +25,7 @@ import {
 } from './table-model';
 import { compactUUID } from './uuid';
 
-type UsePlayerStatsState = {
+export type UsePlayerStatsState = {
   activeTab: TabKey;
   setActiveTab: (next: TabKey) => void;
   isGerman: boolean;
