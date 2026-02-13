@@ -1,6 +1,8 @@
 ---
 import { Check, Copy, Download, Info, X } from '@lucide/astro';
 import { minecraftGilde } from '../../config/minecraftGilde';
+import Button from '../ui/Button.astro';
+import IconButton from '../ui/IconButton.astro';
 
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
@@ -33,14 +35,9 @@ const MC_VERSION = minecraftGilde.mcVersion;
           <Download size={22} class="text-accent" /> Jetzt auf Minecraft Gilde spielen
         </h2>
 
-        <button
-          type="button"
-          class="text-muted hover:text-accent focus-visible:ring-accent/40 inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:outline-none"
-          aria-label="Modal schließen"
-          data-join-modal-close
-        >
+        <IconButton ariaLabel="Schließen" variant="plain" data-join-modal-close>
           <X size={20} />
-        </button>
+        </IconButton>
       </header>
 
       <div class="space-y-4 p-3 sm:p-5">
@@ -130,13 +127,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
       </div>
 
       <footer class="border-border/80 bg-surface/70 border-t px-4 py-4 text-right sm:px-6">
-        <button
-          type="button"
-          class="bg-accent inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm font-semibold text-black transition-colors hover:bg-[var(--accent-dark)]"
-          data-join-modal-close
-        >
-          Verstanden
-        </button>
+        <Button type="button" variant="primary" data-join-modal-close> Verstanden </Button>
       </footer>
     </section>
   </div>

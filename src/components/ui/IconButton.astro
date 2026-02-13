@@ -1,5 +1,5 @@
 ---
-export type IconButtonVariant = 'ghost' | 'secondary';
+export type IconButtonVariant = 'ghost' | 'secondary' | 'plain';
 export type IconButtonSize = 'sm' | 'md';
 
 export interface Props {
@@ -32,6 +32,7 @@ const sizes: Record<IconButtonSize, string> = {
 const variants: Record<IconButtonVariant, string> = {
   secondary: 'border border-border bg-surface text-fg hover:bg-surface-solid/70',
   ghost: 'bg-transparent text-fg/85 hover:bg-[var(--accent-soft)] hover:text-fg',
+  plain: 'bg-transparent text-fg hover:bg-transparent hover:text-accent',
 };
 
 const stateClasses = disabled ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
