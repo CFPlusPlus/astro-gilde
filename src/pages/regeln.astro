@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import { getEntry } from 'astro:content';
 import { Book, MessageSquareText, Download, ArrowRight } from '@lucide/astro';
 
@@ -17,15 +18,12 @@ const ip = serverIp || 'minecraft-gilde.de';
   title="Minecraft Gilde - Unser Regelwerk"
   description="Alle Regeln für den Minecraft Vanilla-Server der Gilde - klar, fair und verständlich. Griefing, Hacks, Spam und Werbung sind verboten."
 >
-  <section class="mg-container pt-12 pb-6">
-    <h1 class="text-3xl font-semibold tracking-tight">Regeln</h1>
-    <p class="text-muted mt-2">Fair play, klarer Rahmen und ein respektvolles Miteinander.</p>
-
-    <Callout variant="warning" title="Wichtiger Hinweis" class="mt-6">
+  <PageHeader title="Regeln" subtitle="Fair play, klarer Rahmen und ein respektvolles Miteinander.">
+    <Callout variant="warning" title="Wichtiger Hinweis" class="mt-6" slot="beforeActions">
       <p>{warning}</p>
     </Callout>
 
-    <div class="mt-6 flex flex-wrap gap-3">
+    <Fragment slot="actions">
       <Button variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
@@ -35,10 +33,10 @@ const ip = serverIp || 'minecraft-gilde.de';
       <Button href="/statistiken" variant="ghost" class="gap-2">
         <ArrowRight size={18} /> Statistiken
       </Button>
-    </div>
+    </Fragment>
 
     <p class="text-muted mt-3 text-xs">IP: <span class="text-fg/90 font-medium">{ip}</span></p>
-  </section>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <div class="grid gap-4 lg:grid-cols-2">

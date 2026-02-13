@@ -5,6 +5,7 @@ import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
 import Card from '../components/ui/Card.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import { minecraftGilde } from '../config/minecraftGilde';
 import { canonicalFor } from '../config/site';
 import {
@@ -80,11 +81,8 @@ const sections = await Promise.all(
 <BaseLayout title="Minecraft Gilde - Tutorial" canonical={canonicalUrl}>
   <JsonLd slot="head" data={howToLd} />
 
-  <section class="mg-container pt-12 pb-6">
-    <h1 class="text-3xl font-semibold tracking-tight">{tutorialHeaderIntro.title}</h1>
-    <p class="text-muted mt-2">{tutorialHeaderIntro.subtitle}</p>
-
-    <div class="mt-6 flex flex-wrap gap-3">
+  <PageHeader title={tutorialHeaderIntro.title} subtitle={tutorialHeaderIntro.subtitle}>
+    <Fragment slot="actions">
       <Button variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
@@ -105,8 +103,8 @@ const sections = await Promise.all(
           );
         })
       }
-    </div>
-  </section>
+    </Fragment>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <Card class="p-6">

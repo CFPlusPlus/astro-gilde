@@ -4,6 +4,7 @@ import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import Callout from '../components/ui/Callout.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import { Image } from 'astro:assets';
 import { buildArticle, buildGameServer } from '../lib/structuredData';
 import { Cpu, Shield, Gamepad2, Download, Map, ArrowRight } from '@lucide/astro';
@@ -49,33 +50,31 @@ const articleLd = buildArticle({
 >
   <JsonLd slot="head" data={gameServerLd} />
   <JsonLd slot="head" data={articleLd} />
-  <section class="mg-container pt-12 pb-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 class="text-3xl font-semibold tracking-tight">Serverinfos</h1>
-        <p class="text-muted mt-2">
-          Vanilla Survival &amp; Freebuild - stabil, fair und ohne Resets.
-        </p>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <Button variant="primary" class="gap-2" data-copy-ip>
-          <Download size={18} /> Jetzt Spielen
-        </Button>
-        <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-          Discord <ArrowRight size={18} />
-        </Button>
-        <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
-          ><Map size={18} /> Dynmap</Button
-        >
-      </div>
-    </div>
+  <PageHeader
+    title="Serverinfos"
+    subtitle="Vanilla Survival & Freebuild - stabil, fair und ohne Resets."
+    actionsInline
+    headerClass="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+    actionsClass="flex flex-wrap gap-2"
+  >
+    <Fragment slot="actions">
+      <Button variant="primary" class="gap-2" data-copy-ip>
+        <Download size={18} /> Jetzt Spielen
+      </Button>
+      <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+        Discord <ArrowRight size={18} />
+      </Button>
+      <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
+        ><Map size={18} /> Dynmap</Button
+      >
+    </Fragment>
 
     <div class="mt-6 flex flex-wrap gap-2">
       <Badge variant="accent">{MC_VERSION}</Badge>
       <Badge>Folia (Paper Fork)</Badge>
       <Badge>Ohne Resets</Badge>
     </div>
-  </section>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <div

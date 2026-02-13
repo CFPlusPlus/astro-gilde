@@ -1,0 +1,61 @@
+---
+export interface Props {
+  title: string;
+  subtitle?: string;
+  class?: string;
+  subtitleClass?: string;
+  headerClass?: string;
+  actionsClass?: string;
+  actionsInline?: boolean;
+}
+
+const {
+  title,
+  subtitle,
+  class: className = '',
+  subtitleClass = 'text-muted mt-2',
+  headerClass = '',
+  actionsClass = 'mt-6 flex flex-wrap gap-3',
+  actionsInline = false,
+} = Astro.props as Props;
+
+const hasActions = Astro.slots.has('actions');
+const hasBeforeActions = Astro.slots.has('beforeActions');
+const hasContent = Astro.slots.has('default');
+---
+
+<section class={`mg-container pt-12 pb-6 ${className}`.trim()}>
+  {
+    actionsInline ? (
+      <>
+        <div class={headerClass}>
+          <div>
+            <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
+            {subtitle && <p class={subtitleClass}>{subtitle}</p>}
+          </div>
+          {hasActions && (
+            <div class={actionsClass}>
+              <slot name="actions" />
+            </div>
+          )}
+        </div>
+        {hasBeforeActions && <slot name="beforeActions" />}
+        {hasContent && <slot />}
+      </>
+    ) : (
+      <>
+        <div class={headerClass}>
+          <h1 class="text-3xl font-semibold tracking-tight">{title}</h1>
+          {subtitle && <p class={subtitleClass}>{subtitle}</p>}
+        </div>
+        {hasBeforeActions && <slot name="beforeActions" />}
+        {hasActions && (
+          <div class={actionsClass}>
+            <slot name="actions" />
+          </div>
+        )}
+        {hasContent && <slot />}
+      </>
+    )
+  }
+</section>
