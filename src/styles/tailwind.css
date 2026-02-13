@@ -138,9 +138,54 @@ html[data-theme='dark'] {
     background: var(--bg);
     color-scheme: light dark;
     scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--muted) 38%, transparent) transparent;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Globale Scrollbar: schlank, aber weiterhin gut sichtbar. */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: color-mix(in oklab, var(--muted) 34%, transparent);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in oklab, var(--accent) 50%, var(--muted) 50%);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  @media (forced-colors: active) {
+    html {
+      scrollbar-color: auto;
+    }
+
+    *::-webkit-scrollbar-track,
+    *::-webkit-scrollbar-thumb {
+      forced-color-adjust: auto;
+    }
+
+    *::-webkit-scrollbar-track {
+      background-color: Canvas;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background-color: CanvasText;
+      border-color: Canvas;
+    }
   }
 
   /* Wenn das Mobile-Menue offen ist, nur den Inhalt blurrieren (nicht die Navbar). */
