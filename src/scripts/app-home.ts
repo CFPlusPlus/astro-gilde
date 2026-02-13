@@ -90,8 +90,7 @@ function renderPlayers(data: ServerStatus): void {
     btn.href = uuid
       ? `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`
       : `/statistiken/spieler/?name=${encodeURIComponent(name)}`;
-    btn.className =
-      'group inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-sm text-fg/90 hover:text-fg hover:bg-surface-solid/70 transition-colors';
+    btn.className = 'mg-pill';
 
     const img = document.createElement('img');
     img.className = 'h-6 w-6 rounded-full';

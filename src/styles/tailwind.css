@@ -623,6 +623,10 @@ html[data-theme='dark'] {
     @apply h-9 min-w-[7.75rem] px-3 text-xs font-medium;
   }
 
+  .mg-pill {
+    @apply border-border bg-surface hover:bg-surface-solid/70 text-fg/90 hover:text-fg focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2;
+  }
+
   .mg-muted {
     color: var(--muted);
   }
