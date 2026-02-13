@@ -104,7 +104,7 @@ export default function PlayerStatsApp() {
         : filtered.mobs.length;
 
   const activeTabLabel =
-    activeTab === 'allgemein' ? 'Allgemein' : activeTab === 'items' ? 'Gegenstaende' : 'Kreaturen';
+    activeTab === 'allgemein' ? 'Allgemein' : activeTab === 'items' ? 'Gegenstände' : 'Kreaturen';
 
   const uuidButtonText = uuidCopied ? 'Kopiert!' : uuidFull;
 

@@ -69,18 +69,18 @@ Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://do
 
 ## Inline-Script Konvention
 
-- Inline-Skripte in `.astro` nach Moeglichkeit vermeiden.
-- Frueher Theme-/Config-Bootstraps wurden auf externe Dateien bzw. `data-*` Attribute verlagert.
+- Inline-Skripte in `.astro` nach Möglichkeit vermeiden.
+- Früher Theme-/Config-Bootstraps wurden auf externe Dateien bzw. `data-*` Attribute verlagert.
 - Fachlogik, DOM-Logik und Event-Handling liegen in `src/scripts/*`.
-- Seiten/Komponenten importieren diese Skripte nur noch ueber kurze Bootstrap-Imports.
-- Keine grossen JS-Bloecke direkt in `src/pages/*`.
+- Seiten/Komponenten importieren diese Skripte nur noch über kurze Bootstrap-Imports.
+- Keine großen JS-Blöcke direkt in `src/pages/*`.
 
 ---
 
 ## Content Security Policy (CSP)
 
-Die Seite liefert eine aktive CSP ueber Astro `experimental.csp` (siehe `astro.config.mjs`).
-Fuer prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit auch Astro-interne Inline-Runtime-Skripte sauber abgedeckt sind.
+Die Seite liefert eine aktive CSP über Astro `experimental.csp` (siehe `astro.config.mjs`).
+Für prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit auch Astro-interne Inline-Runtime-Skripte sauber abgedeckt sind.
 
 Aktuelle Policy:
 
@@ -96,7 +96,7 @@ Aktuelle Policy:
 
 Hinweis:
 
-- JSON-LD bleibt als nicht-ausfuehrender Script-Block im HTML eingebettet.
+- JSON-LD bleibt als nicht-ausführender Script-Block im HTML eingebettet.
 
 ---
 
@@ -171,7 +171,7 @@ Das Frontend versucht beim Skin-Viewer zuerst:
 
 - `/api/cape?uuid=<32-hex-ohne-bindestriche>`
 
-Wenn der Endpoint nicht verfuegbar ist (`404/405/501`) oder fehlschlaegt, wird automatisch auf den externen Fallback zurueckgegriffen.
+Wenn der Endpoint nicht verfügbar ist (`404/405/501`) oder fehlschlägt, wird automatisch auf den externen Fallback zurückgegriffen.
 
 Empfohlene Response (JSON):
 
@@ -189,9 +189,9 @@ Empfohlene Caching-Strategie im Backend:
 
 - Mit Cape: TTL 6-24h
 - Ohne Cape (negative cache): TTL 15-60min
-- `Cache-Control` fuer CDN/Reverse-Proxy setzen (`s-maxage` + `stale-while-revalidate`)
+- `Cache-Control` für CDN/Reverse-Proxy setzen (`s-maxage` + `stale-while-revalidate`)
 
-Beispiel fuer einen Dev-Proxy (optional):
+Beispiel für einen Dev-Proxy (optional):
 
 ```js
 // astro.config.mjs
