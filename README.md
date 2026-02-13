@@ -97,6 +97,18 @@ Aktuelle Policy:
 Hinweis:
 
 - JSON-LD bleibt als nicht-ausführender Script-Block im HTML eingebettet.
+- `style-src 'unsafe-inline'` ist derzeit bewusst aktiv, weil einzelne UI-Teile zur Laufzeit
+  `element.style` setzen:
+- `src/scripts/app/nav-menu.ts` (Scroll-Lock inkl. Restore der Scrollposition)
+- `src/scripts/app/join-modal.ts` und `src/features/player-stats/SkinViewerModal.tsx`
+  (Body-Scroll während Modal offen)
+- Bereits reduziert: vermeidbare statische Inline-Styles wurden entfernt
+  (`src/components/ui/RoleBadge.astro`, `src/pages/partner.astro`,
+  `src/features/player-stats/PlayerStatsHeader.tsx`) und Home-Animationen/-Galerie laufen
+  jetzt klassenbasiert statt per Inline-Style (`src/scripts/app-home.ts`,
+  `src/scripts/home-reveal.ts`, `src/styles/home.css`).
+- Für ein komplettes Entfernen von `unsafe-inline` müssen die verbleibenden
+  Runtime-Style-Änderungen auf rein klassenbasierte Mechaniken umgestellt werden.
 
 ---
 

@@ -1,5 +1,5 @@
 ---
-import { ROLE_COLORS, ROLE_LABELS, type RoleKey } from '../../data/roles';
+import { ROLE_LABELS, type RoleKey } from '../../data/roles';
 
 export interface Props {
   role: RoleKey;
@@ -8,34 +8,19 @@ export interface Props {
 
 const { role, class: className = '' } = Astro.props as Props;
 
-const color = ROLE_COLORS[role];
 const label = ROLE_LABELS[role];
-
-function hexToRgba(hex: string, alpha: number) {
-  const cleaned = hex.replace('#', '').trim();
-  const full =
-    cleaned.length === 3
-      ? cleaned
-          .split('')
-          .map((c) => c + c)
-          .join('')
-      : cleaned;
-  const r = parseInt(full.slice(0, 2), 16);
-  const g = parseInt(full.slice(2, 4), 16);
-  const b = parseInt(full.slice(4, 6), 16);
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
-// Subtile Faerbung nur fuer den Punkt-Schein (Chip bleibt optisch am Glas-Design).
-const halo = hexToRgba(color, 0.22);
+const roleClass = `mg-role-badge--${role}`;
 ---
 
 <span
   class={`inline-flex items-center gap-2 rounded-full border border-border bg-surface px-2.5 py-1 text-xs font-medium text-fg backdrop-blur-md ${className}`.trim()}
 >
-  <span class="relative inline-flex h-2.5 w-2.5 items-center justify-center" aria-hidden="true">
-    <span class="absolute inset-0 rounded-full" style={`background: ${halo};`}></span>
-    <span class="h-1.5 w-1.5 rounded-full" style={`background: ${color};`}></span>
+  <span
+    class={`relative inline-flex h-2.5 w-2.5 items-center justify-center ${roleClass}`}
+    aria-hidden="true"
+  >
+    <span class="mg-role-badge__halo absolute inset-0 rounded-full"></span>
+    <span class="mg-role-badge__dot h-1.5 w-1.5 rounded-full"></span>
   </span>
   <span class="leading-none">{label}</span>
 </span>

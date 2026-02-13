@@ -34,8 +34,40 @@
   transition:
     opacity 700ms cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  transition-delay: var(--reveal-delay, 0ms);
+  transition-delay: 0ms;
   will-change: opacity, transform;
+}
+
+[data-home] [data-reveal][data-reveal-delay='60'] {
+  transition-delay: 60ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='80'] {
+  transition-delay: 80ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='100'] {
+  transition-delay: 100ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='120'] {
+  transition-delay: 120ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='140'] {
+  transition-delay: 140ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='160'] {
+  transition-delay: 160ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='200'] {
+  transition-delay: 200ms;
+}
+
+[data-home] [data-reveal][data-reveal-delay='260'] {
+  transition-delay: 260ms;
 }
 
 /* Fly-ins (ohne zusaetzliche Bibliotheken) */

@@ -627,6 +627,47 @@ html[data-theme='dark'] {
     @apply border-border bg-surface hover:bg-surface-solid/70 text-fg/90 hover:text-fg focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2;
   }
 
+  .mg-clip-rounded-top {
+    clip-path: inset(0 round var(--radius) var(--radius) 0 0);
+  }
+
+  .mg-role-badge__halo,
+  .mg-role-badge__dot {
+    transition: background-color 160ms ease;
+  }
+
+  .mg-role-badge--admin .mg-role-badge__halo {
+    background: rgb(231 76 60 / 0.22);
+  }
+
+  .mg-role-badge--admin .mg-role-badge__dot {
+    background: #e74c3c;
+  }
+
+  .mg-role-badge--moderator .mg-role-badge__halo {
+    background: rgb(230 126 34 / 0.22);
+  }
+
+  .mg-role-badge--moderator .mg-role-badge__dot {
+    background: #e67e22;
+  }
+
+  .mg-role-badge--streamer .mg-role-badge__halo {
+    background: rgb(155 89 182 / 0.22);
+  }
+
+  .mg-role-badge--streamer .mg-role-badge__dot {
+    background: #9b59b6;
+  }
+
+  .mg-role-badge--player .mg-role-badge__halo {
+    background: rgb(52 152 219 / 0.22);
+  }
+
+  .mg-role-badge--player .mg-role-badge__dot {
+    background: #3498db;
+  }
+
   .mg-muted {
     color: var(--muted);
   }

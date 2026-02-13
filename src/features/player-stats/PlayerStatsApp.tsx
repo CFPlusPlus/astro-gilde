@@ -33,8 +33,6 @@ export default function PlayerStatsApp() {
     canRender,
     uuidCopied,
     setUuidCopied,
-    uuidBtnRef,
-    uuidMinWidthRef,
     skinHeadUrl,
     skinHeadFallback,
     skinFullUrl,
@@ -116,8 +114,6 @@ export default function PlayerStatsApp() {
         uuidFull={uuidFull}
         uuidCopied={uuidCopied}
         onCopyUuid={handleCopyUuid}
-        uuidBtnRef={uuidBtnRef}
-        uuidMinWidthRef={uuidMinWidthRef}
         generatedIso={generatedIso}
         apiError={apiError}
       />

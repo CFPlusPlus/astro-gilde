@@ -49,8 +49,6 @@ export type UsePlayerStatsState = {
   canRender: boolean;
   uuidCopied: boolean;
   setUuidCopied: Dispatch<SetStateAction<boolean>>;
-  uuidBtnRef: RefObject<HTMLButtonElement | null>;
-  uuidMinWidthRef: RefObject<number | null>;
   skinHeadUrl: string;
   skinHeadFallback: string;
   skinFullUrl: string;
@@ -88,8 +86,6 @@ export function usePlayerStatsState(): UsePlayerStatsState {
   const [sortMobs, setSortMobs] = useState<SortState<keyof MobsRow>>({ key: 'label', dir: 'none' });
 
   const [uuidCopied, setUuidCopied] = useState(false);
-  const uuidBtnRef = useRef<HTMLButtonElement | null>(null);
-  const uuidMinWidthRef = useRef<number | null>(null);
 
   useEffect(() => {
     const qp = new URLSearchParams(window.location.search);
@@ -230,16 +226,6 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     document.title = `Minecraft Gilde - Spielerstatistik von ${playerName}`;
   }, [playerName]);
 
-  useEffect(() => {
-    if (!uuidFull) return;
-    const btn = uuidBtnRef.current;
-    if (!btn) return;
-    requestAnimationFrame(() => {
-      const w = btn.getBoundingClientRect().width;
-      uuidMinWidthRef.current = Math.ceil(w);
-    });
-  }, [uuidFull]);
-
   const skinId = useMemo(() => {
     if (!uuidFull) return '';
     return playerName && playerName !== uuidFull ? playerName : compactUUID(uuidFull);
@@ -291,8 +277,6 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     canRender: !!uuidParam,
     uuidCopied,
     setUuidCopied,
-    uuidBtnRef,
-    uuidMinWidthRef,
     skinHeadUrl,
     skinHeadFallback,
     skinFullUrl,

@@ -9,16 +9,6 @@ const revealAll = (root: ParentNode): void => {
   });
 };
 
-const applyDelay = (el: HTMLElement): void => {
-  const delayAttr = el.getAttribute('data-reveal-delay');
-  if (!delayAttr) return;
-
-  const delay = Number.parseInt(delayAttr, 10);
-  if (!Number.isNaN(delay) && delay > 0) {
-    el.style.setProperty('--reveal-delay', `${delay}ms`);
-  }
-};
-
 const initHomeReveal = (): (() => void) => {
   try {
     const root = document.querySelector<HTMLElement>(REVEAL_ROOT_SELECTOR);
@@ -40,7 +30,6 @@ const initHomeReveal = (): (() => void) => {
         const el = entry.target;
         if (!(el instanceof HTMLElement)) continue;
 
-        applyDelay(el);
         el.classList.add('is-revealed');
         observer.unobserve(el);
       }

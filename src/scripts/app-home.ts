@@ -147,7 +147,7 @@ function renderPlayers(data: ServerStatus): void {
       }
 
       img.removeEventListener('error', onError);
-      img.style.display = 'none';
+      img.classList.add('hidden');
     };
 
     img.addEventListener('error', onError);
@@ -174,19 +174,19 @@ function initGallery(): () => void {
   const nextBtn = root.querySelector<HTMLElement>('[data-gallery-next]');
   if (!imgA || !imgB) return () => {};
 
-  const setOpacity = (el: HTMLElement, value: number): void => {
-    el.style.opacity = String(value);
+  const setVisible = (el: HTMLElement, visible: boolean): void => {
+    el.classList.toggle('opacity-100', visible);
+    el.classList.toggle('opacity-0', !visible);
   };
 
   const revealPlaceholder = (): void => {
     if (!placeholder) return;
-    placeholder.style.transition = 'opacity 450ms ease';
-    placeholder.style.opacity = '0';
+    placeholder.classList.add('opacity-0');
   };
 
   const showSingle = (): void => {
-    setOpacity(imgA, 1);
-    setOpacity(imgB, 0);
+    setVisible(imgA, true);
+    setVisible(imgB, false);
     revealPlaceholder();
   };
 
@@ -311,8 +311,8 @@ function initGallery(): () => void {
       return;
     }
 
-    setOpacity(back, 1);
-    setOpacity(front, 0);
+    setVisible(back, true);
+    setVisible(front, false);
 
     transitionTimer = window.setTimeout(() => {
       if (disposed) return;
@@ -320,7 +320,7 @@ function initGallery(): () => void {
       front = back;
       back = tmp;
 
-      setOpacity(back, 0);
+      setVisible(back, false);
       index = nextIndex;
       isTransitioning = false;
     }, fadeMs + 30);
@@ -434,8 +434,8 @@ function initGallery(): () => void {
       back.src = order[nextIndex];
     }
 
-    setOpacity(front, 1);
-    setOpacity(back, 0);
+    setVisible(front, true);
+    setVisible(back, false);
     revealPlaceholder();
     start();
   })();

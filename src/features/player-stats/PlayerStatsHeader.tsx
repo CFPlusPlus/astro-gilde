@@ -1,4 +1,3 @@
-import type { RefObject } from 'react';
 import { ArrowLeft, Languages } from 'lucide-react';
 
 import { ApiAlert, fmtGenerated } from './ui';
@@ -11,8 +10,6 @@ export function PlayerStatsHeader({
   uuidFull,
   uuidCopied,
   onCopyUuid,
-  uuidBtnRef,
-  uuidMinWidthRef,
   generatedIso,
   apiError,
 }: {
@@ -23,13 +20,9 @@ export function PlayerStatsHeader({
   uuidFull: string;
   uuidCopied: boolean;
   onCopyUuid: () => void;
-  uuidBtnRef: RefObject<HTMLButtonElement | null>;
-  uuidMinWidthRef: RefObject<number | null>;
   generatedIso: string | null;
   apiError: string | null;
 }) {
-  const uuidButtonText = uuidCopied ? 'Kopiert!' : uuidFull;
-
   return (
     <section className="mg-container pt-10 pb-6">
       <div className="flex flex-col gap-5">
@@ -61,16 +54,17 @@ export function PlayerStatsHeader({
           </a>
 
           <button
-            ref={uuidBtnRef}
             type="button"
             title="UUID kopieren"
-            className="bg-surface border-border text-fg hover:bg-surface-solid/70 inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition-colors"
-            style={
-              uuidMinWidthRef.current ? { minWidth: `${uuidMinWidthRef.current}px` } : undefined
-            }
+            className="bg-surface border-border text-fg hover:bg-surface-solid/70 relative inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold transition-colors"
             onClick={onCopyUuid}
           >
-            {uuidButtonText}
+            <span className={uuidCopied ? 'text-transparent' : ''}>{uuidFull}</span>
+            {uuidCopied ? (
+              <span className="pointer-events-none absolute inset-0 inline-flex items-center justify-center px-3">
+                Kopiert!
+              </span>
+            ) : null}
           </button>
 
           {generatedIso ? (
