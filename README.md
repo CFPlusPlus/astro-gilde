@@ -84,15 +84,19 @@ Für prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit a
 
 Aktuelle Policy:
 
+- `script-src 'self';` (via `scriptDirective.resources`)
+- `style-src 'self' 'unsafe-inline';` (via `styleDirective.resources`)
 - `default-src 'self';`
 - `img-src 'self' data: https:;`
-- `style-src 'self' 'unsafe-inline';`
-- `script-src 'self';`
+- `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com;`
 - `connect-src 'self' https:;`
 - `base-uri 'self';`
 - `object-src 'none';`
-- `frame-ancestors 'self';`
 - `form-action 'self';`
+
+Hinweis zur Einbettung:
+
+- `frame-ancestors` ist aktuell nicht gesetzt.
 
 Hinweis:
 
@@ -109,6 +113,13 @@ Hinweis:
   `src/scripts/home-reveal.ts`, `src/styles/home.css`).
 - Für ein komplettes Entfernen von `unsafe-inline` müssen die verbleibenden
   Runtime-Style-Änderungen auf rein klassenbasierte Mechaniken umgestellt werden.
+
+Optionale Browser-Konsole-Prüfung:
+
+```js
+const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
+console.log(cspMeta?.content ?? 'Kein CSP-Meta-Tag gefunden');
+```
 
 ---
 
