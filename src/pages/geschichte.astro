@@ -4,6 +4,7 @@ import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import Callout from '../components/ui/Callout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle } from '../lib/structuredData';
 import { ArrowRight, Flag, Globe, Rocket, Cpu, Paintbrush } from '@lucide/astro';
@@ -119,23 +120,24 @@ const milestones: Milestone[] = [
 >
   <JsonLd slot="head" data={articleLd} />
 
-  <section class="mg-container pt-12 pb-6">
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 class="text-3xl font-semibold tracking-tight">Geschichte</h1>
-        <p class="text-muted mt-2">
-          Von <span class="text-fg font-medium">minecraft.falkner.info</span> bis Folia - unsere Reise
-          seit Februar 2024.
-        </p>
-      </div>
+  <PageHeader
+    title="Geschichte"
+    subtitleClass="text-muted mt-2"
+    actionsInline
+    headerClass="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+    actionsClass="flex flex-wrap gap-2"
+  >
+    <Fragment slot="subtitle">
+      Von <span class="text-fg font-medium">minecraft.falkner.info</span> bis Folia - unsere Reise seit
+      Februar 2024.
+    </Fragment>
 
-      <div class="flex flex-wrap gap-2">
-        <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
-          Discord <ArrowRight size={18} />
-        </Button>
-        <Button href="/serverinfos" variant="ghost">Serverinfos</Button>
-      </div>
-    </div>
+    <Fragment slot="actions">
+      <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+        Discord <ArrowRight size={18} />
+      </Button>
+      <Button href="/serverinfos" variant="ghost">Serverinfos</Button>
+    </Fragment>
 
     <div class="mt-6 flex flex-wrap gap-2">
       <Badge variant="accent">Start: Feb 2024</Badge>
@@ -143,7 +145,7 @@ const milestones: Milestone[] = [
       <Badge>Folia: seit 01.05.2025</Badge>
       <Badge>Ohne Reset seit 2024</Badge>
     </div>
-  </section>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <div class="grid gap-4 lg:grid-cols-3">

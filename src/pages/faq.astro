@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildFaqPage } from '../lib/structuredData';
 import { ArrowRight, BookOpen, Hammer, Shield, Cpu, Users, ScrollText } from '@lucide/astro';
@@ -44,14 +45,14 @@ const DISCORD_URL = minecraftGilde.discord.url;
   description="FAQ zur Minecraft Gilde: Erststart, Grundstücke, Updates, PvP, Technik und Community - übersichtlich gruppiert."
 >
   <JsonLd slot="head" data={faqLd} />
-  <section class="mg-container pt-12 pb-8">
-    <h1 class="text-3xl font-semibold tracking-tight">FAQ</h1>
-    <p class="text-muted mt-2 max-w-3xl">
-      Die häufigsten Fragen kurz und verständlich beantwortet. Wenn dir etwas fehlt, schreib uns
-      gern auf Discord.
-    </p>
-
-    <div class="mt-6 flex flex-wrap gap-2">
+  <PageHeader
+    title="FAQ"
+    subtitle="Die häufigsten Fragen kurz und verständlich beantwortet. Wenn dir etwas fehlt, schreib uns gern auf Discord."
+    class="pb-8"
+    subtitleClass="text-muted mt-2 max-w-3xl"
+    actionsClass="mt-6 flex flex-wrap gap-2"
+  >
+    <Fragment slot="actions">
       <Button href="/tutorial" variant="secondary" size="sm" class="gap-2">
         <BookOpen size={16} /> Tutorial
       </Button>
@@ -61,8 +62,8 @@ const DISCORD_URL = minecraftGilde.discord.url;
       <Button href="/voten" variant="ghost" size="sm" class="gap-2">
         <ArrowRight size={16} /> Voten
       </Button>
-    </div>
-  </section>
+    </Fragment>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <div class="grid gap-4">

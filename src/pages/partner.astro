@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import { ArrowRight, Users } from '@lucide/astro';
 import { Image } from 'astro:assets';
 import { minecraftGilde } from '../config/minecraftGilde';
@@ -19,14 +20,13 @@ const PARTNER_ACK_HEIGHT = Math.round(
   title="Minecraft Gilde – Partner"
   description="Community-Partner der Minecraft Gilde – befreundete Communities und Projekte."
 >
-  <section class="mg-container pt-12 pb-10">
-    <div class="max-w-3xl">
-      <h1 class="text-3xl font-semibold tracking-tight">Partner</h1>
-      <p class="text-muted mt-3">
-        Hier findest du befreundete Communities und Projekte, mit denen wir eng zusammenarbeiten.
-      </p>
-    </div>
-
+  <PageHeader
+    title="Partner"
+    subtitle="Hier findest du befreundete Communities und Projekte, mit denen wir eng zusammenarbeiten."
+    class="pb-10"
+    headerClass="max-w-3xl"
+    subtitleClass="text-muted mt-3"
+  >
     <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <div class="glass overflow-hidden rounded-[var(--radius)]">
         <div
@@ -98,5 +98,5 @@ const PARTNER_ACK_HEIGHT = Math.round(
         </div>
       </div>
     </div>
-  </section>
+  </PageHeader>
 </BaseLayout>

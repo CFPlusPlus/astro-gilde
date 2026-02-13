@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildHowTo } from '../lib/structuredData';
 import { ArrowRight, BadgeCheck, Gift, ShoppingBag, ExternalLink, Info } from '@lucide/astro';
@@ -69,13 +70,12 @@ const howToLd = buildHowTo({
   description="Voten für Minecraft Gilde: Unterstütze den Server, verbessere das Ranking und erhalte Belohnungen sowie Vote-Punkte für den Vote-Shop."
 >
   <JsonLd slot="head" data={howToLd} />
-  <section class="mg-container pt-12 pb-8">
-    <h1 class="text-3xl font-semibold tracking-tight">Voten</h1>
-    <p class="text-muted mt-2 max-w-3xl">
-      Mit jedem Vote machst du die Minecraft Gilde sichtbarer. Das hilft uns beim Ranking und sorgt
-      dafür, dass neue Spieler leichter zu uns finden.
-    </p>
-
+  <PageHeader
+    title="Voten"
+    subtitle="Mit jedem Vote machst du die Minecraft Gilde sichtbarer. Das hilft uns beim Ranking und sorgt dafür, dass neue Spieler leichter zu uns finden."
+    class="pb-8"
+    subtitleClass="text-muted mt-2 max-w-3xl"
+  >
     <div class="mt-6 grid gap-4 lg:grid-cols-3">
       <Card class="p-6">
         <div class="flex items-start gap-4">
@@ -126,7 +126,7 @@ const howToLd = buildHowTo({
         </div>
       </Card>
     </div>
-  </section>
+  </PageHeader>
 
   <section class="mg-container pb-16">
     <div class="flex items-end justify-between gap-6">

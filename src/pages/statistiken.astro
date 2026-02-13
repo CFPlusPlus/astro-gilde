@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
 import StatsApp from '../features/stats/StatsApp';
 ---
 
@@ -11,13 +12,11 @@ import StatsApp from '../features/stats/StatsApp';
   <link slot="head" rel="preconnect" href="https://minotar.net" crossorigin />
   <link slot="head" rel="dns-prefetch" href="//minotar.net" />
 
-  <section class="mg-container pt-12 pb-6">
-    <h1 class="text-3xl font-semibold tracking-tight">Statistiken</h1>
-    <p class="text-muted mt-2 max-w-3xl">
-      Suche nach Spielern, entdecke Ranglisten und sieh, wer aktuell die meisten Punkte sammelt. Die
-      Daten werden serverseitig erzeugt und können leicht verzögert sein.
-    </p>
-  </section>
+  <PageHeader
+    title="Statistiken"
+    subtitle="Suche nach Spielern, entdecke Ranglisten und sieh, wer aktuell die meisten Punkte sammelt. Die Daten werden serverseitig erzeugt und können leicht verzögert sein."
+    subtitleClass="text-muted mt-2 max-w-3xl"
+  />
 
   <!-- React-Island: lädt die interaktive Statistik-App -->
   <StatsApp client:load />
