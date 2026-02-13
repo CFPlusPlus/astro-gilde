@@ -4,6 +4,7 @@ import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
+import { Card } from '../../ui/Card';
 
 export function LeaderboardTable({
   metricKey = 'default',
@@ -38,8 +39,8 @@ export function LeaderboardTable({
   const shouldShowCenterLoader = showCenterLoader ?? (isInitialLoad && isLoading);
 
   return (
-    <div
-      className="mg-card relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
+    <Card
+      className="relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
       aria-busy={isLoading}
     >
       <div className="max-w-full overflow-x-auto overscroll-x-contain">
@@ -151,6 +152,6 @@ export function LeaderboardTable({
       <div className="border-border flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
         <Pagination state={state} onGo={onGoPage} onLoadMore={onLoadMore} />
       </div>
-    </div>
+    </Card>
   );
 }

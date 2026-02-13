@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Filter, X } from 'lucide-react';
 import type { MetricDef } from '../types';
+import { Card } from '../../ui/Card';
 
 export type GroupedMetrics = Array<{ cat: string; ids: string[] }>;
 
@@ -22,7 +23,7 @@ function MetricPickerImpl({
   const visibleCount = grouped.reduce((sum, group) => sum + group.ids.length, 0);
 
   return (
-    <div className="mg-card p-4">
+    <Card className="p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <span className="text-muted text-xs">
@@ -123,7 +124,7 @@ function MetricPickerImpl({
           })}
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
