@@ -128,7 +128,7 @@ const linkClassMega = (active: boolean) =>
 
         <!-- Discord-Status (Desktop) + Hover-Card -->
         <div class="group relative hidden lg:inline-block">
-          <button type="button" aria-label="Discord Status" class="site-discord-link">
+          <div tabindex="0" aria-label="Discord Status" class="site-discord-link">
             <span class="site-discord-icon" aria-hidden="true">
               <svg viewBox="0 0 127.14 96.36" class="h-5 w-5 fill-current">
                 <path
@@ -140,7 +140,7 @@ const linkClassMega = (active: boolean) =>
               <span class="mg-discord-members tabular-nums" data-discord-members>-</span>
               <span class="site-discord-label">Mitglieder</span>
             </span>
-          </button>
+          </div>
 
           <div
             class="invisible absolute top-full right-0 left-auto z-50 mt-2 w-[min(15rem,calc(100vw-1.5rem))] translate-y-1 opacity-0 transition-all duration-150 group-focus-within:visible group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:opacity-100"

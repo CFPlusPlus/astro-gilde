@@ -438,6 +438,7 @@ html[data-theme='dark'] {
     font-size: 0.84rem;
     font-weight: 650;
     overflow: hidden;
+    cursor: default;
     transition:
       color 150ms ease,
       background-color 150ms ease,
