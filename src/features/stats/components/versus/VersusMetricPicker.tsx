@@ -42,7 +42,7 @@ export function VersusMetricPicker({
   const selectedMetricIds = new Set(versusMetricIds);
 
   return (
-    <div className="mg-card min-w-0 p-4">
+    <div className="mg-card mg-card--outlined min-w-0 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <span className="text-muted text-xs">{versusCatalog.length} Eintr&auml;ge</span>

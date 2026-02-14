@@ -109,7 +109,7 @@ export function RankingsSection({
 
           <div className="min-w-0 space-y-3">
             {metrics && activeMetricId ? (
-              <div className="mg-card min-h-[156px] p-4">
+              <div className="mg-card mg-card--outlined min-h-[156px] p-4">
                 <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
                 <p
                   className="text-fg mt-1 truncate text-lg font-semibold tracking-tight"
@@ -132,7 +132,7 @@ export function RankingsSection({
                 </div>
               </div>
             ) : (
-              <div className="mg-card p-6">
+              <div className="mg-card mg-card--outlined p-6">
                 <p className="text-fg font-semibold">Keine Rangliste ausgew&auml;hlt</p>
                 <p className="text-muted mt-2 text-sm">
                   W&auml;hle links eine Kategorie aus, um die Top-Werte zu sehen.

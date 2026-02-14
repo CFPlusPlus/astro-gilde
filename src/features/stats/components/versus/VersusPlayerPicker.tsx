@@ -140,7 +140,7 @@ export function VersusPlayerPicker({
   onGoToPlayer,
 }: VersusPlayerPickerProps) {
   return (
-    <div className="mg-card relative z-20 overflow-visible p-5">
+    <div className="mg-card mg-card--outlined relative z-20 overflow-visible p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">

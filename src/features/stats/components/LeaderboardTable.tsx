@@ -46,7 +46,7 @@ export function LeaderboardTable({
 
   return (
     <Card
-      className="relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
+      className="mg-card--outlined relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
       aria-busy={isLoading}
     >
       <div className="max-w-full overflow-x-auto overscroll-x-contain">

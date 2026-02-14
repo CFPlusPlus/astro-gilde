@@ -52,7 +52,7 @@ const groups = TEAM_GROUPS.map((g) => ({
 
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {g.members.map((m) => (
-                <div class="mg-card flex items-center gap-3 p-4">
+                <div class="mg-card mg-card--outlined flex items-center gap-3 p-4">
                   <img
                     src={avatarUrl(m.inGameName)}
                     alt={m.inGameName}

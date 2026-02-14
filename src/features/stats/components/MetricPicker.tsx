@@ -23,7 +23,7 @@ function MetricPickerImpl({
   const visibleCount = grouped.reduce((sum, group) => sum + group.ids.length, 0);
 
   return (
-    <Card className="p-4">
+    <Card className="mg-card--outlined p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <span className="text-muted text-xs">

@@ -66,7 +66,7 @@ export function VersusResults({
         </div>
       ) : (
         <>
-          <div className="mg-card min-w-0 p-4">
+          <div className="mg-card mg-card--outlined min-w-0 p-4">
             <p className="text-muted text-xs font-semibold">Zwischenstand</p>
             <div className="mt-2 flex flex-wrap items-start gap-2 sm:items-center sm:gap-3">
               <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
@@ -91,7 +91,7 @@ export function VersusResults({
             ) : null}
           </div>
 
-          <div className="mg-card relative min-w-0 overflow-hidden">
+          <div className="mg-card mg-card--outlined relative min-w-0 overflow-hidden">
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-full min-w-[560px] text-sm sm:min-w-[720px]">
                 <thead className="bg-surface-solid/40 text-muted text-xs">

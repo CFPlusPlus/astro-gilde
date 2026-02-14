@@ -671,25 +671,25 @@ html[data-theme='dark'] {
   }
 
   .mg-card {
-    @apply bg-surface-solid rounded-[var(--radius)] border;
-    border-color: color-mix(in oklab, var(--border) 76%, transparent);
-    box-shadow: none;
+    @apply bg-surface-solid rounded-[var(--radius)];
   }
 
   .mg-card--outlined {
-    border-color: var(--border);
-    box-shadow: none;
+    @apply border;
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
   }
 
   .mg-card--raised {
-    border-color: color-mix(in oklab, var(--border) 90%, var(--fg) 10%);
-    box-shadow: 0 12px 24px -24px color-mix(in oklab, var(--fg) 55%, transparent);
+    @apply border shadow-sm;
+    border-color: color-mix(in oklab, var(--border) 90%, transparent);
     transition:
       border-color 160ms ease,
       box-shadow 160ms ease;
   }
 
   .mg-card--interactive {
+    @apply border;
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
     cursor: pointer;
     transition:
       border-color 160ms ease,
@@ -699,8 +699,8 @@ html[data-theme='dark'] {
   .mg-card--interactive:hover,
   .mg-card--interactive:focus-visible,
   .mg-card--interactive:focus-within {
+    @apply shadow-sm;
     border-color: color-mix(in oklab, var(--accent) 36%, var(--border) 64%);
-    box-shadow: 0 14px 30px -24px color-mix(in oklab, var(--fg) 50%, transparent);
   }
 
   .mg-list {
