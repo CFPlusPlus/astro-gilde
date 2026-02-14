@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildFaqPage } from '../lib/structuredData';
@@ -80,13 +81,15 @@ const DISCORD_URL = minecraftGilde.discord.url;
               <div class="min-w-0 flex-1">
                 <h2 class="text-lg font-semibold tracking-tight">{g.title}</h2>
 
-                <div class="mt-4 grid gap-2">
+                <DividerList as="div" class="mt-4">
                   {g.items.map((it) => (
                     <details
-                      class="border-border bg-surface/55 rounded-[var(--radius)] border px-4 py-3"
+                      class="mg-list-item px-1 sm:px-2"
                       data-motion-accordion
                     >
-                      <summary class="list-none text-sm font-semibold outline-none">
+                      <summary
+                        class="focus-visible:ring-offset-bg cursor-pointer list-none rounded-[calc(var(--radius)-6px)] px-2 py-1.5 text-sm font-semibold outline-none transition-colors hover:bg-surface/45 focus-visible:bg-surface/45 focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                      >
                         <span class="inline-flex items-center gap-2">
                           <span
                             class="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full"
@@ -96,12 +99,12 @@ const DISCORD_URL = minecraftGilde.discord.url;
                         </span>
                       </summary>
                       <div
-                        class="faq-answer mg-prose mt-3 text-sm leading-relaxed"
+                        class="faq-answer mg-prose mt-2 px-2 text-sm leading-relaxed"
                         set:html={renderMarkdown(it.a)}
                       />
                     </details>
                   ))}
-                </div>
+                </DividerList>
               </div>
             </div>
           </section>
