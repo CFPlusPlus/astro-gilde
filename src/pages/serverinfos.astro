@@ -2,7 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
-import Callout from '../components/ui/Callout.astro';
+import DividerList from '../components/ui/DividerList.astro';
+import Section from '../components/ui/Section.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { Image } from 'astro:assets';
@@ -82,57 +83,71 @@ const articleLd = buildArticle({
       data-motion="reveal"
     >
       <div class="grid gap-8 lg:grid-cols-3">
-        <section class="lg:border-border/60 lg:border-r lg:pr-7">
+        <section>
           <div class="flex items-start gap-3">
             <Gamepad2 size={20} />
             <h2 class="text-base font-semibold">Kurzprofil</h2>
           </div>
-          <dl class="mt-3 grid gap-2 text-sm">
-            <div class="flex items-center justify-between gap-4">
+          <dl class="mg-list mt-3 text-sm">
+            <div class="mg-row items-center">
               <dt class="text-muted">IP</dt><dd class="font-semibold">{SERVER_IP}</dd>
             </div>
-            <div class="flex items-center justify-between gap-4">
+            <div class="mg-row items-center">
               <dt class="text-muted">Version</dt><dd>Folia 1.21.11</dd>
             </div>
-            <div class="flex items-center justify-between gap-4">
+            <div class="mg-row items-center">
               <dt class="text-muted">Typ</dt><dd>Vanilla SMP (DE)</dd>
             </div>
-            <div class="flex items-center justify-between gap-4">
+            <div class="mg-row items-center">
               <dt class="text-muted">Welt</dt><dd>seit Feb 2024</dd>
             </div>
           </dl>
         </section>
 
-        <section class="lg:border-border/60 lg:border-r lg:px-7">
+        <section>
           <div class="flex items-start gap-3">
             <Cpu size={20} />
             <h2 class="text-base font-semibold">Technik</h2>
           </div>
-          <ul class="text-muted mt-3 space-y-2 text-sm">
-            <li>
+          <DividerList as="ul" class="mt-3 list-none pl-0 text-sm">
+            <li class="mg-row !justify-start">
               <span class="text-fg/90 font-medium">CPU:</span> 2x Intel Xeon E5-2680 v2 (20 Kerne / 40
               Threads)
             </li>
-            <li><span class="text-fg/90 font-medium">RAM:</span> 128 GB DDR3 ECC</li>
-            <li><span class="text-fg/90 font-medium">Storage:</span> 500 GB SSD</li>
-            <li><span class="text-fg/90 font-medium">OS:</span> Ubuntu 24.04</li>
-            <li><span class="text-fg/90 font-medium">DB:</span> MariaDB (für Statistiken)</li>
-            <li><span class="text-fg/90 font-medium">GC:</span> G1GC</li>
-          </ul>
+            <li class="mg-row !justify-start">
+              <span class="text-fg/90 font-medium">RAM:</span> 128 GB DDR3 ECC
+            </li>
+            <li class="mg-row !justify-start">
+              <span class="text-fg/90 font-medium">Storage:</span> 500 GB SSD
+            </li>
+            <li class="mg-row !justify-start">
+              <span class="text-fg/90 font-medium">OS:</span> Ubuntu 24.04
+            </li>
+            <li class="mg-row !justify-start">
+              <span class="text-fg/90 font-medium">DB:</span> MariaDB (für Statistiken)
+            </li>
+            <li class="mg-row !justify-start">
+              <span class="text-fg/90 font-medium">GC:</span> G1GC
+            </li>
+          </DividerList>
         </section>
 
-        <section class="lg:pl-7">
+        <section>
           <div class="flex items-start gap-3">
             <Shield size={20} />
             <h2 class="text-base font-semibold">Gameplay &amp; Schutz</h2>
           </div>
-          <ul class="text-muted mt-3 space-y-2 text-sm">
-            <li>16 Chunks Sichtweite</li>
-            <li>Vanilla-nahe Spawnraten</li>
-            <li>Keine künstlichen Einschränkungen bei Mobs, Villagern oder Farmen</li>
-            <li>Grundstücke lassen sich selbst schützen (GriefPrevention)</li>
-            <li>Keine kaufbaren Ränge oder Items</li>
-          </ul>
+          <DividerList as="ul" class="text-muted mt-3 list-none pl-0 text-sm">
+            <li class="mg-row !justify-start">16 Chunks Sichtweite</li>
+            <li class="mg-row !justify-start">Vanilla-nahe Spawnraten</li>
+            <li class="mg-row !justify-start">
+              Keine künstlichen Einschränkungen bei Mobs, Villagern oder Farmen
+            </li>
+            <li class="mg-row !justify-start">
+              Grundstücke lassen sich selbst schützen (GriefPrevention)
+            </li>
+            <li class="mg-row !justify-start">Keine kaufbaren Ränge oder Items</li>
+          </DividerList>
           <div class="mt-4 flex flex-wrap gap-2">
             <Button href="/tutorial" variant="secondary">Tutorial</Button>
             <Button href="/regeln" variant="ghost">Regeln</Button>
@@ -141,51 +156,50 @@ const articleLd = buildArticle({
       </div>
     </div>
 
-    <div
-      class="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch"
-      data-motion-stagger="90"
+    <Section
+      tone="muted"
+      container={false}
+      padded={false}
+      class="mt-6 rounded-[var(--radius)] p-6 sm:p-7"
     >
-      <article
-        class="border-border/70 bg-surface/40 h-full rounded-[var(--radius)] border p-6"
-        data-motion="reveal"
-      >
-        <h2 class="text-xl font-semibold tracking-tight">Warum Folia?</h2>
-        <p class="text-muted mt-3 text-sm leading-relaxed">
-          Seit Mai 2025 läuft der Server auf Folia - einem Paper-Fork, der die Welt in Regionen
-          aufteilt und parallel verarbeitet. Das sorgt vor allem dann für mehr Stabilität, wenn
-          viele Spieler gleichzeitig online sind.
-        </p>
-        <p class="text-muted mt-3 text-sm leading-relaxed">
-          Im Alltag funktioniert das Setup inzwischen sehr zuverlässig. Einzelne Plugins machen
-          selten noch Probleme, insgesamt läuft Folia aber stabil und praxisnah.
-        </p>
-      </article>
+      <div class="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start" data-motion-stagger="90">
+        <article data-motion="reveal">
+          <h2 class="text-xl font-semibold tracking-tight">Warum Folia?</h2>
+          <p class="text-muted mt-3 text-sm leading-relaxed">
+            Seit Mai 2025 läuft der Server auf Folia - einem Paper-Fork, der die Welt in Regionen
+            aufteilt und parallel verarbeitet. Das sorgt vor allem dann für mehr Stabilität, wenn
+            viele Spieler gleichzeitig online sind.
+          </p>
+          <p class="text-muted mt-3 text-sm leading-relaxed">
+            Im Alltag funktioniert das Setup inzwischen sehr zuverlässig. Einzelne Plugins machen
+            selten noch Probleme, insgesamt läuft Folia aber stabil und praxisnah.
+          </p>
+        </article>
 
-      <figure
-        class="border-border/70 bg-surface/25 h-full rounded-[var(--radius)] border p-5 sm:p-6"
-        data-motion="reveal"
-      >
-        <Image
-          src={foliaImage}
-          alt="Folia Logo"
-          width={FOLIA_IMAGE_WIDTH}
-          height={FOLIA_IMAGE_HEIGHT}
-          loading="lazy"
-          class="mx-auto w-full max-w-[18rem] sm:max-w-[20rem] md:max-w-[22rem]"
-        />
-        <figcaption class="text-muted mt-4 text-center text-sm">
-          Folia ist ein Fork von PaperMC und setzt auf einen Multithreaded-Ansatz.
-        </figcaption>
-      </figure>
-    </div>
-    <Callout variant="info" class="mt-6" data-motion="reveal">
-      <p>
-        Du willst direkt loslegen? Dann schau kurz ins Tutorial - dort findest du Claim, RTP, Rollen
-        und alles Wichtige.
-      </p>
-      <div class="mt-3">
-        <Button href="/tutorial" variant="primary">Zum Tutorial</Button>
+        <figure class="lg:border-border/55 lg:border-l lg:pl-7" data-motion="reveal">
+          <Image
+            src={foliaImage}
+            alt="Folia Logo"
+            width={FOLIA_IMAGE_WIDTH}
+            height={FOLIA_IMAGE_HEIGHT}
+            loading="lazy"
+            class="mx-auto w-full max-w-[18rem] sm:max-w-[20rem] md:max-w-[22rem]"
+          />
+          <figcaption class="text-muted mt-4 text-center text-sm">
+            Folia ist ein Fork von PaperMC und setzt auf einen Multithreaded-Ansatz.
+          </figcaption>
+        </figure>
       </div>
-    </Callout>
+
+      <div class="border-border/60 mt-6 border-t pt-6" data-motion="reveal">
+        <p class="text-sm leading-relaxed">
+          Du willst direkt loslegen? Dann schau kurz ins Tutorial - dort findest du Claim, RTP,
+          Rollen und alles Wichtige.
+        </p>
+        <div class="mt-3">
+          <Button href="/tutorial" variant="primary">Zum Tutorial</Button>
+        </div>
+      </div>
+    </Section>
   </section>
 </BaseLayout>
