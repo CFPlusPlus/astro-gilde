@@ -1,0 +1,46 @@
+---
+export type SectionTone = 'default' | 'muted';
+
+export interface Props {
+  id?: string;
+  class?: string;
+  containerClass?: string;
+  tone?: SectionTone;
+  padded?: boolean;
+  container?: boolean;
+}
+
+const {
+  id,
+  class: className = '',
+  containerClass = '',
+  tone = 'default',
+  padded = true,
+  container = true,
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
+
+const toneClasses: Record<SectionTone, string> = {
+  default: '',
+  muted: 'bg-surface/45',
+};
+
+const spacingClass = padded ? 'py-20 sm:py-24 lg:py-28' : '';
+const sectionClass = `${toneClasses[tone]} ${className}`.trim();
+---
+
+<section id={id} class={sectionClass} data-tone={tone} {...rest}>
+  {
+    container ? (
+      <div class={`mg-container ${spacingClass} ${containerClass}`.trim()}>
+        <slot />
+      </div>
+    ) : padded ? (
+      <div class={`${spacingClass} ${containerClass}`.trim()}>
+        <slot />
+      </div>
+    ) : (
+      <slot />
+    )
+  }
+</section>

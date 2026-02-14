@@ -1,5 +1,4 @@
 ---
-import HomePanel from '../HomePanel.astro';
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
 import { Map, Users } from '@lucide/astro';
@@ -7,7 +6,7 @@ import { Map, Users } from '@lucide/astro';
 const DYNMAP_URL = minecraftGilde.mapUrl;
 ---
 
-<HomeSection id="live" size="normal">
+<HomeSection id="live" size="normal" tone="muted">
   <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
     <div>
       <h2 class="text-3xl font-semibold tracking-tight">Live auf dem Server</h2>
@@ -21,7 +20,7 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
     </div>
   </div>
 
-  <HomePanel variant="glass" class="mt-10 p-6 sm:p-8" data-reveal data-reveal-delay="100">
+  <div class="mt-10" data-reveal data-reveal-delay="100">
     <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
       <div>
         <h3 class="text-base font-semibold">Status</h3>
@@ -65,5 +64,5 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
         </p>
       </div>
     </div>
-  </HomePanel>
+  </div>
 </HomeSection>

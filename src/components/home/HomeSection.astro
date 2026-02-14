@@ -1,17 +1,21 @@
 ---
+import Section, { type SectionTone } from '../ui/Section.astro';
+
 export type HomeSectionSize = 'tight' | 'normal' | 'loose';
 
 export interface Props {
-  /** Optionales Anker-Target (für Onepager-Navigation) */
+  /** Optionales Anker-Target (fuer Onepager-Navigation) */
   id?: string;
-  /** Zusätzliche Klassen für das <section> */
+  /** Zusaetzliche Klassen fuer das <section> */
   class?: string;
-  /** Zusätzliche Klassen für den Container */
+  /** Zusaetzliche Klassen fuer den Container */
   containerClass?: string;
   /** Optionaler Trenner (Border oben) */
   divider?: boolean;
   /** Vertikales Spacing-Preset */
   size?: HomeSectionSize;
+  /** Optionales Hintergrund-Band */
+  tone?: SectionTone;
 }
 
 const {
@@ -20,22 +24,30 @@ const {
   containerClass = '',
   divider = false,
   size = 'normal',
+  tone = 'default',
   ...rest
 } = Astro.props as Props & Record<string, unknown>;
 
 const sizes: Record<HomeSectionSize, string> = {
-  // Mehr „Luft“: größere Standard-Abstände, damit die Startseite ruhiger wirkt.
+  // Mehr Luft: groessere Standard-Abstaende fuer eine ruhigere Startseite.
   tight: 'py-14 sm:py-16',
   normal: 'py-24 sm:py-28 lg:py-32',
   loose: 'py-28 sm:py-32 lg:py-36',
 };
 
-const sectionClass = `${divider ? 'border-border border-t' : ''} ${className}`.trim();
+const sectionClass = `${divider ? 'border-border/70 border-t' : ''} ${className}`.trim();
 const container = `${sizes[size]} ${containerClass}`.trim();
 ---
 
-<section id={id} class={sectionClass} data-section {...rest}>
-  <div class={`mg-container ${container}`.trim()}>
-    <slot />
-  </div>
-</section>
+<Section
+  id={id}
+  tone={tone}
+  class={sectionClass}
+  container
+  padded={false}
+  containerClass={container}
+  data-section
+  {...rest}
+>
+  <slot />
+</Section>
