@@ -1,5 +1,5 @@
 ---
-import Section, { type SectionTone } from '../ui/Section.astro';
+import Section, { type SectionTone, type SectionVariant } from '../ui/Section.astro';
 
 export type HomeSectionSize = 'tight' | 'normal' | 'loose';
 
@@ -16,6 +16,8 @@ export interface Props {
   size?: HomeSectionSize;
   /** Optionales Hintergrund-Band */
   tone?: SectionTone;
+  /** Optionaler Section-Panelskin (Layout, keine Content-Card) */
+  variant?: SectionVariant;
 }
 
 const {
@@ -25,6 +27,7 @@ const {
   divider = false,
   size = 'normal',
   tone = 'default',
+  variant,
   ...rest
 } = Astro.props as Props & Record<string, unknown>;
 
@@ -42,6 +45,7 @@ const container = `${sizes[size]} ${containerClass}`.trim();
 <Section
   id={id}
   tone={tone}
+  variant={variant}
   class={sectionClass}
   container
   padded={false}

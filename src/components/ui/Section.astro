@@ -1,20 +1,24 @@
 ---
 export type SectionTone = 'default' | 'muted';
+export type SectionVariant = 'panel' | 'outlined';
 
 export interface Props {
   id?: string;
   class?: string;
   containerClass?: string;
   tone?: SectionTone;
+  variant?: SectionVariant;
   padded?: boolean;
   container?: boolean;
 }
 
+// Section = Layout (Rhythmus, Banding, Container). Card = Objekt (einzelner Inhalt).
 const {
   id,
   class: className = '',
   containerClass = '',
   tone = 'default',
+  variant,
   padded = true,
   container = true,
   ...rest
@@ -24,19 +28,40 @@ const toneClasses: Record<SectionTone, string> = {
   default: '',
   muted: 'bg-surface/45',
 };
+const variantClasses: Record<SectionVariant, string> = {
+  panel: 'mg-section-panel',
+  outlined: 'mg-section-panel mg-section-panel--outlined',
+};
 
 const spacingClass = padded ? 'py-20 sm:py-24 lg:py-28' : '';
 const sectionClass = `${toneClasses[tone]} ${className}`.trim();
+const panelClass = variant ? variantClasses[variant] : '';
 ---
 
-<section id={id} class={sectionClass} data-tone={tone} {...rest}>
+<section id={id} class={sectionClass} data-tone={tone} data-variant={variant} {...rest}>
   {
     container ? (
       <div class={`mg-container ${spacingClass} ${containerClass}`.trim()}>
-        <slot />
+        {panelClass ? (
+          <div class={panelClass}>
+            <slot />
+          </div>
+        ) : (
+          <slot />
+        )}
       </div>
     ) : padded ? (
       <div class={`${spacingClass} ${containerClass}`.trim()}>
+        {panelClass ? (
+          <div class={panelClass}>
+            <slot />
+          </div>
+        ) : (
+          <slot />
+        )}
+      </div>
+    ) : panelClass ? (
+      <div class={panelClass}>
         <slot />
       </div>
     ) : (

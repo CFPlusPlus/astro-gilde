@@ -670,6 +670,16 @@ html[data-theme='dark'] {
     @apply py-10;
   }
 
+  .mg-section-panel {
+    @apply rounded-[var(--radius)] p-5 sm:p-6 lg:p-7;
+    background: color-mix(in oklab, var(--surface) 70%, transparent);
+  }
+
+  .mg-section-panel--outlined {
+    border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 20%, transparent);
+  }
+
   .mg-card {
     @apply bg-surface-solid rounded-[var(--radius)];
   }
