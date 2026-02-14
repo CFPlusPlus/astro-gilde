@@ -671,7 +671,36 @@ html[data-theme='dark'] {
   }
 
   .mg-card {
-    @apply bg-surface-solid border-border rounded-[var(--radius)] border shadow-sm;
+    @apply bg-surface-solid rounded-[var(--radius)] border;
+    border-color: color-mix(in oklab, var(--border) 76%, transparent);
+    box-shadow: none;
+  }
+
+  .mg-card--outlined {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+
+  .mg-card--raised {
+    border-color: color-mix(in oklab, var(--border) 90%, var(--fg) 10%);
+    box-shadow: 0 12px 24px -24px color-mix(in oklab, var(--fg) 55%, transparent);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .mg-card--interactive {
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .mg-card--interactive:hover,
+  .mg-card--interactive:focus-visible,
+  .mg-card--interactive:focus-within {
+    border-color: color-mix(in oklab, var(--accent) 36%, var(--border) 64%);
+    box-shadow: 0 14px 30px -24px color-mix(in oklab, var(--fg) 50%, transparent);
   }
 
   /* Globale Button-Basis fuer Astro-Seiten und React-Islands. */
