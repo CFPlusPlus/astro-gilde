@@ -39,6 +39,12 @@ const revealAll = (elements: HTMLElement[]): void => {
   elements.forEach((el) => el.classList.add('is-motion-in'));
 };
 
+const isInViewport = (element: HTMLElement): boolean => {
+  const rect = element.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  return rect.bottom >= 0 && rect.top <= viewportHeight * 0.92;
+};
+
 const collectRevealElements = (root: ParentNode): HTMLElement[] => {
   const result: HTMLElement[] = [];
 
@@ -62,6 +68,11 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
     return () => {};
   }
 
+  if (typeof window.IntersectionObserver !== 'function') {
+    revealAll(collectRevealElements(root));
+    return () => {};
+  }
+
   const observed = new WeakSet<HTMLElement>();
 
   const observer = new IntersectionObserver(
@@ -75,8 +86,8 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
       });
     },
     {
-      threshold: 0.12,
-      rootMargin: '0px 0px -10% 0px',
+      threshold: 0.01,
+      rootMargin: '0px 0px -4% 0px',
     },
   );
 
@@ -86,6 +97,11 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
 
     elements.forEach((el) => {
       if (observed.has(el)) return;
+      if (isInViewport(el)) {
+        observed.add(el);
+        el.classList.add('is-motion-in');
+        return;
+      }
       observed.add(el);
       observer.observe(el);
     });
