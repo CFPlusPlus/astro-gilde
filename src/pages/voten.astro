@@ -76,8 +76,8 @@ const howToLd = buildHowTo({
     class="pb-8"
     subtitleClass="text-muted mt-2 max-w-3xl"
   >
-    <div class="mt-6 grid gap-4 lg:grid-cols-3">
-      <Card class="p-6">
+    <div class="mt-6 grid gap-4 lg:grid-cols-3" data-motion-stagger="70">
+      <Card class="p-6" reveal>
         <div class="flex items-start gap-4">
           <div
             class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
@@ -94,7 +94,7 @@ const howToLd = buildHowTo({
         </div>
       </Card>
 
-      <Card class="p-6">
+      <Card class="p-6" reveal>
         <div class="flex items-start gap-4">
           <div
             class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
@@ -110,7 +110,7 @@ const howToLd = buildHowTo({
         </div>
       </Card>
 
-      <Card class="p-6">
+      <Card class="p-6" reveal>
         <div class="flex items-start gap-4">
           <div
             class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
@@ -144,10 +144,10 @@ const howToLd = buildHowTo({
       </div>
     </div>
 
-    <div class="mt-6 grid gap-4 md:grid-cols-2">
+    <div class="mt-6 grid gap-4 md:grid-cols-2" data-motion-stagger="60">
       {
         voteSites.map((s) => (
-          <Card class="p-6">
+          <Card class="p-6" reveal>
             <div class="flex items-start justify-between gap-4">
               <div class="min-w-0">
                 <div class="flex items-center gap-2">
@@ -178,7 +178,7 @@ const howToLd = buildHowTo({
       }
     </div>
 
-    <Callout variant="info" title="Tipp" class="mt-6">
+    <Callout variant="info" title="Tipp" class="mt-6" data-motion="reveal">
       <p>
         Wenn du mehrere Listen nutzt, lohnt sich Voting besonders - so sammelst du schneller
         Vote-Punkte für den Vote-Shop.

@@ -35,10 +35,13 @@ const groups = TEAM_GROUPS.map((g) => ({
   </PageHeader>
 
   <section class="mg-container pb-16">
-    <div class="grid gap-4">
+    <div class="grid gap-4" data-motion-stagger="90">
       {
         groups.map((g) => (
-          <section class="border-border/70 bg-surface/25 rounded-[var(--radius)] border p-6">
+          <section
+            class="border-border/70 bg-surface/25 rounded-[var(--radius)] border p-6"
+            data-motion="reveal"
+          >
             <div class="flex items-center justify-between gap-4">
               <div class="inline-flex items-center gap-2">
                 <Shield size={18} />

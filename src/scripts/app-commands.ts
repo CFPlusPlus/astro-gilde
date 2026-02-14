@@ -1,4 +1,5 @@
 /* Sucht clientseitig auf /befehle und filtert Command-Karten innerhalb der Kategorien. */
+import { setSoftVisibility } from './app/motion/visibility';
 
 (() => {
   const input = document.getElementById('commandSearch');
@@ -24,10 +25,10 @@
     // Keine Suche -> alles anzeigen
     if (!q) {
       cats.forEach((cat) => {
-        cat.classList.remove('hidden');
+        setSoftVisibility(cat, true);
         cat
           .querySelectorAll<HTMLElement>('[data-command]')
-          .forEach((item) => item.classList.remove('hidden'));
+          .forEach((item) => setSoftVisibility(item, true));
       });
       return;
     }
@@ -40,15 +41,14 @@
         const hay = norm(item.getAttribute('data-search'));
         const ok = hay.includes(q);
         if (ok) {
-          item.classList.remove('hidden');
+          setSoftVisibility(item, true);
           visible++;
         } else {
-          item.classList.add('hidden');
+          setSoftVisibility(item, false);
         }
       });
 
-      if (visible === 0) cat.classList.add('hidden');
-      else cat.classList.remove('hidden');
+      setSoftVisibility(cat, visible > 0);
 
       const details = cat.closest('details');
       if (details instanceof HTMLDetailsElement) {

@@ -79,6 +79,7 @@ const articleLd = buildArticle({
   <section class="mg-container pb-16">
     <div
       class="border-border/70 from-surface/40 to-surface/10 rounded-[var(--radius)] border bg-gradient-to-b p-6 sm:p-7"
+      data-motion="reveal"
     >
       <div class="grid gap-8 lg:grid-cols-3">
         <section class="lg:border-border/60 lg:border-r lg:pr-7">
@@ -140,8 +141,14 @@ const articleLd = buildArticle({
       </div>
     </div>
 
-    <div class="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch">
-      <article class="border-border/70 bg-surface/40 h-full rounded-[var(--radius)] border p-6">
+    <div
+      class="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-stretch"
+      data-motion-stagger="90"
+    >
+      <article
+        class="border-border/70 bg-surface/40 h-full rounded-[var(--radius)] border p-6"
+        data-motion="reveal"
+      >
         <h2 class="text-xl font-semibold tracking-tight">Warum Folia?</h2>
         <p class="text-muted mt-3 text-sm leading-relaxed">
           Seit Mai 2025 läuft der Server auf Folia - einem Paper-Fork, der die Welt in Regionen
@@ -156,6 +163,7 @@ const articleLd = buildArticle({
 
       <figure
         class="border-border/70 bg-surface/25 h-full rounded-[var(--radius)] border p-5 sm:p-6"
+        data-motion="reveal"
       >
         <Image
           src={foliaImage}
@@ -170,7 +178,7 @@ const articleLd = buildArticle({
         </figcaption>
       </figure>
     </div>
-    <Callout variant="info" class="mt-6">
+    <Callout variant="info" class="mt-6" data-motion="reveal">
       <p>
         Du willst direkt loslegen? Dann schau kurz ins Tutorial - dort findest du Claim, RTP, Rollen
         und alles Wichtige.

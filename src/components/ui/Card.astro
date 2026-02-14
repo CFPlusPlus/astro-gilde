@@ -4,10 +4,17 @@ export type CardVariant = 'glass' | 'solid';
 export interface Props {
   variant?: CardVariant;
   class?: string;
+  reveal?: boolean;
+  revealDelay?: number;
 }
 
 // Solid ist der Standard fuer Content; Glass nur gezielt fuer Hero/Modal/Nav/Overlays einsetzen.
-const { variant = 'solid', class: className = '' } = Astro.props as Props;
+const {
+  variant = 'solid',
+  class: className = '',
+  reveal = false,
+  revealDelay,
+} = Astro.props as Props;
 
 const variants: Record<CardVariant, string> = {
   solid: 'mg-card',
@@ -15,6 +22,10 @@ const variants: Record<CardVariant, string> = {
 };
 ---
 
-<div class={`${variants[variant]} rounded-[var(--radius)] ${className}`.trim()}>
+<div
+  class={`${variants[variant]} rounded-[var(--radius)] ${className}`.trim()}
+  data-motion={reveal ? 'reveal' : undefined}
+  data-motion-delay={reveal && typeof revealDelay === 'number' ? revealDelay : undefined}
+>
   <slot />
 </div>

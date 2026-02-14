@@ -150,7 +150,7 @@ const milestones: Milestone[] = [
   <section class="mg-container pb-16">
     <div class="grid gap-4 lg:grid-cols-3">
       <div class="grid gap-4 lg:col-span-2">
-        <Callout variant="tip" title="Kurz erklärt">
+        <Callout variant="tip" title="Kurz erklärt" data-motion="reveal">
           Hier findest du die wichtigsten Stationen unserer Entwicklung - kompakt und
           nachvollziehbar erzählt.
         </Callout>
@@ -165,17 +165,17 @@ const milestones: Milestone[] = [
             >
             </div>
 
-            <ol class="list-none space-y-4 pl-0">
+            <ol class="list-none space-y-4 pl-0" data-motion-stagger="70">
               {
                 milestones.map((m) => (
-                  <li id={m.id} class="relative pl-12">
+                  <li id={m.id} class="relative pl-12" data-motion="reveal">
                     <div class="absolute top-6 left-4 -translate-x-1/2">
                       <div class="border-border/60 bg-accent/10 ring-accent/25 flex h-10 w-10 items-center justify-center rounded-full border ring-1 backdrop-blur-md">
                         <div class="bg-accent h-2.5 w-2.5 rounded-full shadow-[0_0_0_8px_rgba(242,201,76,0.10)]" />
                       </div>
                     </div>
 
-                    <Card class="hover:border-accent/30 p-5 transition will-change-transform hover:-translate-y-0.5">
+                    <Card class="p-5">
                       <div class="flex flex-wrap items-center gap-2">
                         <Badge variant={m.cta ? 'neutral' : 'accent'}>{m.date}</Badge>
                       </div>
@@ -213,7 +213,7 @@ const milestones: Milestone[] = [
       </div>
 
       <div class="grid gap-4">
-        <Card class="p-6">
+        <Card class="p-6" reveal>
           <h2 class="text-base font-semibold tracking-tight">Was uns geprägt hat</h2>
           <ul class="text-muted mt-4 space-y-3 text-sm">
             <li class="flex gap-3">
@@ -239,7 +239,7 @@ const milestones: Milestone[] = [
           </ul>
         </Card>
 
-        <Card class="p-6">
+        <Card class="p-6" reveal>
           <h2 class="text-base font-semibold tracking-tight">Noch mehr Details?</h2>
           <p class="text-muted mt-3 text-sm leading-relaxed">
             Wenn dich das Setup interessiert oder du wissen willst, wie wir Folia betreiben, findest

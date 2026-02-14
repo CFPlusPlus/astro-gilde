@@ -2,6 +2,7 @@ import { readBrowserAppConfig } from './app-config';
 import { qsa, qs } from './app/dom';
 import { initJoinModal } from './app/join-modal';
 import { initLiveCounters } from './app/live-counters';
+import { initPageMotion } from './app/motion';
 import { initNavMenu } from './app/nav-menu';
 import { initTheme } from './app/theme';
 import { initToast } from './app/toast';
@@ -37,4 +38,5 @@ import { initToast } from './app/toast';
   });
 
   initLiveCounters({ config, qsa });
+  initPageMotion();
 })();

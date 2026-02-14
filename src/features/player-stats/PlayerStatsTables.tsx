@@ -10,6 +10,7 @@ import {
   type TabKey,
 } from './table-model';
 import { NoResults, SortIcon } from './ui';
+import { createTableRowMotion } from '../ui/tableRowMotion';
 
 export function PlayerStatsTables({
   activeTab,
@@ -42,6 +43,24 @@ export function PlayerStatsTables({
     ].join(' ');
   const sortCellClass = (isActive: boolean, baseClass = '') =>
     [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
+  const generalMotion = createTableRowMotion({
+    triggerKey: `player-general-${sortGeneral.key}-${sortGeneral.dir}`,
+    enabled: activeTab === 'allgemein' && filtered.general.length > 0,
+    maxRows: 12,
+    stepMs: 30,
+  });
+  const itemsMotion = createTableRowMotion({
+    triggerKey: `player-items-${sortItems.key}-${sortItems.dir}`,
+    enabled: activeTab === 'items' && filtered.items.length > 0,
+    maxRows: 12,
+    stepMs: 30,
+  });
+  const mobsMotion = createTableRowMotion({
+    triggerKey: `player-mobs-${sortMobs.key}-${sortMobs.dir}`,
+    enabled: activeTab === 'mobs' && filtered.mobs.length > 0,
+    maxRows: 12,
+    stepMs: 30,
+  });
 
   return (
     <>
@@ -101,21 +120,27 @@ export function PlayerStatsTables({
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                {filtered.general.map((r) => (
-                  <tr key={r.raw}>
-                    <td className={sortCellClass(isGeneralSortActive('label'))}>{r.label}</td>
-                    <td className={sortCellClass(isGeneralSortActive('value'))}>{r.display}</td>
-                    <td
-                      className={sortCellClass(
-                        isGeneralSortActive('raw'),
-                        'text-muted text-xs font-medium whitespace-nowrap',
-                      )}
-                    >
-                      {r.raw}
-                    </td>
-                  </tr>
-                ))}
+              <tbody
+                key={generalMotion.tbodyKey}
+                className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3"
+              >
+                {filtered.general.map((r, index) => {
+                  const motionProps = generalMotion.getRowProps(index);
+                  return (
+                    <tr key={r.raw} className={motionProps.className} style={motionProps.style}>
+                      <td className={sortCellClass(isGeneralSortActive('label'))}>{r.label}</td>
+                      <td className={sortCellClass(isGeneralSortActive('value'))}>{r.display}</td>
+                      <td
+                        className={sortCellClass(
+                          isGeneralSortActive('raw'),
+                          'text-muted text-xs font-medium whitespace-nowrap',
+                        )}
+                      >
+                        {r.raw}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -184,20 +209,30 @@ export function PlayerStatsTables({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                {filtered.items.map((r) => (
-                  <tr key={r.key}>
-                    <td className={sortCellClass(isItemsSortActive('label'))}>{r.label}</td>
-                    <td className={sortCellClass(isItemsSortActive('mined'))}>{nf(r.mined)}</td>
-                    <td className={sortCellClass(isItemsSortActive('broken'))}>{nf(r.broken)}</td>
-                    <td className={sortCellClass(isItemsSortActive('crafted'))}>{nf(r.crafted)}</td>
-                    <td className={sortCellClass(isItemsSortActive('used'))}>{nf(r.used)}</td>
-                    <td className={sortCellClass(isItemsSortActive('picked_up'))}>
-                      {nf(r.picked_up)}
-                    </td>
-                    <td className={sortCellClass(isItemsSortActive('dropped'))}>{nf(r.dropped)}</td>
-                  </tr>
-                ))}
+              <tbody
+                key={itemsMotion.tbodyKey}
+                className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3"
+              >
+                {filtered.items.map((r, index) => {
+                  const motionProps = itemsMotion.getRowProps(index);
+                  return (
+                    <tr key={r.key} className={motionProps.className} style={motionProps.style}>
+                      <td className={sortCellClass(isItemsSortActive('label'))}>{r.label}</td>
+                      <td className={sortCellClass(isItemsSortActive('mined'))}>{nf(r.mined)}</td>
+                      <td className={sortCellClass(isItemsSortActive('broken'))}>{nf(r.broken)}</td>
+                      <td className={sortCellClass(isItemsSortActive('crafted'))}>
+                        {nf(r.crafted)}
+                      </td>
+                      <td className={sortCellClass(isItemsSortActive('used'))}>{nf(r.used)}</td>
+                      <td className={sortCellClass(isItemsSortActive('picked_up'))}>
+                        {nf(r.picked_up)}
+                      </td>
+                      <td className={sortCellClass(isItemsSortActive('dropped'))}>
+                        {nf(r.dropped)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -256,16 +291,22 @@ export function PlayerStatsTables({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3">
-                {filtered.mobs.map((r) => (
-                  <tr key={r.key}>
-                    <td className={sortCellClass(isMobsSortActive('label'))}>{r.label}</td>
-                    <td className={sortCellClass(isMobsSortActive('killed'))}>{nf(r.killed)}</td>
-                    <td className={sortCellClass(isMobsSortActive('killed_by'))}>
-                      {nf(r.killed_by)}
-                    </td>
-                  </tr>
-                ))}
+              <tbody
+                key={mobsMotion.tbodyKey}
+                className="divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3"
+              >
+                {filtered.mobs.map((r, index) => {
+                  const motionProps = mobsMotion.getRowProps(index);
+                  return (
+                    <tr key={r.key} className={motionProps.className} style={motionProps.style}>
+                      <td className={sortCellClass(isMobsSortActive('label'))}>{r.label}</td>
+                      <td className={sortCellClass(isMobsSortActive('killed'))}>{nf(r.killed)}</td>
+                      <td className={sortCellClass(isMobsSortActive('killed_by'))}>
+                        {nf(r.killed_by)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

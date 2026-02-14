@@ -67,10 +67,11 @@ const DISCORD_URL = minecraftGilde.discord.url;
   <section class="mg-container pb-16">
     <div
       class="divide-border/70 border-border/70 bg-surface/25 divide-y rounded-[var(--radius)] border"
+      data-motion-stagger="70"
     >
       {
         groups.map((g) => (
-          <section class="p-6">
+          <section class="p-6" data-motion="reveal">
             <div class="flex items-start gap-4">
               <div class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border">
                 <g.icon class="h-7 w-7" />
@@ -81,7 +82,10 @@ const DISCORD_URL = minecraftGilde.discord.url;
 
                 <div class="mt-4 grid gap-2">
                   {g.items.map((it) => (
-                    <details class="border-border bg-surface/55 rounded-[var(--radius)] border px-4 py-3">
+                    <details
+                      class="border-border bg-surface/55 rounded-[var(--radius)] border px-4 py-3"
+                      data-motion-accordion
+                    >
                       <summary class="list-none text-sm font-semibold outline-none">
                         <span class="inline-flex items-center gap-2">
                           <span
@@ -105,7 +109,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
       }
     </div>
 
-    <div class="mt-8">
+    <div class="mt-8" data-motion="reveal" data-motion-delay="120">
       <div class="border-border/70 bg-surface/35 rounded-[var(--radius)] border p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0">

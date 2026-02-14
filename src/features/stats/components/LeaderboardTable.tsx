@@ -5,6 +5,7 @@ import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
 import { Card } from '../../ui/Card';
+import { createTableRowMotion } from '../../ui/tableRowMotion';
 
 export function LeaderboardTable({
   metricKey = 'default',
@@ -35,8 +36,13 @@ export function LeaderboardTable({
   const isLoading = loadingOverride ?? state.loading;
   const isInitialLoad = !state.loaded;
   const initialPlaceholderRows = Math.max(6, pageSize);
-  const transitionKey = `${metricKey}-${state.currentPage}-${state.loaded ? '1' : '0'}-${page.length}`;
   const shouldShowCenterLoader = showCenterLoader ?? (isInitialLoad && isLoading);
+  const tableMotion = createTableRowMotion({
+    triggerKey: `${metricKey}-${state.currentPage}`,
+    enabled: state.loaded && page.length > 0,
+    maxRows: 10,
+    stepMs: 30,
+  });
 
   return (
     <Card
@@ -55,8 +61,8 @@ export function LeaderboardTable({
             </tr>
           </thead>
           <tbody
-            key={transitionKey}
-            className="mg-fade-in divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
+            key={tableMotion.tbodyKey}
+            className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
           >
             {isInitialLoad
               ? Array.from({ length: initialPlaceholderRows }).map((_, index) => (
@@ -89,8 +95,13 @@ export function LeaderboardTable({
               const rank = state.currentPage * pageSize + (i + 1);
               const medalClass = rank <= 3 ? `mg-rank-medal mg-rank-medal--${rank}` : null;
               const name = getPlayerName(row.uuid);
+              const motionProps = tableMotion.getRowProps(i);
               return (
-                <tr key={`${row.uuid}-${i}`} className="group">
+                <tr
+                  key={`${row.uuid}-${i}`}
+                  className={['group', motionProps.className].filter(Boolean).join(' ')}
+                  style={motionProps.style}
+                >
                   <td className="whitespace-nowrap">
                     <span className="inline-flex items-center gap-2">
                       {medalClass ? (
