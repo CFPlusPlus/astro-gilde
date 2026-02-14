@@ -83,13 +83,8 @@ const DISCORD_URL = minecraftGilde.discord.url;
 
                 <DividerList as="div" class="mt-4">
                   {g.items.map((it) => (
-                    <details
-                      class="mg-list-item px-1 sm:px-2"
-                      data-motion-accordion
-                    >
-                      <summary
-                        class="focus-visible:ring-offset-bg cursor-pointer list-none rounded-[calc(var(--radius)-6px)] px-2 py-1.5 text-sm font-semibold outline-none transition-colors hover:bg-surface/45 focus-visible:bg-surface/45 focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-                      >
+                    <details class="mg-list-item px-1 sm:px-2" data-motion-accordion>
+                      <summary class="focus-visible:ring-offset-bg hover:bg-surface/45 focus-visible:bg-surface/45 cursor-pointer list-none rounded-[calc(var(--radius)-6px)] px-2 py-1.5 text-sm font-semibold transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2">
                         <span class="inline-flex items-center gap-2">
                           <span
                             class="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full"

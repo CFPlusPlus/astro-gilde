@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { ArrowRight, Users } from '@lucide/astro';
 import { Image } from 'astro:assets';
@@ -28,13 +29,13 @@ const PARTNER_ACK_HEIGHT = Math.round(
     subtitleClass="text-muted mt-3"
   >
     <div class="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]" data-motion-stagger="90">
-      <div class="glass overflow-hidden rounded-[var(--radius)]" data-motion="reveal">
+      <section data-motion="reveal">
         <div
-          class="mg-clip-rounded-top relative isolate flex items-center justify-center overflow-hidden rounded-t-[var(--radius)] bg-black/10 p-5 sm:p-6"
+          class="border-border/70 bg-surface/35 relative isolate flex items-center justify-center overflow-hidden rounded-[var(--radius)] border p-5 sm:p-6"
         >
           <div
             aria-hidden="true"
-            class="pointer-events-none absolute inset-0 overflow-hidden rounded-t-[var(--radius)]"
+            class="pointer-events-none absolute inset-0 overflow-hidden rounded-[var(--radius)]"
           >
             <div
               class="absolute top-1/2 -left-10 h-44 w-44 -translate-y-1/2 rounded-full bg-red-500/35 blur-3xl"
@@ -57,7 +58,7 @@ const PARTNER_ACK_HEIGHT = Math.round(
             class="relative z-10 aspect-square w-full max-w-[210px] object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.45)] [backface-visibility:hidden]"
           />
         </div>
-        <div class="p-6 sm:p-7">
+        <div class="pt-6 sm:pt-7">
           <h2 class="text-xl font-semibold">ANTI-CORONA-KARTELL</h2>
           <p class="text-muted mt-2 text-sm">
             Seit April 2024 ist die Minecraft Gilde Partner des ANTI-CORONA-KARTELL - einer aktiven
@@ -77,25 +78,37 @@ const PARTNER_ACK_HEIGHT = Math.round(
             </Button>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="glass rounded-[var(--radius)] p-6 sm:p-7" data-motion="reveal">
+      <aside class="lg:border-border/70 pt-1 lg:border-l lg:pl-6" data-motion="reveal">
         <h2 class="text-xl font-semibold">Partner werden?</h2>
         <p class="text-muted mt-2 text-sm">
           Du möchtest mit uns kooperieren oder ein eigenes Projekt vorstellen? Dann schreib uns
           gerne auf Discord.
         </p>
-        <ul class="text-muted mt-4 space-y-2 text-sm">
-          <li>• Freundlicher Umgang & klare Regeln</li>
-          <li>• Community- und Projekt-Fokus (keine Werbung/Spam)</li>
-          <li>• Transparente Zusammenarbeit</li>
-        </ul>
+        <DividerList as="ul" class="mt-4 list-none pl-0 text-left">
+          <li class="mg-row !justify-start gap-3 py-3 text-left text-sm">
+            <span aria-hidden="true" class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+            ></span>
+            <span class="text-muted">Freundlicher Umgang & klare Regeln</span>
+          </li>
+          <li class="mg-row !justify-start gap-3 py-3 text-left text-sm">
+            <span aria-hidden="true" class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+            ></span>
+            <span class="text-muted">Community- und Projekt-Fokus (keine Werbung/Spam)</span>
+          </li>
+          <li class="mg-row !justify-start gap-3 py-3 text-left text-sm">
+            <span aria-hidden="true" class="bg-accent mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full"
+            ></span>
+            <span class="text-muted">Transparente Zusammenarbeit</span>
+          </li>
+        </DividerList>
         <div class="mt-5">
           <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
             Kontakt auf Discord <ArrowRight size={18} />
           </Button>
         </div>
-      </div>
+      </aside>
     </div>
   </PageHeader>
 </BaseLayout>
