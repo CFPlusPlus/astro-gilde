@@ -3,7 +3,6 @@ import { getCollection } from 'astro:content';
 import { ArrowRight, Download, Hammer, Map, Shield, UserRound, Vote, Wand } from '@lucide/astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
-import Card from '../components/ui/Card.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { canonicalFor } from '../config/site';
@@ -104,7 +103,7 @@ const sections = await Promise.all(
   </PageHeader>
 
   <section class="mg-container pb-16">
-    <Card class="p-6">
+    <section class="bg-surface/30 rounded-[var(--radius)] p-6">
       <h2 class="text-xl font-semibold tracking-tight">{tutorialQuickstart.title}</h2>
       <p class="text-muted mt-2 text-sm">{tutorialQuickstart.subtitle}</p>
 
@@ -137,7 +136,7 @@ const sections = await Promise.all(
           })
         }
       </div>
-    </Card>
+    </section>
 
     <div class="mt-6 space-y-3">
       {

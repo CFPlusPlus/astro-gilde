@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { ArrowRight } from '@lucide/astro';
@@ -14,15 +13,17 @@ const DISCORD_URL = minecraftGilde.discord.url;
   title="Minecraft Gilde - Impressum"
   description="Impressum der Minecraft Gilde mit Anbieterkennzeichnung und Kontaktinformationen gemäß den gesetzlichen Vorgaben."
 >
-  <PageHeader title="Impressum" subtitle="Angaben gemäß § 5 DDG." class="pb-16">
+  <PageHeader title="Impressum" subtitle="Angaben gemäß § 5 DDG.">
     <Fragment slot="actions">
       <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
         Discord <ArrowRight size={18} />
       </Button>
     </Fragment>
-
-    <Card class="mt-6 p-6">
-      <div class="mg-prose" set:html={impressumHtml} />
-    </Card>
   </PageHeader>
+
+  <section class="border-border/70 bg-surface/30 border-y">
+    <div class="mg-container py-10 sm:py-12 lg:py-14">
+      <div class="mg-prose max-w-none" set:html={impressumHtml} />
+    </div>
+  </section>
 </BaseLayout>

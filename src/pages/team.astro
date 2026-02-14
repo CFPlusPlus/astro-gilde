@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
@@ -39,7 +38,7 @@ const groups = TEAM_GROUPS.map((g) => ({
     <div class="grid gap-4">
       {
         groups.map((g) => (
-          <Card class="p-6">
+          <section class="border-border/70 bg-surface/25 rounded-[var(--radius)] border p-6">
             <div class="flex items-center justify-between gap-4">
               <div class="inline-flex items-center gap-2">
                 <Shield size={18} />
@@ -67,7 +66,7 @@ const groups = TEAM_GROUPS.map((g) => ({
                 </div>
               ))}
             </div>
-          </Card>
+          </section>
         ))
       }
     </div>

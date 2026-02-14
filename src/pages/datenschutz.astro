@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { ArrowRight } from '@lucide/astro';
@@ -23,9 +22,9 @@ const DISCORD_URL = minecraftGilde.discord.url;
     </Fragment>
   </PageHeader>
 
-  <section class="mg-container pb-16">
-    <Card class="p-6">
-      <div class="mg-prose" set:html={datenschutzHtml} />
-    </Card>
+  <section class="border-border/70 bg-surface/30 border-y">
+    <div class="mg-container py-10 sm:py-12 lg:py-14">
+      <div class="mg-prose max-w-none" set:html={datenschutzHtml} />
+    </div>
   </section>
 </BaseLayout>

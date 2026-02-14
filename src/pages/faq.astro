@@ -1,6 +1,5 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Card from '../components/ui/Card.astro';
 import Button from '../components/ui/Button.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
@@ -66,10 +65,12 @@ const DISCORD_URL = minecraftGilde.discord.url;
   </PageHeader>
 
   <section class="mg-container pb-16">
-    <div class="grid gap-4">
+    <div
+      class="divide-border/70 border-border/70 bg-surface/25 divide-y rounded-[var(--radius)] border"
+    >
       {
         groups.map((g) => (
-          <Card class="p-6">
+          <section class="p-6">
             <div class="flex items-start gap-4">
               <div class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border">
                 <g.icon class="h-7 w-7" />
@@ -99,13 +100,13 @@ const DISCORD_URL = minecraftGilde.discord.url;
                 </div>
               </div>
             </div>
-          </Card>
+          </section>
         ))
       }
     </div>
 
     <div class="mt-8">
-      <Card class="p-6">
+      <div class="border-border/70 bg-surface/35 rounded-[var(--radius)] border p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0">
             <h2 class="text-lg font-semibold tracking-tight">Noch Fragen?</h2>
@@ -122,7 +123,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
             </Button>
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   </section>
 
