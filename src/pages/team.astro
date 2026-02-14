@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { TEAM_GROUPS, TEAM_MEMBERS } from '../data/team';
 import { Shield, ArrowRight } from '@lucide/astro';
@@ -50,25 +51,29 @@ const groups = TEAM_GROUPS.map((g) => ({
               <Badge variant="accent">{g.members.length}</Badge>
             </div>
 
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <DividerList as="ul" class="mt-4">
               {g.members.map((m) => (
-                <div class="mg-card mg-card--outlined flex items-center gap-3 p-4">
-                  <img
-                    src={avatarUrl(m.inGameName)}
-                    alt={m.inGameName}
-                    width="48"
-                    height="48"
-                    loading="lazy"
-                    decoding="async"
-                    class="border-border bg-surface h-12 w-12 rounded-full border"
-                  />
-                  <div class="min-w-0">
-                    <div class="text-sm font-semibold">{m.inGameName}</div>
-                    <div class="text-muted text-xs">{m.role}</div>
+                <li class="mg-row px-1 sm:px-2">
+                  <div class="flex min-w-0 items-center gap-3">
+                    <img
+                      src={avatarUrl(m.inGameName)}
+                      alt={m.inGameName}
+                      width="48"
+                      height="48"
+                      loading="lazy"
+                      decoding="async"
+                      class="border-border bg-surface h-12 w-12 rounded-full border"
+                    />
+                    <div class="min-w-0">
+                      <div class="truncate text-sm font-semibold">{m.inGameName}</div>
+                    </div>
                   </div>
-                </div>
+                  <Badge variant="neutral" class="shrink-0">
+                    {m.role}
+                  </Badge>
+                </li>
               ))}
-            </div>
+            </DividerList>
           </section>
         ))
       }

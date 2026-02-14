@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
@@ -144,38 +145,44 @@ const howToLd = buildHowTo({
       </div>
     </div>
 
-    <div class="mt-6 grid gap-4 md:grid-cols-2" data-motion-stagger="60">
-      {
-        voteSites.map((s) => (
-          <Card class="mg-card--outlined p-6" reveal>
-            <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <div class="flex items-center gap-2">
-                  <h3 class="truncate text-base font-semibold">{s.name}</h3>
-                  {!s.active ? (
+    <div class="mg-card mg-card--outlined bg-surface-solid/35 mt-6 p-3 sm:p-4" data-motion="reveal">
+      <DividerList as="div" class="mg-list--straight">
+        {
+          voteSites.map((s) =>
+            s.active ? (
+              <a
+                href={s.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mg-row mg-row--interactive px-2 sm:px-3"
+              >
+                <div class="min-w-0">
+                  <h3 class="text-base font-semibold">{s.name}</h3>
+                  <p class="text-muted mt-1.5 text-sm leading-relaxed">{s.desc}</p>
+                </div>
+                <span class="mg-row__meta border-border/80 bg-surface/50 inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold">
+                  Vote <ExternalLink size={14} />
+                </span>
+              </a>
+            ) : (
+              <div class="mg-row px-2 sm:px-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-semibold">{s.name}</h3>
                     <span class="bg-surface border-border text-muted inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium">
                       Demnächst
                     </span>
-                  ) : null}
+                  </div>
+                  <p class="text-muted mt-1.5 text-sm leading-relaxed">{s.desc}</p>
                 </div>
-                <p class="text-muted mt-2 text-sm leading-relaxed">{s.desc}</p>
+                <span class="border-border/80 text-muted inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-semibold">
+                  Bald <Info size={14} />
+                </span>
               </div>
-
-              <div class="shrink-0">
-                {s.active ? (
-                  <Button href={s.href} external variant="primary" size="sm" class="gap-2">
-                    Vote <ExternalLink size={16} />
-                  </Button>
-                ) : (
-                  <Button href="#" variant="secondary" size="sm" class="gap-2" disabled>
-                    Bald <Info size={16} />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))
-      }
+            ),
+          )
+        }
+      </DividerList>
     </div>
 
     <Callout variant="info" title="Tipp" class="mt-6" data-motion="reveal">
