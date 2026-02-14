@@ -6,7 +6,6 @@ import Callout from '../components/ui/Callout.astro';
 import Card from '../components/ui/Card.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
-import { minecraftGilde } from '../config/minecraftGilde';
 import { canonicalFor } from '../config/site';
 import {
   isTutorialExternalTarget,
@@ -22,8 +21,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { buildHowTo } from '../lib/structuredData';
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
-
-const SERVER_IP = minecraftGilde.serverIp;
 
 const howToLd = buildHowTo({
   canonicalUrl,
@@ -189,8 +186,6 @@ const sections = await Promise.all(
       <Callout variant={tutorialFinalCallout.variant} title={tutorialFinalCallout.title}>
         <p>{tutorialFinalCallout.text}</p>
       </Callout>
-
-      <p class="text-muted text-xs">IP: {SERVER_IP}</p>
     </div>
   </section>
 </BaseLayout>

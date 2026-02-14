@@ -1,0 +1,19 @@
+---
+export type DividerListTag = 'ul' | 'ol' | 'div';
+
+export interface Props {
+  as?: DividerListTag;
+  class?: string;
+}
+
+const {
+  as = 'ul',
+  class: className = '',
+  ...rest
+} = Astro.props as Props & Record<string, unknown>;
+const Tag = as;
+---
+
+<Tag class={`mg-list ${className}`.trim()} {...rest}>
+  <slot />
+</Tag>

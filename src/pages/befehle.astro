@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import CommandsInlineScripts from '../components/commands/CommandsInlineScripts.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { getEntry } from 'astro:content';
@@ -61,10 +62,10 @@ const categories = commandsEntry.data.categories;
               <span class="text-muted text-xs">{cat.commands.length} Befehle</span>
             </summary>
 
-            <div class="mt-3 grid gap-2">
+            <DividerList as="div" class="mt-3">
               {cat.commands.map((cmd) => (
                 <div
-                  class="border-border bg-surface rounded-lg border px-4 py-3"
+                  class="mg-list-item"
                   data-command
                   data-search={`${cmd.command} ${cmd.description}`}
                 >
@@ -74,7 +75,7 @@ const categories = commandsEntry.data.categories;
                   </div>
                 </div>
               ))}
-            </div>
+            </DividerList>
           </details>
         ))
       }

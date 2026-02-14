@@ -703,6 +703,19 @@ html[data-theme='dark'] {
     box-shadow: 0 14px 30px -24px color-mix(in oklab, var(--fg) 50%, transparent);
   }
 
+  .mg-list {
+    @apply m-0 p-0;
+  }
+
+  .mg-list > .mg-list-item {
+    @apply border-border py-3 sm:py-4;
+    border-bottom-width: 1px;
+  }
+
+  .mg-list > .mg-list-item:last-child {
+    border-bottom-width: 0;
+  }
+
   /* Globale Button-Basis fuer Astro-Seiten und React-Islands. */
   .mg-btn {
     @apply focus-visible:ring-offset-bg inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2;

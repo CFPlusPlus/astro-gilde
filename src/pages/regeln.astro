@@ -1,17 +1,17 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Card from '../components/ui/Card.astro';
+import DividerList from '../components/ui/DividerList.astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { getEntry } from 'astro:content';
-import { Book, MessageSquareText, Download, ArrowRight } from '@lucide/astro';
+import { Shield, MessageSquareText, Download, ArrowRight } from '@lucide/astro';
 
 const rules = await getEntry('rules', 'main');
 if (!rules) throw new Error('Rules entry "main" not found');
 
-const { warning, minecraft, discord, serverIp } = rules.data;
-const ip = serverIp || 'minecraft-gilde.de';
+const { warning, minecraft, discord } = rules.data;
 ---
 
 <BaseLayout
@@ -34,61 +34,65 @@ const ip = serverIp || 'minecraft-gilde.de';
         <ArrowRight size={18} /> Statistiken
       </Button>
     </Fragment>
-
-    <p class="text-muted mt-3 text-xs">IP: <span class="text-fg/90 font-medium">{ip}</span></p>
   </PageHeader>
 
   <section class="mg-container pb-16">
     <div class="grid gap-4 lg:grid-cols-2">
-      <Card class="p-6">
-        <div class="flex items-start gap-4">
+      <Card class="p-6 sm:p-7">
+        <div class="flex items-center gap-4 sm:gap-5">
           <div
-            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+            class="border-border/70 bg-accent/10 text-accent flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border sm:h-14 sm:w-14"
           >
-            <Book class="h-7 w-7" />
+            <Shield class="h-7 w-7" />
           </div>
-          <div>
-            <h2 class="text-xl font-semibold tracking-tight">{minecraft.title}</h2>
-            <ol class="mt-4 space-y-4">
-              {
-                minecraft.items.map((it) => (
-                  <li class="border-border bg-surface rounded-lg border p-4">
-                    <div class="text-sm font-semibold">{it.title}</div>
-                    <div
-                      class="mg-prose text-muted mt-2 text-sm leading-relaxed"
-                      set:html={it.html}
-                    />
-                  </li>
-                ))
-              }
-            </ol>
-          </div>
+          <h2 class="text-xl leading-tight font-semibold tracking-tight sm:text-2xl">
+            {minecraft.title}
+          </h2>
+        </div>
+
+        <div class="sm:ml-[4.75rem]">
+          <DividerList as="ol" class="mt-5 list-decimal pl-6">
+            {
+              minecraft.items.map((it) => (
+                <li class="mg-list-item">
+                  <div class="text-sm font-semibold">{it.title}</div>
+                  <div
+                    class="mg-prose text-muted mt-2 text-sm leading-relaxed"
+                    set:html={it.html}
+                  />
+                </li>
+              ))
+            }
+          </DividerList>
         </div>
       </Card>
 
-      <Card class="p-6">
-        <div class="flex items-start gap-4">
+      <Card class="p-6 sm:p-7">
+        <div class="flex items-center gap-4 sm:gap-5">
           <div
-            class="border-border/70 bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border"
+            class="border-border/70 bg-accent/10 text-accent flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border sm:h-14 sm:w-14"
           >
             <MessageSquareText class="h-7 w-7" />
           </div>
-          <div>
-            <h2 class="text-xl font-semibold tracking-tight">{discord.title}</h2>
-            <ol class="mt-4 space-y-4">
-              {
-                discord.items.map((it) => (
-                  <li class="border-border bg-surface rounded-lg border p-4">
-                    <div class="text-sm font-semibold">{it.title}</div>
-                    <div
-                      class="mg-prose text-muted mt-2 text-sm leading-relaxed"
-                      set:html={it.html}
-                    />
-                  </li>
-                ))
-              }
-            </ol>
-          </div>
+          <h2 class="text-xl leading-tight font-semibold tracking-tight sm:text-2xl">
+            {discord.title}
+          </h2>
+        </div>
+
+        <div class="sm:ml-[4.75rem]">
+          <DividerList as="ol" class="mt-5 list-decimal pl-6">
+            {
+              discord.items.map((it) => (
+                <li class="mg-list-item">
+                  <div class="text-sm font-semibold">{it.title}</div>
+                  <div
+                    class="mg-prose text-muted mt-2 text-sm leading-relaxed"
+                    set:html={it.html}
+                  />
+                </li>
+              ))
+            }
+          </DividerList>
         </div>
       </Card>
     </div>
