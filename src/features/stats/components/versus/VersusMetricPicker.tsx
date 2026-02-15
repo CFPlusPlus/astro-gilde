@@ -1,4 +1,4 @@
-import { Check, Filter, SearchX, X } from 'lucide-react';
+import { Check, Filter, SearchX, Swords, X } from 'lucide-react';
 
 import { getQuickVersusSelection } from '../../versus';
 import type { VersusSectionProps } from './types';
@@ -38,7 +38,12 @@ export function VersusMetricPicker({
     return (
       <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
-          <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+          <span
+            className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+            aria-hidden="true"
+          >
+            <Swords size={14} />
+          </span>
           <span className="text-fg/90">
             {'Schlie\u00dfe den Vergleich ab, um die Metriken zu laden.'}
           </span>

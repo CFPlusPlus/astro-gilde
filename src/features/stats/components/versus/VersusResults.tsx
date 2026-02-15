@@ -1,3 +1,5 @@
+import { Swords, Users } from 'lucide-react';
+
 import { formatVersusDiff, formatVersusValue } from '../../versus';
 import type { VersusSectionProps } from './types';
 
@@ -30,10 +32,12 @@ export function VersusResults({
 }: VersusResultsProps) {
   let hintTitle = '';
   let hintText = '';
+  let hintIcon: 'players' | 'compare' = 'compare';
 
   if (!versusPlayerA || !versusPlayerB) {
     hintTitle = 'Bitte zwei Spieler wählen';
     hintText = 'Lege Spieler A und B für den Vergleich fest.';
+    hintIcon = 'players';
   } else if (!hasVersusData) {
     hintTitle = 'Spielerstatistiken laden';
     hintText = 'Starte den Vergleich, um die kompletten Spielerstatistiken zu laden.';
@@ -44,6 +48,7 @@ export function VersusResults({
     hintTitle = 'Vergleich bereit';
     hintText = 'Wähle Kategorien aus, um die Werte zu sehen.';
   }
+  const HintIcon = hintIcon === 'players' ? Users : Swords;
 
   return (
     <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
@@ -59,7 +64,12 @@ export function VersusResults({
 
       {!hasVersusResults && hintTitle ? (
         <div className="mg-notice mt-3 text-sm" data-variant="neutral" role="status">
-          <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+          <span
+            className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+            aria-hidden="true"
+          >
+            <HintIcon size={14} />
+          </span>
           <span className="min-w-0">
             <span className="text-fg block font-semibold">{hintTitle}</span>
             <span className="text-muted mt-1 block">{hintText}</span>
