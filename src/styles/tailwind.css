@@ -598,7 +598,7 @@ html[data-theme='dark'] {
     white-space: nowrap;
   }
 
-  .site-nav-solid-card {
+  .site-nav-solid-card.mg-card {
     background: var(--surface-solid);
   }
 
