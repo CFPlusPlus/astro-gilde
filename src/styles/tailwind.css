@@ -17,13 +17,13 @@
     Arial;
 
   /* Hell */
-  --bg: #f7f8fb;
+  --bg: #f2f5fa;
   --fg: #0f1826;
-  --muted: #475569;
+  --muted: #43556f;
 
-  --surface: rgba(255, 255, 255, 0.72);
+  --surface: rgba(255, 255, 255, 0.86);
   --surface-solid: #ffffff;
-  --border: rgba(15, 23, 42, 0.1);
+  --border: rgba(15, 23, 42, 0.16);
   --glass-highlight: rgba(255, 255, 255, 0.34);
   --glass-shadow-color: rgba(15, 23, 42, 0.12);
   --glass-blur: 14px;
@@ -70,13 +70,13 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Dunkel (Obsidian / Anthrazit) */
-    --bg: #0d1219;
+    --bg: #0b121a;
     --fg: #e7edf5;
-    --muted: #a8b2c2;
+    --muted: #b5c1d2;
 
-    --surface: rgba(19, 25, 34, 0.56);
-    --surface-solid: #131a25;
-    --border: rgba(231, 237, 245, 0.16);
+    --surface: rgba(24, 34, 47, 0.82);
+    --surface-solid: #182234;
+    --border: rgba(231, 237, 245, 0.24);
     --glass-highlight: rgba(255, 255, 255, 0.1);
     --glass-shadow-color: rgba(6, 10, 18, 0.52);
     --glass-bg: color-mix(in oklab, var(--surface) 86%, transparent);
@@ -110,13 +110,13 @@
 
 /* Manueller Override (gesetzt durch den Theme-Toggle) */
 html[data-theme='light'] {
-  --bg: #f7f8fb;
+  --bg: #f2f5fa;
   --fg: #0f172a;
-  --muted: #475569;
+  --muted: #43556f;
 
-  --surface: rgba(255, 255, 255, 0.72);
+  --surface: rgba(255, 255, 255, 0.86);
   --surface-solid: #ffffff;
-  --border: rgba(15, 23, 42, 0.1);
+  --border: rgba(15, 23, 42, 0.16);
   --glass-highlight: rgba(255, 255, 255, 0.34);
   --glass-shadow-color: rgba(15, 23, 42, 0.12);
   --glass-blur: 14px;
@@ -157,13 +157,13 @@ html[data-theme='light'] {
 }
 
 html[data-theme='dark'] {
-  --bg: #0d1219;
+  --bg: #0b121a;
   --fg: #e7edf5;
-  --muted: #a8b2c2;
+  --muted: #b5c1d2;
 
-  --surface: rgba(19, 25, 34, 0.56);
-  --surface-solid: #131a25;
-  --border: rgba(231, 237, 245, 0.16);
+  --surface: rgba(24, 34, 47, 0.82);
+  --surface-solid: #182234;
+  --border: rgba(231, 237, 245, 0.24);
   --glass-highlight: rgba(255, 255, 255, 0.1);
   --glass-shadow-color: rgba(6, 10, 18, 0.52);
   --glass-blur: 14px;
@@ -676,7 +676,13 @@ html[data-theme='dark'] {
     - S2 fuer inhaltliche Gruppierung ohne Default-Border/Shadow.
   */
   .mg-surface-1 {
-    background: color-mix(in oklab, var(--surface) 44%, transparent);
+    background:
+      radial-gradient(
+        120% 120% at 0% 0%,
+        color-mix(in oklab, var(--accent) 8%, transparent) 0%,
+        transparent 55%
+      ),
+      color-mix(in oklab, var(--surface-solid) 74%, var(--bg) 26%);
   }
 
   .mg-surface-1--padded {
@@ -684,7 +690,15 @@ html[data-theme='dark'] {
   }
 
   .mg-surface-2 {
-    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--surface-solid) 92%, transparent) 0%,
+      color-mix(in oklab, var(--surface-solid) 86%, var(--bg) 14%) 100%
+    );
+    border: 1px solid color-mix(in oklab, var(--border) 92%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 62%, transparent),
+      0 14px 26px -28px color-mix(in oklab, var(--fg) 42%, transparent);
     border-radius: var(--radius);
   }
 
@@ -698,7 +712,8 @@ html[data-theme='dark'] {
   }
 
   .mg-notice[data-variant='neutral'] {
-    background: color-mix(in oklab, var(--surface) 68%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
+    border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
   }
 
   .mg-section {

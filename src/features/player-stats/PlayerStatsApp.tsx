@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Clock3, Map as MapIcon, Skull, Swords } from 'lucide-react';
+import { Clock3, Map as MapIcon, SearchX, Skull, Swords } from 'lucide-react';
 
 import { nf, nf2 } from './format';
 import { PlayerStatsHeader } from './PlayerStatsHeader';
@@ -8,6 +8,12 @@ import { PlayerStatsToolbar } from './PlayerStatsToolbar';
 import SkinViewerModal from './SkinViewerModal';
 import { usePlayerStatsState } from './usePlayerStatsState';
 import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
+import {
+  StatsLayout,
+  StatsLayoutGrid,
+  StatsLayoutMain,
+  StatsLayoutRail,
+} from '../stats/layout/StatsLayout';
 
 export default function PlayerStatsApp() {
   const {
@@ -30,7 +36,6 @@ export default function PlayerStatsApp() {
     setSortMobs,
     filtered,
     stats,
-    canRender,
     uuidCopied,
     setUuidCopied,
     skinHeadUrl,
@@ -40,6 +45,14 @@ export default function PlayerStatsApp() {
   } = usePlayerStatsState();
 
   const [skinOpen, setSkinOpen] = useState(false);
+  const hasUuidInLocation = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    const uuid = new URLSearchParams(window.location.search).get('uuid') || '';
+    return uuid.trim().length > 0;
+  }, []);
+  const isLoading = hasUuidInLocation && !apiError && !stats;
+  const hasData = Boolean(stats) && !apiError;
+
   const kpiItems = useMemo<KpiItem[]>(() => {
     const asObj = (v: unknown) =>
       v && typeof v === 'object' ? (v as Record<string, number>) : null;
@@ -105,51 +118,89 @@ export default function PlayerStatsApp() {
   };
 
   return (
-    <div>
-      <PlayerStatsHeader
-        playerName={playerName}
-        canRender={canRender}
-        isGerman={isGerman}
-        onToggleGerman={() => setIsGerman((v) => !v)}
-        uuidFull={uuidFull}
-        uuidCopied={uuidCopied}
-        onCopyUuid={handleCopyUuid}
-        generatedIso={generatedIso}
-        apiError={apiError}
-      />
-
-      <section className="mg-container pb-12">
-        <div className="space-y-6">
-          <KpiStrip items={kpiItems} variant="inline" />
-
-          <PlayerStatsToolbar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            filterRaw={filterRaw}
-            setFilterRaw={setFilterRaw}
-            filterInputRef={filterInputRef}
-            activeResultCount={activeResultCount}
-            activeTabLabel={activeTabLabel}
-            skinHeadUrl={skinHeadUrl}
-            skinHeadFallback={skinHeadFallback}
-            skinFullUrl={skinFullUrl}
+    <>
+      <StatsLayout
+        topBar={
+          <PlayerStatsHeader
             playerName={playerName}
+            isGerman={isGerman}
+            onToggleGerman={() => setIsGerman((v) => !v)}
             uuidFull={uuidFull}
-            onOpenSkin={() => setSkinOpen(true)}
+            uuidCopied={uuidCopied}
+            onCopyUuid={handleCopyUuid}
+            generatedIso={generatedIso}
           />
+        }
+      >
+        <StatsLayoutGrid className="[overflow-anchor:none]">
+          <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="lg:col-span-3">
+            <PlayerStatsToolbar
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              filterRaw={filterRaw}
+              setFilterRaw={setFilterRaw}
+              filterInputRef={filterInputRef}
+              activeResultCount={activeResultCount}
+              activeTabLabel={activeTabLabel}
+              skinHeadUrl={skinHeadUrl}
+              skinHeadFallback={skinHeadFallback}
+              skinFullUrl={skinFullUrl}
+              playerName={playerName}
+              uuidFull={uuidFull}
+              onOpenSkin={() => setSkinOpen(true)}
+            />
+          </StatsLayoutRail>
 
-          <PlayerStatsTables
-            activeTab={activeTab}
-            filtered={filtered}
-            sortGeneral={sortGeneral}
-            setSortGeneral={setSortGeneral}
-            sortItems={sortItems}
-            setSortItems={setSortItems}
-            sortMobs={sortMobs}
-            setSortMobs={setSortMobs}
-          />
-        </div>
-      </section>
+          <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="lg:col-span-9">
+            <div className="space-y-5">
+              {!hasUuidInLocation && !apiError ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">
+                    Keine UUID erkannt. Öffne einen Spieler über die Suche in den Statistiken.
+                  </span>
+                </div>
+              ) : null}
+
+              {isLoading ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">Spielerstatistiken werden geladen...</span>
+                </div>
+              ) : null}
+
+              {apiError ? (
+                <div className="mg-notice text-sm" data-variant="warning" role="alert">
+                  <span
+                    className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+                    aria-hidden="true"
+                  >
+                    <SearchX size={14} />
+                  </span>
+                  <span className="text-fg/90">{apiError}</span>
+                </div>
+              ) : null}
+
+              {hasData ? (
+                <>
+                  <KpiStrip items={kpiItems} variant="inline" />
+
+                  <PlayerStatsTables
+                    activeTab={activeTab}
+                    filtered={filtered}
+                    sortGeneral={sortGeneral}
+                    setSortGeneral={setSortGeneral}
+                    sortItems={sortItems}
+                    setSortItems={setSortItems}
+                    sortMobs={sortMobs}
+                    setSortMobs={setSortMobs}
+                  />
+                </>
+              ) : null}
+            </div>
+          </StatsLayoutMain>
+        </StatsLayoutGrid>
+      </StatsLayout>
 
       <SkinViewerModal
         open={skinOpen}
@@ -159,6 +210,6 @@ export default function PlayerStatsApp() {
         playerUuid={uuidFull}
         playerName={playerName}
       />
-    </div>
+    </>
   );
 }

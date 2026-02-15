@@ -34,7 +34,7 @@ export function PlayerAutocomplete({
 
   return (
     <div className="relative z-30 w-full lg:max-w-xl" ref={wrapRef}>
-      <div className="bg-surface-solid/30 border-border flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+      <div className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Search size={18} className="text-muted" />
         <input
           value={value}

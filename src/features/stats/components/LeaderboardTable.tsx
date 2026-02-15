@@ -18,6 +18,7 @@ export function LeaderboardTable({
   onPlayerClick,
   onGoPage,
   onLoadMore,
+  surface = true,
 }: {
   metricKey?: string;
   def?: MetricDef;
@@ -30,6 +31,7 @@ export function LeaderboardTable({
   onPlayerClick: (uuid: string) => void;
   onGoPage: (page: number) => void;
   onLoadMore: () => void;
+  surface?: boolean;
 }) {
   const page = state.pages[state.currentPage] || [];
   const isLoading = loadingOverride ?? state.loading;
@@ -45,7 +47,12 @@ export function LeaderboardTable({
 
   return (
     <section
-      className="mg-surface-2 relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
+      className={[
+        'relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]',
+        surface
+          ? 'mg-surface-2'
+          : 'bg-surface-solid/40 border-border/80 rounded-[var(--radius)] border',
+      ].join(' ')}
       aria-busy={isLoading}
     >
       <div className="max-w-full overflow-x-auto overscroll-x-contain">
@@ -99,7 +106,7 @@ export function LeaderboardTable({
                 <tr
                   key={`${row.uuid}-${i}`}
                   className={[
-                    'group transition-colors hover:bg-surface-solid/35 focus-within:bg-surface-solid/35',
+                    'group hover:bg-surface-solid/35 focus-within:bg-surface-solid/35 transition-colors',
                     motionProps.className,
                   ]
                     .filter(Boolean)

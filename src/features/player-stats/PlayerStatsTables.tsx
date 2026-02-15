@@ -83,12 +83,12 @@ export function PlayerStatsTables({
           header={
             <>
               <p className="text-fg text-sm font-semibold">Allgemein</p>
-              <p className="text-muted text-xs">{nf(filtered.general.length)} Eintr\u00e4ge</p>
+              <p className="text-muted text-xs">{nf(filtered.general.length)} Treffer</p>
             </>
           }
           content={renderSurfaceContent(
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
-              <table className="w-full min-w-[720px] text-sm">
+              <table className="w-full min-w-[860px] text-sm">
                 <thead className={tableHeadClass}>
                   <tr>
                     <th className={sortHeaderClass(isGeneralSortActive('label'))}>
@@ -175,12 +175,12 @@ export function PlayerStatsTables({
           header={
             <>
               <p className="text-fg text-sm font-semibold">Gegenst\u00e4nde</p>
-              <p className="text-muted text-xs">{nf(filtered.items.length)} Eintr\u00e4ge</p>
+              <p className="text-muted text-xs">{nf(filtered.items.length)} Treffer</p>
             </>
           }
           content={renderSurfaceContent(
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
-              <table className="w-full min-w-[920px] text-sm">
+              <table className="w-full min-w-[1080px] text-sm">
                 <thead className={tableHeadClass}>
                   <tr>
                     <th className={sortHeaderClass(isItemsSortActive('label'))}>
@@ -260,12 +260,12 @@ export function PlayerStatsTables({
           header={
             <>
               <p className="text-fg text-sm font-semibold">Kreaturen</p>
-              <p className="text-muted text-xs">{nf(filtered.mobs.length)} Eintr\u00e4ge</p>
+              <p className="text-muted text-xs">{nf(filtered.mobs.length)} Treffer</p>
             </>
           }
           content={renderSurfaceContent(
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
-              <table className="w-full min-w-[620px] text-sm">
+              <table className="w-full min-w-[760px] text-sm">
                 <thead className={tableHeadClass}>
                   <tr>
                     <th className={sortHeaderClass(isMobsSortActive('label'))}>

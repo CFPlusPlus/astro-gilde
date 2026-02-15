@@ -12,7 +12,9 @@ type VersusResultsProps = Pick<
   | 'versusSummary'
   | 'hasMissingVersusValues'
   | 'versusRows'
->;
+> & {
+  surface?: boolean;
+};
 
 export function VersusResults({
   versusPlayerA,
@@ -24,32 +26,33 @@ export function VersusResults({
   versusSummary,
   hasMissingVersusValues,
   versusRows,
+  surface = true,
 }: VersusResultsProps) {
   let hintTitle = '';
   let hintText = '';
 
   if (!versusPlayerA || !versusPlayerB) {
-    hintTitle = 'Bitte zwei Spieler w&auml;hlen';
-    hintText = 'Nutze die Suche oben, um Spieler A und B auszuw&auml;hlen.';
+    hintTitle = 'Bitte zwei Spieler wählen';
+    hintText = 'Lege Spieler A und B für den Vergleich fest.';
   } else if (!hasVersusData) {
     hintTitle = 'Spielerstatistiken laden';
-    hintText = 'Klicke auf "Vergleichen", um die kompletten Spielerstatistiken zu laden.';
+    hintText = 'Starte den Vergleich, um die kompletten Spielerstatistiken zu laden.';
   } else if (versusMetricIds.length === 0) {
-    hintTitle = 'Keine Kategorien ausgew&auml;hlt';
-    hintText = 'W&auml;hle links die Kategorien aus, die du vergleichen m&ouml;chtest.';
+    hintTitle = 'Keine Kategorien ausgewählt';
+    hintText = 'Wähle die Kategorien aus, die du vergleichen möchtest.';
   } else if (!hasVersusResults) {
     hintTitle = 'Vergleich bereit';
-    hintText = 'W&auml;hle Kategorien aus, um die Werte zu sehen.';
+    hintText = 'Wähle Kategorien aus, um die Werte zu sehen.';
   }
 
   return (
-    <div className="mg-surface-2 min-w-0 p-4">
+    <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
       {versusLoading && !hasVersusResults ? (
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
           <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
           <span className="text-fg/90">
-            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto l&auml;nger
-            dauert der Vergleich.
+            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto länger dauert der
+            Vergleich.
           </span>
         </div>
       ) : null}
@@ -64,7 +67,7 @@ export function VersusResults({
         </div>
       ) : (
         <>
-          <div className="mg-list divide-border/75 mt-3 divide-y">
+          <div className="mg-list divide-border/75 divide-y">
             <div className="mg-row flex-col gap-2 px-1 sm:px-2">
               <p className="text-muted text-xs font-semibold">Zwischenstand</p>
               <div className="flex flex-wrap items-start gap-2 sm:items-center sm:gap-3">
@@ -92,7 +95,7 @@ export function VersusResults({
             </div>
           </div>
 
-          <div className="border-border relative mt-3 min-w-0 overflow-hidden rounded-[var(--radius)] border">
+          <div className="bg-surface-solid/40 border-border/80 relative mt-3 min-w-0 overflow-hidden rounded-[var(--radius)] border">
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-full min-w-[560px] text-sm sm:min-w-[720px]">
                 <thead className="bg-surface-solid/40 text-muted text-xs">
@@ -164,7 +167,7 @@ export function VersusResults({
             {versusLoading ? (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
                 <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
-                  L&auml;dt...
+                  Lädt...
                 </span>
               </div>
             ) : null}

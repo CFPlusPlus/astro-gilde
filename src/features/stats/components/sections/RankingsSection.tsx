@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { RotateCcw, SearchX } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
+import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
 import { MetricPicker } from '../MetricPicker';
 import { SectionTitle } from '../StatsPrimitives';
@@ -61,39 +62,22 @@ export function RankingsSection({
     : activeMetricId;
 
   return (
-    <section aria-label="Ranglisten" className="mg-container pb-12">
-      <div className="mt-6">
+    <StatsLayoutGrid className="[overflow-anchor:none]">
+      <StatsLayoutRail ariaLabel="Ranglisten Kategorien">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <SectionTitle
-            title="Ranglisten"
-            subtitle="W&auml;hle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
-          />
+          <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
           <button
             type="button"
             onClick={onReset}
             className="mg-btn mg-btn--sm mg-btn--surface group"
           >
             <RotateCcw size={15} className="text-muted group-hover:text-accent transition-colors" />
-            Zur&uuml;cksetzen
+            Zurücksetzen
           </button>
         </div>
 
-        {hasNoRanklistResults ? (
-          <div className="mg-notice" data-variant="warning" role="status">
-            <span
-              className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
-              aria-hidden="true"
-            >
-              <SearchX size={14} />
-            </span>
-            <span className="text-fg/90">Keine Ranglisten gefunden.</span>
-          </div>
-        ) : null}
-
-        <div className="mt-5 grid gap-4 [overflow-anchor:none] lg:grid-cols-[360px_1fr]">
-          {!metrics ? (
-            <div className="mg-card text-muted p-5 text-sm">Lade Ranglisten...</div>
-          ) : (
+        <div className="mt-4">
+          {metrics ? (
             <MetricPicker
               metrics={metrics}
               grouped={groupedMetrics}
@@ -101,79 +85,103 @@ export function RankingsSection({
               onFilterChange={onMetricFilterChange}
               activeMetricId={activeMetricId}
               onSelectMetric={onSelectMetric}
+              surface={false}
             />
-          )}
-
-          <div className="min-w-0 space-y-3">
-            <div className="mg-surface-2 p-4">
-              {!metrics ? (
-                <div className="mg-notice text-sm" data-variant="neutral" role="status">
-                  Lade Ranglisten...
-                </div>
-              ) : null}
-
-              {metrics && !activeMetricId ? (
-                <div className="mg-notice text-sm" data-variant="neutral" role="status">
-                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-                  <span className="text-fg/90">
-                    Keine Rangliste ausgew&auml;hlt. W&auml;hle links eine Kategorie aus.
-                  </span>
-                </div>
-              ) : null}
-
-              {metrics && activeMetricId ? (
-                <>
-                  <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
-                  <p
-                    className="text-fg mt-1 truncate text-lg font-semibold tracking-tight"
-                    title={metrics[activeMetricId]?.label || activeMetricId}
-                  >
-                    {metrics[activeMetricId]?.label || activeMetricId}
-                  </p>
-                  <ul className="mg-list divide-border/75 mt-3 divide-y text-sm">
-                    <li className="flex items-center justify-between gap-3 px-1 py-2">
-                      <span className="text-muted">Kategorie</span>
-                      <span className="text-fg/85 truncate text-right">
-                        {metrics[activeMetricId]?.category || '-'}
-                      </span>
-                    </li>
-                    <li className="flex items-center justify-between gap-3 px-1 py-2">
-                      <span className="text-muted">ID</span>
-                      <span className="text-fg/85 truncate text-right">{activeMetricId}</span>
-                    </li>
-                    <li className="flex items-center justify-between gap-3 px-1 py-2">
-                      <span className="text-muted">Einheit</span>
-                      <span className="text-fg/85 truncate text-right">
-                        {metrics[activeMetricId]?.unit || '-'}
-                      </span>
-                    </li>
-                  </ul>
-                </>
-              ) : null}
-            </div>
-
-            {metrics && activeMetricId ? (
-              <LeaderboardTable
-                metricKey={tableMetricKey || activeMetricId}
-                def={metrics[activeMetricId]}
-                state={tableState}
-                loadingOverride={activeMetricState.loading}
-                showCenterLoader={activeMetricState.loading && !activeMetricState.loaded}
-                centerLoaderLabel={
-                  canUseLoadedFallback
-                    ? 'Neue Rangliste wird geladen...'
-                    : 'Rangliste wird geladen...'
-                }
-                pageSize={pageSize}
-                getPlayerName={getPlayerName}
-                onPlayerClick={onPlayerClick}
-                onGoPage={onGoPage}
-                onLoadMore={onLoadMore}
-              />
-            ) : null}
-          </div>
+          ) : null}
         </div>
-      </div>
-    </section>
+      </StatsLayoutRail>
+
+      <StatsLayoutMain ariaLabel="Ranglisten Ergebnisse">
+        <SectionTitle
+          title="Ranglisten"
+          subtitle="Wähle links eine Kategorie aus und sieh direkt, wer in diesem Bereich vorne liegt."
+        />
+
+        <div className="mt-5 space-y-4">
+          {!metrics ? (
+            <div className="mg-notice text-sm" data-variant="neutral" role="status">
+              Lade Ranglisten...
+            </div>
+          ) : null}
+
+          {metrics && hasNoRanklistResults ? (
+            <div className="mg-notice text-sm" data-variant="warning" role="status">
+              <span
+                className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+                aria-hidden="true"
+              >
+                <SearchX size={14} />
+              </span>
+              <span className="text-fg/90">Keine Ranglisten gefunden.</span>
+            </div>
+          ) : null}
+
+          {metrics && !activeMetricId ? (
+            <div className="mg-notice text-sm" data-variant="neutral" role="status">
+              <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+              <span className="text-fg/90">
+                Keine Rangliste ausgewählt. Wähle links eine Kategorie aus.
+              </span>
+            </div>
+          ) : null}
+
+          {metrics && activeMetricId ? (
+            <>
+              <div>
+                <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
+                <ul className="mg-list divide-border/75 mt-2 divide-y text-sm">
+                  <li className="flex items-center justify-between gap-3 px-1 py-2">
+                    <span className="text-muted">Name</span>
+                    <span
+                      className="text-fg truncate text-right font-semibold"
+                      title={metrics[activeMetricId]?.label || activeMetricId}
+                    >
+                      {metrics[activeMetricId]?.label || activeMetricId}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3 px-1 py-2">
+                    <span className="text-muted">Kategorie</span>
+                    <span className="text-fg/85 truncate text-right">
+                      {metrics[activeMetricId]?.category || '-'}
+                    </span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3 px-1 py-2">
+                    <span className="text-muted">ID</span>
+                    <span className="text-fg/85 truncate text-right">{activeMetricId}</span>
+                  </li>
+                  <li className="flex items-center justify-between gap-3 px-1 py-2">
+                    <span className="text-muted">Einheit</span>
+                    <span className="text-fg/85 truncate text-right">
+                      {metrics[activeMetricId]?.unit || '-'}
+                    </span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="min-w-0">
+                <LeaderboardTable
+                  metricKey={tableMetricKey || activeMetricId}
+                  def={metrics[activeMetricId]}
+                  state={tableState}
+                  loadingOverride={activeMetricState.loading}
+                  showCenterLoader={activeMetricState.loading && !activeMetricState.loaded}
+                  centerLoaderLabel={
+                    canUseLoadedFallback
+                      ? 'Neue Rangliste wird geladen...'
+                      : 'Rangliste wird geladen...'
+                  }
+                  pageSize={pageSize}
+                  getPlayerName={getPlayerName}
+                  onPlayerClick={onPlayerClick}
+                  onGoPage={onGoPage}
+                  onLoadMore={onLoadMore}
+                  surface={false}
+                />
+              </div>
+            </>
+          ) : null}
+        </div>
+      </StatsLayoutMain>
+    </StatsLayoutGrid>
   );
 }

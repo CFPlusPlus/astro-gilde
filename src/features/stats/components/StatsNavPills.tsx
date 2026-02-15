@@ -6,10 +6,12 @@ export function StatsNavPills({
   active,
   onChange,
   disabled = false,
+  surface = true,
 }: {
   active: TabKey;
   onChange: (tab: TabKey) => void;
   disabled?: boolean;
+  surface?: boolean;
 }) {
   const items: {
     key: TabKey;
@@ -24,7 +26,12 @@ export function StatsNavPills({
 
   return (
     <nav aria-label="Statistik Navigation">
-      <div className="mg-surface-2 overflow-x-auto px-3 py-2">
+      <div
+        className={[
+          'overflow-x-auto px-3 py-2',
+          surface ? 'mg-surface-2' : 'bg-surface-solid/35 rounded-[var(--radius)]',
+        ].join(' ')}
+      >
         <ul className="flex w-max items-center gap-1" role="list">
           {items.map((it) => {
             const isActive = it.key === active;

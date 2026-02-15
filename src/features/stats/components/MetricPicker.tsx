@@ -11,6 +11,7 @@ function MetricPickerImpl({
   onFilterChange,
   activeMetricId,
   onSelectMetric,
+  surface = true,
 }: {
   metrics: Record<string, MetricDef>;
   grouped: GroupedMetrics;
@@ -18,19 +19,33 @@ function MetricPickerImpl({
   onFilterChange: (next: string) => void;
   activeMetricId: string | null;
   onSelectMetric: (id: string) => void;
+  surface?: boolean;
 }) {
   const visibleCount = grouped.reduce((sum, group) => sum + group.ids.length, 0);
+  const activeMetric = activeMetricId ? metrics[activeMetricId] : null;
 
   return (
-    <section className="mg-surface-2 p-4">
+    <section className={surface ? 'mg-surface-2 p-4' : undefined}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
-        <span className="text-muted text-xs">
-          {visibleCount} {'Eintr\u00e4ge'}
-        </span>
+        <span className="text-muted text-xs">{visibleCount} Treffer</span>
       </div>
 
-      <div className="bg-surface-solid/30 mt-3 flex items-center gap-2 rounded-[var(--radius)] px-2.5 py-2 focus-within:ring-2 focus-within:ring-[color:var(--ring)]">
+      {activeMetricId ? (
+        <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
+          <span className="text-muted text-xs">Ausgewählt:</span>
+          <span className="border-border/80 bg-accent/14 text-fg inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
+            <span className="truncate">{activeMetric?.label || activeMetricId}</span>
+            {activeMetric?.category ? (
+              <span className="text-muted border-border/70 border-l pl-2">
+                {activeMetric.category}
+              </span>
+            ) : null}
+          </span>
+        </div>
+      ) : null}
+
+      <div className="bg-surface-solid/50 mt-3 flex items-center gap-2 rounded-[var(--radius)] px-2.5 py-2">
         <Filter size={16} className="text-muted" />
         <input
           value={filter}
@@ -103,7 +118,7 @@ function MetricPickerImpl({
                             <span
                               className={[
                                 'mt-0.5 h-4 w-1 flex-none rounded-full transition-colors',
-                                isActive ? 'bg-accent' : 'bg-transparent group-hover:bg-accent/35',
+                                isActive ? 'bg-accent' : 'group-hover:bg-accent/35 bg-transparent',
                               ].join(' ')}
                               aria-hidden="true"
                             />
@@ -116,7 +131,9 @@ function MetricPickerImpl({
                                   </span>
                                 ) : null}
                               </span>
-                              <span className="text-muted mt-1 block text-xs break-all">ID: {id}</span>
+                              <span className="text-muted mt-1 block text-xs break-all">
+                                ID: {id}
+                              </span>
                             </span>
                           </div>
                         </button>
