@@ -61,19 +61,25 @@ export function KingSection({
                   key={`podium-${rank}`}
                   className="border-border/75 bg-surface-solid/35 relative overflow-hidden rounded-[var(--radius)] border px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5"
                 >
-                  <div className="bg-accent/18 text-accent absolute top-4 right-4 inline-flex h-10 w-10 items-center justify-center rounded-xl">
-                    <Crown size={18} />
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="text-muted text-xs font-semibold tracking-[0.16em] uppercase">
+                      Platz {rank}
+                    </p>
+                    {rank === 1 ? (
+                      <div className="bg-accent/18 text-accent inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                        <Crown size={18} />
+                      </div>
+                    ) : (
+                      <span className="inline-flex h-10 w-10 shrink-0" aria-hidden="true" />
+                    )}
                   </div>
-                  <p className="text-muted pr-12 text-xs font-semibold tracking-[0.16em] uppercase">
-                    Platz {rank}
-                  </p>
 
                   {entry ? (
-                    <div className="mt-2 flex flex-wrap items-center gap-3">
+                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
                       <button
                         type="button"
                         onClick={() => onPlayerClick(entry.uuid)}
-                        className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2 rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                        className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
                       >
                         <img
                           src={`https://minotar.net/helm/${encodeURIComponent(getPlayerName(entry.uuid))}/32.png`}
@@ -84,7 +90,7 @@ export function KingSection({
                         />
                         <span className="truncate">{getPlayerName(entry.uuid)}</span>
                       </button>
-                      <span className="text-fg text-3xl font-semibold tracking-tight">
+                      <span className="text-fg text-3xl font-semibold tracking-tight tabular-nums whitespace-nowrap">
                         {formatPoints(entry.value)}
                       </span>
                     </div>
