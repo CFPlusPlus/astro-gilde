@@ -1,7 +1,7 @@
 import { minecraftGilde } from '../config/minecraftGilde';
 import { appRoutes } from '../config/routes';
 
-export const tutorialLinks = {
+const tutorialLinks = {
   rules: appRoutes.rules,
   commands: appRoutes.commands,
   vote: appRoutes.vote,

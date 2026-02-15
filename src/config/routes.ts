@@ -45,15 +45,13 @@ const routeKeyByPath = new Map<string, AppRouteKey>(
   routeEntries.map(([key, meta]) => [normalizeRoutePath(meta.path), key]),
 );
 
-export const getRoute = (key: AppRouteKey): string => appRoutes[key];
-
 export const getRouteLabel = (key: AppRouteKey, variant: RouteLabelVariant = 'nav'): string => {
   const meta = appRouteMeta[key];
   const breadcrumbLabel = 'breadcrumbLabel' in meta ? meta.breadcrumbLabel : undefined;
   return variant === 'breadcrumb' ? (breadcrumbLabel ?? meta.navLabel) : meta.navLabel;
 };
 
-export const getRouteKeyByPath = (pathname: string): AppRouteKey | undefined =>
+const getRouteKeyByPath = (pathname: string): AppRouteKey | undefined =>
   routeKeyByPath.get(normalizeRoutePath(pathname));
 
 export const getRouteLabelByPath = (

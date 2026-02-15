@@ -5,7 +5,7 @@ import logoImage from '../assets/images/branding/logo.webp';
 // Ziel: Strings (URLs, IP, Version) nicht über das Projekt verteilen,
 // sondern an einer Stelle pflegen.
 
-export const externalLinks = {
+const externalLinks = {
   discord: 'https://discord.minecraft-gilde.de',
   map: 'https://map.minecraft-gilde.de',
   status: 'https://stats.uptimerobot.com/OnyzM9GmG2',
@@ -14,10 +14,6 @@ export const externalLinks = {
   voteServerlisteNet: 'https://serverliste.net/vote/5142',
 } as const;
 
-export type ExternalLinkKey = keyof typeof externalLinks;
-
-export const getExternalLink = (key: ExternalLinkKey): string => externalLinks[key];
-
 const communityProfiles = {
   minecraftServerEu:
     'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
@@ -25,7 +21,7 @@ const communityProfiles = {
   serverlisteNet: 'https://serverliste.net/server/5142',
 } as const;
 
-export const brandConfig = {
+const brandConfig = {
   siteUrl,
   name: 'Minecraft Gilde',
   alternateName: 'Minecraft Gilde - Vanilla SMP (DE)',

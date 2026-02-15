@@ -1,5 +1,5 @@
 export const siteUrl = 'https://minecraft-gilde.de' as const;
-export const canonicalTrailingSlash = 'always' as const;
+const canonicalTrailingSlash = 'always' as const;
 
 const site = new URL(siteUrl);
 site.protocol = 'https:';

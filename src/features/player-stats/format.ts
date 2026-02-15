@@ -4,7 +4,7 @@ export const nf = (x: number) => formatDeNumber(x);
 
 export const nf2 = (x: number) => formatDeNumber2(x);
 
-export function norm(s: string): string {
+function norm(s: string): string {
   return (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
 }
 

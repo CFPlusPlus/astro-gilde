@@ -915,43 +915,6 @@ html[data-theme='dark'] {
     clip-path: inset(0 round var(--radius) var(--radius) 0 0);
   }
 
-  .mg-role-badge__halo,
-  .mg-role-badge__dot {
-    transition: background-color 160ms ease;
-  }
-
-  .mg-role-badge--admin .mg-role-badge__halo {
-    background: rgb(231 76 60 / 0.22);
-  }
-
-  .mg-role-badge--admin .mg-role-badge__dot {
-    background: #e74c3c;
-  }
-
-  .mg-role-badge--moderator .mg-role-badge__halo {
-    background: rgb(230 126 34 / 0.22);
-  }
-
-  .mg-role-badge--moderator .mg-role-badge__dot {
-    background: #e67e22;
-  }
-
-  .mg-role-badge--streamer .mg-role-badge__halo {
-    background: rgb(155 89 182 / 0.22);
-  }
-
-  .mg-role-badge--streamer .mg-role-badge__dot {
-    background: #9b59b6;
-  }
-
-  .mg-role-badge--player .mg-role-badge__halo {
-    background: rgb(52 152 219 / 0.22);
-  }
-
-  .mg-role-badge--player .mg-role-badge__dot {
-    background: #3498db;
-  }
-
   .mg-muted {
     color: var(--muted);
   }

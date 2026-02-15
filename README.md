@@ -107,8 +107,8 @@ Hinweis:
 - `src/scripts/app/join-modal.ts` und `src/features/player-stats/SkinViewerModal.tsx`
   (Body-Scroll während Modal offen)
 - Bereits reduziert: vermeidbare statische Inline-Styles wurden entfernt
-  (`src/components/ui/RoleBadge.astro`, `src/pages/partner.astro`,
-  `src/features/player-stats/PlayerStatsHeader.tsx`) und Home-Animationen/-Galerie laufen
+  (`src/pages/partner.astro`, `src/features/player-stats/PlayerStatsHeader.tsx`) und
+  Home-Animationen/-Galerie laufen
   jetzt klassenbasiert statt per Inline-Style (`src/scripts/app-home.ts`,
   `src/scripts/home-reveal.ts`, `src/styles/home.css`).
 - Für ein komplettes Entfernen von `unsafe-inline` müssen die verbleibenden

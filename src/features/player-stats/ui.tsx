@@ -8,16 +8,6 @@ export function fmtGenerated(iso: string) {
   return `Stand: ${formatBerlinDateTime(iso)}`;
 }
 
-export function ApiAlert({ message }: { message: string | null }) {
-  if (!message) return null;
-  return (
-    <div className="mg-notice" data-variant="warning" role="alert">
-      <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
-      <span className="text-fg/90">{message}</span>
-    </div>
-  );
-}
-
 export function DataSurface({
   header,
   content,

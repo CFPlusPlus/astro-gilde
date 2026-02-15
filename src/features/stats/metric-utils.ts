@@ -2,7 +2,7 @@ import type { MetricDef } from './types';
 
 export type GroupedMetricIds = Array<{ cat: string; ids: string[] }>;
 
-export function isServerKingMetric(id: string, def?: MetricDef) {
+function isServerKingMetric(id: string, def?: MetricDef) {
   const normalizedId = id.trim().toLowerCase();
   if (normalizedId === 'king' || normalizedId === 'server_king' || normalizedId === 'server-king') {
     return true;

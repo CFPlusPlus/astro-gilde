@@ -1,4 +1,4 @@
-export const HOUR_METRIC_KEYS: ReadonlySet<string> = new Set([
+const HOUR_METRIC_KEYS: ReadonlySet<string> = new Set([
   'minecraft:play_time',
   'minecraft:sneak_time',
   'minecraft:time_since_death',
@@ -6,10 +6,10 @@ export const HOUR_METRIC_KEYS: ReadonlySet<string> = new Set([
   'minecraft:total_world_time',
 ]);
 
-export const TICKS_PER_HOUR = 72_000;
-export const CM_PER_KM = 100_000;
+const TICKS_PER_HOUR = 72_000;
+const CM_PER_KM = 100_000;
 
-export function isDistanceMetricInCentimeters(metricId: string): boolean {
+function isDistanceMetricInCentimeters(metricId: string): boolean {
   return metricId.endsWith('_one_cm');
 }
 

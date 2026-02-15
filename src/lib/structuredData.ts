@@ -31,7 +31,7 @@ const stripSiteName = (title: string): string => {
     .trim();
 };
 
-export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string): string => {
+const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string): string => {
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;
   const routeLabel = getRouteLabelByPath(path, 'breadcrumb');
   if (routeLabel) return routeLabel;
@@ -44,7 +44,7 @@ export const breadcrumbLabelForPath = (pathname: string, fallbackTitle?: string)
   return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Home';
 };
 
-export const buildBreadcrumbList = (args: {
+const buildBreadcrumbList = (args: {
   site: URL;
   pathname: string;
   pageTitle?: string;
