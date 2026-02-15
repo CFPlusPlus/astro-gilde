@@ -598,6 +598,10 @@ html[data-theme='dark'] {
     white-space: nowrap;
   }
 
+  .site-nav-solid-card {
+    background: var(--surface-solid);
+  }
+
   .site-discord-link {
     display: inline-flex;
     align-items: center;
@@ -690,15 +694,9 @@ html[data-theme='dark'] {
   }
 
   .mg-surface-2 {
-    background: linear-gradient(
-      180deg,
-      color-mix(in oklab, var(--surface-solid) 92%, transparent) 0%,
-      color-mix(in oklab, var(--surface-solid) 86%, var(--bg) 14%) 100%
-    );
-    border: 1px solid color-mix(in oklab, var(--border) 92%, transparent);
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 62%, transparent),
-      0 14px 26px -28px color-mix(in oklab, var(--fg) 42%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 74%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 74%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 42%, transparent);
     border-radius: var(--radius);
   }
 

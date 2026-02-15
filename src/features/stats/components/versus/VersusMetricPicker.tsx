@@ -40,7 +40,7 @@ export function VersusMetricPicker({
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
           <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
           <span className="text-fg/90">
-            Schlie\u00dfe den Vergleich ab, um die Metriken zu laden.
+            {'Schlie\u00dfe den Vergleich ab, um die Metriken zu laden.'}
           </span>
         </div>
       </div>
@@ -58,7 +58,8 @@ export function VersusMetricPicker({
         <div className="mg-row flex-wrap items-center justify-between gap-2 px-1 py-2 sm:px-2">
           <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
           <span className="text-muted text-xs">
-            {versusMetricIds.length}/{maxMetrics} ausgew\u00e4hlt
+            {versusMetricIds.length}/{maxMetrics}
+            {' ausgew\u00e4hlt'}
           </span>
         </div>
 
@@ -105,8 +106,8 @@ export function VersusMetricPicker({
                 'mg-search-clear',
                 versusMetricFilter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
               ].join(' ')}
-              aria-label="Versus-Kategorien-Filter zur\u00fccksetzen"
-              title="Filter zur\u00fccksetzen"
+              aria-label={'Versus-Kategorien-Filter zur\u00fccksetzen'}
+              title={'Filter zur\u00fccksetzen'}
               tabIndex={versusMetricFilter.trim().length > 0 ? 0 : -1}
             >
               <X size={14} />

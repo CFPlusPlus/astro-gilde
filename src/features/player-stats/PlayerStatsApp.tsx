@@ -117,9 +117,13 @@ export default function PlayerStatsApp() {
       });
   };
 
+  const wideContainerClass = 'mx-auto w-full max-w-[118rem] px-4 sm:px-6 xl:px-8';
+
   return (
     <>
       <StatsLayout
+        topBarClassName={wideContainerClass}
+        contentClassName={wideContainerClass}
         topBar={
           <PlayerStatsHeader
             playerName={playerName}
@@ -133,7 +137,7 @@ export default function PlayerStatsApp() {
         }
       >
         <StatsLayoutGrid className="[overflow-anchor:none]">
-          <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="lg:col-span-3">
+          <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
             <PlayerStatsToolbar
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -151,7 +155,7 @@ export default function PlayerStatsApp() {
             />
           </StatsLayoutRail>
 
-          <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="lg:col-span-9">
+          <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="p-0 lg:col-span-12">
             <div className="space-y-5">
               {!hasUuidInLocation && !apiError ? (
                 <div className="mg-notice text-sm" data-variant="neutral" role="status">

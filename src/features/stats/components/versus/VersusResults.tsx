@@ -26,7 +26,7 @@ export function VersusResults({
   versusSummary,
   hasMissingVersusValues,
   versusRows,
-  surface = true,
+  surface = false,
 }: VersusResultsProps) {
   let hintTitle = '';
   let hintText = '';

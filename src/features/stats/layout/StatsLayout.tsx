@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 type StatsLayoutProps = {
   topBar: ReactNode;
   children: ReactNode;
+  topBarClassName?: string;
+  contentClassName?: string;
 };
 
 type StatsLayoutSectionProps = {
@@ -11,24 +13,48 @@ type StatsLayoutSectionProps = {
   ariaLabel?: string;
 };
 
+type StatsLayoutGridProps = {
+  children: ReactNode;
+  className?: string;
+  stackUntilXl?: boolean;
+};
+
 function joinClassNames(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-export function StatsLayout({ topBar, children }: StatsLayoutProps) {
+export function StatsLayout({
+  topBar,
+  children,
+  topBarClassName,
+  contentClassName,
+}: StatsLayoutProps) {
   return (
     <div className="pb-12">
       <section className="mg-surface-1">
-        <div className="mg-container py-8">{topBar}</div>
+        <div className={joinClassNames('mg-container py-8', topBarClassName)}>{topBar}</div>
       </section>
-      <section className="mg-container py-8">{children}</section>
+      <section className={joinClassNames('mg-container py-8', contentClassName)}>
+        {children}
+      </section>
     </div>
   );
 }
 
-export function StatsLayoutGrid({ children, className }: StatsLayoutSectionProps) {
+export function StatsLayoutGrid({
+  children,
+  className,
+  stackUntilXl = false,
+}: StatsLayoutGridProps) {
   return (
-    <div className={joinClassNames('grid gap-6 lg:grid-cols-12 lg:items-start', className)}>
+    <div
+      className={joinClassNames(
+        stackUntilXl
+          ? 'grid gap-6 xl:grid-cols-12 xl:items-start'
+          : 'grid gap-6 lg:grid-cols-12 lg:items-start',
+        className,
+      )}
+    >
       {children}
     </div>
   );

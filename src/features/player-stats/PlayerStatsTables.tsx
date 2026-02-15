@@ -132,7 +132,7 @@ export function PlayerStatsTables({
                           }))
                         }
                       >
-                        Technischer Schl\u00fcssel{' '}
+                        {'Technischer Schl\u00fcssel '}
                         <SortIcon dir={sortGeneral.key === 'raw' ? sortGeneral.dir : 'none'} />
                       </button>
                     </th>
@@ -174,7 +174,7 @@ export function PlayerStatsTables({
         <DataSurface
           header={
             <>
-              <p className="text-fg text-sm font-semibold">Gegenst\u00e4nde</p>
+              <p className="text-fg text-sm font-semibold">{'Gegenst\u00e4nde'}</p>
               <p className="text-muted text-xs">{nf(filtered.items.length)} Treffer</p>
             </>
           }

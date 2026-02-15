@@ -123,7 +123,7 @@ function VersusPlayerRow({
       </div>
 
       {!player ? (
-        <p className="text-muted mt-2 text-xs">W\u00e4hle einen Spieler aus der Liste.</p>
+        <p className="text-muted mt-2 text-xs">{'W\u00e4hle einen Spieler aus der Liste.'}</p>
       ) : null}
     </div>
   );
@@ -215,7 +215,7 @@ export function VersusPlayerPicker({
           onClick={onResetVersus}
           className="mg-btn mg-btn--sm mg-btn--secondary"
         >
-          Zur\u00fccksetzen
+          {'Zur\u00fccksetzen'}
         </button>
         <span className="text-muted text-xs sm:ml-auto">
           Maximal {maxMetrics} Kategorien gleichzeitig.
@@ -226,7 +226,7 @@ export function VersusPlayerPicker({
         <div className="mt-3">
           <div className="mg-notice mt-0 text-xs" data-variant="warning" role="status">
             <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-            <span className="text-fg/90">Bitte w\u00e4hle zwei unterschiedliche Spieler.</span>
+            <span className="text-fg/90">{'Bitte w\u00e4hle zwei unterschiedliche Spieler.'}</span>
           </div>
         </div>
       ) : null}
