@@ -20,9 +20,9 @@ const { items, class: className = '' } = Astro.props as Props;
   class={`z-40 md:sticky md:top-[calc(4.5rem+env(safe-area-inset-top))] ${className}`.trim()}
 >
   <div class="mg-container">
-    <div class="mg-glass rounded-[var(--radius)] px-4 py-3 shadow-sm sm:px-5 sm:py-4">
+    <div class="border-border/65 border-y px-2 py-2 sm:px-3 sm:py-3">
       <p
-        class="text-muted mb-3 inline-flex items-center gap-2 text-[0.68rem] font-semibold tracking-[0.16em] uppercase"
+        class="text-muted mb-2 inline-flex items-center gap-2 px-2 text-[0.68rem] font-semibold tracking-[0.16em] uppercase"
       >
         <Navigation size={14} class="text-accent shrink-0" aria-hidden="true" />
         Schnellnavigation
@@ -30,7 +30,7 @@ const { items, class: className = '' } = Astro.props as Props;
 
       <div class="overflow-x-auto">
         <ul
-          class="flex w-max min-w-full items-center justify-center gap-3 px-1 whitespace-nowrap sm:gap-4"
+          class="flex w-max min-w-full items-center justify-center gap-3 px-2 whitespace-nowrap sm:gap-4"
           role="list"
         >
           {

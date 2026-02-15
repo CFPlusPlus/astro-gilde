@@ -99,15 +99,24 @@ const HERO_BACKGROUND_SIZES = '100vw';
 
 <!-- Join-Bar (aus dem Hero ausgelagert, damit der Hero luftiger und weniger überladen wirkt) -->
 <HomeSection size="tight" containerClass="pt-0">
-  <div class="bg-surface/30 rounded-[var(--radius)] px-4 py-6 sm:px-6 sm:py-7" data-reveal>
-    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex flex-wrap items-center gap-x-10 gap-y-4">
-        <div>
-          <div class="text-muted text-xs font-medium">Server-IP</div>
-          <div class="mt-1 flex items-center gap-2">
+  <div class="mg-surface-2 relative overflow-hidden px-4 py-6 sm:px-6 sm:py-7" data-reveal>
+    <div
+      class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--accent)]/55 to-transparent"
+      aria-hidden="true"
+    >
+    </div>
+    <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+      <div
+        class="grid w-full items-center gap-y-3 sm:grid-cols-[minmax(16rem,1.1fr)_minmax(10rem,0.6fr)_minmax(16rem,1fr)] sm:gap-y-0"
+      >
+        <div class="px-3 py-2 sm:px-5">
+          <div class="text-muted text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
+            Server-IP
+          </div>
+          <div class="mt-1.5 flex items-center gap-2">
             <button
               type="button"
-              class="mg-copy-ip-btn mg-copy-ip-btn--inline"
+              class="focus-visible:ring-offset-bg border-border/70 bg-surface-solid/24 text-fg hover:border-accent/60 inline-flex h-10 min-w-[13rem] items-center justify-center rounded-lg border px-3.5 font-mono text-[0.95rem] font-semibold tracking-[0.01em] transition-colors hover:bg-[color:var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 sm:justify-start"
               aria-label="Server-IP kopieren"
               data-copy-ip-inline
             >
@@ -130,6 +139,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
             </button>
             <IconButton
               ariaLabel="Jetzt spielen"
+              variant="ghost"
               class="hover:border-accent/60 duration-200 hover:bg-[var(--accent-soft)]"
               data-copy-ip
             >
@@ -138,13 +148,17 @@ const HERO_BACKGROUND_SIZES = '100vw';
           </div>
         </div>
 
-        <div>
-          <div class="text-muted text-xs font-medium">Version</div>
-          <div class="mt-1 text-sm font-semibold">Java {MC_VERSION}</div>
+        <div class="sm:border-border/60 px-3 py-2 sm:border-x sm:px-5">
+          <div class="text-muted text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
+            Version
+          </div>
+          <div class="mt-1 text-base font-semibold tracking-tight">Java {MC_VERSION}</div>
         </div>
 
-        <div>
-          <div class="text-muted text-xs font-medium">Live</div>
+        <div class="px-3 py-2 sm:px-5">
+          <div class="text-muted text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
+            Live
+          </div>
           <div class="mt-1 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
             <span class="inline-flex items-center gap-2">
               <Users size={16} />
@@ -160,7 +174,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-2">
+      <div class="border-border/60 flex flex-wrap gap-2 pt-2 lg:border-l lg:pt-0 lg:pl-5">
         <Button href={DYNMAP_URL} external variant="secondary" size="sm" class="gap-2">
           <Map size={16} /> Karte
         </Button>

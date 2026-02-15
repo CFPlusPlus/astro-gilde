@@ -90,7 +90,7 @@ export function KingSection({
                         />
                         <span className="truncate">{getPlayerName(entry.uuid)}</span>
                       </button>
-                      <span className="text-fg text-3xl font-semibold tracking-tight tabular-nums whitespace-nowrap">
+                      <span className="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums">
                         {formatPoints(entry.value)}
                       </span>
                     </div>
