@@ -70,7 +70,7 @@ function MetricPickerImpl({
         </button>
       </div>
 
-      <div className="mg-scrollbar-thin mt-4 max-h-[520px] overflow-auto pr-1 [overflow-anchor:none]">
+      <div className="mt-4 max-h-[520px] overflow-auto pr-1 [overflow-anchor:none]">
         <div className="space-y-5">
           {grouped.map(({ cat, ids }) => {
             const isCategoryActive = !!activeMetricId && ids.includes(activeMetricId);

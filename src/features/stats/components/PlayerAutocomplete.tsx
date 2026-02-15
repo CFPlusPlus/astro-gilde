@@ -95,7 +95,7 @@ export function PlayerAutocomplete({
 
       {open ? (
         <div className="border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
-          <ul className="mg-scrollbar-thin max-h-72 overflow-auto py-1">
+          <ul className="max-h-72 overflow-auto py-1">
             {items.map((it, idx) => {
               const isActive = idx === selectedIndex;
               return (

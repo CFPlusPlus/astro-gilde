@@ -54,7 +54,7 @@ function renderPlayers(data: ServerStatus): void {
   const players = data.players?.list ?? [];
   const container = document.createElement('div');
   container.className =
-    'flex flex-wrap gap-2 items-center justify-start overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none]';
+    'flex flex-wrap gap-2 items-center justify-start overflow-x-auto';
 
   const label = document.createElement('div');
   label.className = 'text-xs font-medium text-muted mr-2';
