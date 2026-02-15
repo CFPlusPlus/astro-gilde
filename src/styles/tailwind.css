@@ -666,22 +666,58 @@ html[data-theme='dark'] {
     @apply mx-auto max-w-6xl px-4;
   }
 
+  /*
+    Surface-Level-System:
+    - S0: Seitenhintergrund (Basis + mg-page-bg).
+    - S1: Section-Banding fuer Rhythmus zwischen grossen Bereichen.
+    - S2: Panel-/Datenflaeche innerhalb einer Section.
+    Nutzung:
+    - S1 nur fuer grosse Layout-Bloecke (z. B. Section tone="muted").
+    - S2 fuer inhaltliche Gruppierung ohne Default-Border/Shadow.
+  */
+  .mg-surface-1 {
+    background: color-mix(in oklab, var(--surface) 44%, transparent);
+  }
+
+  .mg-surface-1--padded {
+    @apply py-12 sm:py-14 lg:py-16;
+  }
+
+  .mg-surface-2 {
+    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    border-radius: var(--radius);
+  }
+
+  .mg-surface-2--clip {
+    overflow: hidden;
+  }
+
+  .mg-notice {
+    @apply mt-4 flex items-start gap-3 rounded-[var(--radius)] px-4 py-3 text-sm;
+    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
+  }
+
+  .mg-notice[data-variant='neutral'] {
+    background: color-mix(in oklab, var(--surface) 68%, transparent);
+  }
+
   .mg-section {
     @apply py-10;
   }
 
   .mg-section-panel {
-    @apply rounded-[var(--radius)] p-5 sm:p-6 lg:p-7;
-    background: color-mix(in oklab, var(--surface) 70%, transparent);
+    @apply p-5 sm:p-6 lg:p-7;
+    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    border-radius: var(--radius);
   }
 
   .mg-section-panel--outlined {
     border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
-    background: color-mix(in oklab, var(--surface-solid) 20%, transparent);
   }
 
   .mg-card {
-    @apply bg-surface-solid rounded-[var(--radius)];
+    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    border-radius: var(--radius);
   }
 
   .mg-card--outlined {
@@ -987,7 +1023,9 @@ html[data-theme='dark'] {
 
   /* Einfaches Callout */
   .mg-callout {
-    @apply bg-surface-solid border-border rounded-[var(--radius)] border p-4;
+    @apply p-4;
+    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    border-radius: var(--radius);
   }
 
   .mg-callout__icon {
@@ -999,12 +1037,10 @@ html[data-theme='dark'] {
   }
 
   .mg-callout[data-variant='warning'] {
-    border-color: color-mix(in oklab, var(--accent) 60%, var(--border) 40%);
     background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
   }
 
   .mg-callout[data-variant='info'] {
-    border-color: color-mix(in oklab, var(--accent) 18%, var(--border) 82%);
     background: color-mix(in oklab, var(--accent) 6%, var(--surface-solid) 94%);
   }
 

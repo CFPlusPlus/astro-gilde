@@ -79,10 +79,7 @@ export function RankingsSection({
         </div>
 
         {hasNoRanklistResults ? (
-          <div
-            className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-            role="status"
-          >
+          <div className="mg-notice" data-variant="warning" role="status">
             <span
               className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
               aria-hidden="true"
@@ -108,37 +105,52 @@ export function RankingsSection({
           )}
 
           <div className="min-w-0 space-y-3">
-            {metrics && activeMetricId ? (
-              <div className="mg-card mg-card--outlined min-h-[156px] p-4">
-                <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
-                <p
-                  className="text-fg mt-1 truncate text-lg font-semibold tracking-tight"
-                  title={metrics[activeMetricId]?.label || activeMetricId}
-                >
-                  {metrics[activeMetricId]?.label || activeMetricId}
-                </p>
-                <div className="text-muted mt-2 grid gap-1 text-sm">
-                  <p className="truncate">
-                    Kategorie:{' '}
-                    <span className="text-fg/80">{metrics[activeMetricId]?.category || '-'}</span>
-                  </p>
-                  <p className="truncate">
-                    ID: <span className="text-fg/80">{activeMetricId}</span>
-                  </p>
-                  <p className="truncate">
-                    Einheit:{' '}
-                    <span className="text-fg/80">{metrics[activeMetricId]?.unit || '-'}</span>
-                  </p>
+            <div className="mg-surface-2 p-4">
+              {!metrics ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  Lade Ranglisten...
                 </div>
-              </div>
-            ) : (
-              <div className="mg-card mg-card--outlined p-6">
-                <p className="text-fg font-semibold">Keine Rangliste ausgew&auml;hlt</p>
-                <p className="text-muted mt-2 text-sm">
-                  W&auml;hle links eine Kategorie aus, um die Top-Werte zu sehen.
-                </p>
-              </div>
-            )}
+              ) : null}
+
+              {metrics && !activeMetricId ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">
+                    Keine Rangliste ausgew&auml;hlt. W&auml;hle links eine Kategorie aus.
+                  </span>
+                </div>
+              ) : null}
+
+              {metrics && activeMetricId ? (
+                <>
+                  <p className="text-muted text-xs font-semibold">Aktive Rangliste</p>
+                  <p
+                    className="text-fg mt-1 truncate text-lg font-semibold tracking-tight"
+                    title={metrics[activeMetricId]?.label || activeMetricId}
+                  >
+                    {metrics[activeMetricId]?.label || activeMetricId}
+                  </p>
+                  <ul className="mg-list divide-border/75 mt-3 divide-y text-sm">
+                    <li className="flex items-center justify-between gap-3 px-1 py-2">
+                      <span className="text-muted">Kategorie</span>
+                      <span className="text-fg/85 truncate text-right">
+                        {metrics[activeMetricId]?.category || '-'}
+                      </span>
+                    </li>
+                    <li className="flex items-center justify-between gap-3 px-1 py-2">
+                      <span className="text-muted">ID</span>
+                      <span className="text-fg/85 truncate text-right">{activeMetricId}</span>
+                    </li>
+                    <li className="flex items-center justify-between gap-3 px-1 py-2">
+                      <span className="text-muted">Einheit</span>
+                      <span className="text-fg/85 truncate text-right">
+                        {metrics[activeMetricId]?.unit || '-'}
+                      </span>
+                    </li>
+                  </ul>
+                </>
+              ) : null}
+            </div>
 
             {metrics && activeMetricId ? (
               <LeaderboardTable

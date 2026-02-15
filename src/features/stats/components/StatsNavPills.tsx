@@ -24,7 +24,7 @@ export function StatsNavPills({
 
   return (
     <nav aria-label="Statistik Navigation">
-      <div className="border-border bg-surface/70 md:bg-surface/55 overflow-x-auto rounded-[var(--radius)] border px-3 py-2">
+      <div className="mg-surface-2 overflow-x-auto px-3 py-2">
         <ul className="flex w-max items-center gap-1" role="list">
           {items.map((it) => {
             const isActive = it.key === active;

@@ -33,7 +33,7 @@ export function VersusMetricPicker({
 }: VersusMetricPickerProps) {
   if (!hasVersusData) {
     return (
-      <div className="mg-card text-muted min-w-0 p-5 text-sm">
+      <div className="mg-surface-2 text-muted min-w-0 p-5 text-sm">
         Klicke auf "Vergleichen", um die Spielerstatistiken zu laden.
       </div>
     );
@@ -42,7 +42,7 @@ export function VersusMetricPicker({
   const selectedMetricIds = new Set(versusMetricIds);
 
   return (
-    <div className="mg-card mg-card--outlined min-w-0 p-4">
+    <div className="mg-surface-2 min-w-0 p-4">
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <span className="text-muted text-xs">{versusCatalog.length} Eintr&auml;ge</span>
@@ -52,21 +52,21 @@ export function VersusMetricPicker({
         <button
           type="button"
           onClick={() => onApplyVersusSelection(getQuickVersusSelection(versusCatalog))}
-          className="mg-btn mg-btn--xs mg-btn--surface"
+          className="mg-btn mg-btn--xs mg-btn--secondary"
         >
           Schnellwahl
         </button>
         <button
           type="button"
           onClick={() => onApplyVersusSelection(versusFilteredCatalog.map((entry) => entry.id))}
-          className="mg-btn mg-btn--xs mg-btn--surface"
+          className="mg-btn mg-btn--xs mg-btn--secondary"
         >
           Alle
         </button>
         <button
           type="button"
           onClick={() => onApplyVersusSelection([])}
-          className="mg-btn mg-btn--xs mg-btn--surface"
+          className="mg-btn mg-btn--xs mg-btn--secondary"
         >
           Keine
         </button>
@@ -101,10 +101,7 @@ export function VersusMetricPicker({
       </div>
 
       {hasNoVersusResults ? (
-        <div
-          className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-          role="status"
-        >
+        <div className="mg-notice" data-variant="warning" role="status">
           <span
             className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
             aria-hidden="true"
