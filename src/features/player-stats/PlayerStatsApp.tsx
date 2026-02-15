@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Clock3, Map as MapIcon, Skull, Swords } from 'lucide-react';
+import { Clock3, Info, Map as MapIcon, SearchX, Skull, Swords } from 'lucide-react';
 
 import { nf, nf2 } from './format';
 import { PlayerStatsHeader } from './PlayerStatsHeader';
@@ -8,6 +8,12 @@ import { PlayerStatsToolbar } from './PlayerStatsToolbar';
 import SkinViewerModal from './SkinViewerModal';
 import { usePlayerStatsState } from './usePlayerStatsState';
 import { KpiStrip, type KpiItem } from '../stats/components/KpiStrip';
+import {
+  StatsLayout,
+  StatsLayoutGrid,
+  StatsLayoutMain,
+  StatsLayoutRail,
+} from '../stats/layout/StatsLayout';
 
 export default function PlayerStatsApp() {
   const {
@@ -15,6 +21,7 @@ export default function PlayerStatsApp() {
     setActiveTab,
     isGerman,
     setIsGerman,
+    uuidParam,
     uuidFull,
     playerName,
     generatedIso,
@@ -30,7 +37,6 @@ export default function PlayerStatsApp() {
     setSortMobs,
     filtered,
     stats,
-    canRender,
     uuidCopied,
     setUuidCopied,
     skinHeadUrl,
@@ -40,6 +46,10 @@ export default function PlayerStatsApp() {
   } = usePlayerStatsState();
 
   const [skinOpen, setSkinOpen] = useState(false);
+  const hasUuidInLocation = uuidParam.trim().length > 0;
+  const isLoading = hasUuidInLocation && !apiError && !stats;
+  const hasData = Boolean(stats) && !apiError;
+
   const kpiItems = useMemo<KpiItem[]>(() => {
     const asObj = (v: unknown) =>
       v && typeof v === 'object' ? (v as Record<string, number>) : null;
@@ -104,52 +114,144 @@ export default function PlayerStatsApp() {
       });
   };
 
+  const wideContainerClass = 'mx-auto w-full max-w-[118rem] px-4 sm:px-6 xl:px-8';
+
   return (
-    <div>
-      <PlayerStatsHeader
-        playerName={playerName}
-        canRender={canRender}
-        isGerman={isGerman}
-        onToggleGerman={() => setIsGerman((v) => !v)}
-        uuidFull={uuidFull}
-        uuidCopied={uuidCopied}
-        onCopyUuid={handleCopyUuid}
-        generatedIso={generatedIso}
-        apiError={apiError}
-      />
-
-      <section className="mg-container pb-12">
-        <div className="space-y-6">
-          <KpiStrip items={kpiItems} variant="inline" />
-
-          <PlayerStatsToolbar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            filterRaw={filterRaw}
-            setFilterRaw={setFilterRaw}
-            filterInputRef={filterInputRef}
-            activeResultCount={activeResultCount}
-            activeTabLabel={activeTabLabel}
-            skinHeadUrl={skinHeadUrl}
-            skinHeadFallback={skinHeadFallback}
-            skinFullUrl={skinFullUrl}
+    <>
+      <StatsLayout
+        topBarClassName={wideContainerClass}
+        contentClassName={wideContainerClass}
+        topBar={
+          <PlayerStatsHeader
             playerName={playerName}
+            isGerman={isGerman}
+            onToggleGerman={() => setIsGerman((v) => !v)}
             uuidFull={uuidFull}
-            onOpenSkin={() => setSkinOpen(true)}
+            uuidCopied={uuidCopied}
+            onCopyUuid={handleCopyUuid}
+            generatedIso={generatedIso}
           />
+        }
+      >
+        <StatsLayoutGrid className="[overflow-anchor:none]">
+          <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
+            {hasData ? (
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,34rem)] xl:items-start">
+                <KpiStrip items={kpiItems} variant="card" />
+                <PlayerStatsToolbar
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  filterRaw={filterRaw}
+                  setFilterRaw={setFilterRaw}
+                  filterInputRef={filterInputRef}
+                  activeResultCount={activeResultCount}
+                  activeTabLabel={activeTabLabel}
+                />
+              </div>
+            ) : (
+              <PlayerStatsToolbar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                filterRaw={filterRaw}
+                setFilterRaw={setFilterRaw}
+                filterInputRef={filterInputRef}
+                activeResultCount={activeResultCount}
+                activeTabLabel={activeTabLabel}
+              />
+            )}
+          </StatsLayoutRail>
 
-          <PlayerStatsTables
-            activeTab={activeTab}
-            filtered={filtered}
-            sortGeneral={sortGeneral}
-            setSortGeneral={setSortGeneral}
-            sortItems={sortItems}
-            setSortItems={setSortItems}
-            sortMobs={sortMobs}
-            setSortMobs={setSortMobs}
-          />
-        </div>
-      </section>
+          <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="p-0 lg:col-span-12">
+            <div className="space-y-5">
+              {!hasUuidInLocation && !apiError ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">
+                    Keine UUID erkannt. Öffne einen Spieler über die Suche in den Statistiken.
+                  </span>
+                </div>
+              ) : null}
+
+              {isLoading ? (
+                <div className="mg-notice text-sm" data-variant="neutral" role="status">
+                  <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+                  <span className="text-fg/90">Spielerstatistiken werden geladen...</span>
+                </div>
+              ) : null}
+
+              {apiError ? (
+                <div className="mg-notice text-sm" data-variant="warning" role="alert">
+                  <span
+                    className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+                    aria-hidden="true"
+                  >
+                    <SearchX size={14} />
+                  </span>
+                  <span className="text-fg/90">{apiError}</span>
+                </div>
+              ) : null}
+
+              {hasData ? (
+                <>
+                  <section className="mg-surface-2 p-3 sm:p-4">
+                    <button
+                      type="button"
+                      className="group hover:bg-surface-solid/45 focus-visible:ring-offset-bg flex min-h-[5.75rem] w-full items-center gap-4 rounded-[var(--radius)] p-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                      onClick={() => {
+                        if (!skinFullUrl) return;
+                        setSkinOpen(true);
+                      }}
+                      aria-label="3D Skin-Viewer öffnen"
+                    >
+                      <img
+                        src={skinHeadUrl}
+                        alt={playerName || uuidFull || ''}
+                        className="border-border/70 h-16 w-16 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
+                          const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+
+                          if (
+                            !fallbackAttempted &&
+                            skinHeadFallback &&
+                            img.src !== skinHeadFallback
+                          ) {
+                            img.dataset.fallbackAttempted = '1';
+                            img.src = skinHeadFallback;
+                            return;
+                          }
+
+                          img.onerror = null;
+                        }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="text-fg block truncate text-base font-semibold">
+                          {playerName || 'Unbekannter Spieler'}
+                        </span>
+                        <span className="text-muted mt-1 inline-flex items-center gap-2 text-xs">
+                          <Info size={14} className="shrink-0" /> Skin-Viewer öffnen
+                        </span>
+                      </span>
+                    </button>
+                  </section>
+
+                  <PlayerStatsTables
+                    activeTab={activeTab}
+                    filtered={filtered}
+                    sortGeneral={sortGeneral}
+                    setSortGeneral={setSortGeneral}
+                    sortItems={sortItems}
+                    setSortItems={setSortItems}
+                    sortMobs={sortMobs}
+                    setSortMobs={setSortMobs}
+                  />
+                </>
+              ) : null}
+            </div>
+          </StatsLayoutMain>
+        </StatsLayoutGrid>
+      </StatsLayout>
 
       <SkinViewerModal
         open={skinOpen}
@@ -159,6 +261,6 @@ export default function PlayerStatsApp() {
         playerUuid={uuidFull}
         playerName={playerName}
       />
-    </div>
+    </>
   );
 }

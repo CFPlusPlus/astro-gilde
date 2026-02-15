@@ -4,6 +4,7 @@ import {
   VersusResults,
   type VersusSectionProps,
 } from '../versus';
+import { StatsLayoutGrid, StatsLayoutMain } from '../../layout/StatsLayout';
 import { SectionTitle } from '../StatsPrimitives';
 
 export function VersusSection({
@@ -44,64 +45,87 @@ export function VersusSection({
   onGoToPlayer,
 }: VersusSectionProps) {
   return (
-    <section aria-label="Versus" className="mg-container pb-12">
-      <div className="mt-6 space-y-6">
-        <SectionTitle
-          title="Versus"
-          subtitle="Vergleiche zwei Spieler in ausgew&auml;hlten Kategorien."
-        />
+    <StatsLayoutGrid className="[overflow-anchor:none]">
+      <StatsLayoutMain ariaLabel="Versus Vergleich" className="lg:col-span-12">
+        <SectionTitle title="Versus" subtitle="Vergleiche zwei Spieler direkt nebeneinander." />
 
-        <VersusPlayerPicker
-          maxMetrics={maxMetrics}
-          searchA={searchA}
-          searchB={searchB}
-          versusPlayerA={versusPlayerA}
-          versusPlayerB={versusPlayerB}
-          versusError={versusError}
-          versusNotice={versusNotice}
-          isSameVersusPlayer={isSameVersusPlayer}
-          canRunVersus={canRunVersus}
-          versusSwapFxClass={versusSwapFxClass}
-          versusCardAZClass={versusCardAZClass}
-          versusCardBZClass={versusCardBZClass}
-          onSetVersusPlayer={onSetVersusPlayer}
-          onClearVersusPlayer={onClearVersusPlayer}
-          onSetVersusSearchOpen={onSetVersusSearchOpen}
-          onSwapVersusPlayers={onSwapVersusPlayers}
-          onUpdateVersusSearch={onUpdateVersusSearch}
-          onRunVersusCompare={onRunVersusCompare}
-          onResetVersus={onResetVersus}
-          onGoToPlayer={onGoToPlayer}
-        />
+        <div className="mt-5 space-y-5">
+          <section>
+            <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+              <h3 className="text-fg text-sm font-semibold">Spielerauswahl</h3>
+              <span className="text-muted text-xs">
+                Definiere Spieler A und B für den Vergleich.
+              </span>
+            </div>
+            <VersusPlayerPicker
+              maxMetrics={maxMetrics}
+              searchA={searchA}
+              searchB={searchB}
+              versusPlayerA={versusPlayerA}
+              versusPlayerB={versusPlayerB}
+              versusError={versusError}
+              versusNotice={versusNotice}
+              isSameVersusPlayer={isSameVersusPlayer}
+              canRunVersus={canRunVersus}
+              versusSwapFxClass={versusSwapFxClass}
+              versusCardAZClass={versusCardAZClass}
+              versusCardBZClass={versusCardBZClass}
+              onSetVersusPlayer={onSetVersusPlayer}
+              onClearVersusPlayer={onClearVersusPlayer}
+              onSetVersusSearchOpen={onSetVersusSearchOpen}
+              onSwapVersusPlayers={onSwapVersusPlayers}
+              onUpdateVersusSearch={onUpdateVersusSearch}
+              onRunVersusCompare={onRunVersusCompare}
+              onResetVersus={onResetVersus}
+              onGoToPlayer={onGoToPlayer}
+              surface={false}
+            />
+          </section>
 
-        <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
-          <VersusMetricPicker
-            maxMetrics={maxMetrics}
-            versusMetricFilter={versusMetricFilter}
-            versusMetricIds={versusMetricIds}
-            versusCatalog={versusCatalog}
-            versusFilteredCatalog={versusFilteredCatalog}
-            versusGroupedMetrics={versusGroupedMetrics}
-            hasNoVersusResults={hasNoVersusResults}
-            hasVersusData={hasVersusData}
-            onVersusMetricFilterChange={onVersusMetricFilterChange}
-            onApplyVersusSelection={onApplyVersusSelection}
-            onToggleVersusMetric={onToggleVersusMetric}
-          />
-
-          <VersusResults
-            versusPlayerA={versusPlayerA}
-            versusPlayerB={versusPlayerB}
-            hasVersusData={hasVersusData}
-            versusLoading={versusLoading}
-            versusMetricIds={versusMetricIds}
-            hasVersusResults={hasVersusResults}
-            versusSummary={versusSummary}
-            hasMissingVersusValues={hasMissingVersusValues}
-            versusRows={versusRows}
-          />
+          <section className="grid gap-4 xl:grid-cols-12">
+            <div className="xl:col-span-5">
+              <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                <h3 className="text-fg text-sm font-semibold">Kategorien</h3>
+                <span className="text-muted text-xs">
+                  Wähle aus, was im Vergleich gezeigt wird.
+                </span>
+              </div>
+              <VersusMetricPicker
+                maxMetrics={maxMetrics}
+                versusMetricFilter={versusMetricFilter}
+                versusMetricIds={versusMetricIds}
+                versusCatalog={versusCatalog}
+                versusFilteredCatalog={versusFilteredCatalog}
+                versusGroupedMetrics={versusGroupedMetrics}
+                hasNoVersusResults={hasNoVersusResults}
+                hasVersusData={hasVersusData}
+                onVersusMetricFilterChange={onVersusMetricFilterChange}
+                onApplyVersusSelection={onApplyVersusSelection}
+                onToggleVersusMetric={onToggleVersusMetric}
+                surface={false}
+              />
+            </div>
+            <div className="xl:col-span-7">
+              <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+                <h3 className="text-fg text-sm font-semibold">Ergebnis</h3>
+                <span className="text-muted text-xs">Zwischenstand und Detailvergleich.</span>
+              </div>
+              <VersusResults
+                versusPlayerA={versusPlayerA}
+                versusPlayerB={versusPlayerB}
+                hasVersusData={hasVersusData}
+                versusLoading={versusLoading}
+                versusMetricIds={versusMetricIds}
+                hasVersusResults={hasVersusResults}
+                versusSummary={versusSummary}
+                hasMissingVersusValues={hasMissingVersusValues}
+                versusRows={versusRows}
+                surface={false}
+              />
+            </div>
+          </section>
         </div>
-      </div>
-    </section>
+      </StatsLayoutMain>
+    </StatsLayoutGrid>
   );
 }

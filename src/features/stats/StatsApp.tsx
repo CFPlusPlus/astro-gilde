@@ -8,7 +8,9 @@ import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
 import { useVersusState } from './hooks/useVersusState';
+import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
+import type { TabKey } from './types-ui';
 import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
 
 export default function StatsApp() {
@@ -75,6 +77,40 @@ export default function StatsApp() {
     },
   });
   const tabsDisabled = Boolean(apiError);
+  const tabMeta = useMemo<
+    Record<
+      TabKey,
+      {
+        title: string;
+        description: string;
+      }
+    >
+  >(
+    () => ({
+      uebersicht: {
+        title: '\u00dcbersicht',
+        description:
+          'Entdecke die wichtigsten Kennzahlen unseres Servers und finde heraus, wie sich die Welt entwickelt.',
+      },
+      king: {
+        title: 'Server-K\u00f6nig',
+        description:
+          'Hier siehst du, wer \u00fcber alle Kategorien hinweg die meisten Punkte gesammelt hat.',
+      },
+      ranglisten: {
+        title: 'Ranglisten',
+        description:
+          'W\u00e4hle eine Kategorie aus und verfolge direkt, welche Spieler in diesem Bereich f\u00fchren.',
+      },
+      versus: {
+        title: 'Versus',
+        description:
+          'Vergleiche zwei Spieler Seite an Seite in den Kategorien, die f\u00fcr dich relevant sind.',
+      },
+    }),
+    [],
+  );
+  const activeTabMeta = tabMeta[activeTab];
   const handleSelectMetric = useCallback(
     (id: string) => {
       if (id === activeMetricId) return;
@@ -140,21 +176,25 @@ export default function StatsApp() {
   ]);
 
   return (
-    <div>
-      <StatsHeader
-        activeTab={activeTab}
-        onTabChange={setTab}
-        tabsDisabled={tabsDisabled}
-        search={mainSearch}
-        onChoosePlayer={goToPlayer}
-        playerCount={playerCount}
-        generatedIso={generatedIso}
-        showPageSize={showPageSize}
-        pageSize={pageSize}
-        onPageSizeChange={setPageSize}
-        apiError={apiError}
-      />
-
+    <StatsLayout
+      topBar={
+        <StatsHeader
+          title={activeTabMeta.title}
+          description={activeTabMeta.description}
+          activeTab={activeTab}
+          onTabChange={setTab}
+          tabsDisabled={tabsDisabled}
+          search={mainSearch}
+          onChoosePlayer={goToPlayer}
+          playerCount={playerCount}
+          generatedIso={generatedIso}
+          showPageSize={showPageSize}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
+          apiError={apiError}
+        />
+      }
+    >
       {activeTab === 'uebersicht' ? (
         <OverviewSection
           showWelcome={showWelcome}
@@ -238,6 +278,6 @@ export default function StatsApp() {
           onGoToPlayer={goToPlayer}
         />
       ) : null}
-    </div>
+    </StatsLayout>
   );
 }

@@ -1,7 +1,6 @@
-import { ArrowLeftRight, Swords, X } from 'lucide-react';
+import { ArrowLeftRight, Info, Swords, X } from 'lucide-react';
 
 import { PlayerAutocomplete } from '../PlayerAutocomplete';
-import { ApiAlert } from '../StatsPrimitives';
 import type { VersusSectionProps } from './types';
 
 type VersusPlayerPickerProps = Pick<
@@ -26,9 +25,11 @@ type VersusPlayerPickerProps = Pick<
   | 'onRunVersusCompare'
   | 'onResetVersus'
   | 'onGoToPlayer'
->;
+> & {
+  surface?: boolean;
+};
 
-type VersusPlayerCardProps = {
+type VersusPlayerRowProps = {
   side: 'A' | 'B';
   search: VersusSectionProps['searchA'];
   player: VersusSectionProps['versusPlayerA'];
@@ -41,7 +42,7 @@ type VersusPlayerCardProps = {
   onGoToPlayer: VersusSectionProps['onGoToPlayer'];
 };
 
-function VersusPlayerCard({
+function VersusPlayerRow({
   side,
   search,
   player,
@@ -52,29 +53,62 @@ function VersusPlayerCard({
   onSetVersusSearchOpen,
   onUpdateVersusSearch,
   onGoToPlayer,
-}: VersusPlayerCardProps) {
+}: VersusPlayerRowProps) {
   return (
     <div
       className={[
-        'bg-surface border-border relative min-w-0 rounded-[var(--radius)] border p-3 shadow-sm backdrop-blur-md transition-[background-color,border-color,box-shadow] duration-300',
+        'border-border/75 bg-surface-solid/35 relative min-w-0 rounded-[var(--radius)] border p-3 transition-colors duration-300 sm:p-4',
         zClass,
         swapFxClass,
       ].join(' ')}
     >
-      <div className="flex items-center justify-between">
-        <p className="text-muted text-xs font-semibold uppercase">Spieler {side}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {player ? (
+            <img
+              src={`https://minotar.net/helm/${encodeURIComponent(player.name)}/32.png`}
+              alt=""
+              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : (
+            <span className="bg-surface-solid/45 text-muted inline-flex h-8 w-8 flex-none items-center justify-center rounded-lg text-xs font-semibold">
+              {side}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="text-muted text-[11px] font-semibold uppercase">Spieler {side}</p>
+            <p className="text-fg truncate text-sm font-semibold">
+              {player ? player.name : 'Nicht ausgew\u00e4hlt'}
+            </p>
+            {player ? <p className="text-muted truncate text-xs">{player.uuid}</p> : null}
+          </div>
+        </div>
+
         {player ? (
-          <button
-            type="button"
-            onClick={() => onClearVersusPlayer(side)}
-            className="text-muted hover:text-fg -m-1 rounded-lg p-1 transition-colors"
-            aria-label={`Spieler ${side} entfernen`}
-          >
-            <X size={14} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onGoToPlayer(player.uuid)}
+              className="mg-btn mg-btn--xs mg-btn--secondary w-fit shrink-0"
+            >
+              Profil
+            </button>
+            <button
+              type="button"
+              onClick={() => onClearVersusPlayer(side)}
+              className="mg-btn mg-btn--xs mg-btn--ghost w-fit shrink-0"
+              aria-label={`Spieler ${side} entfernen`}
+              title={`Spieler ${side} entfernen`}
+            >
+              <X size={14} />
+            </button>
+          </div>
         ) : null}
       </div>
-      <div className="mt-2">
+
+      <div className="mt-3 min-w-0">
         <PlayerAutocomplete
           value={search.value}
           onChange={(next) => onUpdateVersusSearch(side, next)}
@@ -87,32 +121,10 @@ function VersusPlayerCard({
           wrapRef={search.wrapRef}
         />
       </div>
-      {player ? (
-        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 items-center gap-2">
-            <img
-              src={`https://minotar.net/helm/${encodeURIComponent(player.name)}/32.png`}
-              alt=""
-              className="h-8 w-8 flex-none rounded-lg bg-black/20"
-              loading="lazy"
-              decoding="async"
-            />
-            <div className="min-w-0">
-              <p className="text-fg truncate text-sm font-semibold">{player.name}</p>
-              <p className="text-muted truncate text-xs">{player.uuid}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => onGoToPlayer(player.uuid)}
-            className="mg-btn mg-btn--xs mg-btn--surface w-fit shrink-0"
-          >
-            Profil
-          </button>
-        </div>
-      ) : (
-        <p className="text-muted mt-2 text-xs">W&auml;hle einen Spieler aus der Liste.</p>
-      )}
+
+      {!player ? (
+        <p className="text-muted mt-2 text-xs">{'W\u00e4hle einen Spieler aus der Liste.'}</p>
+      ) : null}
     </div>
   );
 }
@@ -138,36 +150,17 @@ export function VersusPlayerPicker({
   onRunVersusCompare,
   onResetVersus,
   onGoToPlayer,
+  surface = true,
 }: VersusPlayerPickerProps) {
   return (
-    <div className="mg-card mg-card--outlined relative z-20 overflow-visible p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="bg-accent/15 text-accent mt-0.5 flex h-9 w-9 items-center justify-center rounded-xl">
-            <Swords size={18} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-fg font-semibold">Spieler-Vergleich</p>
-            <p className="text-muted mt-1 text-sm leading-relaxed">
-              W&auml;hle zwei Spieler und starte den Vergleich. F&uuml;r beste Ergebnisse nutze
-              konkrete Kategorien.
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={onSwapVersusPlayers}
-          disabled={!versusPlayerA && !versusPlayerB}
-          className="mg-btn mg-btn--sm mg-btn--surface"
-        >
-          <ArrowLeftRight size={16} />
-          Tauschen
-        </button>
-      </div>
-
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center">
-        <VersusPlayerCard
+    <div
+      className={[
+        surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0',
+        'relative z-20 overflow-visible',
+      ].join(' ')}
+    >
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-center">
+        <VersusPlayerRow
           side="A"
           search={searchA}
           player={versusPlayerA}
@@ -179,12 +172,12 @@ export function VersusPlayerPicker({
           onUpdateVersusSearch={onUpdateVersusSearch}
           onGoToPlayer={onGoToPlayer}
         />
-
-        <div className="text-muted text-center text-xs font-semibold tracking-wide uppercase">
-          vs
+        <div className="flex items-center justify-center lg:min-h-[220px]">
+          <span className="border-border/80 bg-accent/15 text-fg inline-flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-xs font-semibold tracking-wide">
+            VS
+          </span>
         </div>
-
-        <VersusPlayerCard
+        <VersusPlayerRow
           side="B"
           search={searchB}
           player={versusPlayerB}
@@ -198,7 +191,16 @@ export function VersusPlayerPicker({
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap items-start gap-2 sm:items-center">
+      <div className="mt-3 flex flex-wrap items-start gap-2 sm:items-center">
+        <button
+          type="button"
+          onClick={onSwapVersusPlayers}
+          disabled={!versusPlayerA && !versusPlayerB}
+          className="mg-btn mg-btn--sm mg-btn--secondary"
+        >
+          <ArrowLeftRight size={16} />
+          Tauschen
+        </button>
         <button
           type="button"
           onClick={onRunVersusCompare}
@@ -208,8 +210,12 @@ export function VersusPlayerPicker({
           <Swords size={16} />
           Vergleichen
         </button>
-        <button type="button" onClick={onResetVersus} className="mg-btn mg-btn--sm mg-btn--surface">
-          Zur&uuml;cksetzen
+        <button
+          type="button"
+          onClick={onResetVersus}
+          className="mg-btn mg-btn--sm mg-btn--secondary"
+        >
+          {'Zur\u00fccksetzen'}
         </button>
         <span className="text-muted text-xs sm:ml-auto">
           Maximal {maxMetrics} Kategorien gleichzeitig.
@@ -217,25 +223,35 @@ export function VersusPlayerPicker({
       </div>
 
       {isSameVersusPlayer ? (
-        <div
-          className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-xs"
-          role="status"
-        >
-          <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-          <span className="text-fg/90">Bitte w&auml;hle zwei unterschiedliche Spieler.</span>
+        <div className="mt-3">
+          <div className="mg-notice mt-0 text-xs" data-variant="warning" role="status">
+            <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
+            <span className="text-fg/90">{'Bitte w\u00e4hle zwei unterschiedliche Spieler.'}</span>
+          </div>
         </div>
       ) : null}
 
       {versusNotice ? (
-        <div
-          className="bg-surface border-border text-muted mt-3 rounded-[var(--radius)] border px-4 py-3 text-xs"
-          role="status"
-        >
-          {versusNotice}
+        <div className="mt-3">
+          <div className="mg-notice text-muted mt-0 text-xs" data-variant="neutral" role="status">
+            {versusNotice}
+          </div>
         </div>
       ) : null}
 
-      {versusError ? <ApiAlert message={versusError} /> : null}
+      {versusError ? (
+        <div className="mt-3">
+          <div className="mg-notice mt-0 text-xs" data-variant="warning" role="alert">
+            <span
+              className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
+              aria-hidden="true"
+            >
+              <Info size={14} />
+            </span>
+            <span className="text-fg/90">{versusError}</span>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

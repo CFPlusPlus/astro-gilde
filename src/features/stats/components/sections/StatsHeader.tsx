@@ -20,6 +20,8 @@ type AutocompleteViewModel = {
 };
 
 export function StatsHeader({
+  title,
+  description,
   activeTab,
   onTabChange,
   tabsDisabled,
@@ -32,6 +34,8 @@ export function StatsHeader({
   onPageSizeChange,
   apiError,
 }: {
+  title: string;
+  description: string;
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
   tabsDisabled: boolean;
@@ -45,9 +49,40 @@ export function StatsHeader({
   apiError: string | null;
 }) {
   return (
-    <section className="mg-container pb-8">
-      <div className="mt-2 space-y-4">
-        <StatsNavPills active={activeTab} onChange={onTabChange} disabled={tabsDisabled} />
+    <header className="space-y-6">
+      <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+        <div className="min-w-0">
+          <p className="text-muted text-[11px] font-semibold tracking-[0.18em] uppercase">
+            Statistik-Zentrale
+          </p>
+          <h2 className="text-fg mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+            {title}
+          </h2>
+          <p className="text-muted mt-2 max-w-3xl text-sm leading-relaxed sm:text-base">
+            {description}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
+          <Chip>
+            <span
+              className="bg-accent mr-1.5 inline-block h-2 w-2 rounded-full"
+              aria-hidden="true"
+            />
+            Live
+          </Chip>
+          {generatedIso ? <Chip>Zuletzt aktualisiert: {fmtDateBerlin(generatedIso)}</Chip> : null}
+          {typeof playerCount === 'number' ? <Chip>{fmtNumber(playerCount)} Spieler</Chip> : null}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <StatsNavPills
+          active={activeTab}
+          onChange={onTabChange}
+          disabled={tabsDisabled}
+          surface={false}
+        />
 
         <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
           <PlayerAutocomplete
@@ -63,9 +98,6 @@ export function StatsHeader({
           />
 
           <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">
-            {typeof playerCount === 'number' ? <Chip>{fmtNumber(playerCount)} Spieler</Chip> : null}
-            {generatedIso ? <Chip>Stand: {fmtDateBerlin(generatedIso)}</Chip> : null}
-
             {showPageSize ? (
               <label className="bg-surface border-border text-fg inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium shadow-sm backdrop-blur-md">
                 <span className="text-muted">{'Eintr\u00e4ge'}</span>
@@ -88,6 +120,6 @@ export function StatsHeader({
 
         <ApiAlert message={apiError} />
       </div>
-    </section>
+    </header>
   );
 }

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { searchPlayers } from './api';
+import { rankPlayersForQuery } from './player-search';
 import type { PlayersSearchItem } from './types';
 
 export function usePlayerAutocomplete({
@@ -17,6 +18,7 @@ export function usePlayerAutocomplete({
   const abortRef = useRef<AbortController | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const suppressOpenForQueryRef = useRef<string | null>(null);
+  const knownItemsRef = useRef<Map<string, PlayersSearchItem>>(new Map());
 
   function setValue(next: string) {
     suppressOpenForQueryRef.current = null;
@@ -58,7 +60,13 @@ export function usePlayerAutocomplete({
       try {
         const data = await searchPlayers(q, 6, ac.signal);
         if (typeof data.__generated === 'string') onGeneratedIso?.(data.__generated);
-        const nextItems = Array.isArray(data.items) ? data.items : [];
+        const apiItems = Array.isArray(data.items) ? data.items : [];
+        for (const item of apiItems) {
+          if (!item?.uuid || !item?.name) continue;
+          knownItemsRef.current.set(item.uuid, item);
+        }
+
+        const nextItems = rankPlayersForQuery(q, apiItems, knownItemsRef.current.values(), 6);
         const suppressOpen = suppressOpenForQueryRef.current === q.toLowerCase();
         setItems(nextItems);
         setOpen(!suppressOpen && nextItems.length > 0);

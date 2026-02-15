@@ -55,5 +55,5 @@ export function KpiStrip({
     return <div className="border-border/70 overflow-hidden border-y">{content}</div>;
   }
 
-  return <Card className="mg-card--outlined overflow-hidden">{content}</Card>;
+  return <Card className="overflow-hidden">{content}</Card>;
 }

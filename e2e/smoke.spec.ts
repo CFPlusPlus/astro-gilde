@@ -157,6 +157,10 @@ test('Statistiken laden mit API Mock', async ({ page }) => {
   await expect(page.getByText(/1[.,]234 Spieler/)).toBeVisible();
 
   await page.getByRole('button', { name: 'Ranglisten' }).click();
-  await expect(page.getByRole('heading', { name: 'Ranglisten' })).toBeVisible();
+  await expect(
+    page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByRole('heading', {
+      name: 'Ranglisten',
+    }),
+  ).toBeVisible();
   await expect(page.getByRole('button', { name: /Steve/ })).toBeVisible();
 });

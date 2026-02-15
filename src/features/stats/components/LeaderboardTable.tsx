@@ -4,7 +4,6 @@ import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
-import { Card } from '../../ui/Card';
 import { createTableRowMotion } from '../../ui/tableRowMotion';
 
 export function LeaderboardTable({
@@ -19,6 +18,7 @@ export function LeaderboardTable({
   onPlayerClick,
   onGoPage,
   onLoadMore,
+  surface = true,
 }: {
   metricKey?: string;
   def?: MetricDef;
@@ -31,6 +31,7 @@ export function LeaderboardTable({
   onPlayerClick: (uuid: string) => void;
   onGoPage: (page: number) => void;
   onLoadMore: () => void;
+  surface?: boolean;
 }) {
   const page = state.pages[state.currentPage] || [];
   const isLoading = loadingOverride ?? state.loading;
@@ -45,13 +46,18 @@ export function LeaderboardTable({
   });
 
   return (
-    <Card
-      className="mg-card--outlined relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]"
+    <section
+      className={[
+        'relative min-h-[360px] min-w-0 overflow-hidden [overflow-anchor:none]',
+        surface
+          ? 'mg-surface-2'
+          : 'bg-surface-solid/40 border-border/80 rounded-[var(--radius)] border',
+      ].join(' ')}
       aria-busy={isLoading}
     >
       <div className="max-w-full overflow-x-auto overscroll-x-contain">
         <table className="w-full min-w-[390px] text-sm sm:min-w-[520px]">
-          <thead className="bg-surface-solid/40 text-muted text-xs">
+          <thead className="bg-surface-solid/35 text-muted text-xs">
             <tr>
               <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">Platz</th>
               <th className="px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3">Spielername</th>
@@ -62,7 +68,7 @@ export function LeaderboardTable({
           </thead>
           <tbody
             key={tableMotion.tbodyKey}
-            className="divide-border [&>tr:hover]:bg-surface-solid/40 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
+            className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
           >
             {isInitialLoad
               ? Array.from({ length: initialPlaceholderRows }).map((_, index) => (
@@ -99,7 +105,12 @@ export function LeaderboardTable({
               return (
                 <tr
                   key={`${row.uuid}-${i}`}
-                  className={['group', motionProps.className].filter(Boolean).join(' ')}
+                  className={[
+                    'group hover:bg-surface-solid/35 focus-within:bg-surface-solid/35 transition-colors',
+                    motionProps.className,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   style={motionProps.style}
                 >
                   <td className="whitespace-nowrap">
@@ -145,7 +156,7 @@ export function LeaderboardTable({
 
       {isLoading ? (
         <div className="pointer-events-none absolute top-3 right-3">
-          <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold shadow-sm">
+          <span className="bg-surface-solid/75 text-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm">
             Aktualisiere...
           </span>
         </div>
@@ -153,16 +164,16 @@ export function LeaderboardTable({
 
       {shouldShowCenterLoader ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="bg-surface/90 border-border text-fg inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold shadow-sm backdrop-blur">
+          <span className="bg-surface-solid/90 text-fg inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur">
             <LoaderCircle size={14} className="text-muted animate-spin" />
             {centerLoaderLabel || 'Rangliste wird geladen...'}
           </span>
         </div>
       ) : null}
 
-      <div className="border-border flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
+      <div className="border-border/75 flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
         <Pagination state={state} onGo={onGoPage} onLoadMore={onLoadMore} />
       </div>
-    </Card>
+    </section>
   );
 }

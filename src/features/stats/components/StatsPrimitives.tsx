@@ -3,7 +3,7 @@ import { Info } from 'lucide-react';
 
 /**
  * Kleine UI-Helfer fuer die Statistik-Seite.
- * Hinweis: Wir nutzen bewusst die vorhandenen Tokens/Hilfsklassen (mg-card, bg-surface, border-border, ...).
+ * Hinweis: Wir nutzen bewusst die vorhandenen Surface-Hilfsklassen (mg-surface-2, mg-notice, ...).
  */
 
 export function Chip({ children }: { children: React.ReactNode }) {
@@ -17,10 +17,7 @@ export function Chip({ children }: { children: React.ReactNode }) {
 export function ApiAlert({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div
-      className="bg-accent/10 border-accent/40 mt-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-      role="alert"
-    >
+    <div className="mg-notice" data-variant="warning" role="alert">
       <span
         className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
         aria-hidden="true"
