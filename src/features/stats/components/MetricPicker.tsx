@@ -45,7 +45,7 @@ function MetricPickerImpl({
         </div>
       ) : null}
 
-      <div className="bg-surface-solid/50 mt-3 flex items-center gap-2 rounded-[var(--radius)] px-2.5 py-2">
+      <div className="bg-surface-solid/55 border-border/80 mt-3 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Filter size={16} className="text-muted" />
         <input
           value={filter}
