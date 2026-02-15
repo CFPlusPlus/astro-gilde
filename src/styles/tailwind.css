@@ -343,6 +343,23 @@ html[data-theme='dark'] {
 }
 
 @layer utilities {
+  /* iOS Safari zoomt bei Fokus auf Formularfelder <16px hinein. */
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 48rem) {
+      input[type='text'],
+      input[type='search'],
+      input[type='email'],
+      input[type='url'],
+      input[type='tel'],
+      input[type='password'],
+      input[type='number'],
+      textarea,
+      select {
+        font-size: 16px;
+      }
+    }
+  }
+
   .mg-page-bg {
     position: relative;
     isolation: isolate;
