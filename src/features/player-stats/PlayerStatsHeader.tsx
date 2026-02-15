@@ -54,11 +54,14 @@ export function PlayerStatsHeader({
         <button
           type="button"
           title="UUID kopieren"
-          className="focus-visible:ring-offset-bg bg-surface-solid/45 text-fg hover:bg-surface-solid/65 relative inline-flex h-9 items-center rounded-full px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+          className="focus-visible:ring-offset-bg bg-surface-solid/45 text-fg hover:bg-surface-solid/65 relative inline-flex h-9 max-w-full items-center rounded-full px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={onCopyUuid}
           disabled={!uuidFull}
         >
-          <span className={uuidCopied ? 'text-transparent' : ''}>{uuidFull || 'UUID'}</span>
+          <span className={uuidCopied ? 'text-transparent' : 'inline-flex items-center gap-1.5'}>
+            <span className="text-muted/90 text-[10px] tracking-[0.14em] uppercase">UUID</span>
+            <span className="font-mono text-[11px]">{uuidFull || 'nicht verfuegbar'}</span>
+          </span>
           {uuidCopied ? (
             <span className="pointer-events-none absolute inset-0 inline-flex items-center justify-center px-3">
               Kopiert!

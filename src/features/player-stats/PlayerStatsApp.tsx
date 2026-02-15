@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Clock3, Map as MapIcon, SearchX, Skull, Swords } from 'lucide-react';
+import { Clock3, Info, Map as MapIcon, SearchX, Skull, Swords } from 'lucide-react';
 
 import { nf, nf2 } from './format';
 import { PlayerStatsHeader } from './PlayerStatsHeader';
@@ -21,6 +21,7 @@ export default function PlayerStatsApp() {
     setActiveTab,
     isGerman,
     setIsGerman,
+    uuidParam,
     uuidFull,
     playerName,
     generatedIso,
@@ -45,11 +46,7 @@ export default function PlayerStatsApp() {
   } = usePlayerStatsState();
 
   const [skinOpen, setSkinOpen] = useState(false);
-  const hasUuidInLocation = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    const uuid = new URLSearchParams(window.location.search).get('uuid') || '';
-    return uuid.trim().length > 0;
-  }, []);
+  const hasUuidInLocation = uuidParam.trim().length > 0;
   const isLoading = hasUuidInLocation && !apiError && !stats;
   const hasData = Boolean(stats) && !apiError;
 
@@ -138,21 +135,30 @@ export default function PlayerStatsApp() {
       >
         <StatsLayoutGrid className="[overflow-anchor:none]">
           <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
-            <PlayerStatsToolbar
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              filterRaw={filterRaw}
-              setFilterRaw={setFilterRaw}
-              filterInputRef={filterInputRef}
-              activeResultCount={activeResultCount}
-              activeTabLabel={activeTabLabel}
-              skinHeadUrl={skinHeadUrl}
-              skinHeadFallback={skinHeadFallback}
-              skinFullUrl={skinFullUrl}
-              playerName={playerName}
-              uuidFull={uuidFull}
-              onOpenSkin={() => setSkinOpen(true)}
-            />
+            {hasData ? (
+              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,34rem)] xl:items-start">
+                <KpiStrip items={kpiItems} variant="card" />
+                <PlayerStatsToolbar
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  filterRaw={filterRaw}
+                  setFilterRaw={setFilterRaw}
+                  filterInputRef={filterInputRef}
+                  activeResultCount={activeResultCount}
+                  activeTabLabel={activeTabLabel}
+                />
+              </div>
+            ) : (
+              <PlayerStatsToolbar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                filterRaw={filterRaw}
+                setFilterRaw={setFilterRaw}
+                filterInputRef={filterInputRef}
+                activeResultCount={activeResultCount}
+                activeTabLabel={activeTabLabel}
+              />
+            )}
           </StatsLayoutRail>
 
           <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="p-0 lg:col-span-12">
@@ -187,7 +193,48 @@ export default function PlayerStatsApp() {
 
               {hasData ? (
                 <>
-                  <KpiStrip items={kpiItems} variant="inline" />
+                  <section className="mg-surface-2 p-3 sm:p-4">
+                    <button
+                      type="button"
+                      className="group hover:bg-surface-solid/45 focus-visible:ring-offset-bg flex min-h-[5.75rem] w-full items-center gap-4 rounded-[var(--radius)] p-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                      onClick={() => {
+                        if (!skinFullUrl) return;
+                        setSkinOpen(true);
+                      }}
+                      aria-label="3D Skin-Viewer öffnen"
+                    >
+                      <img
+                        src={skinHeadUrl}
+                        alt={playerName || uuidFull || ''}
+                        className="border-border/70 h-16 w-16 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
+                          const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+
+                          if (
+                            !fallbackAttempted &&
+                            skinHeadFallback &&
+                            img.src !== skinHeadFallback
+                          ) {
+                            img.dataset.fallbackAttempted = '1';
+                            img.src = skinHeadFallback;
+                            return;
+                          }
+
+                          img.onerror = null;
+                        }}
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="text-fg block truncate text-base font-semibold">
+                          {playerName || 'Unbekannter Spieler'}
+                        </span>
+                        <span className="text-muted mt-1 inline-flex items-center gap-2 text-xs">
+                          <Info size={14} className="shrink-0" /> Skin-Viewer öffnen
+                        </span>
+                      </span>
+                    </button>
+                  </section>
 
                   <PlayerStatsTables
                     activeTab={activeTab}
