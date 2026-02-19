@@ -1,5 +1,18 @@
 import { expect, test, type Page } from '@playwright/test';
 
+const hasBrokenQuestionMarkArtifact = (text: string): boolean => {
+  const withoutUrls = text.replace(/https?:\/\/\S+/g, ' ');
+  return /\p{L}\?\p{L}/u.test(withoutUrls);
+};
+
+const expectNoEncodingArtifacts = async (page: Page, path: string): Promise<string> => {
+  await page.goto(path);
+  const text = await page.locator('body').innerText();
+  expect(text).not.toContain('\uFFFD');
+  expect(hasBrokenQuestionMarkArtifact(text)).toBe(false);
+  return text;
+};
+
 const isFocusInsideMobileMenu = async (page: Page): Promise<boolean> => {
   return page.evaluate(() => {
     const panel = document.querySelector<HTMLElement>('[data-nav-panel]');
@@ -82,6 +95,16 @@ test('Startseite laedt und zeigt Hero', async ({ page }) => {
 
   await expect(page).toHaveTitle(/Minecraft Gilde/i);
   await expect(page.getByRole('heading', { level: 1, name: 'Minecraft Gilde' })).toBeVisible();
+});
+
+test('Inhalte haben keine Encoding-Artefakte', async ({ page }) => {
+  const befehleText = await expectNoEncodingArtifacts(page, '/befehle/');
+  expect(befehleText).toContain('Türen');
+
+  const paths = ['/faq/', '/tutorial/', '/regeln/'] as const;
+  for (const path of paths) {
+    await expectNoEncodingArtifacts(page, path);
+  }
 });
 
 test('Navbar Links funktionieren', async ({ page }) => {
