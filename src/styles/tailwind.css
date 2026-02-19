@@ -1296,6 +1296,34 @@ html[data-theme='dark'] {
     color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
   }
 
+  .mg-live-counter[data-live-state='empty'] {
+    color: color-mix(in oklab, var(--fg) 82%, var(--muted) 18%);
+  }
+
+  .mg-live-counter[data-live-state='stale'] {
+    color: color-mix(in oklab, var(--fg) 68%, var(--muted) 32%);
+  }
+
+  .mg-live-note {
+    transition: color 160ms ease;
+  }
+
+  .mg-live-note[data-live-state='error'] {
+    color: color-mix(in oklab, var(--muted) 86%, var(--fg) 14%);
+  }
+
+  .mg-live-note[data-live-state='stale'] {
+    color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
+  }
+
+  [data-live-tile][data-live-state='error'] {
+    border-color: color-mix(in oklab, var(--border) 76%, var(--muted) 24%);
+  }
+
+  [data-live-actions-for] {
+    line-height: 1.2;
+  }
+
   .mg-status-dot {
     box-shadow: 0 0 0 0 color-mix(in oklab, #4ade80 44%, transparent);
     animation: mg-status-pulse 2.8s ease-out infinite;
