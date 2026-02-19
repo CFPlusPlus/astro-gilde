@@ -49,6 +49,7 @@ function resolveLeaderboardErrorKind(error: unknown): LiveDataErrorKind {
   return 'unknown';
 }
 const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
+const SUMMARY_MIN_REVALIDATE_INTERVAL_MS = 15_000;
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
@@ -85,6 +86,9 @@ export function useStatsData({
   const [summaryLastUpdatedAt, setSummaryLastUpdatedAt] = useState<number | null>(null);
   const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
+  const summaryLastUpdatedAtRef = useRef<number | null>(null);
+  const summaryLoadingRef = useRef(false);
+  const summaryVisibilityRevalidateAtRef = useRef(0);
 
   const [king, setKing] = useState<LeaderboardState>(makeEmptyLeaderboardState);
   const [boards, setBoards] = useState<Record<string, LeaderboardState>>({});
@@ -108,6 +112,14 @@ export function useStatsData({
   useEffect(() => {
     pageSizeRef.current = pageSize;
   }, [pageSize]);
+
+  useEffect(() => {
+    summaryLastUpdatedAtRef.current = summaryLastUpdatedAt;
+  }, [summaryLastUpdatedAt]);
+
+  useEffect(() => {
+    summaryLoadingRef.current = summaryLoading;
+  }, [summaryLoading]);
 
   const mainSearch = usePlayerAutocomplete({
     onGeneratedIso: setGeneratedIso,
@@ -326,6 +338,7 @@ export function useStatsData({
           staleAfterMs: thresholds.staleAfterMs,
           maxCacheAgeMs: thresholds.maxCacheAgeMs,
           persist: true,
+          minRevalidateIntervalMs: SUMMARY_MIN_REVALIDATE_INTERVAL_MS,
         },
       );
 
@@ -352,6 +365,31 @@ export function useStatsData({
 
     return () => ac.abort();
   }, [summaryReloadTrigger]);
+
+  useEffect(() => {
+    const staleAfterMs = LIVE_WIDGET_THRESHOLDS['stats-kpi'].staleAfterMs;
+
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState !== 'visible') return;
+      if (summaryLoadingRef.current) return;
+
+      const now = Date.now();
+      if (now - summaryVisibilityRevalidateAtRef.current < SUMMARY_MIN_REVALIDATE_INTERVAL_MS) {
+        return;
+      }
+
+      const lastUpdatedAt = summaryLastUpdatedAtRef.current;
+      if (typeof lastUpdatedAt === 'number' && now - lastUpdatedAt <= staleAfterMs) return;
+
+      summaryVisibilityRevalidateAtRef.current = now;
+      setSummaryReloadTrigger((prev) => prev + 1);
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || metrics) return;

@@ -28,7 +28,7 @@ const LIVE_AUTO_RETRY_BASE_DELAY_MS = 1_000;
 const LIVE_AUTO_RETRY_MAX_ATTEMPTS = 1;
 const LIVE_RATE_LIMIT_FALLBACK_MS = 30_000;
 const LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS = 2_000;
-const LIVE_VISIBILITY_REVALIDATE_MIN_INTERVAL_MS = 30_000;
+const LIVE_MIN_REVALIDATE_INTERVAL_MS = 15_000;
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
@@ -566,6 +566,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         maxCacheAgeMs: thresholds.maxCacheAgeMs,
         cachePrefix: LIVE_CACHE_PREFIX,
         persist: true,
+        minRevalidateIntervalMs: LIVE_MIN_REVALIDATE_INTERVAL_MS,
       });
 
       if (options?.applyInitialState !== false) {
@@ -675,8 +676,25 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   };
 
-  const refreshCounters = (): void => {
+  const shouldRevalidateOnResume = (definition: CounterDefinition): boolean => {
+    const resource = getLiveResource(definition.key, definition.fetcher, {
+      staleAfterMs: definition.thresholds.staleAfterMs,
+      maxCacheAgeMs: definition.thresholds.maxCacheAgeMs,
+      cachePrefix: LIVE_CACHE_PREFIX,
+      persist: true,
+      revalidate: false,
+    });
+
+    return (
+      resource.state.status === 'loading' ||
+      resource.state.status === 'error' ||
+      resource.state.status === 'stale'
+    );
+  };
+
+  const refreshCounters = (options?: { onlyStale?: boolean }): void => {
     counterDefinitions.forEach((definition) => {
+      if (options?.onlyStale && !shouldRevalidateOnResume(definition)) return;
       revalidate(definition.key);
     });
   };
@@ -778,15 +796,9 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }, LIVE_RELATIVE_REFRESH_MS);
   }
 
-  let lastVisibilityRevalidateAt = 0;
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState !== 'visible') return;
-
-    const now = Date.now();
-    if (now - lastVisibilityRevalidateAt < LIVE_VISIBILITY_REVALIDATE_MIN_INTERVAL_MS) return;
-
-    lastVisibilityRevalidateAt = now;
-    refreshCounters();
+    refreshCounters({ onlyStale: true });
   });
 
   runWhenIdleOrInteracted(() => {

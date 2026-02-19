@@ -31,6 +31,32 @@ class MemoryStorage implements Storage {
   }
 }
 
+class VisibilityTestDocument {
+  visibilityState: DocumentVisibilityState;
+  private listeners = new Set<() => void>();
+
+  constructor(initialState: DocumentVisibilityState) {
+    this.visibilityState = initialState;
+  }
+
+  addEventListener(event: string, listener: EventListenerOrEventListenerObject): void {
+    if (event !== 'visibilitychange') return;
+    if (typeof listener !== 'function') return;
+    this.listeners.add(listener as () => void);
+  }
+
+  removeEventListener(event: string, listener: EventListenerOrEventListenerObject): void {
+    if (event !== 'visibilitychange') return;
+    if (typeof listener !== 'function') return;
+    this.listeners.delete(listener as () => void);
+  }
+
+  setVisibilityState(nextState: DocumentVisibilityState): void {
+    this.visibilityState = nextState;
+    [...this.listeners].forEach((listener) => listener());
+  }
+}
+
 const BASE_OPTIONS = {
   staleAfterMs: 1_000,
   maxCacheAgeMs: 10_000,
@@ -259,6 +285,100 @@ describe('live/cache', () => {
 
     expect(fetcher).toHaveBeenCalledTimes(1);
     expect(one).toEqual(two);
+  });
+
+  it('waits for visible tab before revalidating stale data', async () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'test-live:counter',
+      JSON.stringify({
+        status: 'ok',
+        data: '12',
+        updatedAt: 1_000,
+        fetchedAt: 1_000,
+      }),
+    );
+
+    const visibilityDocument = new VisibilityTestDocument('hidden');
+    vi.stubGlobal('document', visibilityDocument as unknown as Document);
+
+    let now = 2_500;
+    const fetcher = vi.fn(
+      async (): Promise<LiveDataState<string>> => ({
+        status: 'ok',
+        data: '13',
+        updatedAt: now,
+        fetchedAt: now,
+      }),
+    );
+
+    const first = getLiveResource('counter', fetcher, {
+      ...BASE_OPTIONS,
+      storage,
+      now: () => now,
+    });
+    const second = getLiveResource('counter', fetcher, {
+      ...BASE_OPTIONS,
+      storage,
+      now: () => now,
+    });
+
+    expect(first.revalidate).toBe(second.revalidate);
+    expect(fetcher).toHaveBeenCalledTimes(0);
+
+    now = 2_700;
+    visibilityDocument.setVisibilityState('visible');
+
+    const [one, two] = await Promise.all([first.revalidate, second.revalidate]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(one).toEqual(two);
+    expect(one).toEqual({
+      status: 'ok',
+      data: '13',
+      updatedAt: 2_700,
+      fetchedAt: 2_700,
+      error: undefined,
+    });
+  });
+
+  it('throttles revalidation by minRevalidateIntervalMs per key', async () => {
+    const storage = new MemoryStorage();
+    let now = 7_000;
+    const fetcher = vi.fn(
+      async (): Promise<LiveDataState<string>> => ({
+        status: 'ok',
+        data: '7',
+        updatedAt: now,
+        fetchedAt: now,
+      }),
+    );
+
+    const first = getLiveResource('shared', fetcher, {
+      ...BASE_OPTIONS,
+      storage,
+      now: () => now,
+      minRevalidateIntervalMs: 10_000,
+    });
+    await first.revalidate;
+    expect(fetcher).toHaveBeenCalledTimes(1);
+
+    now = 8_000;
+    const second = getLiveResource('shared', fetcher, {
+      ...BASE_OPTIONS,
+      storage,
+      now: () => now,
+      minRevalidateIntervalMs: 10_000,
+    });
+    const latest = await second.revalidate;
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(latest).toEqual({
+      status: 'ok',
+      data: '7',
+      updatedAt: 7_000,
+      fetchedAt: 7_000,
+      error: undefined,
+    });
   });
 
   it('reads legacy cache payload format', () => {

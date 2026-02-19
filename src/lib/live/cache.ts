@@ -23,6 +23,8 @@ type LiveResourceCachePayload = {
 
 const memoryCache = new Map<string, LiveResourceCacheEntry<unknown>>();
 const inFlightRequests = new Map<string, Promise<LiveDataState<unknown>>>();
+const pendingVisibilityRequests = new Map<string, Promise<LiveDataState<unknown>>>();
+const lastRevalidateAtByKey = new Map<string, number>();
 
 export type LiveResourceFetcher<T> = () => Promise<LiveDataState<T>>;
 
@@ -34,6 +36,7 @@ export interface GetLiveResourceOptions {
   storage?: Storage | null;
   now?: () => number;
   revalidate?: boolean;
+  minRevalidateIntervalMs?: number;
 }
 
 export interface LiveResourceResult<T> {
@@ -59,6 +62,23 @@ const resolveStorage = (options: GetLiveResourceOptions): Storage | null => {
   } catch {
     return null;
   }
+};
+
+const resolveMinRevalidateIntervalMs = (options: GetLiveResourceOptions): number => {
+  const value = options.minRevalidateIntervalMs;
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return 0;
+  return Math.floor(value);
+};
+
+const isVisibilityApiAvailable = (): boolean =>
+  typeof document !== 'undefined' &&
+  typeof document.addEventListener === 'function' &&
+  typeof document.removeEventListener === 'function' &&
+  typeof document.visibilityState === 'string';
+
+const isDocumentVisible = (): boolean => {
+  if (!isVisibilityApiAvailable()) return true;
+  return document.visibilityState === 'visible';
 };
 
 const toStorageKey = (key: string, options: GetLiveResourceOptions): string => {
@@ -202,6 +222,28 @@ const toStateFromCache = <T>(
   error,
 });
 
+const resolveStateTimestamp = <T>(state: LiveDataState<T>): number | null => {
+  if (typeof state.updatedAt === 'number' && Number.isFinite(state.updatedAt)) {
+    return state.updatedAt;
+  }
+  if (typeof state.fetchedAt === 'number' && Number.isFinite(state.fetchedAt)) {
+    return state.fetchedAt;
+  }
+  return null;
+};
+
+const shouldRevalidate = <T>(state: LiveDataState<T>, options: GetLiveResourceOptions): boolean => {
+  if (state.status === 'loading' || state.status === 'error' || state.status === 'stale') {
+    return true;
+  }
+
+  const timestamp = resolveStateTimestamp(state);
+  if (timestamp == null) return true;
+
+  const ageMs = Math.max(0, resolveNow(options) - timestamp);
+  return ageMs > options.staleAfterMs;
+};
+
 const readInitialState = <T>(
   storageKey: string,
   options: GetLiveResourceOptions,
@@ -241,6 +283,49 @@ const startRevalidation = <T>(
 ): Promise<LiveDataState<T>> => {
   const existing = inFlightRequests.get(storageKey);
   if (existing) return existing as Promise<LiveDataState<T>>;
+
+  const pendingVisibility = pendingVisibilityRequests.get(storageKey);
+  if (pendingVisibility) return pendingVisibility as Promise<LiveDataState<T>>;
+
+  if (!isDocumentVisible()) {
+    const visibilityRequest = new Promise<LiveDataState<T>>((resolve) => {
+      if (!isVisibilityApiAvailable()) {
+        resolve(startRevalidation(storageKey, fetcher, options, storage));
+        return;
+      }
+
+      const onVisibilityChange = (): void => {
+        if (!isDocumentVisible()) return;
+
+        document.removeEventListener('visibilitychange', onVisibilityChange);
+        pendingVisibilityRequests.delete(storageKey);
+
+        const currentState = readInitialState<T>(storageKey, options, storage);
+        if (!shouldRevalidate(currentState, options)) {
+          resolve(currentState);
+          return;
+        }
+
+        resolve(startRevalidation(storageKey, fetcher, options, storage));
+      };
+
+      document.addEventListener('visibilitychange', onVisibilityChange);
+    });
+
+    pendingVisibilityRequests.set(storageKey, visibilityRequest as Promise<LiveDataState<unknown>>);
+    return visibilityRequest;
+  }
+
+  const now = resolveNow(options);
+  const minRevalidateIntervalMs = resolveMinRevalidateIntervalMs(options);
+  if (minRevalidateIntervalMs > 0) {
+    const lastRevalidateAt = lastRevalidateAtByKey.get(storageKey);
+    if (typeof lastRevalidateAt === 'number' && now - lastRevalidateAt < minRevalidateIntervalMs) {
+      return Promise.resolve(readInitialState<T>(storageKey, options, storage));
+    }
+  }
+
+  lastRevalidateAtByKey.set(storageKey, now);
 
   const request: Promise<LiveDataState<T>> = (async (): Promise<LiveDataState<T>> => {
     let nextState: LiveDataState<T>;
@@ -319,4 +404,6 @@ export const getLiveResource = <T>(
 export const resetLiveResourceCache = (): void => {
   memoryCache.clear();
   inFlightRequests.clear();
+  pendingVisibilityRequests.clear();
+  lastRevalidateAtByKey.clear();
 };
