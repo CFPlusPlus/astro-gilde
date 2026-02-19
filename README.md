@@ -198,6 +198,12 @@ Optionaler Debug-Check für fehlende Übersetzungen in `/statistiken/spieler`:
   `/statistiken/spieler?uuid=<UUID>&i18ncheck=1`
 - Die Ausgabe erscheint in der Browser-Konsole unter `Übersetzungsprüfung`.
 
+Optionales Live-Debug-Overlay für Home-Live-Kacheln (`mc-online`, `discord-online`):
+
+- Nur in Dev aktivierbar per URL-Flag: `?debugLive=1` (auch `?debugLive` oder `?debugLive=true`).
+- Zeigt pro Kachel kompakt: `status`, `age`, `source` (`cache|network`), `error.kind`.
+- In Produktion ist das Overlay deaktiviert und wird nicht ins DOM eingefügt.
+
 Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
 
 ### Empfohlener Cape-Endpoint

@@ -27,9 +27,11 @@ const LIVE_AUTO_RETRY_MAX_ATTEMPTS = 1;
 const LIVE_RATE_LIMIT_FALLBACK_MS = 30_000;
 const LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS = 2_000;
 const LIVE_MIN_REVALIDATE_INTERVAL_MS = 15_000;
+const LIVE_DEBUG_QUERY_PARAM = 'debugLive';
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
+type LiveSource = 'cache' | 'network';
 
 interface DiscordWidgetResponse {
   presence_count?: number;
@@ -84,6 +86,15 @@ const toLiveError = (error: FetchJsonError): LiveDataError => ({
 });
 
 export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qsa: Qsa }): void => {
+  const liveDebugEnabled = (() => {
+    if (!import.meta.env.DEV) return false;
+
+    const value = new URLSearchParams(window.location.search).get(LIVE_DEBUG_QUERY_PARAM);
+    if (value == null) return false;
+    if (value === '' || value === '1') return true;
+    return value.toLowerCase() === 'true';
+  })();
+
   const formatInt = (value: unknown): string => {
     const n = Number(value);
     return Number.isFinite(n) ? n.toLocaleString('de-DE') : String(value);
@@ -354,6 +365,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     },
   };
   const liveTileStateByKey = new Map<LiveTileKey, LiveDataState<string>>();
+  const liveTileSourceByKey = new Map<LiveTileKey, LiveSource | null>();
   const liveTileRetryBusyByKey = new Map<LiveTileKey, boolean>();
   const rateLimitUntilByKey = new Map<LiveCounterKey, number>();
   const manualRevalidateUntilByKey = new Map<LiveTileKey, number>();
@@ -393,6 +405,69 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
   const isLiveTileKey = (key: LiveCounterKey): key is LiveTileKey =>
     key === 'mc-online' || key === 'discord-online';
+
+  const formatLiveDebugAge = (state: LiveDataState<string>, now: number): string => {
+    const timestamp = resolveLastUpdatedTimestamp(state);
+    if (timestamp == null) return '-';
+
+    const ageMs = Math.max(0, now - timestamp);
+    const seconds = Math.floor(ageMs / 1_000);
+    if (seconds < 60) return `${seconds}s`;
+
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+
+    const days = Math.floor(hours / 24);
+    return `${days}d`;
+  };
+
+  const setLiveTileDebugState = (
+    key: LiveTileKey,
+    state: LiveDataState<string>,
+    source?: LiveSource | null,
+  ): void => {
+    if (!liveDebugEnabled) return;
+
+    const nextSource = source ?? liveTileSourceByKey.get(key) ?? null;
+    if (typeof source !== 'undefined') {
+      liveTileSourceByKey.set(key, source);
+    }
+
+    const refs = liveTileRefs[key];
+    const now = Date.now();
+    const debugText = [
+      `status:${state.status}`,
+      `age:${formatLiveDebugAge(state, now)}`,
+      `source:${nextSource ?? '-'}`,
+      `error:${state.error?.kind ?? '-'}`,
+    ].join(' | ');
+
+    refs.roots.forEach((root) => {
+      const debugEl = root.querySelector<HTMLElement>(`[data-live-debug="${key}"]`);
+      if (!debugEl) return;
+      debugEl.dataset.liveState = state.status;
+      debugEl.textContent = debugText;
+    });
+  };
+
+  const ensureLiveTileDebugElements = (): void => {
+    if (!liveDebugEnabled) return;
+
+    (['mc-online', 'discord-online'] as const).forEach((key) => {
+      liveTileRefs[key].roots.forEach((root) => {
+        if (root.querySelector(`[data-live-debug="${key}"]`)) return;
+
+        const debugEl = document.createElement('p');
+        debugEl.className = 'mg-live-debug';
+        debugEl.dataset.liveDebug = key;
+        debugEl.setAttribute('aria-hidden', 'true');
+        root.append(debugEl);
+      });
+    });
+  };
 
   const setTargetsState = (targets: HTMLElement[], state: LiveDataStatus, text: string): void => {
     targets.forEach((el) => {
@@ -483,7 +558,11 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }
   };
 
-  const setLiveTileState = (key: LiveTileKey, state: LiveDataState<string>): void => {
+  const setLiveTileState = (
+    key: LiveTileKey,
+    state: LiveDataState<string>,
+    source?: LiveSource | null,
+  ): void => {
     const refs = liveTileRefs[key];
     if (!refs.roots.length && !refs.notes.length && !refs.actions.length) return;
     liveTileStateByKey.set(key, state);
@@ -514,6 +593,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       actions.setAttribute('aria-hidden', showActions ? 'false' : 'true');
     });
 
+    setLiveTileDebugState(key, state, source);
     syncLiveTileRetryState(key);
   };
 
@@ -523,18 +603,19 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     state: LiveDataState<string>;
     format?: (value: string) => string;
     errorValue?: string;
+    debugSource?: LiveSource | null;
   }): void => {
-    const { key, targets, state, format, errorValue = LIVE_ERROR_VALUE } = opts;
+    const { key, targets, state, format, errorValue = LIVE_ERROR_VALUE, debugSource } = opts;
 
     if (state.status === 'loading') {
       setTargetsState(targets, 'loading', LIVE_COPY_DE.loading);
-      if (isLiveTileKey(key)) setLiveTileState(key, state);
+      if (isLiveTileKey(key)) setLiveTileState(key, state, debugSource);
       return;
     }
 
     if (state.status === 'error') {
       setTargetsState(targets, 'error', errorValue);
-      if (isLiveTileKey(key)) setLiveTileState(key, state);
+      if (isLiveTileKey(key)) setLiveTileState(key, state, debugSource);
       return;
     }
 
@@ -542,7 +623,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     const formattedValue = format ? format(resolvedValue) : resolvedValue;
 
     setTargetsState(targets, state.status, formattedValue);
-    if (isLiveTileKey(key)) setLiveTileState(key, state);
+    if (isLiveTileKey(key)) setLiveTileState(key, state, debugSource);
   };
 
   const inFlightKeys = new Set<LiveCounterKey>();
@@ -579,6 +660,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
           state: resource.state,
           format,
           errorValue,
+          debugSource: resource.state.status === 'loading' ? null : 'cache',
         });
       }
 
@@ -592,6 +674,8 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         state: latest,
         format,
         errorValue,
+        debugSource:
+          latest.status === 'stale' && typeof latest.data !== 'undefined' ? 'cache' : 'network',
       });
 
       const retryAttempt = options?.retryAttempt ?? 0;
@@ -635,6 +719,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       state: resource.state,
       format,
       errorValue,
+      debugSource: resource.state.status === 'loading' ? null : 'cache',
     });
   };
 
@@ -670,6 +755,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         },
         format: definition.format,
         errorValue: definition.errorValue,
+        debugSource: 'network',
       });
     }
 
@@ -787,6 +873,9 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   counterDefinitions.forEach((definition) => {
     primeCounter(definition);
   });
+
+  ensureLiveTileDebugElements();
+  refreshLiveTileNotes();
 
   const hasLiveTileTargets = (['mc-online', 'discord-online'] as const).some((key) => {
     const refs = liveTileRefs[key];
