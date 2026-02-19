@@ -4,19 +4,82 @@ import { Clock, Map as MapIcon, Skull, Sparkles, Swords, X } from 'lucide-react'
 import { KPI_FALLBACK_DEFS, KPI_METRICS } from '../../constants';
 import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
+import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 
 export function OverviewSection({
   showWelcome,
   onDismissWelcome,
   totals,
+  summaryLoaded,
+  summaryLoading,
+  summaryError,
+  onRetrySummary,
 }: {
   showWelcome: boolean;
   onDismissWelcome: () => void;
   totals: Record<string, number> | null;
+  summaryLoaded: boolean;
+  summaryLoading: boolean;
+  summaryError: string | null;
+  onRetrySummary: () => void;
 }) {
+  const resolveItemState = useMemo(
+    () =>
+      (
+        value: number | undefined,
+        label: string,
+      ): { state: StatValueState; hint?: string; onRetry?: () => void } => {
+        const hasValue = typeof value === 'number';
+
+        if (summaryLoading && !hasValue && !totals) {
+          return { state: 'loading' };
+        }
+
+        if (summaryError && !hasValue && !totals) {
+          return {
+            state: 'error',
+            hint: 'Die Statistik-API war nicht erreichbar.',
+            onRetry: onRetrySummary,
+          };
+        }
+
+        if (summaryLoading && hasValue) {
+          return {
+            state: 'stale',
+            hint: 'Aktualisierung laeuft. Es wird der letzte Stand angezeigt.',
+          };
+        }
+
+        if (summaryError && hasValue) {
+          return {
+            state: 'stale',
+            hint: 'Aktualisierung fehlgeschlagen. Es wird der letzte Stand angezeigt.',
+          };
+        }
+
+        if (!hasValue) {
+          return {
+            state: summaryLoaded ? 'empty' : 'loading',
+            hint: `${label} wurde vom Server noch nicht geliefert.`,
+          };
+        }
+
+        return { state: 'ready' };
+      },
+    [onRetrySummary, summaryError, summaryLoaded, summaryLoading, totals],
+  );
+
   const overviewItems = useMemo<
-    Array<{ id: string; icon: ReactNode; label: string; value: string }>
+    Array<{
+      id: string;
+      icon: ReactNode;
+      label: string;
+      value?: string;
+      state: StatValueState;
+      hint?: string;
+      onRetry?: () => void;
+    }>
   >(() => {
     const iconById: Record<string, ReactNode> = {
       hours: <Clock size={16} />,
@@ -27,14 +90,16 @@ export function OverviewSection({
     return KPI_METRICS.map((id) => {
       const def = KPI_FALLBACK_DEFS[id];
       const value = totals?.[id];
+      const valueState = resolveItemState(value, def.label);
       return {
         id,
         icon: iconById[id],
         label: def.label,
-        value: typeof value === 'number' ? formatMetricValue(value, def) : '-',
+        value: typeof value === 'number' ? formatMetricValue(value, def) : undefined,
+        ...valueState,
       };
     });
-  }, [totals]);
+  }, [resolveItemState, totals]);
 
   const highlightItem = overviewItems[0];
   const rows = overviewItems.slice(1, 4);
@@ -95,10 +160,15 @@ export function OverviewSection({
               <p className="text-fg mt-2 text-lg font-semibold tracking-tight">
                 {highlightItem.label}
               </p>
-              <p className="text-fg mt-2 text-3xl font-semibold tracking-tight">
-                {highlightItem.value}
-              </p>
-              <p className="text-muted mt-2 text-xs">Serverweiter Gesamtwert.</p>
+              <StatValue
+                state={highlightItem.state}
+                value={highlightItem.value}
+                label={highlightItem.label}
+                hint={highlightItem.hint || 'Serverweiter Gesamtwert.'}
+                onRetry={highlightItem.onRetry}
+                className="mt-2"
+                valueClassName="text-fg text-3xl font-semibold tracking-tight"
+              />
             </section>
           ) : null}
 
@@ -115,9 +185,15 @@ export function OverviewSection({
                     </span>
                     <span className="truncate">{item.label}</span>
                   </span>
-                  <span className="text-fg text-base font-semibold tracking-tight whitespace-nowrap">
-                    {item.value}
-                  </span>
+                  <StatValue
+                    state={item.state}
+                    value={item.value}
+                    label={item.label}
+                    hint={item.hint}
+                    onRetry={item.onRetry}
+                    className="max-w-[58%] text-right"
+                    valueClassName="text-fg text-base font-semibold tracking-tight whitespace-nowrap"
+                  />
                 </li>
               ))}
             </ul>

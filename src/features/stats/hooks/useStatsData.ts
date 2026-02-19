@@ -39,6 +39,10 @@ export function useStatsData({
   const [playerCount, setPlayerCount] = useState<number | null>(null);
   const [metrics, setMetrics] = useState<Record<string, MetricDef> | null>(null);
   const [totals, setTotals] = useState<Record<string, number> | null>(null);
+  const [summaryLoaded, setSummaryLoaded] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const [king, setKing] = useState<LeaderboardState>(makeEmptyLeaderboardState);
@@ -152,6 +156,10 @@ export function useStatsData({
     [mergePlayers, setBoardState],
   );
 
+  const retrySummary = useCallback(() => {
+    setSummaryReloadTrigger((prev) => prev + 1);
+  }, []);
+
   const goToPlayer = useCallback((uuid: string) => {
     window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
   }, []);
@@ -181,6 +189,8 @@ export function useStatsData({
     const ac = new AbortController();
 
     (async () => {
+      setSummaryLoading(true);
+      setSummaryError(null);
       try {
         const data = await getSummary(KPI_METRICS, ac.signal);
         if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
@@ -188,15 +198,23 @@ export function useStatsData({
         if (data.totals && typeof data.totals === 'object') {
           setTotals(data.totals as Record<string, number>);
         }
+        setSummaryError(null);
         setApiError(null);
       } catch (error) {
+        if ((error as Error)?.name === 'AbortError') return;
         console.warn('Summary Fehler', error);
+        setSummaryError(API_ERROR_MESSAGE);
         setApiError(API_ERROR_MESSAGE);
+      } finally {
+        if (!ac.signal.aborted) {
+          setSummaryLoading(false);
+          setSummaryLoaded(true);
+        }
       }
     })();
 
     return () => ac.abort();
-  }, []);
+  }, [summaryReloadTrigger]);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || metrics) return;
@@ -284,6 +302,10 @@ export function useStatsData({
     setGeneratedIso,
     playerCount,
     totals,
+    summaryLoaded,
+    summaryLoading,
+    summaryError,
+    retrySummary,
     apiError,
     setApiError,
     mainSearch,

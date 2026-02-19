@@ -44,6 +44,10 @@ export default function StatsApp() {
     setGeneratedIso,
     playerCount,
     totals,
+    summaryLoaded,
+    summaryLoading,
+    summaryError,
+    retrySummary,
     apiError,
     mainSearch,
     metrics,
@@ -200,6 +204,10 @@ export default function StatsApp() {
           showWelcome={showWelcome}
           onDismissWelcome={dismissWelcome}
           totals={totals}
+          summaryLoaded={summaryLoaded}
+          summaryLoading={summaryLoading}
+          summaryError={summaryError}
+          onRetrySummary={retrySummary}
         />
       ) : null}
 

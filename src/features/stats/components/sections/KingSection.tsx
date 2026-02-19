@@ -4,6 +4,7 @@ import type { LeaderboardState } from '../../types-ui';
 import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
+import { StatValue } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 
 export function KingSection({
@@ -23,11 +24,6 @@ export function KingSection({
 }) {
   const podium = king.pages[0] || [];
   const podiumEntries = podium.slice(0, 3);
-
-  const formatPoints = (value?: number) =>
-    typeof value === 'number'
-      ? formatMetricValue(value, { label: 'Punkte', category: 'King' })
-      : '-';
 
   return (
     <StatsLayoutGrid>
@@ -90,9 +86,18 @@ export function KingSection({
                         />
                         <span className="truncate">{getPlayerName(entry.uuid)}</span>
                       </button>
-                      <span className="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums">
-                        {formatPoints(entry.value)}
-                      </span>
+                      <StatValue
+                        state={typeof entry.value === 'number' ? 'ready' : 'empty'}
+                        value={
+                          typeof entry.value === 'number'
+                            ? formatMetricValue(entry.value, { label: 'Punkte', category: 'King' })
+                            : undefined
+                        }
+                        label="Punkte"
+                        hint="Fuer diesen Platz wurden noch keine Punkte uebermittelt."
+                        className="text-right"
+                        valueClassName="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums"
+                      />
                     </div>
                   ) : (
                     <p className="text-muted mt-2 text-sm">Noch keine Daten verfügbar.</p>
