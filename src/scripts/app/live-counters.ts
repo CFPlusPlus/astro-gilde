@@ -19,7 +19,12 @@ const LIVE_CACHE_PREFIX = 'mg:live-counter:v2:';
 const LIVE_FETCH_TIMEOUT_MS = 6_500;
 const LIVE_IDLE_TIMEOUT_MS = 1_600;
 const LIVE_IDLE_FALLBACK_DELAY_MS = 320;
-const LIVE_RELATIVE_REFRESH_MS = 10_000;
+const LIVE_RELATIVE_REFRESH_MS = 1_000;
+const LIVE_AUTO_RETRY_BASE_DELAY_MS = 1_000;
+const LIVE_AUTO_RETRY_MAX_ATTEMPTS = 1;
+const LIVE_RATE_LIMIT_FALLBACK_MS = 30_000;
+const LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS = 2_000;
+const LIVE_VISIBILITY_REVALIDATE_MIN_INTERVAL_MS = 30_000;
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
@@ -53,6 +58,11 @@ interface CounterDefinition {
   thresholds: LiveDataThresholds;
   format?: (value: string) => string;
   errorValue?: string;
+}
+
+interface CounterRevalidateOptions {
+  applyInitialState?: boolean;
+  retryAttempt?: number;
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -115,21 +125,36 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     return null;
   };
 
-  const formatErrorHint = (error?: LiveDataError): string => {
-    if (
-      error?.kind === 'rate_limit' &&
-      typeof error.retryAfterMs === 'number' &&
-      error.retryAfterMs > 0
-    ) {
-      const seconds = Math.max(1, Math.ceil(error.retryAfterMs / 1_000));
-      return `Zu viele Anfragen · erneut in ${seconds}s`;
+  const toRetryAfterMs = (error?: LiveDataError): number => {
+    if (error?.kind !== 'rate_limit') return 0;
+    if (typeof error.retryAfterMs === 'number' && error.retryAfterMs > 0) {
+      return error.retryAfterMs;
     }
+    return LIVE_RATE_LIMIT_FALLBACK_MS;
+  };
 
-    return LIVE_ERROR_HINT;
+  const formatErrorHint = (
+    state: LiveDataState<string>,
+    tileKey: LiveTileKey | undefined,
+    now: number,
+  ): string => {
+    if (state.error?.kind !== 'rate_limit') return LIVE_ERROR_HINT;
+
+    const remainingFromWindow = tileKey ? getRateLimitRemainingMs(tileKey, now) : 0;
+    const retryAfterMs = toRetryAfterMs(state.error);
+    const resolvedFetchedAt = typeof state.fetchedAt === 'number' ? state.fetchedAt : now;
+    const remainingFromState = Math.max(0, resolvedFetchedAt + retryAfterMs - now);
+    const remainingMs = Math.max(remainingFromWindow, remainingFromState);
+
+    if (remainingMs <= 0) return 'Zu viele Anfragen - bitte spaeter erneut laden';
+
+    const seconds = Math.max(1, Math.ceil(remainingMs / 1_000));
+    return `Zu viele Anfragen - erneut in ${seconds}s`;
   };
 
   const resolveLiveNote = (
     state: LiveDataState<string>,
+    tileKey?: LiveTileKey,
     now = Date.now(),
   ): { text: string; tooltip?: string } => {
     const timestamp = resolveStateTimestamp(state);
@@ -147,7 +172,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
     if (state.status === 'error') {
       return {
-        text: formatErrorHint(state.error),
+        text: formatErrorHint(state, tileKey, now),
       };
     }
 
@@ -356,6 +381,10 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     },
   };
   const liveTileStateByKey = new Map<LiveTileKey, LiveDataState<string>>();
+  const liveTileRetryBusyByKey = new Map<LiveTileKey, boolean>();
+  const rateLimitUntilByKey = new Map<LiveCounterKey, number>();
+  const manualRevalidateUntilByKey = new Map<LiveTileKey, number>();
+  const autoRetryTimerByKey = new Map<LiveCounterKey, number>();
 
   const counterDefinitions: CounterDefinition[] = [
     {
@@ -406,10 +435,41 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   };
 
-  const setLiveTileRetryBusy = (key: LiveTileKey, isBusy: boolean): void => {
+  const getRateLimitRemainingMs = (key: LiveCounterKey, now = Date.now()): number => {
+    const retryUntil = rateLimitUntilByKey.get(key);
+    if (typeof retryUntil !== 'number') return 0;
+
+    const remainingMs = retryUntil - now;
+    if (remainingMs <= 0) {
+      rateLimitUntilByKey.delete(key);
+      return 0;
+    }
+
+    return remainingMs;
+  };
+
+  const getManualRevalidateRemainingMs = (key: LiveTileKey, now = Date.now()): number => {
+    const retryUntil = manualRevalidateUntilByKey.get(key);
+    if (typeof retryUntil !== 'number') return 0;
+
+    const remainingMs = retryUntil - now;
+    if (remainingMs <= 0) {
+      manualRevalidateUntilByKey.delete(key);
+      return 0;
+    }
+
+    return remainingMs;
+  };
+
+  const syncLiveTileRetryState = (key: LiveTileKey, now = Date.now()): void => {
     const refs = liveTileRefs[key];
+    const isBusy = liveTileRetryBusyByKey.get(key) === true;
+    const hasRateLimitCooldown = getRateLimitRemainingMs(key, now) > 0;
+    const hasManualDebounce = getManualRevalidateRemainingMs(key, now) > 0;
+    const isDisabled = isBusy || hasRateLimitCooldown || hasManualDebounce;
+
     refs.retries.forEach((button) => {
-      button.disabled = isBusy;
+      button.disabled = isDisabled;
       if (isBusy) {
         button.setAttribute('aria-busy', 'true');
       } else {
@@ -418,11 +478,43 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   };
 
+  const setLiveTileRetryBusy = (key: LiveTileKey, isBusy: boolean): void => {
+    liveTileRetryBusyByKey.set(key, isBusy);
+    syncLiveTileRetryState(key);
+  };
+
+  const updateRateLimitWindow = (
+    key: LiveCounterKey,
+    state: LiveDataState<string>,
+    now = Date.now(),
+  ): void => {
+    if (state.error?.kind !== 'rate_limit') {
+      rateLimitUntilByKey.delete(key);
+      return;
+    }
+
+    const retryAfterMs = toRetryAfterMs(state.error);
+    if (retryAfterMs <= 0) {
+      rateLimitUntilByKey.delete(key);
+      return;
+    }
+
+    rateLimitUntilByKey.set(key, now + retryAfterMs);
+  };
+
+  const clearAutoRetryTimer = (key: LiveCounterKey): void => {
+    const timer = autoRetryTimerByKey.get(key);
+    if (typeof timer === 'number') {
+      window.clearTimeout(timer);
+      autoRetryTimerByKey.delete(key);
+    }
+  };
+
   const setLiveTileState = (key: LiveTileKey, state: LiveDataState<string>): void => {
     const refs = liveTileRefs[key];
     if (!refs.roots.length && !refs.notes.length && !refs.actions.length) return;
     liveTileStateByKey.set(key, state);
-    const note = resolveLiveNote(state);
+    const note = resolveLiveNote(state, key);
 
     refs.roots.forEach((root) => {
       root.dataset.liveState = state.status;
@@ -446,6 +538,8 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       actions.dataset.visible = showActions ? 'true' : 'false';
       actions.setAttribute('aria-hidden', showActions ? 'false' : 'true');
     });
+
+    syncLiveTileRetryState(key);
   };
 
   const applyCounterState = (opts: {
@@ -480,12 +574,17 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
   const updateCounter = async (
     definition: CounterDefinition,
-    options?: { applyInitialState?: boolean },
+    options?: CounterRevalidateOptions,
   ): Promise<void> => {
     const { key, targets, fetcher, format, errorValue = LIVE_ERROR_VALUE, thresholds } = definition;
     if (!targets.length) return;
     if (inFlightKeys.has(key)) return;
+    if (getRateLimitRemainingMs(key) > 0) {
+      if (isLiveTileKey(key)) syncLiveTileRetryState(key);
+      return;
+    }
 
+    clearAutoRetryTimer(key);
     inFlightKeys.add(key);
     if (isLiveTileKey(key)) setLiveTileRetryBusy(key, true);
 
@@ -509,6 +608,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
       if (!resource.revalidate) return;
       const latest = await resource.revalidate;
+      updateRateLimitWindow(key, latest);
 
       applyCounterState({
         key,
@@ -517,6 +617,24 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         format,
         errorValue,
       });
+
+      const retryAttempt = options?.retryAttempt ?? 0;
+      const isAutoRetryCandidate =
+        latest.error != null &&
+        (latest.error.kind === 'network' || latest.error.kind === 'timeout') &&
+        retryAttempt < LIVE_AUTO_RETRY_MAX_ATTEMPTS;
+
+      if (isAutoRetryCandidate) {
+        const retryDelayMs = LIVE_AUTO_RETRY_BASE_DELAY_MS * 2 ** retryAttempt;
+        const timer = window.setTimeout(() => {
+          autoRetryTimerByKey.delete(key);
+          void updateCounter(definition, {
+            applyInitialState: false,
+            retryAttempt: retryAttempt + 1,
+          });
+        }, retryDelayMs);
+        autoRetryTimerByKey.set(key, timer);
+      }
     } finally {
       inFlightKeys.delete(key);
       if (isLiveTileKey(key)) setLiveTileRetryBusy(key, false);
@@ -544,31 +662,57 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   };
 
-  const refreshCounters = (): void => {
-    void Promise.all(
-      counterDefinitions.map((definition) =>
-        updateCounter(definition, { applyInitialState: false }),
-      ),
-    );
-  };
-
-  (['mc-online', 'discord-online'] as const).forEach((key) => {
+  const revalidate = (key: LiveCounterKey, options?: { force?: boolean }): void => {
     const definition = counterDefinitionsByKey.get(key);
     if (!definition) return;
 
+    if (isLiveTileKey(key) && options?.force) {
+      const now = Date.now();
+      if (getRateLimitRemainingMs(key, now) > 0) {
+        syncLiveTileRetryState(key, now);
+        refreshLiveTileNotes();
+        return;
+      }
+
+      if (getManualRevalidateRemainingMs(key, now) > 0) {
+        syncLiveTileRetryState(key, now);
+        return;
+      }
+
+      manualRevalidateUntilByKey.set(key, now + LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS);
+      syncLiveTileRetryState(key, now);
+      window.setTimeout(() => {
+        syncLiveTileRetryState(key);
+      }, LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS + 40);
+
+      applyCounterState({
+        key,
+        targets: definition.targets,
+        state: {
+          status: 'loading',
+          fetchedAt: now,
+        },
+        format: definition.format,
+        errorValue: definition.errorValue,
+      });
+    }
+
+    void updateCounter(definition, {
+      applyInitialState: false,
+      retryAttempt: 0,
+    });
+  };
+
+  const refreshCounters = (): void => {
+    counterDefinitions.forEach((definition) => {
+      revalidate(definition.key);
+    });
+  };
+
+  (['mc-online', 'discord-online'] as const).forEach((key) => {
     liveTileRefs[key].retries.forEach((button) => {
       button.addEventListener('click', () => {
-        applyCounterState({
-          key,
-          targets: definition.targets,
-          state: {
-            status: 'loading',
-            fetchedAt: Date.now(),
-          },
-          format: definition.format,
-          errorValue: definition.errorValue,
-        });
-        void updateCounter(definition, { applyInitialState: false });
+        revalidate(key, { force: true });
       });
     });
   });
@@ -661,6 +805,17 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       refreshLiveTileNotes();
     }, LIVE_RELATIVE_REFRESH_MS);
   }
+
+  let lastVisibilityRevalidateAt = 0;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+
+    const now = Date.now();
+    if (now - lastVisibilityRevalidateAt < LIVE_VISIBILITY_REVALIDATE_MIN_INTERVAL_MS) return;
+
+    lastVisibilityRevalidateAt = now;
+    refreshCounters();
+  });
 
   runWhenIdleOrInteracted(() => {
     refreshCounters();
