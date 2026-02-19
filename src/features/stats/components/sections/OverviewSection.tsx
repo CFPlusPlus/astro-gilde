@@ -7,6 +7,7 @@ import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/
 import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 import { resolveLiveDataStatus } from '../../../../lib/live/types';
+import { LastUpdated } from '../../../../components/live/LastUpdated';
 
 export function OverviewSection({
   showWelcome,
@@ -15,6 +16,7 @@ export function OverviewSection({
   summaryLoaded,
   summaryLoading,
   summaryError,
+  summaryLastUpdatedAt,
   onRetrySummary,
 }: {
   showWelcome: boolean;
@@ -23,6 +25,7 @@ export function OverviewSection({
   summaryLoaded: boolean;
   summaryLoading: boolean;
   summaryError: string | null;
+  summaryLastUpdatedAt: number | null;
   onRetrySummary: () => void;
 }) {
   const resolveItemState = useMemo(
@@ -160,6 +163,11 @@ export function OverviewSection({
         <SectionTitle
           title="Die Geschichte unserer Welt - in Zahlen"
           subtitle="Von langen Reisen &uuml;ber gef&auml;hrliche N&auml;chte bis zu gro&szlig;en Projekten: Hier siehst du den Puls des Servers."
+        />
+        <LastUpdated
+          updatedAt={summaryLastUpdatedAt}
+          className="text-muted mt-2 text-xs"
+          showWhenMissing
         />
         <div aria-live="polite" className="mt-5 space-y-5">
           {highlightItem ? (

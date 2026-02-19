@@ -10,6 +10,7 @@ import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
 import { getLiveResource } from '../../../lib/live/cache';
 import { LIVE_WIDGET_THRESHOLDS, type LiveDataState } from '../../../lib/live/types';
+import { resolveLastUpdatedTimestamp } from '../../../lib/live/lastUpdated';
 
 const API_ERROR_MESSAGE =
   'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
@@ -45,6 +46,7 @@ export function useStatsData({
   const [summaryLoaded, setSummaryLoaded] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryLastUpdatedAt, setSummaryLastUpdatedAt] = useState<number | null>(null);
   const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
 
@@ -208,6 +210,10 @@ export function useStatsData({
 
       if (state.data) {
         applySummaryPayload(state.data);
+      }
+      const timestamp = resolveLastUpdatedTimestamp(state);
+      if (timestamp != null) {
+        setSummaryLastUpdatedAt(timestamp);
       }
 
       if (state.status === 'loading') {
@@ -392,6 +398,7 @@ export function useStatsData({
     summaryLoaded,
     summaryLoading,
     summaryError,
+    summaryLastUpdatedAt,
     retrySummary,
     apiError,
     setApiError,

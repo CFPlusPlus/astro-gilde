@@ -7,6 +7,54 @@ import { LeaderboardTable } from '../LeaderboardTable';
 import { StatValue } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 
+function toFiniteNumber(value: unknown, depth = 0): number | null {
+  if (depth > 2) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'bigint') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const compact = value.trim().replace(/\s+/g, '');
+    const normalizedThousands = compact.replace(/(\d)\.(?=\d{3}(\D|$))/g, '$1');
+    const normalized = normalizedThousands.replace(',', '.');
+    const parsed = Number(normalized);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const parsed = toFiniteNumber(item, depth + 1);
+      if (parsed !== null) return parsed;
+    }
+    return null;
+  }
+  if (value && typeof value === 'object') {
+    const direct = Number(value);
+    if (Number.isFinite(direct)) return direct;
+
+    const record = value as Record<string, unknown>;
+    const preferredKeys = ['value', 'points', 'score', 'punkte', 'punktzahl', 'raw'];
+    for (const key of preferredKeys) {
+      if (!(key in record)) continue;
+      const parsed = toFiniteNumber(record[key], depth + 1);
+      if (parsed !== null) return parsed;
+    }
+    for (const nested of Object.values(record)) {
+      const parsed = toFiniteNumber(nested, depth + 1);
+      if (parsed !== null) return parsed;
+    }
+  }
+  return null;
+}
+
+function resolveEntryScore(entry: unknown): number | null {
+  if (!entry) return null;
+  if (typeof entry === 'object' && 'value' in entry) {
+    return toFiniteNumber((entry as { value?: unknown }).value ?? entry);
+  }
+  return toFiniteNumber(entry);
+}
+
 export function KingSection({
   king,
   pageSize,
@@ -51,6 +99,8 @@ export function KingSection({
             {Array.from({ length: 3 }, (_, index) => {
               const entry = podiumEntries[index];
               const rank = index + 1;
+              const score = resolveEntryScore(entry);
+              const hasScore = score !== null;
 
               return (
                 <section
@@ -71,7 +121,13 @@ export function KingSection({
                   </div>
 
                   {entry ? (
-                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+                    <div
+                      className={
+                        hasScore
+                          ? 'mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3'
+                          : 'mt-3 space-y-3'
+                      }
+                    >
                       <button
                         type="button"
                         onClick={() => onPlayerClick(entry.uuid)}
@@ -87,15 +143,15 @@ export function KingSection({
                         <span className="truncate">{getPlayerName(entry.uuid)}</span>
                       </button>
                       <StatValue
-                        state={typeof entry.value === 'number' ? 'ok' : 'empty'}
+                        state={hasScore ? 'ok' : 'empty'}
                         value={
-                          typeof entry.value === 'number'
-                            ? formatMetricValue(entry.value, { label: 'Punkte', category: 'King' })
+                          hasScore
+                            ? formatMetricValue(score, { label: 'Punkte', category: 'King' })
                             : undefined
                         }
                         label="Punkte"
-                        hint="Fuer diesen Platz wurden noch keine Punkte uebermittelt."
-                        className="text-right"
+                        hint="Für diesen Platz wurden noch keine Punkte übermittelt."
+                        className={hasScore ? 'text-right' : undefined}
                         valueClassName="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums"
                       />
                     </div>

@@ -8,18 +8,22 @@ import {
 } from '../../lib/live/types';
 import { fetchJson, type FetchJsonError } from '../../lib/live/fetchJson';
 import { getLiveResource } from '../../lib/live/cache';
+import {
+  formatLastUpdatedAbsolute,
+  formatLastUpdatedLabel,
+  resolveLastUpdatedTimestamp,
+} from '../../lib/live/lastUpdated';
 
 const UNKNOWN_FALLBACK = 'unbekannt';
 const LIVE_ERROR_VALUE = 'n/v';
 const LIVE_LOADING_HINT = 'Lade Live-Daten ...';
 const LIVE_ERROR_HINT = 'Live-Status gerade nicht verfügbar';
-const LIVE_UPDATED_PREFIX = 'Zuletzt aktualisiert vor';
 const LIVE_STALE_SUFFIX = 'Anzeige evtl. veraltet';
 const LIVE_CACHE_PREFIX = 'mg:live-counter:v2:';
 const LIVE_FETCH_TIMEOUT_MS = 6_500;
 const LIVE_IDLE_TIMEOUT_MS = 1_600;
 const LIVE_IDLE_FALLBACK_DELAY_MS = 320;
-const LIVE_RELATIVE_REFRESH_MS = 1_000;
+const LIVE_RELATIVE_REFRESH_MS = 30_000;
 const LIVE_AUTO_RETRY_BASE_DELAY_MS = 1_000;
 const LIVE_AUTO_RETRY_MAX_ATTEMPTS = 1;
 const LIVE_RATE_LIMIT_FALLBACK_MS = 30_000;
@@ -94,37 +98,6 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     return Math.floor(n);
   };
 
-  const formatAbsoluteTimestamp = (timestamp: number): string =>
-    new Date(timestamp).toLocaleString('de-DE', {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
-
-  const formatRelativeAge = (timestamp: number, now = Date.now()): string => {
-    const diffMs = Math.max(0, now - timestamp);
-    const diffSeconds = Math.floor(diffMs / 1_000);
-    if (diffSeconds <= 10) return 'wenigen Sekunden';
-    if (diffSeconds < 60) return `${diffSeconds}s`;
-
-    const diffMinutes = Math.floor(diffSeconds / 60);
-    if (diffMinutes === 1) return '1 Min.';
-    if (diffMinutes < 60) return `${diffMinutes} Min.`;
-
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours === 1) return '1 Std.';
-    if (diffHours < 24) return `${diffHours} Std.`;
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays === 1) return '1 Tag';
-    return `${diffDays} Tage`;
-  };
-
-  const resolveStateTimestamp = (state: LiveDataState<string>): number | null => {
-    if (typeof state.updatedAt === 'number') return state.updatedAt;
-    if (typeof state.fetchedAt === 'number' && state.status !== 'loading') return state.fetchedAt;
-    return null;
-  };
-
   const toRetryAfterMs = (error?: LiveDataError): number => {
     if (error?.kind !== 'rate_limit') return 0;
     if (typeof error.retryAfterMs === 'number' && error.retryAfterMs > 0) {
@@ -157,12 +130,9 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     tileKey?: LiveTileKey,
     now = Date.now(),
   ): { text: string; tooltip?: string } => {
-    const timestamp = resolveStateTimestamp(state);
-    const relativeAge = timestamp != null ? formatRelativeAge(timestamp, now) : null;
-    const tooltip =
-      timestamp != null
-        ? `Zuletzt aktualisiert: ${formatAbsoluteTimestamp(timestamp)} Uhr`
-        : undefined;
+    const timestamp = resolveLastUpdatedTimestamp(state);
+    const lastUpdatedLabel = timestamp != null ? formatLastUpdatedLabel(timestamp, now) : null;
+    const tooltip = timestamp != null ? formatLastUpdatedAbsolute(timestamp) : undefined;
 
     if (state.status === 'loading') {
       return {
@@ -177,21 +147,21 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }
 
     if (state.status === 'stale') {
-      if (relativeAge) {
+      if (lastUpdatedLabel) {
         return {
-          text: `${LIVE_UPDATED_PREFIX} ${relativeAge} · ${LIVE_STALE_SUFFIX}`,
+          text: `${lastUpdatedLabel} · ${LIVE_STALE_SUFFIX}`,
           tooltip,
         };
       }
       return {
-        text: `Zuletzt aktualisiert vor kurzem · ${LIVE_STALE_SUFFIX}`,
+        text: `Zuletzt aktualisiert · ${LIVE_STALE_SUFFIX}`,
       };
     }
 
     if (state.status === 'empty') {
-      if (relativeAge) {
+      if (lastUpdatedLabel) {
         return {
-          text: `${LIVE_UPDATED_PREFIX} ${relativeAge} · Gerade niemand online`,
+          text: `${lastUpdatedLabel} · Gerade niemand online`,
           tooltip,
         };
       }
@@ -200,15 +170,15 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       };
     }
 
-    if (relativeAge) {
+    if (lastUpdatedLabel) {
       return {
-        text: `${LIVE_UPDATED_PREFIX} ${relativeAge}`,
+        text: lastUpdatedLabel,
         tooltip,
       };
     }
 
     return {
-      text: 'Zuletzt aktualisiert vor kurzem',
+      text: 'Zuletzt aktualisiert',
     };
   };
 
@@ -524,9 +494,11 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       noteEl.classList.add('mg-live-note', 'mg-live-state-note');
       noteEl.dataset.liveState = state.status;
       noteEl.textContent = note.text;
+      noteEl.setAttribute('aria-label', note.text);
 
       if (note.tooltip) {
         noteEl.title = note.tooltip;
+        noteEl.setAttribute('aria-label', `${note.text}. ${note.tooltip}`);
       } else {
         noteEl.removeAttribute('title');
       }
