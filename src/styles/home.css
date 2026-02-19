@@ -72,11 +72,11 @@
 
 /* Fly-ins (ohne zusaetzliche Bibliotheken) */
 [data-home] [data-reveal='left'] {
-  transform: translate3d(-18px, 0, 0);
+  transform: translate3d(-14px, 0, 0);
 }
 
 [data-home] [data-reveal='right'] {
-  transform: translate3d(18px, 0, 0);
+  transform: translate3d(14px, 0, 0);
 }
 
 [data-home] [data-reveal='down'] {
