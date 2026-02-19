@@ -1308,6 +1308,18 @@ html[data-theme='dark'] {
     transition: color 160ms ease;
   }
 
+  .mg-live-state {
+    display: grid;
+    min-height: 2.9rem;
+    align-content: start;
+    gap: 0.3rem;
+  }
+
+  .mg-live-state-note {
+    min-height: 1rem;
+    line-height: 1.35;
+  }
+
   .mg-live-note[data-live-state='error'] {
     color: color-mix(in oklab, var(--muted) 86%, var(--fg) 14%);
   }
@@ -1320,8 +1332,19 @@ html[data-theme='dark'] {
     border-color: color-mix(in oklab, var(--border) 76%, var(--muted) 24%);
   }
 
-  [data-live-actions-for] {
+  .mg-live-state-actions {
+    min-height: 1rem;
     line-height: 1.2;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+
+  .mg-live-state-actions[data-visible='true'] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .mg-status-dot {

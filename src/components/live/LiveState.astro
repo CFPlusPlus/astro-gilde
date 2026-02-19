@@ -1,0 +1,39 @@
+---
+export type LiveTileKey = 'mc-online' | 'discord-online';
+
+export interface Props {
+  tileKey: LiveTileKey;
+  statusUrl: string;
+  class?: string;
+}
+
+const { tileKey, statusUrl, class: className = '' } = Astro.props as Props;
+---
+
+<div class={`mg-live-state mt-1.5 ${className}`.trim()}>
+  <p class="text-muted mg-live-state-note text-xs" data-live-note-for={tileKey}>
+    Lade Live-Daten ...
+  </p>
+  <div
+    class="mg-live-state-actions flex items-center gap-3 text-xs"
+    data-live-actions-for={tileKey}
+    data-visible="false"
+    aria-hidden="true"
+  >
+    <button
+      type="button"
+      class="mg-link inline-flex cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-medium"
+      data-live-retry={tileKey}
+    >
+      Neu laden
+    </button>
+    <a
+      href={statusUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="mg-link inline-flex items-center text-xs font-medium"
+    >
+      Statusseite
+    </a>
+  </div>
+</div>

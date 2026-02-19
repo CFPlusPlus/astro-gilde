@@ -1,6 +1,7 @@
 ---
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
+import LiveState from '../../live/LiveState.astro';
 import { Map, Users } from '@lucide/astro';
 
 const DYNMAP_URL = minecraftGilde.mapUrl;
@@ -50,26 +51,7 @@ const STATUS_URL = minecraftGilde.statusUrl;
               >
               <span class="text-sm font-semibold tabular-nums" data-mc-online>0</span>
             </div>
-            <p class="text-muted mt-1 text-xs" data-live-note-for="mc-online">
-              Status wird geladen...
-            </p>
-            <div class="mt-1.5 hidden items-center gap-3 text-xs" data-live-actions-for="mc-online">
-              <button
-                type="button"
-                class="mg-link inline-flex cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-medium"
-                data-live-retry="mc-online"
-              >
-                Erneut versuchen
-              </button>
-              <a
-                href={STATUS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mg-link inline-flex items-center text-xs font-medium"
-              >
-                Statusseite
-              </a>
-            </div>
+            <LiveState tileKey="mc-online" statusUrl={STATUS_URL} />
           </div>
           <div
             class="border-border bg-surface/45 rounded-lg border px-3 py-2.5"
@@ -81,29 +63,7 @@ const STATUS_URL = minecraftGilde.statusUrl;
               >
               <span class="text-sm font-semibold tabular-nums" data-discord-online>0</span>
             </div>
-            <p class="text-muted mt-1 text-xs" data-live-note-for="discord-online">
-              Status wird geladen...
-            </p>
-            <div
-              class="mt-1.5 hidden items-center gap-3 text-xs"
-              data-live-actions-for="discord-online"
-            >
-              <button
-                type="button"
-                class="mg-link inline-flex cursor-pointer items-center border-0 bg-transparent p-0 text-xs font-medium"
-                data-live-retry="discord-online"
-              >
-                Erneut versuchen
-              </button>
-              <a
-                href={STATUS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mg-link inline-flex items-center text-xs font-medium"
-              >
-                Statusseite
-              </a>
-            </div>
+            <LiveState tileKey="discord-online" statusUrl={STATUS_URL} />
           </div>
         </div>
       </article>

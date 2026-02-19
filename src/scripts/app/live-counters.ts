@@ -11,11 +11,15 @@ import { getLiveResource } from '../../lib/live/cache';
 
 const UNKNOWN_FALLBACK = 'unbekannt';
 const LIVE_ERROR_VALUE = 'n/v';
-const LIVE_ERROR_HINT = 'Status gerade nicht verfuegbar.';
+const LIVE_LOADING_HINT = 'Lade Live-Daten ...';
+const LIVE_ERROR_HINT = 'Live-Status gerade nicht verfügbar';
+const LIVE_UPDATED_PREFIX = 'Zuletzt aktualisiert vor';
+const LIVE_STALE_SUFFIX = 'Anzeige evtl. veraltet';
 const LIVE_CACHE_PREFIX = 'mg:live-counter:v2:';
 const LIVE_FETCH_TIMEOUT_MS = 6_500;
 const LIVE_IDLE_TIMEOUT_MS = 1_600;
 const LIVE_IDLE_FALLBACK_DELAY_MS = 320;
+const LIVE_RELATIVE_REFRESH_MS = 10_000;
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
@@ -80,38 +84,107 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     return Math.floor(n);
   };
 
-  const formatLastUpdated = (timestamp: number): string => {
-    const time = new Date(timestamp).toLocaleTimeString('de-DE', {
-      hour: '2-digit',
-      minute: '2-digit',
+  const formatAbsoluteTimestamp = (timestamp: number): string =>
+    new Date(timestamp).toLocaleString('de-DE', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
     });
-    return `Zuletzt aktualisiert ${time} Uhr`;
+
+  const formatRelativeAge = (timestamp: number, now = Date.now()): string => {
+    const diffMs = Math.max(0, now - timestamp);
+    const diffSeconds = Math.floor(diffMs / 1_000);
+    if (diffSeconds <= 10) return 'wenigen Sekunden';
+    if (diffSeconds < 60) return `${diffSeconds}s`;
+
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    if (diffMinutes === 1) return '1 Min.';
+    if (diffMinutes < 60) return `${diffMinutes} Min.`;
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours === 1) return '1 Std.';
+    if (diffHours < 24) return `${diffHours} Std.`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return '1 Tag';
+    return `${diffDays} Tage`;
+  };
+
+  const resolveStateTimestamp = (state: LiveDataState<string>): number | null => {
+    if (typeof state.updatedAt === 'number') return state.updatedAt;
+    if (typeof state.fetchedAt === 'number' && state.status !== 'loading') return state.fetchedAt;
+    return null;
   };
 
   const formatErrorHint = (error?: LiveDataError): string => {
-    if (!error) return LIVE_ERROR_HINT;
-
-    if (error.kind === 'timeout') {
-      return 'Statusabfrage hat zu lange gedauert.';
-    }
-
-    if (error.kind === 'rate_limit') {
-      if (typeof error.retryAfterMs === 'number' && error.retryAfterMs > 0) {
-        const seconds = Math.max(1, Math.ceil(error.retryAfterMs / 1_000));
-        return `Zu viele Anfragen. Bitte in etwa ${seconds}s erneut versuchen.`;
-      }
-      return 'Zu viele Anfragen. Bitte spaeter erneut versuchen.';
-    }
-
-    if (error.kind === 'network') {
-      return 'Netzwerkproblem bei der Statusabfrage.';
-    }
-
-    if (error.kind === 'invalid') {
-      return 'Statusdaten waren ungueltig.';
+    if (
+      error?.kind === 'rate_limit' &&
+      typeof error.retryAfterMs === 'number' &&
+      error.retryAfterMs > 0
+    ) {
+      const seconds = Math.max(1, Math.ceil(error.retryAfterMs / 1_000));
+      return `Zu viele Anfragen · erneut in ${seconds}s`;
     }
 
     return LIVE_ERROR_HINT;
+  };
+
+  const resolveLiveNote = (
+    state: LiveDataState<string>,
+    now = Date.now(),
+  ): { text: string; tooltip?: string } => {
+    const timestamp = resolveStateTimestamp(state);
+    const relativeAge = timestamp != null ? formatRelativeAge(timestamp, now) : null;
+    const tooltip =
+      timestamp != null
+        ? `Zuletzt aktualisiert: ${formatAbsoluteTimestamp(timestamp)} Uhr`
+        : undefined;
+
+    if (state.status === 'loading') {
+      return {
+        text: LIVE_LOADING_HINT,
+      };
+    }
+
+    if (state.status === 'error') {
+      return {
+        text: formatErrorHint(state.error),
+      };
+    }
+
+    if (state.status === 'stale') {
+      if (relativeAge) {
+        return {
+          text: `${LIVE_UPDATED_PREFIX} ${relativeAge} · ${LIVE_STALE_SUFFIX}`,
+          tooltip,
+        };
+      }
+      return {
+        text: `Zuletzt aktualisiert vor kurzem · ${LIVE_STALE_SUFFIX}`,
+      };
+    }
+
+    if (state.status === 'empty') {
+      if (relativeAge) {
+        return {
+          text: `${LIVE_UPDATED_PREFIX} ${relativeAge} · Gerade niemand online`,
+          tooltip,
+        };
+      }
+      return {
+        text: 'Gerade niemand online',
+      };
+    }
+
+    if (relativeAge) {
+      return {
+        text: `${LIVE_UPDATED_PREFIX} ${relativeAge}`,
+        tooltip,
+      };
+    }
+
+    return {
+      text: 'Zuletzt aktualisiert vor kurzem',
+    };
   };
 
   const fetchDiscordOnlineUsers = async (): Promise<LiveDataState<string>> => {
@@ -282,6 +355,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
       retries: qsa<HTMLButtonElement>('[data-live-retry="discord-online"]'),
     },
   };
+  const liveTileStateByKey = new Map<LiveTileKey, LiveDataState<string>>();
 
   const counterDefinitions: CounterDefinition[] = [
     {
@@ -347,34 +421,30 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   const setLiveTileState = (key: LiveTileKey, state: LiveDataState<string>): void => {
     const refs = liveTileRefs[key];
     if (!refs.roots.length && !refs.notes.length && !refs.actions.length) return;
-
-    const updatedLabel = state.updatedAt != null ? formatLastUpdated(state.updatedAt) : null;
-    let noteText = 'Status wird geladen...';
-
-    if (state.status === 'ok') {
-      noteText = updatedLabel ?? 'Zuletzt aktualisiert vor kurzem';
-    } else if (state.status === 'empty') {
-      noteText = updatedLabel ? `Gerade niemand online. ${updatedLabel}` : 'Gerade niemand online';
-    } else if (state.status === 'error') {
-      noteText = formatErrorHint(state.error);
-    } else if (state.status === 'stale') {
-      noteText = updatedLabel ? `${updatedLabel} (veraltet)` : 'Status ist veraltet';
-    }
+    liveTileStateByKey.set(key, state);
+    const note = resolveLiveNote(state);
 
     refs.roots.forEach((root) => {
       root.dataset.liveState = state.status;
     });
 
-    refs.notes.forEach((note) => {
-      note.classList.add('mg-live-note');
-      note.dataset.liveState = state.status;
-      note.textContent = noteText;
+    refs.notes.forEach((noteEl) => {
+      noteEl.classList.add('mg-live-note', 'mg-live-state-note');
+      noteEl.dataset.liveState = state.status;
+      noteEl.textContent = note.text;
+
+      if (note.tooltip) {
+        noteEl.title = note.tooltip;
+      } else {
+        noteEl.removeAttribute('title');
+      }
     });
 
     const showActions = state.status === 'error' || state.status === 'stale';
     refs.actions.forEach((actions) => {
       actions.dataset.liveState = state.status;
-      actions.classList.toggle('hidden', !showActions);
+      actions.dataset.visible = showActions ? 'true' : 'false';
+      actions.setAttribute('aria-hidden', showActions ? 'false' : 'true');
     });
   };
 
@@ -388,7 +458,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     const { key, targets, state, format, errorValue = LIVE_ERROR_VALUE } = opts;
 
     if (state.status === 'loading') {
-      setTargetsState(targets, 'loading', 'Laden...');
+      setTargetsState(targets, 'loading', LIVE_LOADING_HINT);
       if (isLiveTileKey(key)) setLiveTileState(key, state);
       return;
     }
@@ -503,6 +573,14 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   });
 
+  const refreshLiveTileNotes = (): void => {
+    (['mc-online', 'discord-online'] as const).forEach((key) => {
+      const state = liveTileStateByKey.get(key);
+      if (!state) return;
+      setLiveTileState(key, state);
+    });
+  };
+
   const runWhenIdleOrInteracted = (cb: () => void): void => {
     const idleApi = window as Window & {
       requestIdleCallback?: (callback: () => void, opts?: { timeout: number }) => number;
@@ -572,6 +650,17 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   counterDefinitions.forEach((definition) => {
     primeCounter(definition);
   });
+
+  const hasLiveTileTargets = (['mc-online', 'discord-online'] as const).some((key) => {
+    const refs = liveTileRefs[key];
+    return refs.roots.length > 0 || refs.notes.length > 0 || refs.actions.length > 0;
+  });
+
+  if (hasLiveTileTargets) {
+    window.setInterval(() => {
+      refreshLiveTileNotes();
+    }, LIVE_RELATIVE_REFRESH_MS);
+  }
 
   runWhenIdleOrInteracted(() => {
     refreshCounters();
