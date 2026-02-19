@@ -287,6 +287,47 @@ describe('live/cache', () => {
     expect(one).toEqual(two);
   });
 
+  it('blocks revalidation while tab is hidden', async () => {
+    const storage = new MemoryStorage();
+    const visibilityDocument = new VisibilityTestDocument('hidden');
+    vi.stubGlobal('document', visibilityDocument as unknown as Document);
+
+    let now = 2_000;
+    const fetcher = vi.fn(
+      async (): Promise<LiveDataState<string>> => ({
+        status: 'ok',
+        data: '13',
+        updatedAt: now,
+        fetchedAt: now,
+      }),
+    );
+
+    const resource = getLiveResource('counter', fetcher, {
+      ...BASE_OPTIONS,
+      storage,
+      now: () => now,
+    });
+
+    expect(resource.state).toEqual({
+      status: 'loading',
+      fetchedAt: 2_000,
+    });
+    expect(fetcher).toHaveBeenCalledTimes(0);
+
+    now = 2_300;
+    visibilityDocument.setVisibilityState('visible');
+
+    const latest = await resource.revalidate;
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(latest).toEqual({
+      status: 'ok',
+      data: '13',
+      updatedAt: 2_300,
+      fetchedAt: 2_300,
+      error: undefined,
+    });
+  });
+
   it('waits for visible tab before revalidating stale data', async () => {
     const storage = new MemoryStorage();
     storage.setItem(
