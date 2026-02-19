@@ -209,3 +209,142 @@ test('Statistiken laden mit API Mock', async ({ page }) => {
   ).toBeVisible();
   await expect(page.getByRole('button', { name: /Steve/ })).toBeVisible();
 });
+
+test('Live-Section wechselt von loading auf ok mit API-Mocks', async ({ page }) => {
+  await page.addInitScript(() => {
+    (
+      window as Window & {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      }
+    ).requestIdleCallback = () => 1;
+  });
+
+  await page.route('**/api/guilds/*/widget.json', async (route) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 120);
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({
+        presence_count: 9,
+      }),
+    });
+  });
+
+  await page.route('**/api/v10/invites/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({
+        approximate_member_count: 1234,
+      }),
+    });
+  });
+
+  await page.route('**/api.mcsrvstat.us/3/*', async (route) => {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 120);
+    });
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({
+        online: true,
+        players: {
+          online: 5,
+          list: [{ name: 'Steve', uuid: '00000000-0000-0000-0000-000000000001' }],
+        },
+      }),
+    });
+  });
+
+  await page.goto('/');
+
+  const liveHeading = page.getByRole('heading', { level: 2, name: 'Live auf dem Server' });
+  await expect(liveHeading).toBeVisible();
+
+  const mcCounter = page.locator('[data-mc-online]').first();
+  const mcTile = page.locator('[data-live-tile="mc-online"]').first();
+
+  await expect(mcCounter).toHaveAttribute('data-live-state', 'loading');
+  await liveHeading.click();
+  await expect(mcTile).toHaveAttribute('data-live-state', 'ok');
+  await expect(mcCounter).toHaveText('5');
+});
+
+test('Neu laden triggert Revalidate und faellt bei Fetch-Fehler auf stale zurueck', async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const now = Date.now();
+    const staleEntry = JSON.stringify({
+      status: 'ok',
+      data: '12',
+      updatedAt: now - 120_000,
+      fetchedAt: now - 120_000,
+    });
+
+    localStorage.setItem('mg:live-counter:v2:discord-online', staleEntry);
+
+    (
+      window as Window & {
+        requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      }
+    ).requestIdleCallback = () => 1;
+  });
+
+  let discordWidgetCalls = 0;
+  await page.route('**/api/guilds/*/widget.json', async (route) => {
+    discordWidgetCalls += 1;
+    await new Promise((resolve) => {
+      setTimeout(resolve, 120);
+    });
+    await route.abort('failed');
+  });
+
+  await page.route('**/api/v10/invites/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({
+        approximate_member_count: 1234,
+      }),
+    });
+  });
+
+  await page.route('**/api.mcsrvstat.us/3/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({
+        online: true,
+        players: {
+          online: 3,
+          list: [],
+        },
+      }),
+    });
+  });
+
+  await page.goto('/');
+
+  const discordTile = page.locator('[data-live-tile="discord-online"]').first();
+  const reloadButton = page.locator('[data-live-retry="discord-online"]').first();
+  const liveNote = page.locator('[data-live-note-for="discord-online"]').first();
+
+  await expect(discordTile).toHaveAttribute('data-live-state', 'stale');
+  await expect(reloadButton).toBeVisible();
+  expect(discordWidgetCalls).toBe(0);
+
+  await reloadButton.evaluate((button) => {
+    (button as HTMLButtonElement).click();
+  });
+
+  await expect(discordTile).toHaveAttribute('data-live-state', 'loading');
+  await expect.poll(() => discordWidgetCalls).toBe(1);
+  await expect(discordTile).toHaveAttribute('data-live-state', 'stale');
+  await expect(liveNote).toContainText('Anzeige evtl. veraltet');
+});
