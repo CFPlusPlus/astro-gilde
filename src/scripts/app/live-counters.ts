@@ -6,6 +6,7 @@ import {
   type LiveDataStatus,
   type LiveDataThresholds,
 } from '../../lib/live/types';
+import { fetchJson, type FetchJsonError } from '../../lib/live/fetchJson';
 
 const UNKNOWN_FALLBACK = 'unbekannt';
 const LIVE_ERROR_VALUE = 'n/v';
@@ -32,11 +33,6 @@ interface MinecraftStatusResponse {
   players?: {
     online?: number;
   };
-}
-
-interface HttpStatusError extends Error {
-  status: number;
-  retryAfterMs?: number;
 }
 
 interface LiveCounterCacheEntry {
@@ -75,73 +71,21 @@ interface CounterDefinition {
   errorValue?: string;
 }
 
-const isHttpStatusError = (error: unknown): error is HttpStatusError => {
-  return error instanceof Error && typeof (error as Partial<HttpStatusError>).status === 'number';
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
 
-const toRetryAfterMs = (headerValue: string | null): number | undefined => {
-  if (!headerValue) return undefined;
+const isDiscordWidgetResponse = (value: unknown): value is DiscordWidgetResponse => isRecord(value);
 
-  const asSeconds = Number(headerValue);
-  if (Number.isFinite(asSeconds) && asSeconds >= 0) {
-    return Math.floor(asSeconds * 1_000);
-  }
+const isDiscordInviteResponse = (value: unknown): value is DiscordInviteResponse => isRecord(value);
 
-  const asDate = Date.parse(headerValue);
-  if (Number.isNaN(asDate)) return undefined;
+const isMinecraftStatusResponse = (value: unknown): value is MinecraftStatusResponse =>
+  isRecord(value);
 
-  return Math.max(0, asDate - Date.now());
-};
-
-const toLiveError = (error: unknown): LiveDataError => {
-  if (error instanceof DOMException && error.name === 'AbortError') {
-    return {
-      kind: 'timeout',
-      message: 'Zeitlimit der Statusabfrage erreicht.',
-    };
-  }
-
-  if (isHttpStatusError(error)) {
-    if (error.status === 429) {
-      return {
-        kind: 'rate_limit',
-        message: 'Zu viele Anfragen an die Datenquelle.',
-        retryAfterMs: error.retryAfterMs,
-      };
-    }
-
-    if (error.status >= 400 && error.status < 500) {
-      return {
-        kind: 'invalid',
-        message: `Ungueltige Antwort (HTTP ${error.status}).`,
-      };
-    }
-
-    return {
-      kind: 'network',
-      message: `Datenquelle nicht erreichbar (HTTP ${error.status}).`,
-    };
-  }
-
-  if (error instanceof Error) {
-    if (/Failed to fetch|NetworkError/i.test(error.message)) {
-      return {
-        kind: 'network',
-        message: 'Netzwerkfehler beim Laden der Live-Daten.',
-      };
-    }
-
-    return {
-      kind: 'unknown',
-      message: error.message,
-    };
-  }
-
-  return {
-    kind: 'unknown',
-    message: 'Unbekannter Fehler beim Laden der Live-Daten.',
-  };
-};
+const toLiveError = (error: FetchJsonError): LiveDataError => ({
+  kind: error.kind,
+  message: error.message,
+  retryAfterMs: error.retryAfterMs,
+});
 
 export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qsa: Qsa }): void => {
   const formatInt = (value: unknown): string => {
@@ -282,167 +226,154 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }
   };
 
-  const fetchJsonWithTimeout = async <T>(url: string): Promise<T> => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), LIVE_FETCH_TIMEOUT_MS);
-
-    try {
-      const response = await fetch(url, {
-        cache: 'no-store',
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const httpError = new Error(`HTTP ${response.status}`) as HttpStatusError;
-        httpError.status = response.status;
-        httpError.retryAfterMs = toRetryAfterMs(response.headers.get('retry-after'));
-        throw httpError;
-      }
-
-      return (await response.json()) as T;
-    } finally {
-      window.clearTimeout(timeoutId);
-    }
-  };
-
   const fetchDiscordOnlineUsers = async (): Promise<LiveDataState<string>> => {
-    const fetchedAt = Date.now();
-
-    try {
-      const guildId = config.discordGuildId;
-      if (!guildId) {
-        return {
-          status: 'error',
-          fetchedAt,
-          error: {
-            kind: 'invalid',
-            message: 'Discord Guild-ID fehlt.',
-          },
-        };
-      }
-
-      const apiWidgetUrl = `https://discord.com/api/guilds/${guildId}/widget.json`;
-      const data = await fetchJsonWithTimeout<DiscordWidgetResponse>(apiWidgetUrl);
-      const count = toCounterNumber(data.presence_count);
-
-      if (count == null) {
-        return {
-          status: 'empty',
-          data: '0',
-          updatedAt: fetchedAt,
-          fetchedAt,
-        };
-      }
-
-      return {
-        status: count > 0 ? 'ok' : 'empty',
-        data: String(count),
-        updatedAt: fetchedAt,
-        fetchedAt,
-      };
-    } catch (error) {
+    const guildId = config.discordGuildId;
+    if (!guildId) {
+      const fetchedAt = Date.now();
       return {
         status: 'error',
         fetchedAt,
-        error: toLiveError(error),
+        error: {
+          kind: 'invalid',
+          message: 'Discord Guild-ID fehlt.',
+        },
       };
     }
-  };
 
-  const fetchDiscordMemberCount = async (): Promise<LiveDataState<string>> => {
-    const fetchedAt = Date.now();
+    const apiWidgetUrl = `https://discord.com/api/guilds/${guildId}/widget.json`;
+    const result = await fetchJson<DiscordWidgetResponse>(apiWidgetUrl, {
+      cache: 'no-store',
+      timeoutMs: LIVE_FETCH_TIMEOUT_MS,
+      requiredKeys: ['presence_count'],
+      validate: isDiscordWidgetResponse,
+    });
 
-    try {
-      const code = config.discordInviteCode;
-      if (!code) {
-        return {
-          status: 'ok',
-          data: UNKNOWN_FALLBACK,
-          updatedAt: fetchedAt,
-          fetchedAt,
-        };
-      }
-
-      const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
-      const data = await fetchJsonWithTimeout<DiscordInviteResponse>(apiUrl);
-      const count = toCounterNumber(data.approximate_member_count);
-
-      if (count == null) {
-        return {
-          status: 'ok',
-          data: UNKNOWN_FALLBACK,
-          updatedAt: fetchedAt,
-          fetchedAt,
-        };
-      }
-
-      return {
-        status: 'ok',
-        data: String(count),
-        updatedAt: fetchedAt,
-        fetchedAt,
-      };
-    } catch (error) {
+    if (!result.ok) {
       return {
         status: 'error',
-        fetchedAt,
-        error: toLiveError(error),
+        fetchedAt: result.fetchedAt,
+        error: toLiveError(result.error),
       };
     }
-  };
 
-  const fetchMinecraftOnlinePlayers = async (): Promise<LiveDataState<string>> => {
-    const fetchedAt = Date.now();
-
-    try {
-      const ip = config.serverIp;
-      if (!ip) {
-        return {
-          status: 'error',
-          fetchedAt,
-          error: {
-            kind: 'invalid',
-            message: 'Server-IP fehlt.',
-          },
-        };
-      }
-
-      const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
-      const data = await fetchJsonWithTimeout<MinecraftStatusResponse>(apiUrl);
-      const count = toCounterNumber(data.players?.online);
-
-      if (count != null) {
-        return {
-          status: count > 0 ? 'ok' : 'empty',
-          data: String(count),
-          updatedAt: fetchedAt,
-          fetchedAt,
-        };
-      }
-
-      if (data.online === false) {
-        return {
-          status: 'empty',
-          data: '0',
-          updatedAt: fetchedAt,
-          fetchedAt,
-        };
-      }
-
+    const count = toCounterNumber(result.data.presence_count);
+    if (count == null) {
       return {
         status: 'empty',
         data: '0',
+        updatedAt: result.fetchedAt,
+        fetchedAt: result.fetchedAt,
+      };
+    }
+
+    return {
+      status: count > 0 ? 'ok' : 'empty',
+      data: String(count),
+      updatedAt: result.fetchedAt,
+      fetchedAt: result.fetchedAt,
+    };
+  };
+
+  const fetchDiscordMemberCount = async (): Promise<LiveDataState<string>> => {
+    const code = config.discordInviteCode;
+    if (!code) {
+      const fetchedAt = Date.now();
+      return {
+        status: 'ok',
+        data: UNKNOWN_FALLBACK,
         updatedAt: fetchedAt,
         fetchedAt,
       };
-    } catch (error) {
-      console.warn('Minecraft Online-Count Fehler:', error);
+    }
+
+    const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
+    const result = await fetchJson<DiscordInviteResponse>(apiUrl, {
+      cache: 'no-store',
+      timeoutMs: LIVE_FETCH_TIMEOUT_MS,
+      validate: isDiscordInviteResponse,
+    });
+
+    if (!result.ok) {
+      return {
+        status: 'error',
+        fetchedAt: result.fetchedAt,
+        error: toLiveError(result.error),
+      };
+    }
+
+    const count = toCounterNumber(result.data.approximate_member_count);
+    if (count == null) {
+      return {
+        status: 'ok',
+        data: UNKNOWN_FALLBACK,
+        updatedAt: result.fetchedAt,
+        fetchedAt: result.fetchedAt,
+      };
+    }
+
+    return {
+      status: 'ok',
+      data: String(count),
+      updatedAt: result.fetchedAt,
+      fetchedAt: result.fetchedAt,
+    };
+  };
+
+  const fetchMinecraftOnlinePlayers = async (): Promise<LiveDataState<string>> => {
+    const ip = config.serverIp;
+    if (!ip) {
+      const fetchedAt = Date.now();
       return {
         status: 'error',
         fetchedAt,
-        error: toLiveError(error),
+        error: {
+          kind: 'invalid',
+          message: 'Server-IP fehlt.',
+        },
       };
     }
+
+    const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
+    const result = await fetchJson<MinecraftStatusResponse>(apiUrl, {
+      cache: 'no-store',
+      timeoutMs: LIVE_FETCH_TIMEOUT_MS,
+      requiredKeys: ['online'],
+      validate: isMinecraftStatusResponse,
+    });
+
+    if (!result.ok) {
+      return {
+        status: 'error',
+        fetchedAt: result.fetchedAt,
+        error: toLiveError(result.error),
+      };
+    }
+
+    const count = toCounterNumber(result.data.players?.online);
+    if (count != null) {
+      return {
+        status: count > 0 ? 'ok' : 'empty',
+        data: String(count),
+        updatedAt: result.fetchedAt,
+        fetchedAt: result.fetchedAt,
+      };
+    }
+
+    if (result.data.online === false) {
+      return {
+        status: 'empty',
+        data: '0',
+        updatedAt: result.fetchedAt,
+        fetchedAt: result.fetchedAt,
+      };
+    }
+
+    return {
+      status: 'empty',
+      data: '0',
+      updatedAt: result.fetchedAt,
+      fetchedAt: result.fetchedAt,
+    };
   };
 
   const discordTargets = qsa<HTMLElement>('[data-discord-online]');
