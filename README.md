@@ -176,6 +176,8 @@ npm run dev
 
 ### API-Hinweis (Statistiken)
 
+Mini-Doku zur Live-Daten-Architektur: `docs/live-data.md`
+
 Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 
 - `/api/summary?metrics=...` (KPI-Übersicht)
