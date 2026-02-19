@@ -27,7 +27,11 @@ export const initJoinModal = ({
 
   const copyIp = async (opts?: { silentSuccess?: boolean }): Promise<boolean> => {
     const { silentSuccess = false } = opts ?? {};
-    const ip = config.serverIp || 'minecraft-gilde.de';
+    const ip = config.serverIp;
+    if (!ip) {
+      showToast('Server-IP nicht verfuegbar.', 'error');
+      return false;
+    }
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(ip);

@@ -213,7 +213,8 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
   const fetchMinecraftOnlinePlayers = async (): Promise<LiveCounterFetchValue | null> => {
     try {
-      const ip = config.serverIp || 'minecraft-gilde.de';
+      const ip = config.serverIp;
+      if (!ip) return null;
       const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
       const data = await fetchJsonWithTimeout<MinecraftStatusResponse>(apiUrl);
       const count = toCounterNumber(data.players?.online);

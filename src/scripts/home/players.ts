@@ -103,7 +103,7 @@ function renderPlayers(data: ServerStatus): void {
 }
 
 export function initHomePlayers(): () => void {
-  const config = readBrowserAppConfig({ serverIp: 'minecraft-gilde.de' });
+  const config = readBrowserAppConfig({});
   let destroyed = false;
   let isFetchInFlight = false;
   let pollTimer: number | null = null;
@@ -116,7 +116,12 @@ export function initHomePlayers(): () => void {
     if (destroyed) return;
 
     isFetchInFlight = true;
-    const ip = config.serverIp || 'minecraft-gilde.de';
+    const ip = config.serverIp;
+    if (!ip) {
+      setMountMessage(mount, 'Server-IP aktuell nicht verfuegbar.');
+      isFetchInFlight = false;
+      return;
+    }
     const controller = new AbortController();
     fetchController = controller;
     const timeoutId = window.setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
