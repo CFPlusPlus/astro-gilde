@@ -1,6 +1,7 @@
 import React from 'react';
+import type { LiveDataStatus } from '../../../lib/live/types';
 
-export type StatValueState = 'ready' | 'loading' | 'empty' | 'error' | 'stale';
+export type StatValueState = LiveDataStatus;
 
 export function StatValue({
   state,

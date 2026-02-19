@@ -6,6 +6,7 @@ import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
+import { resolveLiveDataStatus } from '../../../../lib/live/types';
 
 export function OverviewSection({
   showWelcome,
@@ -31,41 +32,53 @@ export function OverviewSection({
         label: string,
       ): { state: StatValueState; hint?: string; onRetry?: () => void } => {
         const hasValue = typeof value === 'number';
+        const state = resolveLiveDataStatus({
+          loading: summaryLoading,
+          loaded: summaryLoaded,
+          hasData: hasValue,
+          hasSnapshot: Boolean(totals),
+          error: summaryError
+            ? {
+                kind: 'unknown',
+                message: summaryError,
+              }
+            : null,
+        });
 
-        if (summaryLoading && !hasValue && !totals) {
-          return { state: 'loading' };
+        if (state === 'loading') {
+          return { state };
         }
 
-        if (summaryError && !hasValue && !totals) {
+        if (state === 'error') {
           return {
-            state: 'error',
+            state,
             hint: 'Die Statistik-API war nicht erreichbar.',
             onRetry: onRetrySummary,
           };
         }
 
-        if (summaryLoading && hasValue) {
+        if (state === 'stale' && summaryLoading) {
           return {
-            state: 'stale',
+            state,
             hint: 'Aktualisierung laeuft. Es wird der letzte Stand angezeigt.',
           };
         }
 
-        if (summaryError && hasValue) {
+        if (state === 'stale' && summaryError) {
           return {
-            state: 'stale',
+            state,
             hint: 'Aktualisierung fehlgeschlagen. Es wird der letzte Stand angezeigt.',
           };
         }
 
-        if (!hasValue) {
+        if (state === 'empty') {
           return {
-            state: summaryLoaded ? 'empty' : 'loading',
+            state,
             hint: `${label} wurde vom Server noch nicht geliefert.`,
           };
         }
 
-        return { state: 'ready' };
+        return { state: 'ok' };
       },
     [onRetrySummary, summaryError, summaryLoaded, summaryLoading, totals],
   );

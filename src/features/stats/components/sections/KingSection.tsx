@@ -87,7 +87,7 @@ export function KingSection({
                         <span className="truncate">{getPlayerName(entry.uuid)}</span>
                       </button>
                       <StatValue
-                        state={typeof entry.value === 'number' ? 'ready' : 'empty'}
+                        state={typeof entry.value === 'number' ? 'ok' : 'empty'}
                         value={
                           typeof entry.value === 'number'
                             ? formatMetricValue(entry.value, { label: 'Punkte', category: 'King' })

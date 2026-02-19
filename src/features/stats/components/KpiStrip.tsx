@@ -48,7 +48,7 @@ export function KpiStrip({
               <p className="text-muted text-xs font-semibold">{it.label}</p>
             </div>
             <StatValue
-              state={it.state || 'ready'}
+              state={it.state || 'ok'}
               value={it.value}
               label={it.label}
               hint={it.hint}

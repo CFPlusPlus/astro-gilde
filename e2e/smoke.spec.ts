@@ -117,7 +117,9 @@ test('Startseite zeigt bei 3 Schritten keine doppelte Nummerierung', async ({ pa
   await expect(listItems).toHaveCount(3);
 
   const customStepNumbers = await listItems.evaluateAll((items) =>
-    items.map((item) => item.querySelector<HTMLElement>(':scope > div > div')?.innerText.trim() ?? ''),
+    items.map(
+      (item) => item.querySelector<HTMLElement>(':scope > div > div')?.innerText.trim() ?? '',
+    ),
   );
   expect(customStepNumbers).toEqual(['1', '2', '3']);
 
