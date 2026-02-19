@@ -107,6 +107,26 @@ test('Inhalte haben keine Encoding-Artefakte', async ({ page }) => {
   }
 });
 
+test('Startseite zeigt bei 3 Schritten keine doppelte Nummerierung', async ({ page }) => {
+  await page.goto('/');
+
+  const section = page.locator('#start');
+  await expect(section.getByRole('heading', { level: 2, name: /3 Schritten/i })).toBeVisible();
+
+  const listItems = section.locator('ol > li');
+  await expect(listItems).toHaveCount(3);
+
+  const customStepNumbers = await listItems.evaluateAll((items) =>
+    items.map((item) => item.querySelector<HTMLElement>(':scope > div > div')?.innerText.trim() ?? ''),
+  );
+  expect(customStepNumbers).toEqual(['1', '2', '3']);
+
+  const markerStyles = await listItems.evaluateAll((items) =>
+    items.map((item) => window.getComputedStyle(item).listStyleType),
+  );
+  expect(markerStyles).toEqual(['none', 'none', 'none']);
+});
+
 test('Navbar Links funktionieren', async ({ page }) => {
   const nav = page.getByRole('navigation', { name: 'Hauptnavigation' });
 
