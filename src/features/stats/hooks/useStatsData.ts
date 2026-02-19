@@ -15,11 +15,10 @@ import {
   type LiveDataState,
 } from '../../../lib/live/types';
 import { resolveLastUpdatedTimestamp } from '../../../lib/live/lastUpdated';
+import { LIVE_COPY_DE, getLiveMessage } from '../../../lib/live/copy.de';
 
-const API_ERROR_MESSAGE =
-  'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
-const API_RATE_LIMIT_MESSAGE =
-  'Zu viele Anfragen an die Statistik-API. Bitte versuche es spaeter erneut.';
+const API_ERROR_MESSAGE = LIVE_COPY_DE.error_generic;
+const API_RATE_LIMIT_MESSAGE = LIVE_COPY_DE.rate_limit;
 const RATE_LIMIT_FALLBACK_MS = 60_000;
 
 function resolveHttpStatus(error: unknown): number | null {
@@ -198,7 +197,7 @@ export function useStatsData({
   const apiErrorMessage = useMemo(() => {
     if (!apiError) return null;
     if (apiErrorKind === 'rate_limit' && rateLimitRetryInSeconds > 0) {
-      return `${apiError} Erneut in ${rateLimitRetryInSeconds}s.`;
+      return `${apiError} ${LIVE_COPY_DE.retry_in(rateLimitRetryInSeconds)}`;
     }
     return apiError;
   }, [apiError, apiErrorKind, rateLimitRetryInSeconds]);
@@ -298,7 +297,10 @@ export function useStatsData({
         if (liveErrorKind === 'rate_limit') {
           registerRateLimit(resolveRetryAfterMs(error));
         } else {
-          setApiErrorWithKind(API_ERROR_MESSAGE, liveErrorKind);
+          setApiErrorWithKind(
+            getLiveMessage({ status: 'error', errorKind: liveErrorKind }) ?? API_ERROR_MESSAGE,
+            liveErrorKind,
+          );
         }
         setBoardState(stateKey, (state) => ({
           ...state,
@@ -386,7 +388,9 @@ export function useStatsData({
 
       if (state.status === 'error' || state.status === 'stale') {
         const errorKind = state.error?.kind === 'rate_limit' ? 'rate_limit' : 'unknown';
-        const message = errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE;
+        const message =
+          getLiveMessage({ status: 'error', errorKind }) ??
+          (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE);
         setSummaryError(message);
         setApiErrorWithKind(message, errorKind);
         return;
@@ -432,7 +436,9 @@ export function useStatsData({
               fetchedAt: Date.now(),
               error: {
                 kind: errorKind,
-                message: errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE,
+                message:
+                  getLiveMessage({ status: 'error', errorKind }) ??
+                  (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
                 retryAfterMs: retryAfterMs ?? undefined,
               },
             };
@@ -520,7 +526,11 @@ export function useStatsData({
         setApiErrorWithKind(null, null);
       } catch (error) {
         console.warn('Metrics Fehler', error);
-        setApiErrorWithKind(API_ERROR_MESSAGE, resolveLeaderboardErrorKind(error));
+        const errorKind = resolveLeaderboardErrorKind(error);
+        setApiErrorWithKind(
+          getLiveMessage({ status: 'error', errorKind }) ?? API_ERROR_MESSAGE,
+          errorKind,
+        );
       }
     })();
 

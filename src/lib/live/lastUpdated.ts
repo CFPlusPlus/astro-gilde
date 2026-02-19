@@ -1,3 +1,5 @@
+import { LIVE_COPY_DE } from './copy.de';
+
 export interface LastUpdatedSource {
   updatedAt?: number | null;
   fetchedAt?: number | null;
@@ -23,21 +25,21 @@ export const resolveLastUpdatedTimestamp = (source: LastUpdatedSource): number |
 
 export const formatLastUpdatedRelative = (timestamp: number, now = Date.now()): string => {
   const diffMs = Math.max(0, now - timestamp);
-  if (diffMs < 60_000) return 'gerade eben';
+  if (diffMs < 60_000) return LIVE_COPY_DE.last_updated_just_now;
 
   const diffMinutes = Math.floor(diffMs / 60_000);
-  if (diffMinutes < 60) return `vor ${diffMinutes} Min`;
+  if (diffMinutes < 60) return LIVE_COPY_DE.last_updated_minutes(diffMinutes);
 
   const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) return `vor ${diffHours} Std`;
+  if (diffHours < 24) return LIVE_COPY_DE.last_updated_hours(diffHours);
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'vor 1 Tag';
-  return `vor ${diffDays} Tagen`;
+  if (diffDays === 1) return LIVE_COPY_DE.last_updated_day_one;
+  return LIVE_COPY_DE.last_updated_days(diffDays);
 };
 
 export const formatLastUpdatedAbsolute = (timestamp: number): string =>
   ABSOLUTE_DATE_FORMATTER.format(new Date(timestamp));
 
 export const formatLastUpdatedLabel = (timestamp: number, now = Date.now()): string =>
-  `Zuletzt aktualisiert ${formatLastUpdatedRelative(timestamp, now)}`;
+  LIVE_COPY_DE.last_updated_with_relative(formatLastUpdatedRelative(timestamp, now));

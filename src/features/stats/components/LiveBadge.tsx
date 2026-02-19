@@ -1,17 +1,18 @@
 import { Clock3 } from 'lucide-react';
+import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
 export type LiveBadgeVariant = 'stale' | 'rate_limit' | 'error';
 
 const LABEL_BY_VARIANT: Record<LiveBadgeVariant, string> = {
-  stale: 'veraltet',
-  rate_limit: 'zu viele anfragen',
-  error: 'nicht verfuegbar',
+  stale: LIVE_COPY_DE.stale_badge,
+  rate_limit: LIVE_COPY_DE.rate_limit_badge,
+  error: LIVE_COPY_DE.error_badge,
 };
 
 const A11Y_TEXT_BY_VARIANT: Record<LiveBadgeVariant, string> = {
-  stale: 'Status: veraltet. Es wird der letzte erfolgreiche Stand angezeigt.',
-  rate_limit: 'Status: zu viele Anfragen. Bitte spaeter erneut versuchen.',
-  error: 'Status: nicht verfuegbar. Daten konnten nicht geladen werden.',
+  stale: LIVE_COPY_DE.stale_status_a11y,
+  rate_limit: LIVE_COPY_DE.rate_limit_status_a11y,
+  error: LIVE_COPY_DE.error_status_a11y,
 };
 
 const TONE_BY_VARIANT: Record<LiveBadgeVariant, string> = {

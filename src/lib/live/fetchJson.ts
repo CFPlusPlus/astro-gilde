@@ -1,3 +1,5 @@
+import { LIVE_COPY_DE } from './copy.de';
+
 export type FetchJsonErrorKind = 'timeout' | 'network' | 'invalid' | 'rate_limit';
 
 export interface FetchJsonError {
@@ -57,7 +59,7 @@ const toRetryAfterMs = (headerValue: string | null): number | undefined => {
 
 const toNetworkMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.trim().length > 0) return error.message;
-  return 'Netzwerkfehler beim Laden der Live-Daten.';
+  return LIVE_COPY_DE.error_network;
 };
 
 export const fetchJson = async <T>(
@@ -115,7 +117,7 @@ export const fetchJson = async <T>(
           fetchedAt,
           error: {
             kind: 'rate_limit',
-            message: 'Zu viele Anfragen an die Datenquelle.',
+            message: LIVE_COPY_DE.rate_limit,
             status: response.status,
             retryAfterMs: toRetryAfterMs(response.headers.get('retry-after')),
           },
@@ -141,7 +143,7 @@ export const fetchJson = async <T>(
         fetchedAt,
         error: {
           kind: 'network',
-          message: `Datenquelle nicht erreichbar (HTTP ${response.status}).`,
+          message: `${LIVE_COPY_DE.error_network} (HTTP ${response.status}).`,
           status: response.status,
         },
       };
@@ -211,7 +213,7 @@ export const fetchJson = async <T>(
         fetchedAt,
         error: {
           kind: 'timeout',
-          message: 'Zeitlimit der Statusabfrage erreicht.',
+          message: LIVE_COPY_DE.error_timeout,
         },
       };
     }

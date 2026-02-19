@@ -5,6 +5,7 @@ import {
   formatLastUpdatedLabel,
   resolveLastUpdatedTimestamp,
 } from '../../lib/live/lastUpdated';
+import { LIVE_COPY_DE } from '../../lib/live/copy.de';
 
 const DEFAULT_REFRESH_MS = 30_000;
 
@@ -12,7 +13,7 @@ export function LastUpdated({
   updatedAt,
   fetchedAt,
   className = 'text-muted text-xs',
-  fallbackText = 'Zuletzt aktualisiert',
+  fallbackText = LIVE_COPY_DE.last_updated_missing,
   refreshMs = DEFAULT_REFRESH_MS,
   showWhenMissing = true,
 }: {

@@ -7,6 +7,7 @@ import { LeaderboardTable } from '../LeaderboardTable';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
 import { StatValue } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 
 function toFiniteNumber(value: unknown, depth = 0): number | null {
   if (depth > 2) return null;
@@ -253,7 +254,7 @@ export function KingSection({
                       />
                     </div>
                   ) : (
-                    <p className="text-muted mt-2 text-sm">Noch keine Daten verfügbar.</p>
+                    <p className="text-muted mt-2 text-sm">{LIVE_COPY_DE.empty_card_title}.</p>
                   )}
                 </section>
               );

@@ -1,5 +1,6 @@
 import React from 'react';
 import type { LiveDataStatus } from '../../../lib/live/types';
+import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
 export type StatValueState = LiveDataStatus;
 
@@ -11,7 +12,7 @@ export function StatValue({
   onRetry,
   retryDisabled = false,
   retryDisabledHint,
-  retryLabel = 'Neu laden',
+  retryLabel = LIVE_COPY_DE.retry_action,
   className,
   valueClassName,
 }: {
@@ -43,7 +44,7 @@ export function StatValue({
     return (
       <div className={className}>
         <p className="text-fg text-lg leading-tight font-semibold">
-          Daten konnten nicht geladen werden
+          {LIVE_COPY_DE.error_card_title}
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {onRetry ? (
@@ -66,10 +67,10 @@ export function StatValue({
   if (state === 'empty') {
     return (
       <div className={className}>
-        <p className="text-fg text-lg leading-tight font-semibold">Noch keine Daten verfuegbar</p>
-        <p className="text-muted mt-1 text-xs">
-          {hint || 'Diese Kennzahl wurde bisher nicht vom Server geliefert.'}
+        <p className="text-fg text-lg leading-tight font-semibold">
+          {LIVE_COPY_DE.empty_card_title}
         </p>
+        <p className="text-muted mt-1 text-xs">{hint || LIVE_COPY_DE.empty_metric_hint}</p>
       </div>
     );
   }
@@ -80,12 +81,10 @@ export function StatValue({
         <div className="flex flex-wrap items-center gap-2">
           <span className={resolvedValueClassName}>{value}</span>
           <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase">
-            veraltet
+            {LIVE_COPY_DE.stale_badge}
           </span>
         </div>
-        <p className="text-muted mt-1 text-xs">
-          {hint || `${label} zeigt den letzten erfolgreich geladenen Stand.`}
-        </p>
+        <p className="text-muted mt-1 text-xs">{hint || LIVE_COPY_DE.stale_metric_hint(label)}</p>
       </div>
     );
   }

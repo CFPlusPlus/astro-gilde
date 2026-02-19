@@ -8,6 +8,7 @@ import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 import { resolveLiveDataStatus } from '../../../../lib/live/types';
 import { LastUpdated } from '../../../../components/live/LastUpdated';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 
 export function OverviewSection({
   showWelcome,
@@ -34,7 +35,7 @@ export function OverviewSection({
 }) {
   const retryWaitText =
     summaryRetryDisabled && summaryRetryInSeconds > 0
-      ? `Bitte warten ... erneut in ${summaryRetryInSeconds}s.`
+      ? LIVE_COPY_DE.retry_wait(summaryRetryInSeconds)
       : null;
 
   const resolveItemState = useMemo(
@@ -70,7 +71,7 @@ export function OverviewSection({
         if (state === 'error') {
           return {
             state,
-            hint: retryWaitText || 'Die Statistik-API war nicht erreichbar.',
+            hint: retryWaitText || LIVE_COPY_DE.summary_error_hint,
             onRetry: onRetrySummary,
             retryDisabled: summaryRetryDisabled,
             retryDisabledHint: retryWaitText || undefined,
@@ -80,21 +81,21 @@ export function OverviewSection({
         if (state === 'stale' && summaryLoading) {
           return {
             state,
-            hint: 'Aktualisierung laeuft. Es wird der letzte Stand angezeigt.',
+            hint: LIVE_COPY_DE.summary_stale_refreshing,
           };
         }
 
         if (state === 'stale' && summaryError) {
           return {
             state,
-            hint: 'Aktualisierung fehlgeschlagen. Es wird der letzte Stand angezeigt.',
+            hint: LIVE_COPY_DE.summary_stale_failed,
           };
         }
 
         if (state === 'empty') {
           return {
             state,
-            hint: `${label} wurde vom Server noch nicht geliefert.`,
+            hint: LIVE_COPY_DE.summary_missing_metric(label),
           };
         }
 

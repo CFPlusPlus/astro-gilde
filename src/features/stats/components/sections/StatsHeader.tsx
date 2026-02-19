@@ -4,6 +4,7 @@ import { STATS_PAGE_SIZES } from '../../constants';
 import { fmtDateBerlin, fmtNumber } from '../../format';
 import type { PlayersSearchItem } from '../../types';
 import type { TabKey } from '../../types-ui';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 import { PlayerAutocomplete } from '../PlayerAutocomplete';
 import { StatsNavPills } from '../StatsNavPills';
 import { ApiAlert, Chip } from '../StatsPrimitives';
@@ -71,7 +72,11 @@ export function StatsHeader({
             />
             Live
           </Chip>
-          {generatedIso ? <Chip>Zuletzt aktualisiert: {fmtDateBerlin(generatedIso)}</Chip> : null}
+          {generatedIso ? (
+            <Chip>
+              {LIVE_COPY_DE.stats_generated_prefix} {fmtDateBerlin(generatedIso)}
+            </Chip>
+          ) : null}
           {typeof playerCount === 'number' ? <Chip>{fmtNumber(playerCount)} Spieler</Chip> : null}
         </div>
       </div>

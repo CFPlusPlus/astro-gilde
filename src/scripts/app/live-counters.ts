@@ -13,12 +13,10 @@ import {
   formatLastUpdatedLabel,
   resolveLastUpdatedTimestamp,
 } from '../../lib/live/lastUpdated';
+import { LIVE_COPY_DE, getLiveMessage } from '../../lib/live/copy.de';
 
-const UNKNOWN_FALLBACK = 'unbekannt';
-const LIVE_ERROR_VALUE = 'n/v';
-const LIVE_LOADING_HINT = 'Lade Live-Daten ...';
-const LIVE_ERROR_HINT = 'Live-Status gerade nicht verfügbar';
-const LIVE_STALE_SUFFIX = 'Anzeige evtl. veraltet';
+const UNKNOWN_FALLBACK = LIVE_COPY_DE.live_unknown;
+const LIVE_ERROR_VALUE = LIVE_COPY_DE.live_error_value;
 const LIVE_CACHE_PREFIX = 'mg:live-counter:v2:';
 const LIVE_FETCH_TIMEOUT_MS = 6_500;
 const LIVE_IDLE_TIMEOUT_MS = 1_600;
@@ -111,7 +109,12 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     tileKey: LiveTileKey | undefined,
     now: number,
   ): string => {
-    if (state.error?.kind !== 'rate_limit') return LIVE_ERROR_HINT;
+    if (state.error?.kind !== 'rate_limit') {
+      return (
+        getLiveMessage({ status: 'error', errorKind: state.error?.kind }) ??
+        LIVE_COPY_DE.error_generic
+      );
+    }
 
     const remainingFromWindow = tileKey ? getRateLimitRemainingMs(tileKey, now) : 0;
     const retryAfterMs = toRetryAfterMs(state.error);
@@ -119,10 +122,10 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     const remainingFromState = Math.max(0, resolvedFetchedAt + retryAfterMs - now);
     const remainingMs = Math.max(remainingFromWindow, remainingFromState);
 
-    if (remainingMs <= 0) return 'Zu viele Anfragen - bitte spaeter erneut laden';
+    if (remainingMs <= 0) return LIVE_COPY_DE.rate_limit;
 
     const seconds = Math.max(1, Math.ceil(remainingMs / 1_000));
-    return `Zu viele Anfragen - erneut in ${seconds}s`;
+    return LIVE_COPY_DE.rate_limit_retry_in(seconds);
   };
 
   const resolveLiveNote = (
@@ -136,7 +139,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
     if (state.status === 'loading') {
       return {
-        text: LIVE_LOADING_HINT,
+        text: LIVE_COPY_DE.loading,
       };
     }
 
@@ -149,24 +152,24 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     if (state.status === 'stale') {
       if (lastUpdatedLabel) {
         return {
-          text: `${lastUpdatedLabel} · ${LIVE_STALE_SUFFIX}`,
+          text: `${lastUpdatedLabel} · ${LIVE_COPY_DE.stale_hint}`,
           tooltip,
         };
       }
       return {
-        text: `Zuletzt aktualisiert · ${LIVE_STALE_SUFFIX}`,
+        text: `${LIVE_COPY_DE.last_updated_prefix} · ${LIVE_COPY_DE.stale_hint}`,
       };
     }
 
     if (state.status === 'empty') {
       if (lastUpdatedLabel) {
         return {
-          text: `${lastUpdatedLabel} · Gerade niemand online`,
+          text: `${lastUpdatedLabel} · ${LIVE_COPY_DE.live_nobody_online}`,
           tooltip,
         };
       }
       return {
-        text: 'Gerade niemand online',
+        text: LIVE_COPY_DE.live_nobody_online,
       };
     }
 
@@ -178,7 +181,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }
 
     return {
-      text: 'Zuletzt aktualisiert',
+      text: LIVE_COPY_DE.last_updated_missing,
     };
   };
 
@@ -524,7 +527,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     const { key, targets, state, format, errorValue = LIVE_ERROR_VALUE } = opts;
 
     if (state.status === 'loading') {
-      setTargetsState(targets, 'loading', LIVE_LOADING_HINT);
+      setTargetsState(targets, 'loading', LIVE_COPY_DE.loading);
       if (isLiveTileKey(key)) setLiveTileState(key, state);
       return;
     }

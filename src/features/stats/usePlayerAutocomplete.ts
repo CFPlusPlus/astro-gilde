@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { searchPlayers } from './api';
 import { rankPlayersForQuery } from './player-search';
 import type { PlayersSearchItem } from './types';
+import { LIVE_COPY_DE } from '../../lib/live/copy.de';
 
 export function usePlayerAutocomplete({
   onGeneratedIso,
@@ -76,9 +77,7 @@ export function usePlayerAutocomplete({
       } catch (e) {
         if ((e as Error)?.name === 'AbortError') return;
         console.warn('Autocomplete Fehler', e);
-        onError?.(
-          'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.',
-        );
+        onError?.(LIVE_COPY_DE.error_generic);
       }
     }, 180);
 
