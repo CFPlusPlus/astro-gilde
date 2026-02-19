@@ -135,6 +135,51 @@ describe('live/cache', () => {
     });
   });
 
+  it('returns stale cached data when refresh has invalid response but cache is still valid', async () => {
+    const storage = new MemoryStorage();
+    storage.setItem(
+      'test-live:counter',
+      JSON.stringify({
+        status: 'ok',
+        data: '12',
+        updatedAt: 4_000,
+        fetchedAt: 4_000,
+      }),
+    );
+
+    const resource = getLiveResource(
+      'counter',
+      async (): Promise<LiveDataState<string>> => ({
+        status: 'error',
+        fetchedAt: 5_000,
+        error: {
+          kind: 'invalid',
+          message: 'schema mismatch',
+        },
+      }),
+      {
+        ...BASE_OPTIONS,
+        storage,
+        now: () => 6_500,
+      },
+    );
+
+    expect(resource.state.status).toBe('stale');
+
+    const latest = await resource.revalidate;
+
+    expect(latest).toEqual({
+      status: 'stale',
+      data: '12',
+      updatedAt: 4_000,
+      fetchedAt: 5_000,
+      error: {
+        kind: 'invalid',
+        message: 'schema mismatch',
+      },
+    });
+  });
+
   it('returns error when cache is too old and refresh fails', async () => {
     const storage = new MemoryStorage();
     storage.setItem(
@@ -164,7 +209,14 @@ describe('live/cache', () => {
       },
     );
 
-    expect(resource.state.status).toBe('loading');
+    expect(resource.state).toEqual({
+      status: 'error',
+      fetchedAt: 20_000,
+      error: {
+        kind: 'invalid',
+        message: 'Zwischengespeicherte Daten sind zu alt.',
+      },
+    });
     expect(storage.getItem('test-live:counter')).toBeNull();
 
     const latest = await resource.revalidate;

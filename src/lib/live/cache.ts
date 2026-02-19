@@ -207,20 +207,25 @@ const readInitialState = <T>(
   options: GetLiveResourceOptions,
   storage: Storage | null,
 ): LiveDataState<T> => {
+  const now = resolveNow(options);
   const cached = readCachedEntry<T>(storageKey, storage);
   if (!cached) {
     return {
       status: 'loading',
-      fetchedAt: resolveNow(options),
+      fetchedAt: now,
     };
   }
 
-  const ageMs = Math.max(0, resolveNow(options) - cached.updatedAt);
+  const ageMs = Math.max(0, now - cached.updatedAt);
   if (ageMs > options.maxCacheAgeMs) {
     clearCachedEntry(storageKey, storage, true);
     return {
-      status: 'loading',
-      fetchedAt: resolveNow(options),
+      status: 'error',
+      fetchedAt: now,
+      error: {
+        kind: 'invalid',
+        message: 'Zwischengespeicherte Daten sind zu alt.',
+      },
     };
   }
 
