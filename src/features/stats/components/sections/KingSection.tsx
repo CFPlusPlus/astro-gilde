@@ -50,9 +50,67 @@ function toFiniteNumber(value: unknown, depth = 0): number | null {
 function resolveEntryScore(entry: unknown): number | null {
   if (!entry) return null;
   if (typeof entry === 'object' && 'value' in entry) {
-    return toFiniteNumber((entry as { value?: unknown }).value ?? entry);
+    const parsedValue = toFiniteNumber((entry as { value?: unknown }).value);
+    if (parsedValue !== null) return parsedValue;
   }
   return toFiniteNumber(entry);
+}
+
+function readString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function resolveEntryUuid(entry: unknown): string | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const record = entry as Record<string, unknown>;
+  const directUuidCandidates = [
+    record.uuid,
+    record.player_uuid,
+    record.playerUuid,
+    record.player_id,
+    record.playerId,
+  ];
+
+  for (const candidate of directUuidCandidates) {
+    const uuid = readString(candidate);
+    if (uuid) return uuid;
+  }
+
+  if (record.player && typeof record.player === 'object') {
+    const playerRecord = record.player as Record<string, unknown>;
+    const nestedUuid = readString(playerRecord.uuid ?? playerRecord.id);
+    if (nestedUuid) return nestedUuid;
+  }
+
+  return null;
+}
+
+function resolveEntryName(entry: unknown): string | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const record = entry as Record<string, unknown>;
+  const directNameCandidates = [
+    record.name,
+    record.player_name,
+    record.playerName,
+    record.username,
+  ];
+
+  for (const candidate of directNameCandidates) {
+    const name = readString(candidate);
+    if (name) return name;
+  }
+
+  if (record.player && typeof record.player === 'object') {
+    const playerRecord = record.player as Record<string, unknown>;
+    const nestedName = readString(playerRecord.name ?? playerRecord.username);
+    if (nestedName) return nestedName;
+  }
+
+  return null;
 }
 
 export function KingSection({
@@ -101,6 +159,10 @@ export function KingSection({
               const rank = index + 1;
               const score = resolveEntryScore(entry);
               const hasScore = score !== null;
+              const uuid = resolveEntryUuid(entry);
+              const nameFromEntry = resolveEntryName(entry);
+              const resolvedName = uuid ? readString(getPlayerName(uuid)) : null;
+              const playerName = resolvedName || nameFromEntry || uuid;
 
               return (
                 <section
@@ -128,20 +190,37 @@ export function KingSection({
                           : 'mt-3 space-y-3'
                       }
                     >
-                      <button
-                        type="button"
-                        onClick={() => onPlayerClick(entry.uuid)}
-                        className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-                      >
-                        <img
-                          src={`https://minotar.net/helm/${encodeURIComponent(getPlayerName(entry.uuid))}/32.png`}
-                          alt=""
-                          className="h-8 w-8 flex-none rounded-lg bg-black/20"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span className="truncate">{getPlayerName(entry.uuid)}</span>
-                      </button>
+                      {playerName ? (
+                        uuid ? (
+                          <button
+                            type="button"
+                            onClick={() => onPlayerClick(uuid)}
+                            className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                          >
+                            <img
+                              src={`https://minotar.net/helm/${encodeURIComponent(playerName)}/32.png`}
+                              alt=""
+                              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span className="truncate">{playerName}</span>
+                          </button>
+                        ) : (
+                          <div className="text-fg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md font-semibold">
+                            <img
+                              src={`https://minotar.net/helm/${encodeURIComponent(playerName)}/32.png`}
+                              alt=""
+                              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span className="truncate">{playerName}</span>
+                          </div>
+                        )
+                      ) : (
+                        <p className="text-muted text-sm">Spielername nicht verfügbar.</p>
+                      )}
                       <StatValue
                         state={hasScore ? 'ok' : 'empty'}
                         value={
@@ -150,7 +229,11 @@ export function KingSection({
                             : undefined
                         }
                         label="Punkte"
-                        hint="Für diesen Platz wurden noch keine Punkte übermittelt."
+                        hint={
+                          hasScore
+                            ? undefined
+                            : 'Für diesen Platz wurden noch keine Punkte übermittelt.'
+                        }
                         className={hasScore ? 'text-right' : undefined}
                         valueClassName="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums"
                       />
