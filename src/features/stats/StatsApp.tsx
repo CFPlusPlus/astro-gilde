@@ -49,6 +49,8 @@ export default function StatsApp() {
     summaryError,
     summaryLastUpdatedAt,
     retrySummary,
+    summaryRetryDisabled,
+    summaryRetryInSeconds,
     apiError,
     mainSearch,
     metrics,
@@ -210,6 +212,8 @@ export default function StatsApp() {
           summaryError={summaryError}
           summaryLastUpdatedAt={summaryLastUpdatedAt}
           onRetrySummary={retrySummary}
+          summaryRetryDisabled={summaryRetryDisabled}
+          summaryRetryInSeconds={summaryRetryInSeconds}
         />
       ) : null}
 

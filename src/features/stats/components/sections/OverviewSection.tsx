@@ -18,6 +18,8 @@ export function OverviewSection({
   summaryError,
   summaryLastUpdatedAt,
   onRetrySummary,
+  summaryRetryDisabled,
+  summaryRetryInSeconds,
 }: {
   showWelcome: boolean;
   onDismissWelcome: () => void;
@@ -27,13 +29,26 @@ export function OverviewSection({
   summaryError: string | null;
   summaryLastUpdatedAt: number | null;
   onRetrySummary: () => void;
+  summaryRetryDisabled: boolean;
+  summaryRetryInSeconds: number;
 }) {
+  const retryWaitText =
+    summaryRetryDisabled && summaryRetryInSeconds > 0
+      ? `Bitte warten ... erneut in ${summaryRetryInSeconds}s.`
+      : null;
+
   const resolveItemState = useMemo(
     () =>
       (
         value: number | undefined,
         label: string,
-      ): { state: StatValueState; hint?: string; onRetry?: () => void } => {
+      ): {
+        state: StatValueState;
+        hint?: string;
+        onRetry?: () => void;
+        retryDisabled?: boolean;
+        retryDisabledHint?: string;
+      } => {
         const hasValue = typeof value === 'number';
         const state = resolveLiveDataStatus({
           loading: summaryLoading,
@@ -55,8 +70,10 @@ export function OverviewSection({
         if (state === 'error') {
           return {
             state,
-            hint: 'Die Statistik-API war nicht erreichbar.',
+            hint: retryWaitText || 'Die Statistik-API war nicht erreichbar.',
             onRetry: onRetrySummary,
+            retryDisabled: summaryRetryDisabled,
+            retryDisabledHint: retryWaitText || undefined,
           };
         }
 
@@ -83,7 +100,15 @@ export function OverviewSection({
 
         return { state: 'ok' };
       },
-    [onRetrySummary, summaryError, summaryLoaded, summaryLoading, totals],
+    [
+      onRetrySummary,
+      retryWaitText,
+      summaryError,
+      summaryLoaded,
+      summaryLoading,
+      summaryRetryDisabled,
+      totals,
+    ],
   );
 
   const overviewItems = useMemo<
@@ -95,6 +120,8 @@ export function OverviewSection({
       state: StatValueState;
       hint?: string;
       onRetry?: () => void;
+      retryDisabled?: boolean;
+      retryDisabledHint?: string;
     }>
   >(() => {
     const iconById: Record<string, ReactNode> = {
@@ -187,6 +214,8 @@ export function OverviewSection({
                 label={highlightItem.label}
                 hint={highlightItem.hint || 'Serverweiter Gesamtwert.'}
                 onRetry={highlightItem.onRetry}
+                retryDisabled={highlightItem.retryDisabled}
+                retryDisabledHint={highlightItem.retryDisabledHint}
                 className="mt-2"
                 valueClassName="text-fg text-3xl font-semibold tracking-tight"
               />
@@ -212,6 +241,8 @@ export function OverviewSection({
                     label={item.label}
                     hint={item.hint}
                     onRetry={item.onRetry}
+                    retryDisabled={item.retryDisabled}
+                    retryDisabledHint={item.retryDisabledHint}
                     className="max-w-[58%] text-right"
                     valueClassName="text-fg text-base font-semibold tracking-tight whitespace-nowrap"
                   />

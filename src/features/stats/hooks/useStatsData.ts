@@ -20,6 +20,7 @@ const API_ERROR_MESSAGE =
   'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
 const API_RATE_LIMIT_MESSAGE =
   'Zu viele Anfragen an die Statistik-API. Bitte versuche es spaeter erneut.';
+const RATE_LIMIT_FALLBACK_MS = 60_000;
 
 function resolveHttpStatus(error: unknown): number | null {
   if (!error || typeof error !== 'object') return null;
@@ -35,6 +36,21 @@ function resolveHttpStatus(error: unknown): number | null {
       const status = Number(match[1]);
       return Number.isFinite(status) ? status : null;
     }
+  }
+
+  return null;
+}
+
+function resolveRetryAfterMs(error: unknown): number | null {
+  if (!error || typeof error !== 'object') return null;
+
+  const withRetryAfter = error as { retryAfterMs?: unknown };
+  if (
+    typeof withRetryAfter.retryAfterMs === 'number' &&
+    Number.isFinite(withRetryAfter.retryAfterMs) &&
+    withRetryAfter.retryAfterMs >= 0
+  ) {
+    return Math.floor(withRetryAfter.retryAfterMs);
   }
 
   return null;
@@ -86,6 +102,9 @@ export function useStatsData({
   const [summaryLastUpdatedAt, setSummaryLastUpdatedAt] = useState<number | null>(null);
   const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [apiErrorKind, setApiErrorKind] = useState<LiveDataErrorKind | null>(null);
+  const [nextAllowedFetchAt, setNextAllowedFetchAt] = useState<number | null>(null);
+  const [rateLimitNowMs, setRateLimitNowMs] = useState<number>(() => Date.now());
   const summaryLastUpdatedAtRef = useRef<number | null>(null);
   const summaryLoadingRef = useRef(false);
   const summaryVisibilityRevalidateAtRef = useRef(0);
@@ -121,9 +140,78 @@ export function useStatsData({
     summaryLoadingRef.current = summaryLoading;
   }, [summaryLoading]);
 
+  const setApiErrorWithKind = useCallback(
+    (message: string | null, kind: LiveDataErrorKind | null) => {
+      setApiError(message);
+      setApiErrorKind(kind);
+    },
+    [],
+  );
+
+  const registerRateLimit = useCallback(
+    (retryAfterMs: number | null | undefined) => {
+      const normalizedRetryAfterMs =
+        typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs > 0
+          ? Math.floor(retryAfterMs)
+          : RATE_LIMIT_FALLBACK_MS;
+      const candidateNextAllowedFetchAt = Date.now() + normalizedRetryAfterMs;
+
+      setNextAllowedFetchAt((prev) => {
+        if (typeof prev === 'number' && prev > candidateNextAllowedFetchAt) return prev;
+        return candidateNextAllowedFetchAt;
+      });
+      setApiErrorWithKind(API_RATE_LIMIT_MESSAGE, 'rate_limit');
+    },
+    [setApiErrorWithKind],
+  );
+
+  useEffect(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return;
+
+    setRateLimitNowMs(Date.now());
+    if (Date.now() >= nextAllowedFetchAt) return;
+
+    const intervalId = window.setInterval(() => {
+      setRateLimitNowMs(Date.now());
+    }, 1_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [nextAllowedFetchAt]);
+
+  const rateLimitRetryInSeconds = useMemo(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return 0;
+    const remainingMs = nextAllowedFetchAt - rateLimitNowMs;
+    if (remainingMs <= 0) return 0;
+    return Math.ceil(remainingMs / 1_000);
+  }, [nextAllowedFetchAt, rateLimitNowMs]);
+
+  useEffect(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return;
+    if (rateLimitRetryInSeconds > 0) return;
+    setNextAllowedFetchAt(null);
+  }, [nextAllowedFetchAt, rateLimitRetryInSeconds]);
+
+  const isRateLimitBlocked = rateLimitRetryInSeconds > 0;
+
+  const apiErrorMessage = useMemo(() => {
+    if (!apiError) return null;
+    if (apiErrorKind === 'rate_limit' && rateLimitRetryInSeconds > 0) {
+      return `${apiError} Erneut in ${rateLimitRetryInSeconds}s.`;
+    }
+    return apiError;
+  }, [apiError, apiErrorKind, rateLimitRetryInSeconds]);
+  const handleAutocompleteError = useCallback(
+    (message: string | null) => {
+      setApiErrorWithKind(message, message ? 'unknown' : null);
+    },
+    [setApiErrorWithKind],
+  );
+
   const mainSearch = usePlayerAutocomplete({
     onGeneratedIso: setGeneratedIso,
-    onError: setApiError,
+    onError: handleAutocompleteError,
   });
 
   const mergePlayers = useCallback((players?: Record<string, string>) => {
@@ -157,7 +245,9 @@ export function useStatsData({
 
   const loadLeaderboard = useCallback(
     async (metricId: string, stateKey: string, opts?: { openLoadedPage?: boolean }) => {
-      setApiError(null);
+      if (isRateLimitBlocked) return;
+
+      setApiErrorWithKind(null, null);
       const openLoadedPage = opts?.openLoadedPage ?? false;
       const currentState =
         stateKey === 'king'
@@ -205,7 +295,11 @@ export function useStatsData({
       } catch (error) {
         console.warn('Leaderboard Fehler', error);
         const liveErrorKind = resolveLeaderboardErrorKind(error);
-        setApiError(liveErrorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE);
+        if (liveErrorKind === 'rate_limit') {
+          registerRateLimit(resolveRetryAfterMs(error));
+        } else {
+          setApiErrorWithKind(API_ERROR_MESSAGE, liveErrorKind);
+        }
         setBoardState(stateKey, (state) => ({
           ...state,
           loading: false,
@@ -214,12 +308,13 @@ export function useStatsData({
         }));
       }
     },
-    [mergePlayers, setBoardState],
+    [isRateLimitBlocked, mergePlayers, registerRateLimit, setApiErrorWithKind, setBoardState],
   );
 
   const retrySummary = useCallback(() => {
+    if (isRateLimitBlocked) return;
     setSummaryReloadTrigger((prev) => prev + 1);
-  }, []);
+  }, [isRateLimitBlocked]);
 
   const goToPlayer = useCallback((uuid: string) => {
     window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
@@ -283,20 +378,22 @@ export function useStatsData({
       if (state.status === 'stale' && options.initial && options.hasRevalidate) {
         setSummaryLoading(true);
         setSummaryError(null);
-        setApiError(null);
+        setApiErrorWithKind(null, null);
         return;
       }
 
       setSummaryLoading(false);
 
       if (state.status === 'error' || state.status === 'stale') {
-        setSummaryError(API_ERROR_MESSAGE);
-        setApiError(API_ERROR_MESSAGE);
+        const errorKind = state.error?.kind === 'rate_limit' ? 'rate_limit' : 'unknown';
+        const message = errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE;
+        setSummaryError(message);
+        setApiErrorWithKind(message, errorKind);
         return;
       }
 
       setSummaryError(null);
-      setApiError(null);
+      setApiErrorWithKind(null, null);
     };
 
     (async () => {
@@ -324,12 +421,19 @@ export function useStatsData({
               };
             }
 
+            const errorKind = resolveLeaderboardErrorKind(error);
+            const retryAfterMs = resolveRetryAfterMs(error);
+            if (errorKind === 'rate_limit') {
+              registerRateLimit(retryAfterMs);
+            }
+
             return {
               status: 'error',
               fetchedAt: Date.now(),
               error: {
-                kind: 'unknown',
-                message: error instanceof Error ? error.message : API_ERROR_MESSAGE,
+                kind: errorKind,
+                message: errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE,
+                retryAfterMs: retryAfterMs ?? undefined,
               },
             };
           }
@@ -364,7 +468,7 @@ export function useStatsData({
     })();
 
     return () => ac.abort();
-  }, [summaryReloadTrigger]);
+  }, [registerRateLimit, setApiErrorWithKind, summaryReloadTrigger]);
 
   useEffect(() => {
     const staleAfterMs = LIVE_WIDGET_THRESHOLDS['stats-kpi'].staleAfterMs;
@@ -372,6 +476,7 @@ export function useStatsData({
     const onVisibilityChange = (): void => {
       if (document.visibilityState !== 'visible') return;
       if (summaryLoadingRef.current) return;
+      if (isRateLimitBlocked) return;
 
       const now = Date.now();
       if (now - summaryVisibilityRevalidateAtRef.current < SUMMARY_MIN_REVALIDATE_INTERVAL_MS) {
@@ -389,7 +494,7 @@ export function useStatsData({
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, []);
+  }, [isRateLimitBlocked]);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || metrics) return;
@@ -412,15 +517,15 @@ export function useStatsData({
           ]),
         ) as Record<string, MetricDef>;
         setMetrics(normalized);
-        setApiError(null);
+        setApiErrorWithKind(null, null);
       } catch (error) {
         console.warn('Metrics Fehler', error);
-        setApiError(API_ERROR_MESSAGE);
+        setApiErrorWithKind(API_ERROR_MESSAGE, resolveLeaderboardErrorKind(error));
       }
     })();
 
     return () => ac.abort();
-  }, [activeTab, metrics]);
+  }, [activeTab, metrics, setApiErrorWithKind]);
 
   const filteredMetricIds = useMemo(
     () => filterMetricIds(metrics, metricFilter),
@@ -446,15 +551,25 @@ export function useStatsData({
 
   useEffect(() => {
     if (activeTab !== 'king') return;
+    if (isRateLimitBlocked) return;
 
     const kingNeedsRefresh = !king.loaded || king.pageSize !== pageSize;
     if (kingNeedsRefresh && !king.loading) {
       void loadLeaderboard('king', 'king');
     }
-  }, [activeTab, king.loaded, king.loading, king.pageSize, pageSize, loadLeaderboard]);
+  }, [
+    activeTab,
+    isRateLimitBlocked,
+    king.loaded,
+    king.loading,
+    king.pageSize,
+    pageSize,
+    loadLeaderboard,
+  ]);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || !activeMetricId) return;
+    if (isRateLimitBlocked) return;
 
     const metricNeedsRefresh = !activeMetricLoaded || activeMetricBoardPageSize !== pageSize;
     if (metricNeedsRefresh && !activeMetricLoading) {
@@ -466,11 +581,18 @@ export function useStatsData({
     activeMetricLoaded,
     activeMetricLoading,
     activeMetricBoardPageSize,
+    isRateLimitBlocked,
     pageSize,
     loadLeaderboard,
   ]);
 
   const hasNoRanklistResults = !!metrics && filteredMetricIds.length === 0;
+  const setApiErrorMessage = useCallback(
+    (message: string | null) => {
+      setApiErrorWithKind(message, message ? 'unknown' : null);
+    },
+    [setApiErrorWithKind],
+  );
 
   return {
     generatedIso,
@@ -482,8 +604,10 @@ export function useStatsData({
     summaryError,
     summaryLastUpdatedAt,
     retrySummary,
-    apiError,
-    setApiError,
+    summaryRetryDisabled: isRateLimitBlocked,
+    summaryRetryInSeconds: rateLimitRetryInSeconds,
+    apiError: apiErrorMessage,
+    setApiError: setApiErrorMessage,
     mainSearch,
     metrics,
     groupedMetrics,

@@ -9,6 +9,9 @@ export function StatValue({
   label,
   hint,
   onRetry,
+  retryDisabled = false,
+  retryDisabledHint,
+  retryLabel = 'Neu laden',
   className,
   valueClassName,
 }: {
@@ -17,6 +20,9 @@ export function StatValue({
   label: string;
   hint?: React.ReactNode;
   onRetry?: () => void;
+  retryDisabled?: boolean;
+  retryDisabledHint?: string;
+  retryLabel?: string;
   className?: string;
   valueClassName?: string;
 }) {
@@ -41,8 +47,14 @@ export function StatValue({
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {onRetry ? (
-            <button type="button" onClick={onRetry} className="mg-btn mg-btn--xs mg-btn--surface">
-              Erneut laden
+            <button
+              type="button"
+              onClick={onRetry}
+              className="mg-btn mg-btn--xs mg-btn--surface"
+              disabled={retryDisabled}
+              title={retryDisabled ? retryDisabledHint : undefined}
+            >
+              {retryLabel}
             </button>
           ) : null}
           {hint ? <p className="text-muted text-xs">{hint}</p> : null}
