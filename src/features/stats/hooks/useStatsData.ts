@@ -9,17 +9,53 @@ import type { LeaderboardState, TabKey } from '../types-ui';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
 import { getLiveResource } from '../../../lib/live/cache';
-import { LIVE_WIDGET_THRESHOLDS, type LiveDataState } from '../../../lib/live/types';
+import {
+  LIVE_WIDGET_THRESHOLDS,
+  type LiveDataErrorKind,
+  type LiveDataState,
+} from '../../../lib/live/types';
 import { resolveLastUpdatedTimestamp } from '../../../lib/live/lastUpdated';
 
 const API_ERROR_MESSAGE =
   'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
+const API_RATE_LIMIT_MESSAGE =
+  'Zu viele Anfragen an die Statistik-API. Bitte versuche es spaeter erneut.';
+
+function resolveHttpStatus(error: unknown): number | null {
+  if (!error || typeof error !== 'object') return null;
+
+  const withStatus = error as { status?: unknown; message?: unknown };
+  if (typeof withStatus.status === 'number' && Number.isFinite(withStatus.status)) {
+    return withStatus.status;
+  }
+
+  if (typeof withStatus.message === 'string') {
+    const match = withStatus.message.match(/\bHTTP\s+(\d{3})\b/i);
+    if (match) {
+      const status = Number(match[1]);
+      return Number.isFinite(status) ? status : null;
+    }
+  }
+
+  return null;
+}
+
+function resolveLeaderboardErrorKind(error: unknown): LiveDataErrorKind {
+  const status = resolveHttpStatus(error);
+  if (status === 429) return 'rate_limit';
+  if (typeof status === 'number' && status >= 400 && status < 500) return 'invalid';
+  if (typeof status === 'number' && status >= 500) return 'network';
+  if ((error as Error | undefined)?.name === 'AbortError') return 'timeout';
+  return 'unknown';
+}
 const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
     loaded: false,
     loading: false,
+    liveStatus: 'ok',
+    liveErrorKind: null,
     pages: [],
     currentPage: 0,
     nextCursor: null,
@@ -145,6 +181,8 @@ export function useStatsData({
           return {
             loaded: true,
             loading: false,
+            liveStatus: 'ok',
+            liveErrorKind: null,
             pages,
             currentPage: nextCurrentPage,
             nextCursor,
@@ -154,8 +192,14 @@ export function useStatsData({
         });
       } catch (error) {
         console.warn('Leaderboard Fehler', error);
-        setApiError(API_ERROR_MESSAGE);
-        setBoardState(stateKey, (state) => ({ ...state, loading: false }));
+        const liveErrorKind = resolveLeaderboardErrorKind(error);
+        setApiError(liveErrorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE);
+        setBoardState(stateKey, (state) => ({
+          ...state,
+          loading: false,
+          liveStatus: state.loaded ? 'stale' : 'error',
+          liveErrorKind,
+        }));
       }
     },
     [mergePlayers, setBoardState],

@@ -4,6 +4,7 @@ import type { LeaderboardState } from '../../types-ui';
 import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
+import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
 import { StatValue } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 
@@ -130,6 +131,14 @@ export function KingSection({
 }) {
   const podium = king.pages[0] || [];
   const podiumEntries = podium.slice(0, 3);
+  const liveBadgeVariant: LiveBadgeVariant | null =
+    king.liveErrorKind === 'rate_limit'
+      ? 'rate_limit'
+      : king.liveStatus === 'stale'
+        ? 'stale'
+        : king.liveStatus === 'error'
+          ? 'error'
+          : null;
 
   return (
     <StatsLayoutGrid>
@@ -148,10 +157,15 @@ export function KingSection({
         </div>
       </StatsLayoutRail>
       <StatsLayoutMain ariaLabel="Server-König Rangliste">
-        <SectionTitle
-          title="Server-König"
-          subtitle="Wer sammelt die meisten Punkte über alle Kategorien hinweg?"
-        />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <SectionTitle
+              title="Server-König"
+              subtitle="Wer sammelt die meisten Punkte über alle Kategorien hinweg?"
+            />
+          </div>
+          <LiveBadgeSlot variant={liveBadgeVariant} className="shrink-0" />
+        </div>
         <div className="mt-5 space-y-5">
           <div className="grid gap-3 md:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => {
