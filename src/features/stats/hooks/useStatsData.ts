@@ -4,13 +4,16 @@ import { getLeaderboard, getMetrics, getSummary } from '../api';
 import { KPI_METRICS } from '../constants';
 import { filterMetricIds, groupMetricIds, pickDefaultRankMetricId } from '../metric-utils';
 import { normalizeUmlauts } from '../normalizeUmlauts';
-import type { MetricDef } from '../types';
+import type { MetricDef, SummaryResponse } from '../types';
 import type { LeaderboardState, TabKey } from '../types-ui';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
+import { getLiveResource } from '../../../lib/live/cache';
+import { LIVE_WIDGET_THRESHOLDS, type LiveDataState } from '../../../lib/live/types';
 
 const API_ERROR_MESSAGE =
   'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
+const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
@@ -187,29 +190,113 @@ export function useStatsData({
 
   useEffect(() => {
     const ac = new AbortController();
+    const thresholds = LIVE_WIDGET_THRESHOLDS['stats-kpi'];
 
-    (async () => {
-      setSummaryLoading(true);
-      setSummaryError(null);
-      try {
-        const data = await getSummary(KPI_METRICS, ac.signal);
-        if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
-        if (typeof data.player_count === 'number') setPlayerCount(data.player_count);
-        if (data.totals && typeof data.totals === 'object') {
-          setTotals(data.totals as Record<string, number>);
-        }
+    const applySummaryPayload = (data: SummaryResponse): void => {
+      if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
+      if (typeof data.player_count === 'number') setPlayerCount(data.player_count);
+      if (data.totals && typeof data.totals === 'object') {
+        setTotals(data.totals as Record<string, number>);
+      }
+    };
+
+    const applySummaryState = (
+      state: LiveDataState<SummaryResponse>,
+      options: { initial: boolean; hasRevalidate: boolean },
+    ): void => {
+      if (ac.signal.aborted) return;
+
+      if (state.data) {
+        applySummaryPayload(state.data);
+      }
+
+      if (state.status === 'loading') {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        return;
+      }
+
+      setSummaryLoaded(true);
+
+      if (state.status === 'stale' && options.initial && options.hasRevalidate) {
+        setSummaryLoading(true);
         setSummaryError(null);
         setApiError(null);
-      } catch (error) {
-        if ((error as Error)?.name === 'AbortError') return;
-        console.warn('Summary Fehler', error);
+        return;
+      }
+
+      setSummaryLoading(false);
+
+      if (state.status === 'error' || state.status === 'stale') {
         setSummaryError(API_ERROR_MESSAGE);
         setApiError(API_ERROR_MESSAGE);
-      } finally {
-        if (!ac.signal.aborted) {
-          setSummaryLoading(false);
-          setSummaryLoaded(true);
-        }
+        return;
+      }
+
+      setSummaryError(null);
+      setApiError(null);
+    };
+
+    (async () => {
+      const resource = getLiveResource(
+        SUMMARY_CACHE_KEY,
+        async (): Promise<LiveDataState<SummaryResponse>> => {
+          try {
+            const data = await getSummary(KPI_METRICS, ac.signal);
+            const fetchedAt = Date.now();
+            return {
+              status: 'ok',
+              data,
+              updatedAt: fetchedAt,
+              fetchedAt,
+            };
+          } catch (error) {
+            if ((error as Error)?.name === 'AbortError') {
+              return {
+                status: 'error',
+                fetchedAt: Date.now(),
+                error: {
+                  kind: 'network',
+                  message: 'Anfrage wurde abgebrochen.',
+                },
+              };
+            }
+
+            return {
+              status: 'error',
+              fetchedAt: Date.now(),
+              error: {
+                kind: 'unknown',
+                message: error instanceof Error ? error.message : API_ERROR_MESSAGE,
+              },
+            };
+          }
+        },
+        {
+          staleAfterMs: thresholds.staleAfterMs,
+          maxCacheAgeMs: thresholds.maxCacheAgeMs,
+          persist: true,
+        },
+      );
+
+      applySummaryState(resource.state, {
+        initial: true,
+        hasRevalidate: resource.revalidate != null,
+      });
+
+      if (!resource.revalidate) return;
+
+      const latest = await resource.revalidate;
+      applySummaryState(latest, {
+        initial: false,
+        hasRevalidate: true,
+      });
+
+      if (
+        !ac.signal.aborted &&
+        (latest.status === 'error' || (latest.status === 'stale' && latest.error))
+      ) {
+        console.warn('Summary Fehler', latest.error ?? latest);
       }
     })();
 

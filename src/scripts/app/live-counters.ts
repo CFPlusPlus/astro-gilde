@@ -7,6 +7,7 @@ import {
   type LiveDataThresholds,
 } from '../../lib/live/types';
 import { fetchJson, type FetchJsonError } from '../../lib/live/fetchJson';
+import { getLiveResource } from '../../lib/live/cache';
 
 const UNKNOWN_FALLBACK = 'unbekannt';
 const LIVE_ERROR_VALUE = 'n/v';
@@ -17,7 +18,6 @@ const LIVE_IDLE_TIMEOUT_MS = 1_600;
 const LIVE_IDLE_FALLBACK_DELAY_MS = 320;
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
-type LiveCounterCachedStatus = Extract<LiveDataStatus, 'ok' | 'empty'>;
 type LiveTileKey = 'discord-online' | 'mc-online';
 
 interface DiscordWidgetResponse {
@@ -33,26 +33,6 @@ interface MinecraftStatusResponse {
   players?: {
     online?: number;
   };
-}
-
-interface LiveCounterCacheEntry {
-  data?: string;
-  value?: string;
-  status?: LiveCounterCachedStatus;
-  kind?: LiveCounterCachedStatus;
-  updatedAt?: number;
-  fetchedAt?: number;
-  timestamp?: number;
-}
-
-interface LiveCounterCacheSnapshot {
-  state: LiveDataState<string> & {
-    status: LiveCounterCachedStatus;
-    data: string;
-    updatedAt: number;
-    fetchedAt: number;
-  };
-  ageMs: number;
 }
 
 interface LiveTileRefs {
@@ -132,98 +112,6 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     }
 
     return LIVE_ERROR_HINT;
-  };
-
-  const parseCacheStatus = (entry: LiveCounterCacheEntry): LiveCounterCachedStatus => {
-    if (entry.status === 'empty' || entry.kind === 'empty') return 'empty';
-    return 'ok';
-  };
-
-  const parseCacheData = (entry: LiveCounterCacheEntry): string | null => {
-    if (typeof entry.data === 'string') return entry.data;
-    if (typeof entry.value === 'string') return entry.value;
-    return null;
-  };
-
-  const parseCacheTimestamp = (
-    entry: LiveCounterCacheEntry,
-    preferred: 'updatedAt' | 'fetchedAt',
-  ): number | null => {
-    const fromPreferred = entry[preferred];
-    if (typeof fromPreferred === 'number') return fromPreferred;
-    if (typeof entry.timestamp === 'number') return entry.timestamp;
-    return null;
-  };
-
-  const readCounterCache = (key: LiveCounterKey): LiveCounterCacheSnapshot | null => {
-    try {
-      const raw = localStorage.getItem(`${LIVE_CACHE_PREFIX}${key}`);
-      if (!raw) return null;
-
-      const parsed = JSON.parse(raw) as LiveCounterCacheEntry;
-      const data = parseCacheData(parsed);
-      const updatedAt = parseCacheTimestamp(parsed, 'updatedAt');
-      const fetchedAt = parseCacheTimestamp(parsed, 'fetchedAt');
-      if (data == null || updatedAt == null || fetchedAt == null) return null;
-
-      const status = parseCacheStatus(parsed);
-      const ageMs = Math.max(0, Date.now() - updatedAt);
-
-      return {
-        state: {
-          status,
-          data,
-          updatedAt,
-          fetchedAt,
-        },
-        ageMs,
-      };
-    } catch {
-      return null;
-    }
-  };
-
-  const readFreshCounterCache = (
-    key: LiveCounterKey,
-    thresholds: LiveDataThresholds,
-  ): LiveCounterCacheSnapshot | null => {
-    const cache = readCounterCache(key);
-    if (!cache) return null;
-    if (cache.ageMs > thresholds.staleAfterMs) return null;
-    return cache;
-  };
-
-  const readStaleCounterCache = (
-    key: LiveCounterKey,
-    thresholds: LiveDataThresholds,
-  ): LiveCounterCacheSnapshot | null => {
-    const cache = readCounterCache(key);
-    if (!cache) return null;
-    if (cache.ageMs <= thresholds.staleAfterMs) return null;
-    if (cache.ageMs > thresholds.maxCacheAgeMs) return null;
-    return cache;
-  };
-
-  const writeCounterCache = (
-    key: LiveCounterKey,
-    state: LiveDataState<string> & {
-      status: LiveCounterCachedStatus;
-      data: string;
-      updatedAt: number;
-      fetchedAt: number;
-    },
-  ): void => {
-    try {
-      const payload: LiveCounterCacheEntry = {
-        status: state.status,
-        data: state.data,
-        updatedAt: state.updatedAt,
-        fetchedAt: state.fetchedAt,
-      };
-      localStorage.setItem(`${LIVE_CACHE_PREFIX}${key}`, JSON.stringify(payload));
-    } catch {
-      // Schreibfehler bei localStorage ignorieren
-    }
   };
 
   const fetchDiscordOnlineUsers = async (): Promise<LiveDataState<string>> => {
@@ -520,7 +408,10 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
   const inFlightKeys = new Set<LiveCounterKey>();
 
-  const updateCounter = async (definition: CounterDefinition): Promise<void> => {
+  const updateCounter = async (
+    definition: CounterDefinition,
+    options?: { applyInitialState?: boolean },
+  ): Promise<void> => {
     const { key, targets, fetcher, format, errorValue = LIVE_ERROR_VALUE, thresholds } = definition;
     if (!targets.length) return;
     if (inFlightKeys.has(key)) return;
@@ -529,89 +420,30 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     if (isLiveTileKey(key)) setLiveTileRetryBusy(key, true);
 
     try {
-      const latest = await fetcher();
+      const resource = getLiveResource(key, fetcher, {
+        staleAfterMs: thresholds.staleAfterMs,
+        maxCacheAgeMs: thresholds.maxCacheAgeMs,
+        cachePrefix: LIVE_CACHE_PREFIX,
+        persist: true,
+      });
 
-      if (
-        (latest.status === 'ok' || latest.status === 'empty') &&
-        typeof latest.data === 'string'
-      ) {
-        const fetchedAt = latest.fetchedAt ?? Date.now();
-        const updatedAt = latest.updatedAt ?? fetchedAt;
-
-        const successState: LiveDataState<string> & {
-          status: LiveCounterCachedStatus;
-          data: string;
-          updatedAt: number;
-          fetchedAt: number;
-        } = {
-          ...latest,
-          status: latest.status,
-          data: latest.data,
-          updatedAt,
-          fetchedAt,
-        };
-
-        writeCounterCache(key, successState);
+      if (options?.applyInitialState !== false) {
         applyCounterState({
           key,
           targets,
-          state: successState,
+          state: resource.state,
           format,
           errorValue,
         });
-        return;
       }
 
-      const freshCache = readFreshCounterCache(key, thresholds);
-      if (freshCache != null) {
-        applyCounterState({
-          key,
-          targets,
-          state: freshCache.state,
-          format,
-          errorValue,
-        });
-        return;
-      }
-
-      const staleCache = readStaleCounterCache(key, thresholds);
-      if (staleCache != null) {
-        applyCounterState({
-          key,
-          targets,
-          state: {
-            status: 'stale',
-            data: staleCache.state.data,
-            updatedAt: staleCache.state.updatedAt,
-            fetchedAt: latest.fetchedAt ?? staleCache.state.fetchedAt,
-            error: latest.error,
-          },
-          format,
-          errorValue,
-        });
-        return;
-      }
-
-      if (latest.status === 'error') {
-        applyCounterState({
-          key,
-          targets,
-          state: latest,
-          format,
-          errorValue,
-        });
-        return;
-      }
+      if (!resource.revalidate) return;
+      const latest = await resource.revalidate;
 
       applyCounterState({
         key,
         targets,
-        state: {
-          status: 'error',
-          error: {
-            kind: 'unknown',
-          },
-        },
+        state: latest,
         format,
         errorValue,
       });
@@ -625,32 +457,29 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     const { key, targets, format, errorValue = LIVE_ERROR_VALUE, thresholds } = definition;
     if (!targets.length) return;
 
-    const freshCache = readFreshCounterCache(key, thresholds);
-    if (freshCache != null) {
-      applyCounterState({
-        key,
-        targets,
-        state: freshCache.state,
-        format,
-        errorValue,
-      });
-      return;
-    }
+    const resource = getLiveResource(key, definition.fetcher, {
+      staleAfterMs: thresholds.staleAfterMs,
+      maxCacheAgeMs: thresholds.maxCacheAgeMs,
+      cachePrefix: LIVE_CACHE_PREFIX,
+      persist: true,
+      revalidate: false,
+    });
 
     applyCounterState({
       key,
       targets,
-      state: {
-        status: 'loading',
-        fetchedAt: Date.now(),
-      },
+      state: resource.state,
       format,
       errorValue,
     });
   };
 
   const refreshCounters = (): void => {
-    void Promise.all(counterDefinitions.map((definition) => updateCounter(definition)));
+    void Promise.all(
+      counterDefinitions.map((definition) =>
+        updateCounter(definition, { applyInitialState: false }),
+      ),
+    );
   };
 
   (['mc-online', 'discord-online'] as const).forEach((key) => {
@@ -669,7 +498,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
           format: definition.format,
           errorValue: definition.errorValue,
         });
-        void updateCounter(definition);
+        void updateCounter(definition, { applyInitialState: false });
       });
     });
   });
