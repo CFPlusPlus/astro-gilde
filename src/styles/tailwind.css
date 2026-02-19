@@ -40,13 +40,11 @@
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
     0 22px 46px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 78%, var(--bg) 22%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 58%, transparent),
-    0 14px 30px -24px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(255, 255, 255, 0.38);
+  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
+  --glass-nav-border: rgba(255, 255, 255, 0.34);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
@@ -89,12 +87,11 @@
     --glass-strong-shadow:
       inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
       0 24px 48px -30px var(--glass-shadow-color);
-    --glass-nav-bg: color-mix(in oklab, var(--surface) 84%, var(--bg) 16%);
-    --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 93%, var(--bg) 7%);
-    --glass-nav-border: color-mix(in oklab, var(--border) 84%, white 16%);
-    --glass-nav-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 64%, transparent),
-      0 12px 26px -22px color-mix(in oklab, var(--glass-shadow-color) 74%, transparent);
+    --glass-nav-blur: 20px;
+    --glass-nav-bg: rgba(34, 37, 42, 0.52);
+    --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+    --glass-nav-border: rgba(255, 255, 255, 0.18);
+    --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
     --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
     --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
 
@@ -134,13 +131,11 @@ html[data-theme='light'] {
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
     0 22px 46px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 78%, var(--bg) 22%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 58%, transparent),
-    0 14px 30px -24px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(255, 255, 255, 0.38);
+  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
+  --glass-nav-border: rgba(255, 255, 255, 0.34);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
@@ -181,13 +176,11 @@ html[data-theme='dark'] {
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
     0 24px 48px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 84%, var(--bg) 16%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 93%, var(--bg) 7%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 84%, white 16%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 64%, transparent),
-    0 12px 26px -22px color-mix(in oklab, var(--glass-shadow-color) 74%, transparent);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(34, 37, 42, 0.52);
+  --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+  --glass-nav-border: rgba(255, 255, 255, 0.18);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
@@ -461,21 +454,12 @@ html[data-theme='dark'] {
     --mg-glass-bg-fallback: var(--glass-nav-bg-fallback);
     --mg-glass-border: var(--glass-nav-border);
     --mg-glass-shadow: var(--glass-nav-shadow);
+    -webkit-backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
+    backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
     border-top: 0;
     border-left: 0;
     border-right: 0;
-    border-bottom-width: 1.5px;
-    border-bottom-color: color-mix(in oklab, var(--border) 52%, transparent);
-  }
-
-  html[data-theme='dark'] .site-nav-shell {
-    border-bottom-color: color-mix(in oklab, var(--border) 44%, transparent);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html:not([data-theme]) .site-nav-shell {
-      border-bottom-color: color-mix(in oklab, var(--border) 44%, transparent);
-    }
+    border-bottom: 0.1px solid var(--mg-glass-border);
   }
 
   .mg-glass-overlay {
@@ -565,7 +549,7 @@ html[data-theme='dark'] {
   }
 
   .site-nav-row {
-    min-height: 4.25rem;
+    min-height: 4.5rem;
   }
 
   .site-nav-controls {

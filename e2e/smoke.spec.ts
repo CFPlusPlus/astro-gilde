@@ -346,5 +346,5 @@ test('Neu laden triggert Revalidate und faellt bei Fetch-Fehler auf stale zuruec
   await expect(discordTile).toHaveAttribute('data-live-state', 'loading');
   await expect.poll(() => discordWidgetCalls).toBe(1);
   await expect(discordTile).toHaveAttribute('data-live-state', 'stale');
-  await expect(liveNote).toContainText('Anzeige evtl. veraltet');
+  await expect(liveNote).toContainText('Es wird der letzte erfolgreiche Stand angezeigt.');
 });
