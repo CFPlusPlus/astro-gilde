@@ -10,6 +10,7 @@ import { SectionTitle } from '../StatsPrimitives';
 import type { MetricDef } from '../../types';
 import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
+import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
 
 function resolveRankingsLiveVariant(state: LeaderboardState): LiveBadgeVariant | null {
@@ -154,9 +155,21 @@ export function RankingsSection({
     return null;
   }, [activeMetricId, activeMetricState, metrics]);
 
+  const quickAccessMetricIds = useMemo(() => {
+    if (!metrics) return [];
+    return RANKINGS_TOP_CATEGORY_KEYS.filter((id) => Boolean(metrics[id]));
+  }, [metrics]);
+
   const handleSelectMetricFromDrawer = (id: string) => {
     onSelectMetric(id);
     setMobilePickerOpen(false);
+  };
+
+  const handleQuickAccessSelect = (id: string) => {
+    if (metricFilter.trim().length > 0) {
+      onMetricFilterChange('');
+    }
+    onSelectMetric(id);
   };
 
   const visibleCategoryCount = groupedMetrics.reduce((sum, group) => sum + group.ids.length, 0);
@@ -208,7 +221,7 @@ export function RankingsSection({
               <button
                 type="button"
                 onClick={() => setMobilePickerOpen(true)}
-                className="mg-btn mg-btn--sm mg-btn--surface lg:hidden"
+                className="mg-btn mg-btn--sm mg-btn--surface lg:!hidden"
                 disabled={!metrics}
                 aria-haspopup="dialog"
                 aria-expanded={mobilePickerOpen ? 'true' : 'false'}
@@ -221,6 +234,48 @@ export function RankingsSection({
           </div>
 
           <div className="mt-5 space-y-4">
+            <section aria-label="Schnellzugriff">
+              <p className="text-fg/90 text-xs font-semibold tracking-wide uppercase">
+                Schnellzugriff
+              </p>
+
+              <div className="mt-2 min-h-10">
+                {metrics && quickAccessMetricIds.length > 0 ? (
+                  <div className="overflow-x-auto pb-1">
+                    <ul className="flex w-max items-center gap-2" role="list">
+                      {quickAccessMetricIds.map((id) => {
+                        const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
+                        const isActive = id === activeMetricId;
+
+                        return (
+                          <li key={id}>
+                            <button
+                              type="button"
+                              onClick={() => handleQuickAccessSelect(id)}
+                              className={[
+                                'mg-pill text-sm font-semibold whitespace-nowrap',
+                                isActive
+                                  ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
+                                  : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
+                              ].join(' ')}
+                              aria-pressed={isActive}
+                            >
+                              {categoryDef.label || id}
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : (
+                  <div
+                    className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+            </section>
+
             {!metrics ? (
               <div className="mg-notice text-sm" data-variant="neutral" role="status">
                 {LIVE_COPY_DE.rankings_loading}
