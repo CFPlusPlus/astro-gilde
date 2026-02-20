@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
+import { buildStatsUrlSearch, buildVersusShareUrlSearch, parseStatsUrlState } from './url-state';
 
 describe('stats url-state', () => {
   it('parses all supported query values from url', () => {
@@ -51,5 +51,23 @@ describe('stats url-state', () => {
     });
 
     expect(search).toBe('?tab=versus&top=30&q=Alex&a=uuid-a&b=uuid-b');
+  });
+
+  it('builds deterministic share url for versus', () => {
+    const search = buildVersusShareUrlSearch({
+      playerAUuid: 'uuid-a',
+      playerBUuid: ' uuid-b ',
+    });
+
+    expect(search).toBe('?tab=versus&a=uuid-a&b=uuid-b');
+  });
+
+  it('builds minimal share url for versus without players', () => {
+    const search = buildVersusShareUrlSearch({
+      playerAUuid: null,
+      playerBUuid: '',
+    });
+
+    expect(search).toBe('?tab=versus');
   });
 });

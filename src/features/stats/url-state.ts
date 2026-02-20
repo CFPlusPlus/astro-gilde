@@ -157,3 +157,26 @@ export function buildStatsUrlSearch({
   const query = params.toString();
   return query.length > 0 ? `?${query}` : '';
 }
+
+export function buildVersusShareUrlSearch({
+  playerAUuid,
+  playerBUuid,
+}: {
+  playerAUuid: string | null;
+  playerBUuid: string | null;
+}) {
+  const params = new URLSearchParams();
+  params.set(STATS_URL_QUERY_KEYS.tab, TAB_TO_URL.versus);
+
+  const safePlayerAUuid = cleanString(playerAUuid);
+  if (safePlayerAUuid) {
+    params.set(STATS_URL_QUERY_KEYS.versusPlayerA, safePlayerAUuid);
+  }
+
+  const safePlayerBUuid = cleanString(playerBUuid);
+  if (safePlayerBUuid) {
+    params.set(STATS_URL_QUERY_KEYS.versusPlayerB, safePlayerBUuid);
+  }
+
+  return `?${params.toString()}`;
+}
