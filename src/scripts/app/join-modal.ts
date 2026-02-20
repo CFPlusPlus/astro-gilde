@@ -57,6 +57,11 @@ export const initJoinModal = ({
   const joinModalCopyFeedbackTimers = new Map<HTMLElement, number>();
   const inlineCopyButtons = qsa<HTMLElement>('[data-copy-ip-inline]');
   const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
+  const modalSupportsInert = 'inert' in HTMLElement.prototype;
+  const modalBackgroundFallbackState = new WeakMap<
+    HTMLElement,
+    { ariaHidden: string | null; hadPointerEventsNone: boolean }
+  >();
 
   let modalLastFocusedEl: HTMLElement | null = null;
   let bodyOverflowBeforeModal = '';
@@ -69,6 +74,55 @@ export const initJoinModal = ({
     createdRoot.id = 'join-modal-root';
     document.body.append(createdRoot);
     return createdRoot;
+  };
+
+  const getModalBackgroundTargets = (): HTMLElement[] => {
+    const portalRoot = ensureJoinModalPortalRoot();
+    return Array.from(document.body.children).filter((child): child is HTMLElement => {
+      if (!(child instanceof HTMLElement)) return false;
+      return child !== portalRoot && !child.contains(portalRoot);
+    });
+  };
+
+  const setModalBackgroundInert = (inert: boolean): void => {
+    const targets = getModalBackgroundTargets();
+
+    if (modalSupportsInert) {
+      targets.forEach((el) => {
+        (el as HTMLElement & { inert: boolean }).inert = inert;
+      });
+      return;
+    }
+
+    if (inert) {
+      targets.forEach((el) => {
+        if (!modalBackgroundFallbackState.has(el)) {
+          modalBackgroundFallbackState.set(el, {
+            ariaHidden: el.getAttribute('aria-hidden'),
+            hadPointerEventsNone: el.classList.contains('pointer-events-none'),
+          });
+        }
+
+        el.setAttribute('aria-hidden', 'true');
+        if (!el.classList.contains('pointer-events-none')) {
+          el.classList.add('pointer-events-none');
+        }
+      });
+      return;
+    }
+
+    targets.forEach((el) => {
+      const prevState = modalBackgroundFallbackState.get(el);
+      if (!prevState) return;
+
+      if (prevState.ariaHidden === null) el.removeAttribute('aria-hidden');
+      else el.setAttribute('aria-hidden', prevState.ariaHidden);
+
+      if (!prevState.hadPointerEventsNone) {
+        el.classList.remove('pointer-events-none');
+      }
+      modalBackgroundFallbackState.delete(el);
+    });
   };
 
   const clearJoinModalRefs = (): void => {
@@ -151,8 +205,12 @@ export const initJoinModal = ({
   const closeJoinModal = (): void => {
     if (!isJoinModalOpen()) return;
 
-    document.body.style.overflow = bodyOverflowBeforeModal;
-    unmountJoinModal();
+    try {
+      unmountJoinModal();
+    } finally {
+      setModalBackgroundInert(false);
+      document.body.style.overflow = bodyOverflowBeforeModal;
+    }
 
     if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
       modalLastFocusedEl.focus();
@@ -174,14 +232,20 @@ export const initJoinModal = ({
     try {
       await mountJoinModal();
     } catch (error) {
+      setModalBackgroundInert(false);
+      document.body.style.overflow = bodyOverflowBeforeModal;
       console.warn('Join-Modal konnte nicht geladen werden:', error);
       showToast('Join-Dialog konnte nicht geladen werden.', 'error');
       return;
     }
 
-    if (!joinModalDialog) return;
+    if (!joinModalDialog) {
+      closeJoinModal();
+      return;
+    }
     const dialog = joinModalDialog;
     document.body.style.overflow = 'hidden';
+    setModalBackgroundInert(true);
 
     window.setTimeout(() => {
       const focusable = getJoinModalFocusable();
