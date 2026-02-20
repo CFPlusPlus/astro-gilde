@@ -55,6 +55,8 @@ export const initJoinModal = ({
   let joinModalCloseButtons: HTMLElement[] = [];
   let joinModalCopyButtons: HTMLElement[] = [];
   let joinModalMountPromise: Promise<void> | null = null;
+  let joinModalOpenInProgress = false;
+  let joinModalCloseInProgress = false;
   const joinModalCopyFeedbackTimers = new Map<HTMLElement, number>();
   const inlineCopyButtons = qsa<HTMLElement>('[data-copy-ip-inline]');
   const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
@@ -171,12 +173,13 @@ export const initJoinModal = ({
         joinModalCloseButtons = qsa<HTMLElement>('[data-join-modal-close]', mountedRoot);
         joinModalCopyButtons = qsa<HTMLElement>('[data-copy-ip-modal]', mountedRoot);
 
+        // Einheitliche Close-Regeln: Overlay und alle expliziten Close-Buttons schliessen.
         if (joinModalOverlay) {
-          joinModalOverlay.addEventListener('click', () => closeJoinModal());
+          joinModalOverlay.addEventListener('click', closeJoinModal);
         }
 
         joinModalCloseButtons.forEach((btn) => {
-          btn.addEventListener('click', () => closeJoinModal());
+          btn.addEventListener('click', closeJoinModal);
         });
 
         joinModalCopyButtons.forEach((btn) => {
@@ -204,7 +207,12 @@ export const initJoinModal = ({
   };
 
   const closeJoinModal = (): void => {
-    if (!isJoinModalOpen()) return;
+    if (!isJoinModalOpen() || joinModalCloseInProgress) return;
+    joinModalCloseInProgress = true;
+    joinModalOpenInProgress = false;
+
+    const restoreFocusTarget = modalLastFocusedEl;
+    modalLastFocusedEl = null;
 
     try {
       unmountJoinModal();
@@ -214,16 +222,17 @@ export const initJoinModal = ({
         releaseModalScrollLock();
         releaseModalScrollLock = null;
       }
+      joinModalCloseInProgress = false;
     }
 
-    if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
-      modalLastFocusedEl.focus();
+    if (restoreFocusTarget && document.contains(restoreFocusTarget)) {
+      restoreFocusTarget.focus();
     }
-    modalLastFocusedEl = null;
   };
 
   const openJoinModal = async (triggerEl?: HTMLElement): Promise<void> => {
-    if (isJoinModalOpen()) return;
+    if (isJoinModalOpen() || joinModalOpenInProgress || joinModalCloseInProgress) return;
+    joinModalOpenInProgress = true;
 
     modalLastFocusedEl =
       triggerEl && document.contains(triggerEl)
@@ -235,16 +244,22 @@ export const initJoinModal = ({
     try {
       await mountJoinModal();
     } catch (error) {
+      joinModalOpenInProgress = false;
       setModalBackgroundInert(false);
       console.warn('Join-Modal konnte nicht geladen werden:', error);
       showToast('Join-Dialog konnte nicht geladen werden.', 'error');
       return;
     }
 
+    joinModalOpenInProgress = false;
+
     if (!joinModalDialog) {
       closeJoinModal();
       return;
     }
+
+    if (!isJoinModalOpen()) return;
+
     const dialog = joinModalDialog;
     releaseModalScrollLock = acquireScrollLock();
     setModalBackgroundInert(true);
@@ -364,6 +379,7 @@ export const initJoinModal = ({
 
   document.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
+      // Escape schliesst zuerst das Modal; nur ohne offenes Modal wird das Menue geschlossen.
       if (isJoinModalOpen()) {
         e.preventDefault();
         closeJoinModal();
