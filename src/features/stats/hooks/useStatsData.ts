@@ -243,11 +243,16 @@ export function useStatsData({
   );
 
   const loadLeaderboard = useCallback(
-    async (metricId: string, stateKey: string, opts?: { openLoadedPage?: boolean }) => {
+    async (
+      metricId: string,
+      stateKey: string,
+      opts?: { openLoadedPage?: boolean; forceRefresh?: boolean },
+    ) => {
       if (isRateLimitBlocked) return;
 
       setApiErrorWithKind(null, null);
       const openLoadedPage = opts?.openLoadedPage ?? false;
+      const forceRefresh = opts?.forceRefresh ?? false;
       const currentState =
         stateKey === 'king'
           ? kingRef.current
@@ -259,7 +264,8 @@ export function useStatsData({
 
       try {
         const isSamePageSize = currentState.pageSize === pageSizeRef.current;
-        const cursor = currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
+        const cursor =
+          !forceRefresh && currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
         const data = await getLeaderboard(metricId, pageSizeRef.current, cursor);
 
         if (typeof data.__generated === 'string') {
@@ -626,6 +632,7 @@ export function useStatsData({
     king,
     setKingCurrentPage,
     loadMoreKing: () => loadLeaderboard('king', 'king', { openLoadedPage: true }),
+    reloadKing: () => loadLeaderboard('king', 'king', { forceRefresh: true }),
     boards,
     activeMetricId,
     setActiveMetricId,
@@ -636,6 +643,10 @@ export function useStatsData({
     loadMoreActiveMetric: () => {
       if (!activeMetricId) return Promise.resolve();
       return loadLeaderboard(activeMetricId, activeMetricId, { openLoadedPage: true });
+    },
+    reloadActiveMetric: () => {
+      if (!activeMetricId) return Promise.resolve();
+      return loadLeaderboard(activeMetricId, activeMetricId, { forceRefresh: true });
     },
     getPlayerName,
     goToPlayer,

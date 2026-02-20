@@ -5,6 +5,7 @@ type StatsLayoutProps = {
   children: ReactNode;
   topBarClassName?: string;
   contentClassName?: string;
+  stickyTopBar?: boolean;
 };
 
 type StatsLayoutSectionProps = {
@@ -28,10 +29,18 @@ export function StatsLayout({
   children,
   topBarClassName,
   contentClassName,
+  stickyTopBar = false,
 }: StatsLayoutProps) {
   return (
     <div className="pb-12">
-      <section className="mg-surface-1">
+      <section
+        className={joinClassNames(
+          'mg-surface-1',
+          stickyTopBar
+            ? 'border-border/70 sticky top-[calc(4.5rem+env(safe-area-inset-top))] z-40 border-b'
+            : undefined,
+        )}
+      >
         <div className={joinClassNames('mg-container py-8', topBarClassName)}>{topBar}</div>
       </section>
       <section className={joinClassNames('mg-container py-8', contentClassName)}>

@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { STATS_PAGE_SIZES } from '../constants';
+import { STATS_DEFAULT_PAGE_SIZE, STATS_PAGE_SIZES } from '../constants';
 import { WELCOME_DISMISS_KEY, WELCOME_DISMISS_LEGACY_KEY, shouldShowWelcome } from '../welcome';
 import { useQuerySync } from './useQuerySync';
 
 function sanitizePageSize(next: number): number {
   return STATS_PAGE_SIZES.includes(next as (typeof STATS_PAGE_SIZES)[number])
     ? next
-    : STATS_PAGE_SIZES[0];
+    : STATS_DEFAULT_PAGE_SIZE;
 }
 
-export function useStatsState(initialPageSize: number = STATS_PAGE_SIZES[0]) {
+export function useStatsState(initialPageSize: number = STATS_DEFAULT_PAGE_SIZE) {
   const querySync = useQuerySync('uebersicht');
 
   const [pageSize, setPageSizeState] = useState(() => sanitizePageSize(initialPageSize));

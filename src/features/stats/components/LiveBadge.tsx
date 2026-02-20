@@ -1,21 +1,24 @@
 import { Clock3 } from 'lucide-react';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
-export type LiveBadgeVariant = 'stale' | 'rate_limit' | 'error';
+export type LiveBadgeVariant = 'ok' | 'stale' | 'rate_limit' | 'error';
 
 const LABEL_BY_VARIANT: Record<LiveBadgeVariant, string> = {
+  ok: LIVE_COPY_DE.ok_badge,
   stale: LIVE_COPY_DE.stale_badge,
   rate_limit: LIVE_COPY_DE.rate_limit_badge,
   error: LIVE_COPY_DE.error_badge,
 };
 
 const A11Y_TEXT_BY_VARIANT: Record<LiveBadgeVariant, string> = {
+  ok: LIVE_COPY_DE.ok_status_a11y,
   stale: LIVE_COPY_DE.stale_status_a11y,
   rate_limit: LIVE_COPY_DE.rate_limit_status_a11y,
   error: LIVE_COPY_DE.error_status_a11y,
 };
 
 const TONE_BY_VARIANT: Record<LiveBadgeVariant, string> = {
+  ok: 'bg-surface border-border text-muted',
   stale: 'bg-surface border-border text-muted',
   rate_limit: 'bg-accent/12 border-accent/35 text-fg/85',
   error: 'bg-surface-solid/55 border-border text-muted',

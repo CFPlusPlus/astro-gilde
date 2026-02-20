@@ -3,14 +3,13 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
 import { RankingsSection } from './components/sections/RankingsSection';
-import { StatsHeader } from './components/sections/StatsHeader';
+import { StatsToolbar } from './components/StatsToolbar';
 import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
 import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
-import type { TabKey } from './types-ui';
 import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
 
 export default function StatsApp() {
@@ -40,9 +39,7 @@ export default function StatsApp() {
   } = useStatsState();
 
   const {
-    generatedIso,
     setGeneratedIso,
-    playerCount,
     totals,
     summaryLoaded,
     summaryLoading,
@@ -59,11 +56,13 @@ export default function StatsApp() {
     king,
     setKingCurrentPage,
     loadMoreKing,
+    reloadKing,
     activeMetricId,
     setActiveMetricId,
     activeMetricState,
     setActiveMetricCurrentPage,
     loadMoreActiveMetric,
+    reloadActiveMetric,
     getPlayerName,
     goToPlayer,
   } = useStatsData({
@@ -84,40 +83,58 @@ export default function StatsApp() {
     },
   });
   const tabsDisabled = Boolean(apiError);
-  const tabMeta = useMemo<
-    Record<
-      TabKey,
-      {
-        title: string;
-        description: string;
+  const runVersusCompare = versus.runVersusCompare;
+  const toolbarLiveVariant = useMemo(() => {
+    if (summaryRetryDisabled) return 'rate_limit';
+    if (summaryError) return summaryLastUpdatedAt ? 'stale' : 'error';
+    if (summaryLoading && summaryLoaded) return 'stale';
+
+    if (activeTab === 'king') {
+      if (king.liveErrorKind === 'rate_limit') return 'rate_limit';
+      if (king.liveStatus === 'stale') return 'stale';
+      if (king.liveStatus === 'error') return king.loaded ? 'stale' : 'error';
+    }
+
+    if (activeTab === 'ranglisten') {
+      if (activeMetricState.liveErrorKind === 'rate_limit') return 'rate_limit';
+      if (activeMetricState.liveStatus === 'stale') return 'stale';
+      if (activeMetricState.liveStatus === 'error') {
+        return activeMetricState.loaded ? 'stale' : 'error';
       }
-    >
-  >(
-    () => ({
-      uebersicht: {
-        title: '\u00dcbersicht',
-        description:
-          'Entdecke die wichtigsten Kennzahlen unseres Servers und finde heraus, wie sich die Welt entwickelt.',
-      },
-      king: {
-        title: 'Server-K\u00f6nig',
-        description:
-          'Hier siehst du, wer \u00fcber alle Kategorien hinweg die meisten Punkte gesammelt hat.',
-      },
-      ranglisten: {
-        title: 'Ranglisten',
-        description:
-          'W\u00e4hle eine Kategorie aus und verfolge direkt, welche Spieler in diesem Bereich f\u00fchren.',
-      },
-      versus: {
-        title: 'Versus',
-        description:
-          'Vergleiche zwei Spieler Seite an Seite in den Kategorien, die f\u00fcr dich relevant sind.',
-      },
-    }),
-    [],
-  );
-  const activeTabMeta = tabMeta[activeTab];
+    }
+
+    return 'ok';
+  }, [
+    activeMetricState.liveErrorKind,
+    activeMetricState.liveStatus,
+    activeMetricState.loaded,
+    activeTab,
+    king.liveErrorKind,
+    king.liveStatus,
+    king.loaded,
+    summaryError,
+    summaryLastUpdatedAt,
+    summaryLoaded,
+    summaryLoading,
+    summaryRetryDisabled,
+  ]);
+  const handleReload = useCallback(() => {
+    retrySummary();
+
+    if (activeTab === 'king') {
+      void reloadKing();
+      return;
+    }
+
+    if (activeTab === 'ranglisten') {
+      void reloadActiveMetric();
+      return;
+    }
+
+    if (activeTab === 'versus') {
+      void runVersusCompare();
+    }
+  }, [activeTab, reloadActiveMetric, reloadKing, retrySummary, runVersusCompare]);
   const handleSelectMetric = useCallback(
     (id: string) => {
       if (id === activeMetricId) return;
@@ -184,21 +201,24 @@ export default function StatsApp() {
 
   return (
     <StatsLayout
+      stickyTopBar
+      topBarClassName="py-4"
       topBar={
-        <StatsHeader
-          title={activeTabMeta.title}
-          description={activeTabMeta.description}
+        <StatsToolbar
           activeTab={activeTab}
           onTabChange={setTab}
           tabsDisabled={tabsDisabled}
           search={mainSearch}
           onChoosePlayer={goToPlayer}
-          playerCount={playerCount}
-          generatedIso={generatedIso}
           showPageSize={showPageSize}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
+          liveVariant={toolbarLiveVariant}
+          updatedAt={summaryLastUpdatedAt}
           apiError={apiError}
+          onReload={handleReload}
+          reloadDisabled={summaryRetryDisabled}
+          reloadInSeconds={summaryRetryInSeconds}
         />
       }
     >

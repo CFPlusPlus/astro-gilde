@@ -12,6 +12,7 @@ export function PlayerAutocomplete({
   onSelectedIndexChange,
   onChoose,
   wrapRef,
+  className,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -22,6 +23,7 @@ export function PlayerAutocomplete({
   onSelectedIndexChange: (next: number) => void;
   onChoose: (uuid: string) => void;
   wrapRef: React.RefObject<HTMLDivElement | null>;
+  className?: string;
 }) {
   const itemRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -33,7 +35,10 @@ export function PlayerAutocomplete({
   }, [open, selectedIndex]);
 
   return (
-    <div className="relative z-30 w-full lg:max-w-xl" ref={wrapRef}>
+    <div
+      className={['relative z-30 w-full lg:max-w-xl', className || ''].join(' ').trim()}
+      ref={wrapRef}
+    >
       <div className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Search size={18} className="text-muted" />
         <input
