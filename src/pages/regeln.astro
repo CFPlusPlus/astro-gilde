@@ -12,6 +12,7 @@ const rules = await getEntry('rules', 'main');
 if (!rules) throw new Error('Rules entry "main" not found');
 
 const { warning, minecraft, discord } = rules.data;
+const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 ---
 
 <BaseLayout
@@ -24,7 +25,7 @@ const { warning, minecraft, discord } = rules.data;
     </Callout>
 
     <Fragment slot="actions">
-      <Button variant="primary" class="gap-2" data-copy-ip>
+      <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
       <Button href="/tutorial" variant="secondary" class="gap-2">
