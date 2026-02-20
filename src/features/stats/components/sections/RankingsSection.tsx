@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ListFilter, RotateCcw, SearchX, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ListFilter, RotateCcw, SearchX, X } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
@@ -12,6 +12,93 @@ import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
 import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
+
+const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
+const LAST_CATEGORIES_LIMIT = 5;
+const LAST_CATEGORIES_VISIBLE_LIMIT = 5;
+const HORIZONTAL_SCROLL_EPSILON = 2;
+
+function normalizeLastCategories(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue;
+    const key = entry.trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    normalized.push(key);
+    if (normalized.length >= LAST_CATEGORIES_LIMIT) break;
+  }
+
+  return normalized;
+}
+
+function readLastCategories(): string[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const raw = window.localStorage.getItem(LAST_CATEGORIES_STORAGE_KEY);
+    if (!raw) return [];
+    return normalizeLastCategories(JSON.parse(raw));
+  } catch {
+    return [];
+  }
+}
+
+function writeLastCategories(next: string[]): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(
+      LAST_CATEGORIES_STORAGE_KEY,
+      JSON.stringify(next.slice(0, LAST_CATEGORIES_LIMIT)),
+    );
+  } catch {
+    // Unkritisch: localStorage kann blockiert sein.
+  }
+}
+
+function clearLastCategories(): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.removeItem(LAST_CATEGORIES_STORAGE_KEY);
+  } catch {
+    // Unkritisch: localStorage kann blockiert sein.
+  }
+}
+
+function resolveHorizontalScrollState(container: HTMLDivElement | null): {
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
+} {
+  if (!container) {
+    return { canScrollLeft: false, canScrollRight: false };
+  }
+
+  const maxScrollLeft = container.scrollWidth - container.clientWidth;
+  if (maxScrollLeft <= HORIZONTAL_SCROLL_EPSILON) {
+    return { canScrollLeft: false, canScrollRight: false };
+  }
+
+  return {
+    canScrollLeft: container.scrollLeft > HORIZONTAL_SCROLL_EPSILON,
+    canScrollRight: container.scrollLeft < maxScrollLeft - HORIZONTAL_SCROLL_EPSILON,
+  };
+}
+
+function scrollHorizontal(container: HTMLDivElement | null, direction: 'left' | 'right'): void {
+  if (!container) return;
+
+  const distance = Math.max(180, Math.round(container.clientWidth * 0.75));
+  container.scrollBy({
+    left: direction === 'left' ? -distance : distance,
+    behavior: 'smooth',
+  });
+}
 
 function resolveRankingsLiveVariant(state: LeaderboardState): LiveBadgeVariant | null {
   if (state.liveErrorKind === 'rate_limit') return 'rate_limit';
@@ -53,11 +140,26 @@ export function RankingsSection({
 }) {
   const lastLoadedMetricRef = useRef<{ id: string; state: LeaderboardState } | null>(null);
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
+  const [lastCategoryIds, setLastCategoryIds] = useState<string[]>([]);
+  const quickAccessScrollRef = useRef<HTMLDivElement | null>(null);
+  const recentlyViewedScrollRef = useRef<HTMLDivElement | null>(null);
+  const [quickAccessScrollState, setQuickAccessScrollState] = useState({
+    canScrollLeft: false,
+    canScrollRight: false,
+  });
+  const [recentlyViewedScrollState, setRecentlyViewedScrollState] = useState({
+    canScrollLeft: false,
+    canScrollRight: false,
+  });
 
   useEffect(() => {
     if (!activeMetricId || !activeMetricState.loaded) return;
     lastLoadedMetricRef.current = { id: activeMetricId, state: activeMetricState };
   }, [activeMetricId, activeMetricState]);
+
+  useEffect(() => {
+    setLastCategoryIds(readLastCategories());
+  }, []);
 
   useEffect(() => {
     if (!mobilePickerOpen) return;
@@ -160,8 +262,67 @@ export function RankingsSection({
     return RANKINGS_TOP_CATEGORY_KEYS.filter((id) => Boolean(metrics[id]));
   }, [metrics]);
 
-  const handleSelectMetricFromDrawer = (id: string) => {
+  const recentlyViewedMetricIds = useMemo(() => {
+    if (!metrics) return [];
+    return lastCategoryIds
+      .filter((id) => Boolean(metrics[id]))
+      .slice(0, LAST_CATEGORIES_VISIBLE_LIMIT);
+  }, [lastCategoryIds, metrics]);
+
+  useEffect(() => {
+    const container = quickAccessScrollRef.current;
+    const update = () => {
+      setQuickAccessScrollState(resolveHorizontalScrollState(container));
+    };
+
+    update();
+    if (!container) return;
+
+    const rafId = window.requestAnimationFrame(update);
+    container.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      container.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [metrics, quickAccessMetricIds.length]);
+
+  useEffect(() => {
+    const container = recentlyViewedScrollRef.current;
+    const update = () => {
+      setRecentlyViewedScrollState(resolveHorizontalScrollState(container));
+    };
+
+    update();
+    if (!container) return;
+
+    const rafId = window.requestAnimationFrame(update);
+    container.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      container.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [metrics, recentlyViewedMetricIds.length]);
+
+  const handleSelectMetric = (id: string) => {
+    setLastCategoryIds((previous) => {
+      const next = [id, ...previous.filter((entry) => entry !== id)].slice(
+        0,
+        LAST_CATEGORIES_LIMIT,
+      );
+      writeLastCategories(next);
+      return next;
+    });
     onSelectMetric(id);
+  };
+
+  const handleSelectMetricFromDrawer = (id: string) => {
+    handleSelectMetric(id);
     setMobilePickerOpen(false);
   };
 
@@ -169,8 +330,26 @@ export function RankingsSection({
     if (metricFilter.trim().length > 0) {
       onMetricFilterChange('');
     }
-    onSelectMetric(id);
+    handleSelectMetric(id);
   };
+
+  const handleClearLastCategories = () => {
+    setLastCategoryIds([]);
+    clearLastCategories();
+  };
+
+  const handleQuickAccessScroll = (direction: 'left' | 'right') => {
+    scrollHorizontal(quickAccessScrollRef.current, direction);
+  };
+
+  const handleRecentlyViewedScroll = (direction: 'left' | 'right') => {
+    scrollHorizontal(recentlyViewedScrollRef.current, direction);
+  };
+
+  const showQuickAccessScrollControls =
+    quickAccessScrollState.canScrollLeft || quickAccessScrollState.canScrollRight;
+  const showRecentlyViewedScrollControls =
+    recentlyViewedScrollState.canScrollLeft || recentlyViewedScrollState.canScrollRight;
 
   const visibleCategoryCount = groupedMetrics.reduce((sum, group) => sum + group.ids.length, 0);
 
@@ -201,7 +380,7 @@ export function RankingsSection({
                 filter={metricFilter}
                 onFilterChange={onMetricFilterChange}
                 activeMetricId={activeMetricId}
-                onSelectMetric={onSelectMetric}
+                onSelectMetric={handleSelectMetric}
                 surface={false}
               />
             ) : null}
@@ -241,9 +420,104 @@ export function RankingsSection({
 
               <div className="mt-2 min-h-10">
                 {metrics && quickAccessMetricIds.length > 0 ? (
-                  <div className="overflow-x-auto pb-1">
-                    <ul className="flex w-max items-center gap-2" role="list">
-                      {quickAccessMetricIds.map((id) => {
+                  <div className="flex items-center gap-2">
+                    {showQuickAccessScrollControls ? (
+                      <button
+                        type="button"
+                        onClick={() => handleQuickAccessScroll('left')}
+                        className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
+                        aria-label="Schnellzugriff nach links scrollen"
+                        disabled={!quickAccessScrollState.canScrollLeft}
+                      >
+                        <ChevronLeft size={13} />
+                      </button>
+                    ) : null}
+
+                    <div
+                      ref={quickAccessScrollRef}
+                      className="min-w-0 flex-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                    >
+                      <ul className="flex w-max translate-y-[2px] items-center gap-2" role="list">
+                        {quickAccessMetricIds.map((id) => {
+                          const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
+                          const isActive = id === activeMetricId;
+
+                          return (
+                            <li key={id}>
+                              <button
+                                type="button"
+                                onClick={() => handleQuickAccessSelect(id)}
+                                className={[
+                                  'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
+                                  isActive
+                                    ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
+                                    : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
+                                ].join(' ')}
+                                aria-pressed={isActive}
+                              >
+                                {categoryDef.label || id}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+
+                    {showQuickAccessScrollControls ? (
+                      <button
+                        type="button"
+                        onClick={() => handleQuickAccessScroll('right')}
+                        className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
+                        aria-label="Schnellzugriff nach rechts scrollen"
+                        disabled={!quickAccessScrollState.canScrollRight}
+                      >
+                        <ChevronRight size={13} />
+                      </button>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div
+                    className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+            </section>
+
+            {metrics && recentlyViewedMetricIds.length > 0 ? (
+              <section aria-label="Zuletzt angesehen">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-fg/90 text-xs font-semibold tracking-wide uppercase">
+                    Zuletzt angesehen (dieses Ger&auml;t)
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleClearLastCategories}
+                    className="focus-visible:ring-offset-bg text-muted hover:text-accent inline-flex items-center rounded-md px-1 py-0.5 text-xs font-semibold underline-offset-4 transition-colors hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
+                    Zur&uuml;cksetzen
+                  </button>
+                </div>
+
+                <div className="mt-2 flex items-center gap-2">
+                  {showRecentlyViewedScrollControls ? (
+                    <button
+                      type="button"
+                      onClick={() => handleRecentlyViewedScroll('left')}
+                      className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
+                      aria-label="Zuletzt angesehen nach links scrollen"
+                      disabled={!recentlyViewedScrollState.canScrollLeft}
+                    >
+                      <ChevronLeft size={13} />
+                    </button>
+                  ) : null}
+
+                  <div
+                    ref={recentlyViewedScrollRef}
+                    className="min-w-0 flex-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                  >
+                    <ul className="flex w-max translate-y-[2px] items-center gap-2" role="list">
+                      {recentlyViewedMetricIds.map((id) => {
                         const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
                         const isActive = id === activeMetricId;
 
@@ -251,9 +525,9 @@ export function RankingsSection({
                           <li key={id}>
                             <button
                               type="button"
-                              onClick={() => handleQuickAccessSelect(id)}
+                              onClick={() => handleSelectMetric(id)}
                               className={[
-                                'mg-pill text-sm font-semibold whitespace-nowrap',
+                                'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
                                 isActive
                                   ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
                                   : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
@@ -267,14 +541,21 @@ export function RankingsSection({
                       })}
                     </ul>
                   </div>
-                ) : (
-                  <div
-                    className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
-            </section>
+
+                  {showRecentlyViewedScrollControls ? (
+                    <button
+                      type="button"
+                      onClick={() => handleRecentlyViewedScroll('right')}
+                      className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
+                      aria-label="Zuletzt angesehen nach rechts scrollen"
+                      disabled={!recentlyViewedScrollState.canScrollRight}
+                    >
+                      <ChevronRight size={13} />
+                    </button>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
 
             {!metrics ? (
               <div className="mg-notice text-sm" data-variant="neutral" role="status">
