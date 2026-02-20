@@ -22,6 +22,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
       role="dialog"
       aria-modal="true"
       aria-labelledby="join-modal-title"
+      aria-describedby="join-modal-description"
       data-join-modal-dialog
       tabindex="-1"
     >
@@ -39,6 +40,11 @@ const MC_VERSION = minecraftGilde.mcVersion;
           <X size={20} />
         </IconButton>
       </header>
+
+      <p id="join-modal-description" class="sr-only">
+        Dialog mit zwei Schritten zum Beitreten, inklusive Server-IP zum Kopieren und aktuellem
+        Serverstatus.
+      </p>
 
       <div class="space-y-4 p-3 sm:p-5">
         <article class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5">

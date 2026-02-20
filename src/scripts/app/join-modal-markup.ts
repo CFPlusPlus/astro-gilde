@@ -34,6 +34,7 @@ export const buildJoinModalMarkup = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="join-modal-title"
+      aria-describedby="join-modal-description"
       data-join-modal-dialog
       tabindex="-1"
     >
@@ -47,12 +48,17 @@ export const buildJoinModalMarkup = ({
         <button
           type="button"
           class="focus-visible:ring-offset-bg inline-flex h-10 w-10 min-h-10 min-w-10 items-center justify-center rounded-lg bg-transparent text-fg transition-colors hover:bg-transparent hover:text-accent focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-          aria-label="Schliessen"
+          aria-label="Schließen"
           data-join-modal-close
         >
-          <span aria-hidden="true">✕</span>
+          <span aria-hidden="true" class="text-2xl leading-none">&times;</span>
         </button>
       </header>
+
+      <p id="join-modal-description" class="sr-only">
+        Dialog mit zwei Schritten zum Beitreten, inklusive Server-IP zum Kopieren und aktuellem
+        Serverstatus.
+      </p>
 
       <div class="space-y-4 p-3 sm:p-5">
         <article class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5">
