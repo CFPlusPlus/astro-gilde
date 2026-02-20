@@ -25,6 +25,7 @@ import {
 import Button from './ui/Button.astro';
 import IconButton from './ui/IconButton.astro';
 import NavItem from './nav/NavItem.astro';
+import { minecraftGilde } from '../config/minecraftGilde';
 import {
   NAV_DISCORD_LINK,
   NAV_MEGA_MENU_SECTIONS,
@@ -52,6 +53,7 @@ const MENU_ICONS: Record<NavMenuIcon, typeof House> = {
   privacy: ShieldCheck,
   imprint: FileText,
 };
+const NAV_MC_VERSION = minecraftGilde.mcVersion;
 
 const normalize = (p: string) => {
   if (!p) return '/';
@@ -80,7 +82,7 @@ const linkClassMega = (active: boolean) =>
 ---
 
 <header
-  class="site-nav-shell sticky top-0 z-50 [--site-nav-offset:calc(4.25rem+env(safe-area-inset-top))]"
+  class="site-nav-shell sticky top-0 z-50 [--site-nav-offset:calc(4.5rem+env(safe-area-inset-top))]"
   data-site-nav
 >
   <div class="mx-auto max-w-6xl px-4 pt-[env(safe-area-inset-top)]">
@@ -96,7 +98,7 @@ const linkClassMega = (active: boolean) =>
         />
         <div class="site-brand-copy hidden leading-tight md:block">
           <span class="text-sm font-semibold">Minecraft Gilde</span>
-          <div class="text-muted text-xs">Vanilla SMP - 1.21.x</div>
+          <div class="text-muted text-xs">Vanilla SMP - {NAV_MC_VERSION}</div>
         </div>
       </a>
 

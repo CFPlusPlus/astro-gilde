@@ -5,6 +5,7 @@ import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
 import { createTableRowMotion } from '../../ui/tableRowMotion';
+import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
 export function LeaderboardTable({
   metricKey = 'default',
@@ -92,7 +93,7 @@ export function LeaderboardTable({
             {state.loaded && page.length === 0 ? (
               <tr>
                 <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
-                  {'Keine Daten verf\u00fcgbar.'}
+                  {LIVE_COPY_DE.no_data_available}
                 </td>
               </tr>
             ) : null}
@@ -157,7 +158,7 @@ export function LeaderboardTable({
       {isLoading ? (
         <div className="pointer-events-none absolute top-3 right-3">
           <span className="bg-surface-solid/75 text-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-            Aktualisiere...
+            {LIVE_COPY_DE.table_updating}
           </span>
         </div>
       ) : null}
@@ -166,7 +167,7 @@ export function LeaderboardTable({
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span className="bg-surface-solid/90 text-fg inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur">
             <LoaderCircle size={14} className="text-muted animate-spin" />
-            {centerLoaderLabel || 'Rangliste wird geladen...'}
+            {centerLoaderLabel || LIVE_COPY_DE.table_loading}
           </span>
         </div>
       ) : null}

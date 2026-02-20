@@ -17,12 +17,7 @@ import { initToast } from './app/toast';
 */
 
 (() => {
-  const config = readBrowserAppConfig({
-    serverIp: 'minecraft-gilde.de',
-    discordGuildId: '1219625244906754093',
-    discordInvite: 'https://discord.minecraft-gilde.de',
-    dynmapUrl: 'https://map.minecraft-gilde.de',
-  });
+  const config = readBrowserAppConfig({});
 
   const toast = initToast(qs);
   initTheme({ qs, qsa, showToast: toast.showToast });

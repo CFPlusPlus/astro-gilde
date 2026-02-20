@@ -17,6 +17,12 @@ Leitfaden fuer KI-Agenten in diesem Repository.
 - Tests: Vitest
 - Laufzeit: Node.js >= 22
 
+## Projekt-Setup
+
+- Abhaengigkeiten installieren: `npm install`
+- Lokale Entwicklung starten: `npm run dev`
+- Produktionsbuild lokal pruefen: `npm run build`
+
 ## Relevante Bereiche
 
 - `src/pages/` fuer Seiten
@@ -35,18 +41,31 @@ Leitfaden fuer KI-Agenten in diesem Repository.
 - Bestehende Namenskonventionen und Dateistruktur einhalten.
 - Kommentare im Code auf Deutsch verfassen.
 - Kommentare nur dort setzen, wo sie wirklich zum Verstaendnis beitragen.
+- Integrationen bevorzugt ueber `astro add` installieren statt rein manuell.
+
+## Rueckfragepflicht
+
+- Vor Aenderungen an `src/content/`-Schemas oder Struktur immer Rueckfrage.
+- Vor neuen Abhaengigkeiten immer Rueckfrage.
+- Vor groesseren Refactors immer Rueckfrage.
 
 ## Qualitaet vor Abschluss
 
-- Nach Aenderungen, wenn sinnvoll, lokal pruefen:
-- `npm run format:check`
-- `npm run lint`
-- `npm run check`
-- `npm run test`
+- Standard (Code- und Logikaenderungen):
+  - `npm run format:check`
+  - `npm run lint`
+  - `npm run check`
+  - `npm run test`
 - Bei Build-/Routing-/Asset-Aenderungen zusaetzlich:
-- `npm run build`
-- Bei rein kleinen Text-/Markup-Aenderungen mindestens:
-- `npm run check`
+  - `npm run build`
+- Bei kleinen Text-/Markup-Aenderungen mindestens:
+  - `npm run check`
+
+## Architektur-Hinweise
+
+- Seiten liegen in `src/pages/`, Layouts in `src/layouts/`, UI-Komponenten in `src/components/`.
+- Feature-Logik liegt in `src/features/`; browserseitige Logik in `src/scripts/`.
+- Inhalte in `src/content/` sind redaktionell und strukturell stabil zu behandeln.
 
 ## Antwortformat fuer Agenten
 

@@ -15,6 +15,7 @@ interface ServerStatus {
 
 const POLL_MS = 12_000;
 const FETCH_TIMEOUT_MS = 8_000;
+const POLL_RESUME_JITTER_MS = 750;
 
 const qs = <T extends Element>(sel: string, root: ParentNode = document): T | null =>
   root.querySelector<T>(sel);
@@ -103,10 +104,11 @@ function renderPlayers(data: ServerStatus): void {
 }
 
 export function initHomePlayers(): () => void {
-  const config = readBrowserAppConfig({ serverIp: 'minecraft-gilde.de' });
+  const config = readBrowserAppConfig({});
   let destroyed = false;
   let isFetchInFlight = false;
   let pollTimer: number | null = null;
+  let resumeTimer: number | null = null;
   let fetchController: AbortController | null = null;
 
   const fetchPlayers = async (): Promise<void> => {
@@ -116,7 +118,12 @@ export function initHomePlayers(): () => void {
     if (destroyed) return;
 
     isFetchInFlight = true;
-    const ip = config.serverIp || 'minecraft-gilde.de';
+    const ip = config.serverIp;
+    if (!ip) {
+      setMountMessage(mount, 'Server-IP aktuell nicht verfuegbar.');
+      isFetchInFlight = false;
+      return;
+    }
     const controller = new AbortController();
     fetchController = controller;
     const timeoutId = window.setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -141,14 +148,56 @@ export function initHomePlayers(): () => void {
     }
   };
 
-  void fetchPlayers();
-  pollTimer = window.setInterval(() => {
+  const clearPollTimer = (): void => {
+    if (pollTimer != null) {
+      window.clearTimeout(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const clearResumeTimer = (): void => {
+    if (resumeTimer != null) {
+      window.clearTimeout(resumeTimer);
+      resumeTimer = null;
+    }
+  };
+
+  const scheduleNextPoll = (delayMs = POLL_MS): void => {
+    if (destroyed || document.visibilityState !== 'visible') return;
+    clearPollTimer();
+    pollTimer = window.setTimeout(() => {
+      void fetchPlayers();
+      scheduleNextPoll(POLL_MS);
+    }, delayMs);
+  };
+
+  const onVisibilityChange = (): void => {
+    if (document.visibilityState !== 'visible') {
+      clearPollTimer();
+      clearResumeTimer();
+      fetchController?.abort();
+      return;
+    }
+
+    const jitterMs = Math.floor(Math.random() * POLL_RESUME_JITTER_MS);
+    clearResumeTimer();
+    resumeTimer = window.setTimeout(() => {
+      void fetchPlayers();
+      scheduleNextPoll(POLL_MS);
+    }, jitterMs);
+  };
+
+  if (document.visibilityState === 'visible') {
     void fetchPlayers();
-  }, POLL_MS);
+    scheduleNextPoll(POLL_MS);
+  }
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   return () => {
     destroyed = true;
-    if (pollTimer != null) window.clearInterval(pollTimer);
+    clearPollTimer();
+    clearResumeTimer();
+    document.removeEventListener('visibilitychange', onVisibilityChange);
     fetchController?.abort();
   };
 }

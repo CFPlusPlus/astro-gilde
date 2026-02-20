@@ -40,13 +40,11 @@
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
     0 22px 46px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 78%, var(--bg) 22%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 58%, transparent),
-    0 14px 30px -24px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(255, 255, 255, 0.38);
+  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
+  --glass-nav-border: rgba(255, 255, 255, 0.34);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
@@ -89,12 +87,11 @@
     --glass-strong-shadow:
       inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
       0 24px 48px -30px var(--glass-shadow-color);
-    --glass-nav-bg: color-mix(in oklab, var(--surface) 84%, var(--bg) 16%);
-    --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 93%, var(--bg) 7%);
-    --glass-nav-border: color-mix(in oklab, var(--border) 84%, white 16%);
-    --glass-nav-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 64%, transparent),
-      0 12px 26px -22px color-mix(in oklab, var(--glass-shadow-color) 74%, transparent);
+    --glass-nav-blur: 20px;
+    --glass-nav-bg: rgba(34, 37, 42, 0.52);
+    --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+    --glass-nav-border: rgba(255, 255, 255, 0.18);
+    --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
     --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
     --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
 
@@ -134,13 +131,11 @@ html[data-theme='light'] {
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
     0 22px 46px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 78%, var(--bg) 22%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 58%, transparent),
-    0 14px 30px -24px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(255, 255, 255, 0.38);
+  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
+  --glass-nav-border: rgba(255, 255, 255, 0.34);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
@@ -181,13 +176,11 @@ html[data-theme='dark'] {
   --glass-strong-shadow:
     inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
     0 24px 48px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 13px;
-  --glass-nav-bg: color-mix(in oklab, var(--surface) 84%, var(--bg) 16%);
-  --glass-nav-bg-fallback: color-mix(in oklab, var(--surface-solid) 93%, var(--bg) 7%);
-  --glass-nav-border: color-mix(in oklab, var(--border) 84%, white 16%);
-  --glass-nav-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 64%, transparent),
-    0 12px 26px -22px color-mix(in oklab, var(--glass-shadow-color) 74%, transparent);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(34, 37, 42, 0.52);
+  --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+  --glass-nav-border: rgba(255, 255, 255, 0.18);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
   --glass-overlay-blur: 56px;
   --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
   --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
@@ -461,21 +454,12 @@ html[data-theme='dark'] {
     --mg-glass-bg-fallback: var(--glass-nav-bg-fallback);
     --mg-glass-border: var(--glass-nav-border);
     --mg-glass-shadow: var(--glass-nav-shadow);
+    -webkit-backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
+    backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
     border-top: 0;
     border-left: 0;
     border-right: 0;
-    border-bottom-width: 1.5px;
-    border-bottom-color: color-mix(in oklab, var(--border) 52%, transparent);
-  }
-
-  html[data-theme='dark'] .site-nav-shell {
-    border-bottom-color: color-mix(in oklab, var(--border) 44%, transparent);
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html:not([data-theme]) .site-nav-shell {
-      border-bottom-color: color-mix(in oklab, var(--border) 44%, transparent);
-    }
+    border-bottom: 0.1px solid var(--mg-glass-border);
   }
 
   .mg-glass-overlay {
@@ -565,7 +549,7 @@ html[data-theme='dark'] {
   }
 
   .site-nav-row {
-    min-height: 4.25rem;
+    min-height: 4.5rem;
   }
 
   .site-nav-controls {
@@ -1294,6 +1278,70 @@ html[data-theme='dark'] {
 
   .mg-live-counter[data-live-state='error'] {
     color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
+  }
+
+  .mg-live-counter[data-live-state='empty'] {
+    color: color-mix(in oklab, var(--fg) 82%, var(--muted) 18%);
+  }
+
+  .mg-live-counter[data-live-state='stale'] {
+    color: color-mix(in oklab, var(--fg) 68%, var(--muted) 32%);
+  }
+
+  .mg-live-note {
+    transition: color 160ms ease;
+  }
+
+  .mg-live-state {
+    display: grid;
+    min-height: 2.9rem;
+    align-content: start;
+    gap: 0.3rem;
+  }
+
+  .mg-live-debug {
+    margin-top: 0.1rem;
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+      monospace;
+    font-size: 0.64rem;
+    line-height: 1.3;
+    color: color-mix(in oklab, var(--muted) 85%, var(--fg) 15%);
+    opacity: 0.8;
+    user-select: text;
+    word-break: break-word;
+  }
+
+  .mg-live-state-note {
+    min-height: 1rem;
+    line-height: 1.35;
+  }
+
+  .mg-live-note[data-live-state='error'] {
+    color: color-mix(in oklab, var(--muted) 86%, var(--fg) 14%);
+  }
+
+  .mg-live-note[data-live-state='stale'] {
+    color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
+  }
+
+  [data-live-tile][data-live-state='error'] {
+    border-color: color-mix(in oklab, var(--border) 76%, var(--muted) 24%);
+  }
+
+  .mg-live-state-actions {
+    min-height: 1rem;
+    line-height: 1.2;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 160ms ease;
+  }
+
+  .mg-live-state-actions[data-visible='true'] {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .mg-status-dot {

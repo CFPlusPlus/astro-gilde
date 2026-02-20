@@ -4,7 +4,116 @@ import type { LeaderboardState } from '../../types-ui';
 import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
+import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
+import { StatValue } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
+
+function toFiniteNumber(value: unknown, depth = 0): number | null {
+  if (depth > 2) return null;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'bigint') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value === 'string' && value.trim().length > 0) {
+    const compact = value.trim().replace(/\s+/g, '');
+    const normalizedThousands = compact.replace(/(\d)\.(?=\d{3}(\D|$))/g, '$1');
+    const normalized = normalizedThousands.replace(',', '.');
+    const parsed = Number(normalized);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const parsed = toFiniteNumber(item, depth + 1);
+      if (parsed !== null) return parsed;
+    }
+    return null;
+  }
+  if (value && typeof value === 'object') {
+    const direct = Number(value);
+    if (Number.isFinite(direct)) return direct;
+
+    const record = value as Record<string, unknown>;
+    const preferredKeys = ['value', 'points', 'score', 'punkte', 'punktzahl', 'raw'];
+    for (const key of preferredKeys) {
+      if (!(key in record)) continue;
+      const parsed = toFiniteNumber(record[key], depth + 1);
+      if (parsed !== null) return parsed;
+    }
+    for (const nested of Object.values(record)) {
+      const parsed = toFiniteNumber(nested, depth + 1);
+      if (parsed !== null) return parsed;
+    }
+  }
+  return null;
+}
+
+function resolveEntryScore(entry: unknown): number | null {
+  if (!entry) return null;
+  if (typeof entry === 'object' && 'value' in entry) {
+    const parsedValue = toFiniteNumber((entry as { value?: unknown }).value);
+    if (parsedValue !== null) return parsedValue;
+  }
+  return toFiniteNumber(entry);
+}
+
+function readString(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function resolveEntryUuid(entry: unknown): string | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const record = entry as Record<string, unknown>;
+  const directUuidCandidates = [
+    record.uuid,
+    record.player_uuid,
+    record.playerUuid,
+    record.player_id,
+    record.playerId,
+  ];
+
+  for (const candidate of directUuidCandidates) {
+    const uuid = readString(candidate);
+    if (uuid) return uuid;
+  }
+
+  if (record.player && typeof record.player === 'object') {
+    const playerRecord = record.player as Record<string, unknown>;
+    const nestedUuid = readString(playerRecord.uuid ?? playerRecord.id);
+    if (nestedUuid) return nestedUuid;
+  }
+
+  return null;
+}
+
+function resolveEntryName(entry: unknown): string | null {
+  if (!entry || typeof entry !== 'object') return null;
+
+  const record = entry as Record<string, unknown>;
+  const directNameCandidates = [
+    record.name,
+    record.player_name,
+    record.playerName,
+    record.username,
+  ];
+
+  for (const candidate of directNameCandidates) {
+    const name = readString(candidate);
+    if (name) return name;
+  }
+
+  if (record.player && typeof record.player === 'object') {
+    const playerRecord = record.player as Record<string, unknown>;
+    const nestedName = readString(playerRecord.name ?? playerRecord.username);
+    if (nestedName) return nestedName;
+  }
+
+  return null;
+}
 
 export function KingSection({
   king,
@@ -23,11 +132,14 @@ export function KingSection({
 }) {
   const podium = king.pages[0] || [];
   const podiumEntries = podium.slice(0, 3);
-
-  const formatPoints = (value?: number) =>
-    typeof value === 'number'
-      ? formatMetricValue(value, { label: 'Punkte', category: 'King' })
-      : '-';
+  const liveBadgeVariant: LiveBadgeVariant | null =
+    king.liveErrorKind === 'rate_limit'
+      ? 'rate_limit'
+      : king.liveStatus === 'stale'
+        ? 'stale'
+        : king.liveStatus === 'error'
+          ? 'error'
+          : null;
 
   return (
     <StatsLayoutGrid>
@@ -46,15 +158,26 @@ export function KingSection({
         </div>
       </StatsLayoutRail>
       <StatsLayoutMain ariaLabel="Server-König Rangliste">
-        <SectionTitle
-          title="Server-König"
-          subtitle="Wer sammelt die meisten Punkte über alle Kategorien hinweg?"
-        />
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <SectionTitle
+              title="Server-König"
+              subtitle="Wer sammelt die meisten Punkte über alle Kategorien hinweg?"
+            />
+          </div>
+          <LiveBadgeSlot variant={liveBadgeVariant} className="shrink-0" />
+        </div>
         <div className="mt-5 space-y-5">
           <div className="grid gap-3 md:grid-cols-3">
             {Array.from({ length: 3 }, (_, index) => {
               const entry = podiumEntries[index];
               const rank = index + 1;
+              const score = resolveEntryScore(entry);
+              const hasScore = score !== null;
+              const uuid = resolveEntryUuid(entry);
+              const nameFromEntry = resolveEntryName(entry);
+              const resolvedName = uuid ? readString(getPlayerName(uuid)) : null;
+              const playerName = resolvedName || nameFromEntry || uuid;
 
               return (
                 <section
@@ -75,27 +198,63 @@ export function KingSection({
                   </div>
 
                   {entry ? (
-                    <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => onPlayerClick(entry.uuid)}
-                        className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-                      >
-                        <img
-                          src={`https://minotar.net/helm/${encodeURIComponent(getPlayerName(entry.uuid))}/32.png`}
-                          alt=""
-                          className="h-8 w-8 flex-none rounded-lg bg-black/20"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span className="truncate">{getPlayerName(entry.uuid)}</span>
-                      </button>
-                      <span className="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums">
-                        {formatPoints(entry.value)}
-                      </span>
+                    <div
+                      className={
+                        hasScore
+                          ? 'mt-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3'
+                          : 'mt-3 space-y-3'
+                      }
+                    >
+                      {playerName ? (
+                        uuid ? (
+                          <button
+                            type="button"
+                            onClick={() => onPlayerClick(uuid)}
+                            className="text-fg hover:text-accent focus-visible:ring-offset-bg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md text-left font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                          >
+                            <img
+                              src={`https://minotar.net/helm/${encodeURIComponent(playerName)}/32.png`}
+                              alt=""
+                              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span className="truncate">{playerName}</span>
+                          </button>
+                        ) : (
+                          <div className="text-fg inline-flex min-w-0 items-center gap-2.5 overflow-hidden rounded-md font-semibold">
+                            <img
+                              src={`https://minotar.net/helm/${encodeURIComponent(playerName)}/32.png`}
+                              alt=""
+                              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                            <span className="truncate">{playerName}</span>
+                          </div>
+                        )
+                      ) : (
+                        <p className="text-muted text-sm">Spielername nicht verfügbar.</p>
+                      )}
+                      <StatValue
+                        state={hasScore ? 'ok' : 'empty'}
+                        value={
+                          hasScore
+                            ? formatMetricValue(score, { label: 'Punkte', category: 'King' })
+                            : undefined
+                        }
+                        label="Punkte"
+                        hint={
+                          hasScore
+                            ? undefined
+                            : 'Für diesen Platz wurden noch keine Punkte übermittelt.'
+                        }
+                        className={hasScore ? 'text-right' : undefined}
+                        valueClassName="text-fg text-3xl font-semibold tracking-tight whitespace-nowrap tabular-nums"
+                      />
                     </div>
                   ) : (
-                    <p className="text-muted mt-2 text-sm">Noch keine Daten verfügbar.</p>
+                    <p className="text-muted mt-2 text-sm">{LIVE_COPY_DE.empty_card_title}.</p>
                   )}
                 </section>
               );

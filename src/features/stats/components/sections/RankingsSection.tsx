@@ -8,6 +8,7 @@ import { MetricPicker } from '../MetricPicker';
 import { SectionTitle } from '../StatsPrimitives';
 import type { MetricDef } from '../../types';
 import type { LeaderboardState } from '../../types-ui';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 
 export function RankingsSection({
   metrics,
@@ -100,7 +101,7 @@ export function RankingsSection({
         <div className="mt-5 space-y-4">
           {!metrics ? (
             <div className="mg-notice text-sm" data-variant="neutral" role="status">
-              Lade Ranglisten...
+              {LIVE_COPY_DE.rankings_loading}
             </div>
           ) : null}
 
@@ -167,8 +168,8 @@ export function RankingsSection({
                   showCenterLoader={activeMetricState.loading && !activeMetricState.loaded}
                   centerLoaderLabel={
                     canUseLoadedFallback
-                      ? 'Neue Rangliste wird geladen...'
-                      : 'Rangliste wird geladen...'
+                      ? LIVE_COPY_DE.table_loading_next
+                      : LIVE_COPY_DE.table_loading
                   }
                   pageSize={pageSize}
                   getPlayerName={getPlayerName}

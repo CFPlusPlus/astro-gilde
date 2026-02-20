@@ -4,18 +4,74 @@ import { getLeaderboard, getMetrics, getSummary } from '../api';
 import { KPI_METRICS } from '../constants';
 import { filterMetricIds, groupMetricIds, pickDefaultRankMetricId } from '../metric-utils';
 import { normalizeUmlauts } from '../normalizeUmlauts';
-import type { MetricDef } from '../types';
+import type { MetricDef, SummaryResponse } from '../types';
 import type { LeaderboardState, TabKey } from '../types-ui';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
+import { getLiveResource } from '../../../lib/live/cache';
+import {
+  LIVE_WIDGET_THRESHOLDS,
+  type LiveDataErrorKind,
+  type LiveDataState,
+} from '../../../lib/live/types';
+import { resolveLastUpdatedTimestamp } from '../../../lib/live/lastUpdated';
+import { LIVE_COPY_DE, getLiveMessage } from '../../../lib/live/copy.de';
 
-const API_ERROR_MESSAGE =
-  'Statistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
+const API_ERROR_MESSAGE = LIVE_COPY_DE.error_generic;
+const API_RATE_LIMIT_MESSAGE = LIVE_COPY_DE.rate_limit;
+const RATE_LIMIT_FALLBACK_MS = 60_000;
+
+function resolveHttpStatus(error: unknown): number | null {
+  if (!error || typeof error !== 'object') return null;
+
+  const withStatus = error as { status?: unknown; message?: unknown };
+  if (typeof withStatus.status === 'number' && Number.isFinite(withStatus.status)) {
+    return withStatus.status;
+  }
+
+  if (typeof withStatus.message === 'string') {
+    const match = withStatus.message.match(/\bHTTP\s+(\d{3})\b/i);
+    if (match) {
+      const status = Number(match[1]);
+      return Number.isFinite(status) ? status : null;
+    }
+  }
+
+  return null;
+}
+
+function resolveRetryAfterMs(error: unknown): number | null {
+  if (!error || typeof error !== 'object') return null;
+
+  const withRetryAfter = error as { retryAfterMs?: unknown };
+  if (
+    typeof withRetryAfter.retryAfterMs === 'number' &&
+    Number.isFinite(withRetryAfter.retryAfterMs) &&
+    withRetryAfter.retryAfterMs >= 0
+  ) {
+    return Math.floor(withRetryAfter.retryAfterMs);
+  }
+
+  return null;
+}
+
+function resolveLeaderboardErrorKind(error: unknown): LiveDataErrorKind {
+  const status = resolveHttpStatus(error);
+  if (status === 429) return 'rate_limit';
+  if (typeof status === 'number' && status >= 400 && status < 500) return 'invalid';
+  if (typeof status === 'number' && status >= 500) return 'network';
+  if ((error as Error | undefined)?.name === 'AbortError') return 'timeout';
+  return 'unknown';
+}
+const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
+const SUMMARY_MIN_REVALIDATE_INTERVAL_MS = 15_000;
 
 function makeEmptyLeaderboardState(): LeaderboardState {
   return {
     loaded: false,
     loading: false,
+    liveStatus: 'ok',
+    liveErrorKind: null,
     pages: [],
     currentPage: 0,
     nextCursor: null,
@@ -39,7 +95,18 @@ export function useStatsData({
   const [playerCount, setPlayerCount] = useState<number | null>(null);
   const [metrics, setMetrics] = useState<Record<string, MetricDef> | null>(null);
   const [totals, setTotals] = useState<Record<string, number> | null>(null);
+  const [summaryLoaded, setSummaryLoaded] = useState(false);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [summaryLastUpdatedAt, setSummaryLastUpdatedAt] = useState<number | null>(null);
+  const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [apiErrorKind, setApiErrorKind] = useState<LiveDataErrorKind | null>(null);
+  const [nextAllowedFetchAt, setNextAllowedFetchAt] = useState<number | null>(null);
+  const [rateLimitNowMs, setRateLimitNowMs] = useState<number>(() => Date.now());
+  const summaryLastUpdatedAtRef = useRef<number | null>(null);
+  const summaryLoadingRef = useRef(false);
+  const summaryVisibilityRevalidateAtRef = useRef(0);
 
   const [king, setKing] = useState<LeaderboardState>(makeEmptyLeaderboardState);
   const [boards, setBoards] = useState<Record<string, LeaderboardState>>({});
@@ -64,9 +131,86 @@ export function useStatsData({
     pageSizeRef.current = pageSize;
   }, [pageSize]);
 
+  useEffect(() => {
+    summaryLastUpdatedAtRef.current = summaryLastUpdatedAt;
+  }, [summaryLastUpdatedAt]);
+
+  useEffect(() => {
+    summaryLoadingRef.current = summaryLoading;
+  }, [summaryLoading]);
+
+  const setApiErrorWithKind = useCallback(
+    (message: string | null, kind: LiveDataErrorKind | null) => {
+      setApiError(message);
+      setApiErrorKind(kind);
+    },
+    [],
+  );
+
+  const registerRateLimit = useCallback(
+    (retryAfterMs: number | null | undefined) => {
+      const normalizedRetryAfterMs =
+        typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs > 0
+          ? Math.floor(retryAfterMs)
+          : RATE_LIMIT_FALLBACK_MS;
+      const candidateNextAllowedFetchAt = Date.now() + normalizedRetryAfterMs;
+
+      setNextAllowedFetchAt((prev) => {
+        if (typeof prev === 'number' && prev > candidateNextAllowedFetchAt) return prev;
+        return candidateNextAllowedFetchAt;
+      });
+      setApiErrorWithKind(API_RATE_LIMIT_MESSAGE, 'rate_limit');
+    },
+    [setApiErrorWithKind],
+  );
+
+  useEffect(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return;
+
+    setRateLimitNowMs(Date.now());
+    if (Date.now() >= nextAllowedFetchAt) return;
+
+    const intervalId = window.setInterval(() => {
+      setRateLimitNowMs(Date.now());
+    }, 1_000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [nextAllowedFetchAt]);
+
+  const rateLimitRetryInSeconds = useMemo(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return 0;
+    const remainingMs = nextAllowedFetchAt - rateLimitNowMs;
+    if (remainingMs <= 0) return 0;
+    return Math.ceil(remainingMs / 1_000);
+  }, [nextAllowedFetchAt, rateLimitNowMs]);
+
+  useEffect(() => {
+    if (typeof nextAllowedFetchAt !== 'number') return;
+    if (rateLimitRetryInSeconds > 0) return;
+    setNextAllowedFetchAt(null);
+  }, [nextAllowedFetchAt, rateLimitRetryInSeconds]);
+
+  const isRateLimitBlocked = rateLimitRetryInSeconds > 0;
+
+  const apiErrorMessage = useMemo(() => {
+    if (!apiError) return null;
+    if (apiErrorKind === 'rate_limit' && rateLimitRetryInSeconds > 0) {
+      return `${apiError} ${LIVE_COPY_DE.retry_in(rateLimitRetryInSeconds)}`;
+    }
+    return apiError;
+  }, [apiError, apiErrorKind, rateLimitRetryInSeconds]);
+  const handleAutocompleteError = useCallback(
+    (message: string | null) => {
+      setApiErrorWithKind(message, message ? 'unknown' : null);
+    },
+    [setApiErrorWithKind],
+  );
+
   const mainSearch = usePlayerAutocomplete({
     onGeneratedIso: setGeneratedIso,
-    onError: setApiError,
+    onError: handleAutocompleteError,
   });
 
   const mergePlayers = useCallback((players?: Record<string, string>) => {
@@ -100,7 +244,9 @@ export function useStatsData({
 
   const loadLeaderboard = useCallback(
     async (metricId: string, stateKey: string, opts?: { openLoadedPage?: boolean }) => {
-      setApiError(null);
+      if (isRateLimitBlocked) return;
+
+      setApiErrorWithKind(null, null);
       const openLoadedPage = opts?.openLoadedPage ?? false;
       const currentState =
         stateKey === 'king'
@@ -136,6 +282,8 @@ export function useStatsData({
           return {
             loaded: true,
             loading: false,
+            liveStatus: 'ok',
+            liveErrorKind: null,
             pages,
             currentPage: nextCurrentPage,
             nextCursor,
@@ -145,12 +293,30 @@ export function useStatsData({
         });
       } catch (error) {
         console.warn('Leaderboard Fehler', error);
-        setApiError(API_ERROR_MESSAGE);
-        setBoardState(stateKey, (state) => ({ ...state, loading: false }));
+        const liveErrorKind = resolveLeaderboardErrorKind(error);
+        if (liveErrorKind === 'rate_limit') {
+          registerRateLimit(resolveRetryAfterMs(error));
+        } else {
+          setApiErrorWithKind(
+            getLiveMessage({ status: 'error', errorKind: liveErrorKind }) ?? API_ERROR_MESSAGE,
+            liveErrorKind,
+          );
+        }
+        setBoardState(stateKey, (state) => ({
+          ...state,
+          loading: false,
+          liveStatus: state.loaded ? 'stale' : 'error',
+          liveErrorKind,
+        }));
       }
     },
-    [mergePlayers, setBoardState],
+    [isRateLimitBlocked, mergePlayers, registerRateLimit, setApiErrorWithKind, setBoardState],
   );
+
+  const retrySummary = useCallback(() => {
+    if (isRateLimitBlocked) return;
+    setSummaryReloadTrigger((prev) => prev + 1);
+  }, [isRateLimitBlocked]);
 
   const goToPlayer = useCallback((uuid: string) => {
     window.location.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
@@ -179,24 +345,162 @@ export function useStatsData({
 
   useEffect(() => {
     const ac = new AbortController();
+    const thresholds = LIVE_WIDGET_THRESHOLDS['stats-kpi'];
+
+    const applySummaryPayload = (data: SummaryResponse): void => {
+      if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
+      if (typeof data.player_count === 'number') setPlayerCount(data.player_count);
+      if (data.totals && typeof data.totals === 'object') {
+        setTotals(data.totals as Record<string, number>);
+      }
+    };
+
+    const applySummaryState = (
+      state: LiveDataState<SummaryResponse>,
+      options: { initial: boolean; hasRevalidate: boolean },
+    ): void => {
+      if (ac.signal.aborted) return;
+
+      if (state.data) {
+        applySummaryPayload(state.data);
+      }
+      const timestamp = resolveLastUpdatedTimestamp(state);
+      if (timestamp != null) {
+        setSummaryLastUpdatedAt(timestamp);
+      }
+
+      if (state.status === 'loading') {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        return;
+      }
+
+      setSummaryLoaded(true);
+
+      if (state.status === 'stale' && options.initial && options.hasRevalidate) {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        setApiErrorWithKind(null, null);
+        return;
+      }
+
+      setSummaryLoading(false);
+
+      if (state.status === 'error' || state.status === 'stale') {
+        const errorKind = state.error?.kind === 'rate_limit' ? 'rate_limit' : 'unknown';
+        const message =
+          getLiveMessage({ status: 'error', errorKind }) ??
+          (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE);
+        setSummaryError(message);
+        setApiErrorWithKind(message, errorKind);
+        return;
+      }
+
+      setSummaryError(null);
+      setApiErrorWithKind(null, null);
+    };
 
     (async () => {
-      try {
-        const data = await getSummary(KPI_METRICS, ac.signal);
-        if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
-        if (typeof data.player_count === 'number') setPlayerCount(data.player_count);
-        if (data.totals && typeof data.totals === 'object') {
-          setTotals(data.totals as Record<string, number>);
-        }
-        setApiError(null);
-      } catch (error) {
-        console.warn('Summary Fehler', error);
-        setApiError(API_ERROR_MESSAGE);
+      const resource = getLiveResource(
+        SUMMARY_CACHE_KEY,
+        async (): Promise<LiveDataState<SummaryResponse>> => {
+          try {
+            const data = await getSummary(KPI_METRICS, ac.signal);
+            const fetchedAt = Date.now();
+            return {
+              status: 'ok',
+              data,
+              updatedAt: fetchedAt,
+              fetchedAt,
+            };
+          } catch (error) {
+            if ((error as Error)?.name === 'AbortError') {
+              return {
+                status: 'error',
+                fetchedAt: Date.now(),
+                error: {
+                  kind: 'network',
+                  message: 'Anfrage wurde abgebrochen.',
+                },
+              };
+            }
+
+            const errorKind = resolveLeaderboardErrorKind(error);
+            const retryAfterMs = resolveRetryAfterMs(error);
+            if (errorKind === 'rate_limit') {
+              registerRateLimit(retryAfterMs);
+            }
+
+            return {
+              status: 'error',
+              fetchedAt: Date.now(),
+              error: {
+                kind: errorKind,
+                message:
+                  getLiveMessage({ status: 'error', errorKind }) ??
+                  (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
+                retryAfterMs: retryAfterMs ?? undefined,
+              },
+            };
+          }
+        },
+        {
+          staleAfterMs: thresholds.staleAfterMs,
+          maxCacheAgeMs: thresholds.maxCacheAgeMs,
+          persist: true,
+          minRevalidateIntervalMs: SUMMARY_MIN_REVALIDATE_INTERVAL_MS,
+        },
+      );
+
+      applySummaryState(resource.state, {
+        initial: true,
+        hasRevalidate: resource.revalidate != null,
+      });
+
+      if (!resource.revalidate) return;
+
+      const latest = await resource.revalidate;
+      applySummaryState(latest, {
+        initial: false,
+        hasRevalidate: true,
+      });
+
+      if (
+        !ac.signal.aborted &&
+        (latest.status === 'error' || (latest.status === 'stale' && latest.error))
+      ) {
+        console.warn('Summary Fehler', latest.error ?? latest);
       }
     })();
 
     return () => ac.abort();
-  }, []);
+  }, [registerRateLimit, setApiErrorWithKind, summaryReloadTrigger]);
+
+  useEffect(() => {
+    const staleAfterMs = LIVE_WIDGET_THRESHOLDS['stats-kpi'].staleAfterMs;
+
+    const onVisibilityChange = (): void => {
+      if (document.visibilityState !== 'visible') return;
+      if (summaryLoadingRef.current) return;
+      if (isRateLimitBlocked) return;
+
+      const now = Date.now();
+      if (now - summaryVisibilityRevalidateAtRef.current < SUMMARY_MIN_REVALIDATE_INTERVAL_MS) {
+        return;
+      }
+
+      const lastUpdatedAt = summaryLastUpdatedAtRef.current;
+      if (typeof lastUpdatedAt === 'number' && now - lastUpdatedAt <= staleAfterMs) return;
+
+      summaryVisibilityRevalidateAtRef.current = now;
+      setSummaryReloadTrigger((prev) => prev + 1);
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, [isRateLimitBlocked]);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || metrics) return;
@@ -219,15 +523,19 @@ export function useStatsData({
           ]),
         ) as Record<string, MetricDef>;
         setMetrics(normalized);
-        setApiError(null);
+        setApiErrorWithKind(null, null);
       } catch (error) {
         console.warn('Metrics Fehler', error);
-        setApiError(API_ERROR_MESSAGE);
+        const errorKind = resolveLeaderboardErrorKind(error);
+        setApiErrorWithKind(
+          getLiveMessage({ status: 'error', errorKind }) ?? API_ERROR_MESSAGE,
+          errorKind,
+        );
       }
     })();
 
     return () => ac.abort();
-  }, [activeTab, metrics]);
+  }, [activeTab, metrics, setApiErrorWithKind]);
 
   const filteredMetricIds = useMemo(
     () => filterMetricIds(metrics, metricFilter),
@@ -253,15 +561,25 @@ export function useStatsData({
 
   useEffect(() => {
     if (activeTab !== 'king') return;
+    if (isRateLimitBlocked) return;
 
     const kingNeedsRefresh = !king.loaded || king.pageSize !== pageSize;
     if (kingNeedsRefresh && !king.loading) {
       void loadLeaderboard('king', 'king');
     }
-  }, [activeTab, king.loaded, king.loading, king.pageSize, pageSize, loadLeaderboard]);
+  }, [
+    activeTab,
+    isRateLimitBlocked,
+    king.loaded,
+    king.loading,
+    king.pageSize,
+    pageSize,
+    loadLeaderboard,
+  ]);
 
   useEffect(() => {
     if (activeTab !== 'ranglisten' || !activeMetricId) return;
+    if (isRateLimitBlocked) return;
 
     const metricNeedsRefresh = !activeMetricLoaded || activeMetricBoardPageSize !== pageSize;
     if (metricNeedsRefresh && !activeMetricLoading) {
@@ -273,19 +591,33 @@ export function useStatsData({
     activeMetricLoaded,
     activeMetricLoading,
     activeMetricBoardPageSize,
+    isRateLimitBlocked,
     pageSize,
     loadLeaderboard,
   ]);
 
   const hasNoRanklistResults = !!metrics && filteredMetricIds.length === 0;
+  const setApiErrorMessage = useCallback(
+    (message: string | null) => {
+      setApiErrorWithKind(message, message ? 'unknown' : null);
+    },
+    [setApiErrorWithKind],
+  );
 
   return {
     generatedIso,
     setGeneratedIso,
     playerCount,
     totals,
-    apiError,
-    setApiError,
+    summaryLoaded,
+    summaryLoading,
+    summaryError,
+    summaryLastUpdatedAt,
+    retrySummary,
+    summaryRetryDisabled: isRateLimitBlocked,
+    summaryRetryInSeconds: rateLimitRetryInSeconds,
+    apiError: apiErrorMessage,
+    setApiError: setApiErrorMessage,
     mainSearch,
     metrics,
     groupedMetrics,

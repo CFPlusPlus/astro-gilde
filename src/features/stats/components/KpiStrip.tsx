@@ -1,11 +1,15 @@
 import React from 'react';
 import { Card } from '../../ui/Card';
+import { StatValue, type StatValueState } from './StatValue';
 
 export type KpiItem = {
   id: string;
   icon?: React.ReactNode;
   label: string;
-  value: React.ReactNode;
+  value?: React.ReactNode;
+  state?: StatValueState;
+  hint?: React.ReactNode;
+  onRetry?: () => void;
   meta?: React.ReactNode;
 };
 
@@ -43,7 +47,14 @@ export function KpiStrip({
               ) : null}
               <p className="text-muted text-xs font-semibold">{it.label}</p>
             </div>
-            <p className="text-fg mt-2 text-2xl font-semibold tracking-tight">{it.value}</p>
+            <StatValue
+              state={it.state || 'ok'}
+              value={it.value}
+              label={it.label}
+              hint={it.hint}
+              onRetry={it.onRetry}
+              className="mt-2"
+            />
             {it.meta ? <p className="text-muted mt-2 text-xs">{it.meta}</p> : null}
           </div>
         ))}

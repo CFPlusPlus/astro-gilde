@@ -4,19 +4,126 @@ import { Clock, Map as MapIcon, Skull, Sparkles, Swords, X } from 'lucide-react'
 import { KPI_FALLBACK_DEFS, KPI_METRICS } from '../../constants';
 import { formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
+import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
+import { resolveLiveDataStatus } from '../../../../lib/live/types';
+import { LastUpdated } from '../../../../components/live/LastUpdated';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 
 export function OverviewSection({
   showWelcome,
   onDismissWelcome,
   totals,
+  summaryLoaded,
+  summaryLoading,
+  summaryError,
+  summaryLastUpdatedAt,
+  onRetrySummary,
+  summaryRetryDisabled,
+  summaryRetryInSeconds,
 }: {
   showWelcome: boolean;
   onDismissWelcome: () => void;
   totals: Record<string, number> | null;
+  summaryLoaded: boolean;
+  summaryLoading: boolean;
+  summaryError: string | null;
+  summaryLastUpdatedAt: number | null;
+  onRetrySummary: () => void;
+  summaryRetryDisabled: boolean;
+  summaryRetryInSeconds: number;
 }) {
+  const retryWaitText =
+    summaryRetryDisabled && summaryRetryInSeconds > 0
+      ? LIVE_COPY_DE.retry_wait(summaryRetryInSeconds)
+      : null;
+
+  const resolveItemState = useMemo(
+    () =>
+      (
+        value: number | undefined,
+        label: string,
+      ): {
+        state: StatValueState;
+        hint?: string;
+        onRetry?: () => void;
+        retryDisabled?: boolean;
+        retryDisabledHint?: string;
+      } => {
+        const hasValue = typeof value === 'number';
+        const state = resolveLiveDataStatus({
+          loading: summaryLoading,
+          loaded: summaryLoaded,
+          hasData: hasValue,
+          hasSnapshot: Boolean(totals),
+          error: summaryError
+            ? {
+                kind: 'unknown',
+                message: summaryError,
+              }
+            : null,
+        });
+
+        if (state === 'loading') {
+          return { state };
+        }
+
+        if (state === 'error') {
+          return {
+            state,
+            hint: retryWaitText || LIVE_COPY_DE.summary_error_hint,
+            onRetry: onRetrySummary,
+            retryDisabled: summaryRetryDisabled,
+            retryDisabledHint: retryWaitText || undefined,
+          };
+        }
+
+        if (state === 'stale' && summaryLoading) {
+          return {
+            state,
+            hint: LIVE_COPY_DE.summary_stale_refreshing,
+          };
+        }
+
+        if (state === 'stale' && summaryError) {
+          return {
+            state,
+            hint: LIVE_COPY_DE.summary_stale_failed,
+          };
+        }
+
+        if (state === 'empty') {
+          return {
+            state,
+            hint: LIVE_COPY_DE.summary_missing_metric(label),
+          };
+        }
+
+        return { state: 'ok' };
+      },
+    [
+      onRetrySummary,
+      retryWaitText,
+      summaryError,
+      summaryLoaded,
+      summaryLoading,
+      summaryRetryDisabled,
+      totals,
+    ],
+  );
+
   const overviewItems = useMemo<
-    Array<{ id: string; icon: ReactNode; label: string; value: string }>
+    Array<{
+      id: string;
+      icon: ReactNode;
+      label: string;
+      value?: string;
+      state: StatValueState;
+      hint?: string;
+      onRetry?: () => void;
+      retryDisabled?: boolean;
+      retryDisabledHint?: string;
+    }>
   >(() => {
     const iconById: Record<string, ReactNode> = {
       hours: <Clock size={16} />,
@@ -27,14 +134,16 @@ export function OverviewSection({
     return KPI_METRICS.map((id) => {
       const def = KPI_FALLBACK_DEFS[id];
       const value = totals?.[id];
+      const valueState = resolveItemState(value, def.label);
       return {
         id,
         icon: iconById[id],
         label: def.label,
-        value: typeof value === 'number' ? formatMetricValue(value, def) : '-',
+        value: typeof value === 'number' ? formatMetricValue(value, def) : undefined,
+        ...valueState,
       };
     });
-  }, [totals]);
+  }, [resolveItemState, totals]);
 
   const highlightItem = overviewItems[0];
   const rows = overviewItems.slice(1, 4);
@@ -83,6 +192,11 @@ export function OverviewSection({
           title="Die Geschichte unserer Welt - in Zahlen"
           subtitle="Von langen Reisen &uuml;ber gef&auml;hrliche N&auml;chte bis zu gro&szlig;en Projekten: Hier siehst du den Puls des Servers."
         />
+        <LastUpdated
+          updatedAt={summaryLastUpdatedAt}
+          className="text-muted mt-2 text-xs"
+          showWhenMissing
+        />
         <div aria-live="polite" className="mt-5 space-y-5">
           {highlightItem ? (
             <section className="border-border/75 bg-surface-solid/35 relative overflow-hidden rounded-[var(--radius)] border px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5">
@@ -95,10 +209,17 @@ export function OverviewSection({
               <p className="text-fg mt-2 text-lg font-semibold tracking-tight">
                 {highlightItem.label}
               </p>
-              <p className="text-fg mt-2 text-3xl font-semibold tracking-tight">
-                {highlightItem.value}
-              </p>
-              <p className="text-muted mt-2 text-xs">Serverweiter Gesamtwert.</p>
+              <StatValue
+                state={highlightItem.state}
+                value={highlightItem.value}
+                label={highlightItem.label}
+                hint={highlightItem.hint || 'Serverweiter Gesamtwert.'}
+                onRetry={highlightItem.onRetry}
+                retryDisabled={highlightItem.retryDisabled}
+                retryDisabledHint={highlightItem.retryDisabledHint}
+                className="mt-2"
+                valueClassName="text-fg text-3xl font-semibold tracking-tight"
+              />
             </section>
           ) : null}
 
@@ -115,9 +236,17 @@ export function OverviewSection({
                     </span>
                     <span className="truncate">{item.label}</span>
                   </span>
-                  <span className="text-fg text-base font-semibold tracking-tight whitespace-nowrap">
-                    {item.value}
-                  </span>
+                  <StatValue
+                    state={item.state}
+                    value={item.value}
+                    label={item.label}
+                    hint={item.hint}
+                    onRetry={item.onRetry}
+                    retryDisabled={item.retryDisabled}
+                    retryDisabledHint={item.retryDisabledHint}
+                    className="max-w-[58%] text-right"
+                    valueClassName="text-fg text-base font-semibold tracking-tight whitespace-nowrap"
+                  />
                 </li>
               ))}
             </ul>

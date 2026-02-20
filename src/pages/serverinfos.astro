@@ -34,9 +34,8 @@ const articleLd = buildArticle({
   site,
   canonicalUrl,
   type: 'TechArticle',
-  headline: 'Serverinfos & Folia-Setup - Minecraft Gilde (Vanilla SMP 1.21.x)',
-  description:
-    'Technische Details zum Setup der Minecraft Gilde: Folia 1.21.x, Hardware und Kernfeatures - optimiert für Vanilla Survival & Freebuild ohne Pay2Win.',
+  headline: `Serverinfos & Folia-Setup - Minecraft Gilde (Vanilla SMP ${MC_VERSION})`,
+  description: `Technische Details zum Setup der Minecraft Gilde: Folia ${MC_VERSION}, Hardware und Kernfeatures - optimiert für Vanilla Survival & Freebuild ohne Pay2Win.`,
   image: new URL(minecraftGilde.brand.logo.path, site).toString(),
   authorName: 'Christian Falkner',
   authorUrl: 'https://www.falkner.info',
@@ -47,7 +46,7 @@ const articleLd = buildArticle({
 <BaseLayout
   title="Minecraft Gilde - Serverinfos"
   canonical={canonicalUrl}
-  description="Serverinfos der Minecraft Gilde – Folia 1.21.x, Einstellungen, Plugins und Hardware. Vanilla SMP (DE) für Freebuild und Survival ohne Minigames."
+  description={`Serverinfos der Minecraft Gilde – Folia ${MC_VERSION}, Einstellungen, Plugins und Hardware. Vanilla SMP (DE) für Freebuild und Survival ohne Minigames.`}
 >
   <JsonLd slot="head" data={gameServerLd} />
   <JsonLd slot="head" data={articleLd} />
@@ -93,7 +92,7 @@ const articleLd = buildArticle({
               <dt class="text-muted">IP</dt><dd class="font-semibold">{SERVER_IP}</dd>
             </div>
             <div class="mg-row items-center">
-              <dt class="text-muted">Version</dt><dd>Folia 1.21.11</dd>
+              <dt class="text-muted">Version</dt><dd>Folia {MC_VERSION}</dd>
             </div>
             <div class="mg-row items-center">
               <dt class="text-muted">Typ</dt><dd>Vanilla SMP (DE)</dd>

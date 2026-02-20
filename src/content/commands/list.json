@@ -151,7 +151,7 @@
         },
         {
           "command": "/accesstrust <spieler>",
-          "description": "Gibt einem Spieler Zugriff auf T?ren, Schalter und Buttons in deinem Claim."
+          "description": "Gibt einem Spieler Zugriff auf Türen, Schalter und Buttons in deinem Claim."
         },
         {
           "command": "/containertrust <spieler>",
