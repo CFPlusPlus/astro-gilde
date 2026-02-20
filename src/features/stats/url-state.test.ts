@@ -3,38 +3,53 @@ import { describe, expect, it } from 'vitest';
 import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
 
 describe('stats url-state', () => {
-  it('parses rankings and versus query values from url', () => {
-    const parsed = parseStatsUrlState(
-      '?rm=diamond&va=uuid-a&van=Alice&vb=uuid-b&vbn=Bob&vf=farm&vm=kills,deaths',
-    );
+  it('parses all supported query values from url', () => {
+    const parsed = parseStatsUrlState('?tab=versus&top=30&cat=playtime&q=Steve&a=uuid-a&b=uuid-b');
 
-    expect(parsed.rankMetricId).toBe('diamond');
-    expect(parsed.versus.playerA).toEqual({ uuid: 'uuid-a', name: 'Alice' });
-    expect(parsed.versus.playerB).toEqual({ uuid: 'uuid-b', name: 'Bob' });
-    expect(parsed.versus.metricFilter).toBe('farm');
-    expect(parsed.versus.metricIds).toEqual(['kills', 'deaths']);
+    expect(parsed.tab).toBe('versus');
+    expect(parsed.pageSize).toBe(30);
+    expect(parsed.rankMetricId).toBe('playtime');
+    expect(parsed.searchQuery).toBe('Steve');
+    expect(parsed.versus.playerA).toEqual({ uuid: 'uuid-a', name: 'uuid-a' });
+    expect(parsed.versus.playerB).toEqual({ uuid: 'uuid-b', name: 'uuid-b' });
     expect(parsed.versus.shouldAutoCompare).toBe(true);
   });
 
   it('falls back to safe defaults for invalid values', () => {
-    const parsed = parseStatsUrlState('?rm=&vm=,');
+    const parsed = parseStatsUrlState('?tab=abc&top=999&cat=');
 
+    expect(parsed.tab).toBe('uebersicht');
+    expect(parsed.pageSize).toBe(20);
     expect(parsed.rankMetricId).toBeNull();
+    expect(parsed.searchQuery).toBe('');
     expect(parsed.versus.playerA).toBeNull();
     expect(parsed.versus.playerB).toBeNull();
-    expect(parsed.versus.metricIds).toEqual([]);
     expect(parsed.versus.shouldAutoCompare).toBe(false);
   });
 
-  it('builds deterministic url search params', () => {
+  it('builds deterministic url search params for rankings', () => {
     const search = buildStatsUrlSearch({
+      activeTab: 'ranglisten',
+      pageSize: 20,
       activeMetricId: 'hours',
-      versusMetricFilter: 'abc',
-      versusMetricIds: ['m1', 'm2'],
+      searchQuery: '',
+      versusPlayerA: null,
+      versusPlayerB: null,
+    });
+
+    expect(search).toBe('?tab=leaderboards&cat=hours');
+  });
+
+  it('builds deterministic url search params for versus with top and query', () => {
+    const search = buildStatsUrlSearch({
+      activeTab: 'versus',
+      pageSize: 30,
+      activeMetricId: null,
+      searchQuery: ' Alex ',
       versusPlayerA: { uuid: 'uuid-a', name: 'Alice' },
       versusPlayerB: { uuid: 'uuid-b', name: 'Bob' },
     });
 
-    expect(search).toBe('?rm=hours&va=uuid-a&van=Alice&vb=uuid-b&vbn=Bob&vf=abc&vm=m1%2Cm2');
+    expect(search).toBe('?tab=versus&top=30&q=Alex&a=uuid-a&b=uuid-b');
   });
 });

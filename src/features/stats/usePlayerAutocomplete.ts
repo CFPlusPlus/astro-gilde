@@ -8,17 +8,22 @@ import { LIVE_COPY_DE } from '../../lib/live/copy.de';
 export function usePlayerAutocomplete({
   onGeneratedIso,
   onError,
+  initialValue = '',
 }: {
   onGeneratedIso?: (iso: string) => void;
   onError?: (message: string | null) => void;
+  initialValue?: string;
 }) {
-  const [value, setValueState] = useState('');
+  const normalizedInitialValue = initialValue.trim();
+  const [value, setValueState] = useState(normalizedInitialValue);
   const [items, setItems] = useState<PlayersSearchItem[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const abortRef = useRef<AbortController | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const suppressOpenForQueryRef = useRef<string | null>(null);
+  const suppressOpenForQueryRef = useRef<string | null>(
+    normalizedInitialValue.length > 0 ? normalizedInitialValue.toLowerCase() : null,
+  );
   const knownItemsRef = useRef<Map<string, PlayersSearchItem>>(new Map());
 
   function setValue(next: string) {

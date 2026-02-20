@@ -7,10 +7,11 @@ import { StatsToolbar } from './components/StatsToolbar';
 import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
+import { useStatsUrlState } from './hooks/useStatsUrlState';
 import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
-import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
+import { parseStatsUrlState } from './url-state';
 
 export default function StatsApp() {
   const initialUrlState = useMemo(
@@ -20,10 +21,6 @@ export default function StatsApp() {
         : parseStatsUrlState(window.location.search),
     [],
   );
-  const canAutoCompareFromUrl = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.location.hash.replace('#', '').trim() === 'versus';
-  }, []);
 
   const {
     activeTab,
@@ -36,7 +33,10 @@ export default function StatsApp() {
     dismissWelcome,
     showPageSize,
     consumeScrollToRestore,
-  } = useStatsState();
+  } = useStatsState({
+    initialTab: initialUrlState.tab,
+    initialPageSize: initialUrlState.pageSize,
+  });
 
   const {
     setGeneratedIso,
@@ -70,6 +70,7 @@ export default function StatsApp() {
     pageSize,
     metricFilter,
     initialActiveMetricId: initialUrlState.rankMetricId,
+    initialSearchQuery: initialUrlState.searchQuery,
   });
 
   const versus = useVersusState({
@@ -77,9 +78,7 @@ export default function StatsApp() {
     initialState: {
       playerA: initialUrlState.versus.playerA,
       playerB: initialUrlState.versus.playerB,
-      metricFilter: initialUrlState.versus.metricFilter,
-      metricIds: initialUrlState.versus.metricIds,
-      autoCompare: initialUrlState.versus.shouldAutoCompare && canAutoCompareFromUrl,
+      autoCompare: initialUrlState.versus.shouldAutoCompare,
     },
   });
   const tabsDisabled = Boolean(apiError);
@@ -146,58 +145,41 @@ export default function StatsApp() {
     if (!metrics) return null;
     return pickDefaultRankMetricId(filterMetricIds(metrics, ''), metrics);
   }, [metrics]);
-  const rankMetricIdForUrl = useMemo(() => {
-    if (!activeMetricId) return null;
-    if (metricFilter.trim().length > 0) return activeMetricId;
-    return activeMetricId === defaultRankMetricId ? null : activeMetricId;
-  }, [activeMetricId, defaultRankMetricId, metricFilter]);
   const handleResetRankings = useCallback(() => {
     setMetricFilter('');
     setActiveMetricId(defaultRankMetricId);
   }, [defaultRankMetricId, setActiveMetricId, setMetricFilter]);
+
+  const handlePopState = useCallback(
+    (state: ReturnType<typeof parseStatsUrlState>) => {
+      setTab(state.tab);
+      setPageSize(state.pageSize);
+      setActiveMetricId(state.rankMetricId);
+      mainSearch.setValueWithoutAutoOpen(state.searchQuery);
+      versus.applyUrlState({
+        playerAUuid: state.versus.playerA?.uuid || null,
+        playerBUuid: state.versus.playerB?.uuid || null,
+        autoCompare: state.versus.shouldAutoCompare,
+      });
+    },
+    [mainSearch, setActiveMetricId, setPageSize, setTab, versus],
+  );
+
+  useStatsUrlState({
+    activeTab,
+    pageSize,
+    activeMetricId,
+    searchQuery: mainSearch.value,
+    versusPlayerA: versus.versusPlayerA,
+    versusPlayerB: versus.versusPlayerB,
+    onPopState: handlePopState,
+  });
 
   useEffect(() => {
     const y = consumeScrollToRestore();
     if (y === null) return;
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [activeTab, consumeScrollToRestore]);
-
-  useEffect(() => {
-    const nextSearch =
-      activeTab === 'ranglisten'
-        ? buildStatsUrlSearch({
-            activeMetricId: rankMetricIdForUrl,
-            versusMetricFilter: '',
-            versusMetricIds: [],
-            versusPlayerA: null,
-            versusPlayerB: null,
-          })
-        : activeTab === 'versus'
-          ? buildStatsUrlSearch({
-              activeMetricId: null,
-              versusMetricFilter: versus.versusMetricFilter,
-              versusMetricIds: versus.versusMetricIds,
-              versusPlayerA: versus.versusPlayerA,
-              versusPlayerB: versus.versusPlayerB,
-            })
-          : '';
-
-    if (window.location.search === nextSearch) return;
-
-    try {
-      const nextUrl = `${window.location.pathname}${nextSearch}${window.location.hash}`;
-      window.history.replaceState({}, '', nextUrl);
-    } catch {
-      // Unkritisch: History-API kann blockiert sein.
-    }
-  }, [
-    activeTab,
-    rankMetricIdForUrl,
-    versus.versusMetricFilter,
-    versus.versusMetricIds,
-    versus.versusPlayerA,
-    versus.versusPlayerB,
-  ]);
 
   return (
     <StatsLayout

@@ -33,6 +33,18 @@ type InitialVersusState = {
   autoCompare?: boolean;
 };
 
+type UrlVersusSelection = {
+  playerAUuid: string | null;
+  playerBUuid: string | null;
+  autoCompare?: boolean;
+};
+
+function cleanUuid(value: string | null): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 export function useVersusState({
   onGeneratedIso,
   initialState,
@@ -326,6 +338,57 @@ export function useVersusState({
     setVersusNotice(null);
   }, [clearVersusPlayer]);
 
+  const applyUrlState = useCallback(
+    ({ playerAUuid, playerBUuid, autoCompare = false }: UrlVersusSelection) => {
+      shouldAutoCompareRef.current = autoCompare;
+
+      const nextAUuid = cleanUuid(playerAUuid);
+      const nextBUuid = cleanUuid(playerBUuid);
+
+      const nextAName = nextAUuid
+        ? versusPlayerA?.uuid === nextAUuid
+          ? versusPlayerA.name
+          : playerNamesRef.current[nextAUuid] || nextAUuid
+        : '';
+      const nextBName = nextBUuid
+        ? versusPlayerB?.uuid === nextBUuid
+          ? versusPlayerB.name
+          : playerNamesRef.current[nextBUuid] || nextBUuid
+        : '';
+
+      setVersusPlayerA((previous) => {
+        if (!nextAUuid) return null;
+        if (previous?.uuid === nextAUuid) return previous;
+        return { uuid: nextAUuid, name: nextAName };
+      });
+
+      setVersusPlayerB((previous) => {
+        if (!nextBUuid) return null;
+        if (previous?.uuid === nextBUuid) return previous;
+        return { uuid: nextBUuid, name: nextBName };
+      });
+
+      if (nextAUuid) {
+        searchA.setValueWithoutAutoOpen(nextAName);
+      } else {
+        searchA.setValue('');
+        searchA.setItems([]);
+        searchA.setOpen(false);
+        searchA.setSelectedIndex(-1);
+      }
+
+      if (nextBUuid) {
+        searchB.setValueWithoutAutoOpen(nextBName);
+      } else {
+        searchB.setValue('');
+        searchB.setItems([]);
+        searchB.setOpen(false);
+        searchB.setSelectedIndex(-1);
+      }
+    },
+    [searchA, searchB, versusPlayerA, versusPlayerB],
+  );
+
   const versusFilteredCatalog = useMemo(
     () => filterVersusCatalog(versusCatalog, versusMetricFilter),
     [versusCatalog, versusMetricFilter],
@@ -410,5 +473,6 @@ export function useVersusState({
     applyVersusSelection,
     toggleVersusMetric,
     resetVersus,
+    applyUrlState,
   };
 }

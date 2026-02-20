@@ -85,11 +85,13 @@ export function useStatsData({
   pageSize,
   metricFilter,
   initialActiveMetricId,
+  initialSearchQuery,
 }: {
   activeTab: TabKey;
   pageSize: number;
   metricFilter: string;
   initialActiveMetricId?: string | null;
+  initialSearchQuery?: string;
 }) {
   const [generatedIso, setGeneratedIso] = useState<string | null>(null);
   const [playerCount, setPlayerCount] = useState<number | null>(null);
@@ -211,6 +213,7 @@ export function useStatsData({
   const mainSearch = usePlayerAutocomplete({
     onGeneratedIso: setGeneratedIso,
     onError: handleAutocompleteError,
+    initialValue: initialSearchQuery,
   });
 
   const mergePlayers = useCallback((players?: Record<string, string>) => {

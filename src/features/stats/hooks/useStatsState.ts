@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { STATS_DEFAULT_PAGE_SIZE, STATS_PAGE_SIZES } from '../constants';
 import { WELCOME_DISMISS_KEY, WELCOME_DISMISS_LEGACY_KEY, shouldShowWelcome } from '../welcome';
-import { useQuerySync } from './useQuerySync';
+import type { TabKey } from '../types-ui';
 
 function sanitizePageSize(next: number): number {
   return STATS_PAGE_SIZES.includes(next as (typeof STATS_PAGE_SIZES)[number])
@@ -10,8 +10,15 @@ function sanitizePageSize(next: number): number {
     : STATS_DEFAULT_PAGE_SIZE;
 }
 
-export function useStatsState(initialPageSize: number = STATS_DEFAULT_PAGE_SIZE) {
-  const querySync = useQuerySync('uebersicht');
+export function useStatsState({
+  initialPageSize = STATS_DEFAULT_PAGE_SIZE,
+  initialTab = 'uebersicht',
+}: {
+  initialPageSize?: number;
+  initialTab?: TabKey;
+} = {}) {
+  const scrollRestoreRef = useRef<number | null>(null);
+  const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
 
   const [pageSize, setPageSizeState] = useState(() => sanitizePageSize(initialPageSize));
   const [metricFilter, setMetricFilter] = useState('');
@@ -25,8 +32,27 @@ export function useStatsState(initialPageSize: number = STATS_DEFAULT_PAGE_SIZE)
     }
   }, []);
 
+  const setTab = useCallback((tab: TabKey) => {
+    setActiveTab((current) => {
+      if (current === tab) return current;
+      scrollRestoreRef.current = window.scrollY;
+      return tab;
+    });
+  }, []);
+
   const setPageSize = useCallback((next: number) => {
     setPageSizeState(sanitizePageSize(Number(next)));
+  }, []);
+
+  const markScrollForRestore = useCallback(() => {
+    scrollRestoreRef.current = window.scrollY;
+  }, []);
+
+  const consumeScrollToRestore = useCallback(() => {
+    const y = scrollRestoreRef.current;
+    if (y === null) return null;
+    scrollRestoreRef.current = null;
+    return y;
   }, []);
 
   const dismissWelcome = useCallback(() => {
@@ -40,15 +66,15 @@ export function useStatsState(initialPageSize: number = STATS_DEFAULT_PAGE_SIZE)
   }, []);
 
   const showPageSize = useMemo(
-    () => querySync.activeTab === 'king' || querySync.activeTab === 'ranglisten',
-    [querySync.activeTab],
+    () => activeTab === 'king' || activeTab === 'ranglisten',
+    [activeTab],
   );
 
   return {
-    activeTab: querySync.activeTab,
-    setTab: querySync.setTab,
-    markScrollForRestore: querySync.markScrollForRestore,
-    consumeScrollToRestore: querySync.consumeScrollToRestore,
+    activeTab,
+    setTab,
+    markScrollForRestore,
+    consumeScrollToRestore,
     pageSize,
     setPageSize,
     metricFilter,
