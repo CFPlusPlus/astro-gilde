@@ -177,6 +177,7 @@ npm run dev
 ### API-Hinweis (Statistiken)
 
 Mini-Doku zur Live-Daten-Architektur: `docs/live-data.md`
+Mini-Doku zum Modal-Pattern: `docs/modal-pattern.md`
 
 Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 
