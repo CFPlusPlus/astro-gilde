@@ -11,6 +11,7 @@ const commandsEntry = await getEntry('commands', 'list');
 if (!commandsEntry) throw new Error('Missing commands content: src/content/commands/list.json');
 
 const categories = commandsEntry.data.categories;
+const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 ---
 
 <BaseLayout title="Minecraft Gilde - Server-Befehle">
@@ -19,7 +20,7 @@ const categories = commandsEntry.data.categories;
     subtitle="Hier findest du alle Befehle, die auf unserem Server verfügbar sind."
   >
     <Fragment slot="actions">
-      <Button variant="primary" class="gap-2" data-copy-ip>
+      <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
       <Button href="/regeln" variant="secondary">Regeln</Button>

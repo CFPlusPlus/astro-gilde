@@ -6,6 +6,7 @@ import { ArrowRight, Download } from '@lucide/astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const MC_VERSION = minecraftGilde.mcVersion;
+const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 ---
 
 <HomeSection id="start" size="normal" divider>
@@ -32,7 +33,13 @@ const MC_VERSION = minecraftGilde.mcVersion;
             Server hinzufügen, verbinden und loslegen - <strong>Java {MC_VERSION}</strong>.
           </p>
           <div class="mt-5 lg:mt-auto lg:pt-3">
-            <Button variant="primary" size="sm" class="gap-2" data-copy-ip>
+            <Button
+              href={JOIN_FALLBACK_HREF}
+              variant="primary"
+              size="sm"
+              class="gap-2"
+              data-copy-ip
+            >
               <Download size={16} /> Jetzt Spielen
             </Button>
           </div>

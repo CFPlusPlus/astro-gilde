@@ -1,4 +1,5 @@
 import type { Qs, Qsa } from './dom';
+import type { JoinModalController } from './join-modal-controller';
 import type { ShowToast } from './toast';
 
 export const initJoinModal = ({
@@ -32,6 +33,7 @@ export const initJoinModal = ({
       showToast('Server-IP nicht verfuegbar.', 'error');
       return false;
     }
+
     try {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(ip);
@@ -39,6 +41,7 @@ export const initJoinModal = ({
         const ok = fallbackCopy(ip);
         if (!ok) throw new Error('Clipboard API nicht verfuegbar');
       }
+
       if (!silentSuccess) showToast('IP kopiert!');
       return true;
     } catch (e) {
@@ -48,133 +51,11 @@ export const initJoinModal = ({
     }
   };
 
-  const joinModalRoot = qs<HTMLElement>('[data-join-modal]');
-  const joinModalDialog = qs<HTMLElement>('[data-join-modal-dialog]', joinModalRoot ?? document);
-  const joinModalOverlay = qs<HTMLElement>('[data-join-modal-overlay]', joinModalRoot ?? document);
-  const joinModalCloseButtons = qsa<HTMLElement>(
-    '[data-join-modal-close]',
-    joinModalRoot ?? document,
-  );
-  const joinModalCopyButtons = qsa<HTMLElement>('[data-copy-ip-modal]', joinModalRoot ?? document);
-  const joinModalCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
-  const inlineCopyButtons = qsa<HTMLElement>('[data-copy-ip-inline]');
   const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
 
-  let modalLastFocusedEl: HTMLElement | null = null;
-  let bodyOverflowBeforeModal = '';
-
-  const isJoinModalOpen = (): boolean =>
-    Boolean(joinModalRoot && !joinModalRoot.classList.contains('hidden'));
-
-  const getJoinModalFocusable = (): HTMLElement[] => {
-    if (!joinModalDialog) return [];
-
-    return qsa<HTMLElement>(
-      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
-      joinModalDialog,
-    ).filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
-  };
-
-  const closeJoinModal = (): void => {
-    if (!joinModalRoot || !isJoinModalOpen()) return;
-
-    joinModalRoot.classList.add('hidden');
-    joinModalRoot.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = bodyOverflowBeforeModal;
-
-    if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
-      modalLastFocusedEl.focus();
-    }
-  };
-
-  const openJoinModal = (): void => {
-    if (!joinModalRoot || !joinModalDialog || isJoinModalOpen()) return;
-
-    modalLastFocusedEl =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    bodyOverflowBeforeModal = document.body.style.overflow;
-
-    joinModalRoot.classList.remove('hidden');
-    joinModalRoot.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-
-    window.setTimeout(() => {
-      const focusTarget = getJoinModalFocusable()[0] ?? joinModalDialog;
-      focusTarget.focus();
-    }, 0);
-  };
-
-  const trapJoinModalFocus = (e: KeyboardEvent): void => {
-    if (!joinModalDialog || !isJoinModalOpen() || e.key !== 'Tab') return;
-
-    const focusable = getJoinModalFocusable();
-    if (!focusable.length) {
-      e.preventDefault();
-      joinModalDialog.focus();
-      return;
-    }
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-
-    if (e.shiftKey && active === first) {
-      e.preventDefault();
-      last.focus();
-      return;
-    }
-
-    if (!e.shiftKey && active === last) {
-      e.preventDefault();
-      first.focus();
-    }
-  };
-
-  if (joinModalOverlay) {
-    joinModalOverlay.addEventListener('click', () => closeJoinModal());
-  }
-
-  joinModalCloseButtons.forEach((btn) => {
-    btn.addEventListener('click', () => closeJoinModal());
-  });
-
-  const setModalCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
-    const stateDefault = qs<HTMLElement>('[data-copy-ip-modal-state-default]', btn);
-    const stateSuccess = qs<HTMLElement>('[data-copy-ip-modal-state-success]', btn);
-
-    if (copied) btn.dataset.copied = 'true';
-    else delete btn.dataset.copied;
-
-    if (stateDefault) stateDefault.classList.toggle('opacity-0', copied);
-    if (stateSuccess) stateSuccess.classList.toggle('opacity-0', !copied);
-
-    btn.setAttribute('aria-label', copied ? 'Server-IP wurde kopiert' : 'Server-IP kopieren');
-  };
-
-  const flashModalCopyButton = (btn: HTMLElement): void => {
-    const runningTimer = joinModalCopyFeedbackTimers.get(btn);
-    if (runningTimer != null) window.clearTimeout(runningTimer);
-
-    setModalCopyButtonState(btn, true);
-
-    const timer = window.setTimeout(() => {
-      setModalCopyButtonState(btn, false);
-      joinModalCopyFeedbackTimers.delete(btn);
-    }, 1600);
-    joinModalCopyFeedbackTimers.set(btn, timer);
-  };
-
-  joinModalCopyButtons.forEach((btn) => {
-    btn.addEventListener('click', async (e: MouseEvent) => {
-      e.preventDefault();
-      const ok = await copyIp({ silentSuccess: true });
-      if (ok) flashModalCopyButton(btn);
-    });
-  });
-
   const setInlineCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
-    const labelDefault = qs<HTMLElement>('[data-copy-ip-inline-label-default]', btn);
-    const labelSuccess = qs<HTMLElement>('[data-copy-ip-inline-label-success]', btn);
+    const labelDefault = btn.querySelector<HTMLElement>('[data-copy-ip-inline-label-default]');
+    const labelSuccess = btn.querySelector<HTMLElement>('[data-copy-ip-inline-label-success]');
 
     if (copied) btn.dataset.copied = 'true';
     else delete btn.dataset.copied;
@@ -198,7 +79,7 @@ export const initJoinModal = ({
     inlineCopyFeedbackTimers.set(btn, timer);
   };
 
-  inlineCopyButtons.forEach((btn) => {
+  qsa<HTMLElement>('[data-copy-ip-inline]').forEach((btn) => {
     btn.addEventListener('click', async (e: MouseEvent) => {
       e.preventDefault();
       const ok = await copyIp({ silentSuccess: true });
@@ -206,26 +87,58 @@ export const initJoinModal = ({
     });
   });
 
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      if (isJoinModalOpen()) {
-        e.preventDefault();
-        closeJoinModal();
-        return;
-      }
+  let joinModalControllerPromise: Promise<JoinModalController> | null = null;
+  let joinModalPrefetchStarted = false;
 
-      if (isMenuOpen()) closeMenu();
-      return;
+  const loadJoinModalController = (): Promise<JoinModalController> => {
+    if (!joinModalControllerPromise) {
+      joinModalControllerPromise = import('./join-modal-controller').then(
+        ({ createJoinModalController }) =>
+          createJoinModalController({
+            config,
+            qs,
+            qsa,
+            showToast,
+            copyIp,
+          }),
+      );
     }
 
-    trapJoinModalFocus(e);
-  });
+    return joinModalControllerPromise;
+  };
+
+  const prefetchJoinModalController = (): void => {
+    if (joinModalPrefetchStarted) return;
+    joinModalPrefetchStarted = true;
+    void loadJoinModalController();
+  };
+
+  const openJoinModal = async (triggerEl: HTMLElement): Promise<void> => {
+    const controller = await loadJoinModalController();
+    await controller.openJoinModal(triggerEl);
+  };
 
   qsa<HTMLElement>('[data-copy-ip]').forEach((btn) => {
     btn.addEventListener('click', (e: MouseEvent) => {
       e.preventDefault();
       closeMenu();
-      openJoinModal();
+      void openJoinModal(btn);
     });
+
+    btn.addEventListener('pointerenter', prefetchJoinModalController, {
+      passive: true,
+      once: true,
+    });
+    btn.addEventListener('focus', prefetchJoinModalController, { once: true });
+    btn.addEventListener('touchstart', prefetchJoinModalController, {
+      passive: true,
+      once: true,
+    });
+  });
+
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key !== 'Escape') return;
+    if (document.querySelector('[data-join-modal-dialog]')) return;
+    if (isMenuOpen()) closeMenu();
   });
 };
