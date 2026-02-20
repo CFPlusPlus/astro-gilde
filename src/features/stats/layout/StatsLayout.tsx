@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 type StatsLayoutProps = {
   topBar: ReactNode;
@@ -31,9 +31,47 @@ export function StatsLayout({
   contentClassName,
   stickyTopBar = false,
 }: StatsLayoutProps) {
+  const stickyTopBarRef = useRef<HTMLElement | null>(null);
+  const [stickyContentTopPx, setStickyContentTopPx] = useState('0px');
+
+  useEffect(() => {
+    if (!stickyTopBar) {
+      setStickyContentTopPx('0px');
+      return;
+    }
+
+    const element = stickyTopBarRef.current;
+    if (!element) return;
+
+    const updateOffset = () => {
+      const top = Number.parseFloat(window.getComputedStyle(element).top || '0') || 0;
+      const height = element.getBoundingClientRect().height;
+      const offset = Math.max(0, top + height);
+      setStickyContentTopPx(`${Math.round(offset)}px`);
+    };
+
+    updateOffset();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateOffset();
+    });
+    resizeObserver.observe(element);
+    window.addEventListener('resize', updateOffset);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', updateOffset);
+    };
+  }, [stickyTopBar]);
+
+  const rootStyle = {
+    '--stats-sticky-content-top': stickyContentTopPx,
+  } as CSSProperties;
+
   return (
-    <div className="pb-12">
+    <div className="pb-12" style={rootStyle}>
       <section
+        ref={stickyTopBarRef}
         className={joinClassNames(
           'mg-surface-1',
           stickyTopBar

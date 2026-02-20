@@ -645,6 +645,7 @@ export function RankingsSection({
                     onGoPage={onGoPage}
                     onLoadMore={onLoadMore}
                     surface={false}
+                    showDesktopCopyAction
                   />
                 </div>
               </>
