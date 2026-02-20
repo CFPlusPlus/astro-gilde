@@ -52,11 +52,11 @@ Implementierung: `src/scripts/app/scroll-lock.ts`
 
 Aktuell verwendete Browser-Storage-Keys:
 
-| Key | Bereich | Zweck |
-| --- | --- | --- |
-| `theme` | `src/scripts/app/theme.ts` | Merkt Theme-Modus (`system`, `light`, `dark`) |
-| `mg:live-counter:v2:<key>` | `src/scripts/app/live-counters.ts` | Persistenter Cache für Home-Live-Counter |
-| `mg:live-resource:v1:<key>` | `src/lib/live/cache.ts` | Standard-Prefix des generischen Live-Resource-Caches |
-| `mg_stats_welcome_dismissed_at` | `src/features/stats/welcome.ts` | Dismiss-Zeitstempel für Stats-Welcome |
-| `mg_stats_welcome_closed` | `src/features/stats/welcome.ts` | Legacy-Key (wird migriert/entfernt) |
-| `mg:skin-viewer:cape:<uuid>` | `src/features/player-stats/skin-viewer-cape.ts` | Cape-Cache pro Spieler |
+| Key                             | Bereich                                         | Zweck                                                |
+| ------------------------------- | ----------------------------------------------- | ---------------------------------------------------- |
+| `theme`                         | `src/scripts/app/theme.ts`                      | Merkt Theme-Modus (`system`, `light`, `dark`)        |
+| `mg:live-counter:v2:<key>`      | `src/scripts/app/live-counters.ts`              | Persistenter Cache für Home-Live-Counter             |
+| `mg:live-resource:v1:<key>`     | `src/lib/live/cache.ts`                         | Standard-Prefix des generischen Live-Resource-Caches |
+| `mg_stats_welcome_dismissed_at` | `src/features/stats/welcome.ts`                 | Dismiss-Zeitstempel für Stats-Welcome                |
+| `mg_stats_welcome_closed`       | `src/features/stats/welcome.ts`                 | Legacy-Key (wird migriert/entfernt)                  |
+| `mg:skin-viewer:cape:<uuid>`    | `src/features/player-stats/skin-viewer-cape.ts` | Cape-Cache pro Spieler                               |
