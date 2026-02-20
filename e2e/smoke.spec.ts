@@ -21,6 +21,14 @@ const isFocusInsideMobileMenu = async (page: Page): Promise<boolean> => {
   });
 };
 
+const isFocusInsideJoinModal = async (page: Page): Promise<boolean> => {
+  return page.evaluate(() => {
+    const dialog = document.querySelector<HTMLElement>('[data-join-modal-dialog]');
+    const active = document.activeElement;
+    return Boolean(dialog && active instanceof HTMLElement && dialog.contains(active));
+  });
+};
+
 const installStatsApiMocks = async (page: Page): Promise<void> => {
   await page.route('**/api/summary**', async (route) => {
     await route.fulfill({
@@ -174,6 +182,37 @@ test.describe('Mobiles Menue', () => {
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(toggle).toBeFocused();
   });
+});
+
+test('Join-Modal trappt Fokus und stellt Trigger-Fokus nach Escape wieder her', async ({
+  page,
+}) => {
+  await page.goto('/');
+
+  const trigger = page.locator('[data-copy-ip]:visible').first();
+  await trigger.focus();
+  await page.keyboard.press('Enter');
+
+  const dialog = page.locator('[data-join-modal-dialog]');
+  const copyIpButton = dialog.locator('[data-copy-ip-modal]');
+
+  await expect(dialog).toBeVisible();
+  await expect(copyIpButton).toBeFocused();
+
+  for (let step = 0; step < 8; step++) {
+    await page.keyboard.press('Tab');
+    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
+  }
+
+  for (let step = 0; step < 8; step++) {
+    await page.keyboard.press('Shift+Tab');
+    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
+  }
+
+  await page.keyboard.press('Escape');
+
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
 });
 
 test('Galerie zeigt mindestens ein sichtbares Bild', async ({ page }) => {

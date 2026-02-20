@@ -157,13 +157,18 @@ export const initJoinModal = ({
     if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
       modalLastFocusedEl.focus();
     }
+    modalLastFocusedEl = null;
   };
 
-  const openJoinModal = async (): Promise<void> => {
+  const openJoinModal = async (triggerEl?: HTMLElement): Promise<void> => {
     if (isJoinModalOpen()) return;
 
     modalLastFocusedEl =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      triggerEl && document.contains(triggerEl)
+        ? triggerEl
+        : document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
     bodyOverflowBeforeModal = document.body.style.overflow;
 
     try {
@@ -175,10 +180,16 @@ export const initJoinModal = ({
     }
 
     if (!joinModalDialog) return;
+    const dialog = joinModalDialog;
     document.body.style.overflow = 'hidden';
 
     window.setTimeout(() => {
-      const focusTarget = getJoinModalFocusable()[0] ?? joinModalDialog;
+      const focusable = getJoinModalFocusable();
+      const preferredTarget = qs<HTMLElement>('[data-join-modal-initial-focus]', dialog);
+      const focusTarget =
+        (preferredTarget && focusable.includes(preferredTarget) ? preferredTarget : null) ??
+        focusable[0] ??
+        dialog;
       focusTarget.focus();
     }, 0);
   };
@@ -196,14 +207,30 @@ export const initJoinModal = ({
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
     const active = document.activeElement;
+    const activeEl = active instanceof HTMLElement ? active : null;
 
-    if (e.shiftKey && active === first) {
+    if (!activeEl || !joinModalDialog.contains(activeEl)) {
+      e.preventDefault();
+      if (e.shiftKey) last.focus();
+      else first.focus();
+      return;
+    }
+
+    const activeIndex = focusable.indexOf(activeEl);
+    if (activeIndex === -1) {
+      e.preventDefault();
+      if (e.shiftKey) last.focus();
+      else first.focus();
+      return;
+    }
+
+    if (e.shiftKey && activeIndex === 0) {
       e.preventDefault();
       last.focus();
       return;
     }
 
-    if (!e.shiftKey && active === last) {
+    if (!e.shiftKey && activeIndex === focusable.length - 1) {
       e.preventDefault();
       first.focus();
     }
@@ -288,7 +315,7 @@ export const initJoinModal = ({
     btn.addEventListener('click', (e: MouseEvent) => {
       e.preventDefault();
       closeMenu();
-      void openJoinModal();
+      void openJoinModal(btn);
     });
   });
 };

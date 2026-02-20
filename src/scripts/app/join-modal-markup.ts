@@ -89,6 +89,7 @@ export const buildJoinModalMarkup = ({
                     class="mg-copy-ip-btn mg-copy-ip-btn--modal"
                     aria-label="Server-IP kopieren"
                     data-copy-ip-modal
+                    data-join-modal-initial-focus
                   >
                     <span class="relative inline-flex items-center justify-center">
                       <span
