@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { RefreshCcw, X } from 'lucide-react';
+import { acquireScrollLock } from '../../scripts/app/scroll-lock';
 import { SkinViewerControls } from './skinviewer/SkinViewerControls';
 import { SkinViewerStage } from './skinviewer/SkinViewerStage';
 import { useSkinViewer } from './skinviewer/useSkinViewer';
@@ -59,10 +60,9 @@ export default function SkinViewerModal({
   useEffect(() => {
     if (!open) return;
 
-    const prevOverflow = document.body.style.overflow;
+    const releaseScrollLock = acquireScrollLock();
     const lastFocused =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    document.body.style.overflow = 'hidden';
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -115,7 +115,7 @@ export default function SkinViewerModal({
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      releaseScrollLock();
       if (lastFocused && document.contains(lastFocused)) lastFocused.focus();
     };
   }, [open, onClose]);

@@ -1,5 +1,6 @@
 import type { Qs, Qsa } from './dom';
 import type { ShowToast } from './toast';
+import { acquireScrollLock } from './scroll-lock';
 
 export const initJoinModal = ({
   config,
@@ -64,7 +65,7 @@ export const initJoinModal = ({
   >();
 
   let modalLastFocusedEl: HTMLElement | null = null;
-  let bodyOverflowBeforeModal = '';
+  let releaseModalScrollLock: (() => void) | null = null;
 
   const ensureJoinModalPortalRoot = (): HTMLElement => {
     const existingRoot = document.getElementById('join-modal-root');
@@ -209,7 +210,10 @@ export const initJoinModal = ({
       unmountJoinModal();
     } finally {
       setModalBackgroundInert(false);
-      document.body.style.overflow = bodyOverflowBeforeModal;
+      if (releaseModalScrollLock) {
+        releaseModalScrollLock();
+        releaseModalScrollLock = null;
+      }
     }
 
     if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
@@ -227,13 +231,11 @@ export const initJoinModal = ({
         : document.activeElement instanceof HTMLElement
           ? document.activeElement
           : null;
-    bodyOverflowBeforeModal = document.body.style.overflow;
 
     try {
       await mountJoinModal();
     } catch (error) {
       setModalBackgroundInert(false);
-      document.body.style.overflow = bodyOverflowBeforeModal;
       console.warn('Join-Modal konnte nicht geladen werden:', error);
       showToast('Join-Dialog konnte nicht geladen werden.', 'error');
       return;
@@ -244,7 +246,7 @@ export const initJoinModal = ({
       return;
     }
     const dialog = joinModalDialog;
-    document.body.style.overflow = 'hidden';
+    releaseModalScrollLock = acquireScrollLock();
     setModalBackgroundInert(true);
 
     window.setTimeout(() => {
