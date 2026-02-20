@@ -18,6 +18,8 @@ type AutocompleteViewModel = {
   selectedIndex: number;
   setSelectedIndex: (next: number) => void;
   wrapRef: RefObject<HTMLDivElement | null>;
+  isLoading: boolean;
+  errorMessage: string | null;
 };
 
 export function StatsHeader({
@@ -100,6 +102,8 @@ export function StatsHeader({
             onSelectedIndexChange={search.setSelectedIndex}
             onChoose={onChoosePlayer}
             wrapRef={search.wrapRef}
+            isLoading={search.isLoading}
+            errorMessage={search.errorMessage}
           />
 
           <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-end">

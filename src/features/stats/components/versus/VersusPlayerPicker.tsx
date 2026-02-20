@@ -119,6 +119,8 @@ function VersusPlayerRow({
           onSelectedIndexChange={search.setSelectedIndex}
           onChoose={(uuid) => onSetVersusPlayer(side, uuid)}
           wrapRef={search.wrapRef}
+          isLoading={search.isLoading}
+          errorMessage={search.errorMessage}
         />
       </div>
 

@@ -28,6 +28,8 @@ vi.mock('../usePlayerAutocomplete', () => ({
     selectedIndex: -1,
     setSelectedIndex: vi.fn(),
     wrapRef: { current: null },
+    isLoading: false,
+    errorMessage: null,
   })),
 }));
 

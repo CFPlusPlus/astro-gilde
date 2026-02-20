@@ -19,6 +19,8 @@ type AutocompleteViewModel = {
   selectedIndex: number;
   setSelectedIndex: (next: number) => void;
   wrapRef: RefObject<HTMLDivElement | null>;
+  isLoading: boolean;
+  errorMessage: string | null;
 };
 
 type StatsToolbarProps = {
@@ -240,6 +242,8 @@ export function StatsToolbar({
             onSelectedIndexChange={search.setSelectedIndex}
             onChoose={onChoosePlayer}
             wrapRef={search.wrapRef}
+            isLoading={search.isLoading}
+            errorMessage={search.errorMessage}
             className="w-full lg:max-w-none"
           />
 
@@ -289,6 +293,8 @@ export function StatsToolbar({
               onSelectedIndexChange={search.setSelectedIndex}
               onChoose={onChoosePlayer}
               wrapRef={search.wrapRef}
+              isLoading={search.isLoading}
+              errorMessage={search.errorMessage}
               className="w-full lg:max-w-none"
             />
             <button
