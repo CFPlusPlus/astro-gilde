@@ -1,10 +1,15 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PlayerStatsApp from '../../features/player-stats/PlayerStatsApp';
+import { canonicalFor } from '../../config/site';
+
+const statsCanonicalUrl = canonicalFor('/statistiken/');
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Spielerstatistik"
+  canonical={statsCanonicalUrl}
+  noindex={true}
   description="Spielerstatistiken für Minecraft Gilde – Werte, Items und Kreaturen nach Spieler."
 >
   <link slot="head" rel="preconnect" href="https://minotar.net" crossorigin />

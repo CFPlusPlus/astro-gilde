@@ -49,8 +49,8 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      // Nicht ins Sitemap aufnehmen (SEO): /404/
-      filter: (page) => !page.endsWith('/404/'),
+      // Nicht ins Sitemap aufnehmen (SEO): /404/ und variable Detailseiten.
+      filter: (page) => !page.endsWith('/404/') && !page.endsWith('/statistiken/spieler/'),
     }),
   ],
   experimental: {
