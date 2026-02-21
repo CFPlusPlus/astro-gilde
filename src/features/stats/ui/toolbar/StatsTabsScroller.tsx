@@ -60,7 +60,7 @@ export function StatsTabsScroller({
   return (
     <nav
       aria-label="Statistik Navigation"
-      className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className="min-w-0 flex-1 snap-x snap-mandatory overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <ul
         className="flex w-max items-center gap-1.5 pr-1"
@@ -86,7 +86,7 @@ export function StatsTabsScroller({
                 onKeyDown={(event) => onKeyDown(event, index)}
                 disabled={disabled}
                 className={[
-                  'focus-visible:ring-offset-bg inline-flex h-9 items-center rounded-full border px-3 text-xs font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+                  'focus-visible:ring-offset-bg inline-flex shrink-0 snap-start items-center rounded-full border px-3 py-2 text-xs font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                   isActive
                     ? 'bg-accent/16 border-accent/45 text-fg shadow-sm'
                     : 'bg-surface-solid/20 text-fg/88 border-border/80 hover:text-fg hover:border-accent/35 hover:bg-surface-solid/36',
