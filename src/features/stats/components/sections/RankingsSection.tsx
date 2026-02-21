@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ListFilter, RotateCcw, SearchX, X } from 'lucide-react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight, ListFilter, RotateCcw, SearchX } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
@@ -12,14 +12,13 @@ import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
 import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
 import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from '../../ui/events';
+import { CategoriesSheet } from '../../ui/sheets/CategoriesSheet';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
-import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
 const LAST_CATEGORIES_LIMIT = 5;
 const LAST_CATEGORIES_VISIBLE_LIMIT = 5;
 const HORIZONTAL_SCROLL_EPSILON = 2;
-const RANKINGS_DRAWER_SCROLL_LOCK_ID = 'rankings-drawer';
 
 function normalizeLastCategories(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -141,6 +140,7 @@ export function RankingsSection({
   onGoPage: (pageIndex: number) => void;
   onLoadMore: () => void;
 }) {
+  const categoriesSheetId = useId();
   const lastLoadedMetricRef = useRef<{ id: string; state: LeaderboardState } | null>(null);
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
   const [lastCategoryIds, setLastCategoryIds] = useState<string[]>([]);
@@ -163,38 +163,6 @@ export function RankingsSection({
   useEffect(() => {
     setLastCategoryIds(readLastCategories());
   }, []);
-
-  useEffect(() => {
-    if (!mobilePickerOpen) return;
-
-    lockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobilePickerOpen(false);
-      }
-    };
-
-    const onResize = () => {
-      if (window.matchMedia('(min-width: 1024px)').matches) {
-        setMobilePickerOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('resize', onResize);
-      unlockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
-    };
-  }, [mobilePickerOpen]);
-
-  useEffect(() => {
-    if (!activeMetricId) return;
-    setMobilePickerOpen(false);
-  }, [activeMetricId]);
 
   useEffect(() => {
     const onOpenCategoriesSheet = () => {
@@ -334,17 +302,16 @@ export function RankingsSection({
     onSelectMetric(id);
   };
 
-  const handleSelectMetricFromDrawer = (id: string) => {
-    handleSelectMetric(id);
-    setMobilePickerOpen(false);
-  };
-
   const handleQuickAccessSelect = (id: string) => {
     if (metricFilter.trim().length > 0) {
       onMetricFilterChange('');
     }
     handleSelectMetric(id);
   };
+
+  const handleCloseMobilePicker = useCallback(() => {
+    setMobilePickerOpen(false);
+  }, []);
 
   const handleClearLastCategories = () => {
     setLastCategoryIds([]);
@@ -363,8 +330,6 @@ export function RankingsSection({
     quickAccessScrollState.canScrollLeft || quickAccessScrollState.canScrollRight;
   const showRecentlyViewedScrollControls =
     recentlyViewedScrollState.canScrollLeft || recentlyViewedScrollState.canScrollRight;
-
-  const visibleCategoryCount = groupedMetrics.reduce((sum, group) => sum + group.ids.length, 0);
 
   return (
     <>
@@ -417,6 +382,7 @@ export function RankingsSection({
                 disabled={!metrics}
                 aria-haspopup="dialog"
                 aria-expanded={mobilePickerOpen ? 'true' : 'false'}
+                aria-controls={categoriesSheetId}
               >
                 <ListFilter size={15} />
                 Kategorien
@@ -674,50 +640,18 @@ export function RankingsSection({
         </StatsLayoutMain>
       </StatsLayoutGrid>
 
-      {mobilePickerOpen && metrics ? (
-        <div
-          className="fixed inset-0 z-50 lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ranglisten Kategorien"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/45"
-            aria-label={'Kategorien schlie\u00dfen'}
-            onClick={() => setMobilePickerOpen(false)}
-          />
-
-          <section className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-hidden rounded-t-[1rem] border-t shadow-2xl">
-            <header className="border-border/80 flex items-center justify-between gap-3 border-b px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-fg text-sm font-semibold">{'Kategorie ausw\u00e4hlen'}</p>
-                <p className="text-muted text-xs">{visibleCategoryCount} Treffer</p>
-              </div>
-              <button
-                type="button"
-                className="focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-                aria-label={'Kategorien schlie\u00dfen'}
-                onClick={() => setMobilePickerOpen(false)}
-              >
-                <X size={16} />
-              </button>
-            </header>
-
-            <div className="max-h-[calc(82dvh-4.5rem)] overflow-y-auto px-4 pt-3 pb-4">
-              <MetricPicker
-                metrics={metrics}
-                grouped={groupedMetrics}
-                filter={metricFilter}
-                onFilterChange={onMetricFilterChange}
-                activeMetricId={activeMetricId}
-                onSelectMetric={handleSelectMetricFromDrawer}
-                surface={false}
-                scrollClassName="max-h-none overflow-visible pr-0"
-              />
-            </div>
-          </section>
-        </div>
+      {metrics ? (
+        <CategoriesSheet
+          open={mobilePickerOpen}
+          sheetId={categoriesSheetId}
+          metrics={metrics}
+          grouped={groupedMetrics}
+          filter={metricFilter}
+          onFilterChange={onMetricFilterChange}
+          activeMetricId={activeMetricId}
+          onSelectMetric={handleSelectMetric}
+          onClose={handleCloseMobilePicker}
+        />
       ) : null}
     </>
   );
