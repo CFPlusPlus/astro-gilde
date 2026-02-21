@@ -97,6 +97,7 @@ export default function StatsApp() {
     summaryRetryDisabled,
     summaryRetryInSeconds,
     apiError,
+    prefetchRankings,
     mainSearch,
     metrics,
     groupedMetrics,
@@ -167,7 +168,10 @@ export default function StatsApp() {
     summaryRetryDisabled,
   ]);
   const handleReload = useCallback(() => {
-    retrySummary();
+    if (activeTab === 'uebersicht') {
+      retrySummary();
+      return;
+    }
 
     if (activeTab === 'king') {
       void reloadKing();
@@ -183,6 +187,36 @@ export default function StatsApp() {
       void runVersusCompare();
     }
   }, [activeTab, reloadActiveMetric, reloadKing, retrySummary, runVersusCompare]);
+
+  useEffect(() => {
+    if (activeTab !== 'uebersicht') return;
+
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    const runPrefetch = () => {
+      void prefetchRankings();
+    };
+
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      idleId = idleWindow.requestIdleCallback(runPrefetch, { timeout: 2_500 });
+    } else {
+      timeoutId = window.setTimeout(runPrefetch, 1_200);
+    }
+
+    return () => {
+      if (idleId !== null && typeof idleWindow.cancelIdleCallback === 'function') {
+        idleWindow.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [activeTab, prefetchRankings]);
   const handleSelectMetric = useCallback(
     (id: string) => {
       if (id === activeMetricId) return;

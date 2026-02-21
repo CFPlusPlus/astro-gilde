@@ -152,7 +152,7 @@ describe('useStatsData rate limit', () => {
     await flushEffects(4);
 
     expect(getLeaderboard).toHaveBeenCalledTimes(1);
-    expect(getLiveResource).toHaveBeenCalledTimes(1);
+    expect(getLiveResource).toHaveBeenCalledTimes(0);
 
     const blockedState = hook.getLatest();
     expect(blockedState.summaryRetryDisabled).toBe(true);
@@ -170,7 +170,60 @@ describe('useStatsData rate limit', () => {
     });
 
     expect(getLeaderboard).toHaveBeenCalledTimes(1);
+    expect(getLiveResource).toHaveBeenCalledTimes(0);
+
+    await hook.unmount();
+  });
+
+  it('loads only summary on initial overview tab', async () => {
+    const hook = await mountHook({
+      activeTab: 'uebersicht',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: null,
+    });
+
+    await flushEffects(3);
+
     expect(getLiveResource).toHaveBeenCalledTimes(1);
+    expect(getMetrics).not.toHaveBeenCalled();
+    expect(getLeaderboard).not.toHaveBeenCalled();
+
+    await hook.unmount();
+  });
+
+  it('prefetches rankings in background without tab switch', async () => {
+    vi.mocked(getMetrics).mockResolvedValue({
+      metrics: {
+        hours: { label: 'Spielzeit', category: 'Aktivitaet' },
+      },
+    });
+    vi.mocked(getLeaderboard).mockResolvedValue({
+      boards: {
+        hours: [{ uuid: 'uuid-1', value: 123 }],
+      },
+      cursors: {
+        hours: null,
+      },
+    });
+
+    const hook = await mountHook({
+      activeTab: 'uebersicht',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: null,
+    });
+
+    await flushEffects(2);
+
+    await act(async () => {
+      await hook.getLatest().prefetchRankings();
+    });
+
+    await flushEffects(2);
+
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(getLeaderboard).toHaveBeenCalledTimes(1);
 
     await hook.unmount();
   });

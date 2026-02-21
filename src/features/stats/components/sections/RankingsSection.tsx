@@ -558,8 +558,15 @@ export function RankingsSection({
             ) : null}
 
             {!metrics ? (
-              <div className="mg-notice text-sm" data-variant="neutral" role="status">
-                {LIVE_COPY_DE.rankings_loading}
+              <div className="space-y-3" role="status" aria-live="polite">
+                <div className="mg-notice text-sm" data-variant="neutral">
+                  {LIVE_COPY_DE.rankings_loading}
+                </div>
+                <div className="space-y-2" aria-hidden="true">
+                  <div className="bg-surface-solid/35 border-border/70 h-9 animate-pulse rounded-lg border" />
+                  <div className="bg-surface-solid/35 border-border/70 h-9 animate-pulse rounded-lg border" />
+                  <div className="bg-surface-solid/35 border-border/70 h-56 animate-pulse rounded-[var(--radius)] border" />
+                </div>
               </div>
             ) : null}
 

@@ -287,7 +287,7 @@ function resolveKingStateNotice(
   king: LeaderboardState,
   hasTopEntries: boolean,
 ): { text: string; variant: 'neutral' | 'warning' } | null {
-  if (king.loading && !king.loaded) {
+  if (!king.loaded) {
     return {
       text: LIVE_COPY_DE.table_loading,
       variant: 'neutral',
@@ -321,7 +321,7 @@ function resolveKingStateNotice(
     };
   }
 
-  if (!king.loading && king.loaded && !hasTopEntries) {
+  if (king.loaded && !king.loading && !hasTopEntries) {
     return {
       text: 'Noch keine Server-König-Punkte verfügbar. Die Rangliste erscheint automatisch, sobald Daten vorliegen.',
       variant: 'neutral',
@@ -497,7 +497,7 @@ export function KingSection({
               </div>
             </div>
 
-            {king.loading && !king.loaded ? (
+            {!king.loaded ? (
               <div className="mt-4 grid gap-3 lg:grid-cols-3">
                 {Array.from({ length: 3 }, (_, index) => (
                   <div
@@ -519,7 +519,7 @@ export function KingSection({
               </div>
             ) : null}
 
-            {!king.loading && hasTopEntries ? (
+            {king.loaded && hasTopEntries ? (
               <ol className="mt-4 grid gap-3 lg:grid-cols-3">
                 {Array.from({ length: 3 }, (_, index) => {
                   const entry = topThree[index];
@@ -642,7 +642,7 @@ export function KingSection({
               </ol>
             ) : null}
 
-            {!king.loading && !hasTopEntries ? (
+            {king.loaded && !king.loading && !hasTopEntries ? (
               <div className="border-border/70 bg-surface-solid/35 mt-4 rounded-lg border px-4 py-3">
                 <p className="text-fg text-sm font-semibold">Noch kein Server-König vorhanden</p>
                 <p className="text-muted mt-1 text-sm leading-relaxed">
