@@ -35,12 +35,6 @@ const getContentElement = (details: HTMLDetailsElement, summary: HTMLElement): H
   return content;
 };
 
-const resetContentInlineStyles = (content: HTMLElement): void => {
-  content.style.height = '';
-  content.style.opacity = '';
-  content.style.overflow = '';
-};
-
 const setAccordionState = (details: HTMLDetailsElement, state: AccordionState): void => {
   if (!state) {
     details.removeAttribute('data-motion-state');
@@ -50,15 +44,7 @@ const setAccordionState = (details: HTMLDetailsElement, state: AccordionState): 
 };
 
 const setupInitialState = (details: HTMLDetailsElement, content: HTMLElement): void => {
-  if (details.open) {
-    content.hidden = false;
-    resetContentInlineStyles(content);
-    return;
-  }
-
-  content.hidden = true;
-  content.style.height = '0px';
-  content.style.opacity = '0';
+  content.hidden = !details.open;
 };
 
 const clearActiveAnimation = (details: HTMLDetailsElement): void => {
@@ -69,35 +55,24 @@ const clearActiveAnimation = (details: HTMLDetailsElement): void => {
   activeAnimations.delete(details);
 };
 
-const runHeightAnimation = ({
+const runAccordionAnimation = ({
   details,
   content,
   state,
-  fromHeight,
-  toHeight,
-  fromOpacity,
-  toOpacity,
+  keyframes,
   onFinish,
 }: {
   details: HTMLDetailsElement;
   content: HTMLElement;
   state: AccordionState;
-  fromHeight: number;
-  toHeight: number;
-  fromOpacity: number;
-  toOpacity: number;
+  keyframes: Keyframe[];
   onFinish: () => void;
 }): void => {
   clearActiveAnimation(details);
   setAccordionState(details, state);
 
-  content.style.overflow = 'hidden';
-  content.style.height = `${fromHeight}px`;
-  content.style.opacity = String(fromOpacity);
-
   if (typeof content.animate !== 'function') {
-    content.style.height = `${toHeight}px`;
-    content.style.opacity = String(toOpacity);
+    setAccordionState(details, '');
     onFinish();
     return;
   }
@@ -114,17 +89,11 @@ const runHeightAnimation = ({
     onFinish();
   };
 
-  const animation = content.animate(
-    [
-      { height: `${fromHeight}px`, opacity: fromOpacity },
-      { height: `${toHeight}px`, opacity: toOpacity },
-    ],
-    {
-      duration: ACCORDION_DURATION_MS,
-      easing: ACCORDION_EASING,
-      fill: 'forwards',
-    },
-  );
+  const animation = content.animate(keyframes, {
+    duration: ACCORDION_DURATION_MS,
+    easing: ACCORDION_EASING,
+    fill: 'none',
+  });
 
   const fallbackTimer = window.setTimeout(finish, ACCORDION_DURATION_MS + 80);
   activeAnimations.set(details, { animation, fallbackTimer });
@@ -146,38 +115,35 @@ const animateOpen = (details: HTMLDetailsElement, content: HTMLElement): void =>
   details.open = true;
   content.hidden = false;
 
-  // Kurz reflowen, damit scrollHeight konsistent ist.
-  const targetHeight = content.scrollHeight;
-  runHeightAnimation({
+  const targetHeight = Math.max(content.scrollHeight, 1);
+  runAccordionAnimation({
     details,
     content,
     state: 'opening',
-    fromHeight: 0,
-    toHeight: targetHeight,
-    fromOpacity: 0,
-    toOpacity: 1,
+    keyframes: [
+      { height: '0px', opacity: 0 },
+      { height: `${targetHeight}px`, opacity: 1 },
+    ],
     onFinish: () => {
-      resetContentInlineStyles(content);
       setAccordionState(details, '');
     },
   });
 };
 
 const animateClose = (details: HTMLDetailsElement, content: HTMLElement): void => {
-  const startSize = Math.max(content.offsetHeight, content.scrollHeight);
+  const startSize = Math.max(content.getBoundingClientRect().height, content.scrollHeight, 1);
   content.hidden = false;
-  runHeightAnimation({
+  runAccordionAnimation({
     details,
     content,
     state: 'closing',
-    fromHeight: startSize,
-    toHeight: 0,
-    fromOpacity: 1,
-    toOpacity: 0,
+    keyframes: [
+      { height: `${startSize}px`, opacity: 1 },
+      { height: '0px', opacity: 0 },
+    ],
     onFinish: () => {
       details.open = false;
       content.hidden = true;
-      resetContentInlineStyles(content);
       setAccordionState(details, '');
     },
   });

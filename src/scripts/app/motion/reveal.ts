@@ -28,13 +28,6 @@ const applyStaggerDelays = (root: ParentNode): void => {
   });
 };
 
-const setDelayVar = (elements: HTMLElement[]): void => {
-  elements.forEach((el) => {
-    const delay = parseMs(el.getAttribute('data-motion-delay'), 0);
-    el.style.setProperty('--mg-motion-delay', `${delay}ms`);
-  });
-};
-
 const revealAll = (elements: HTMLElement[]): void => {
   elements.forEach((el) => el.classList.add('is-motion-in'));
 };
@@ -74,6 +67,25 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
   }
 
   const observed = new WeakSet<HTMLElement>();
+  const scheduledReveal = new WeakSet<HTMLElement>();
+  const pendingTimers = new Set<number>();
+
+  const scheduleReveal = (element: HTMLElement): void => {
+    if (scheduledReveal.has(element)) return;
+    scheduledReveal.add(element);
+
+    const delay = Math.max(0, parseMs(element.getAttribute('data-motion-delay'), 0));
+    if (delay === 0) {
+      element.classList.add('is-motion-in');
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      pendingTimers.delete(timer);
+      element.classList.add('is-motion-in');
+    }, delay);
+    pendingTimers.add(timer);
+  };
 
   const observer = new IntersectionObserver(
     (entries, obs) => {
@@ -81,7 +93,7 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
         if (!entry.isIntersecting) return;
         if (!(entry.target instanceof HTMLElement)) return;
 
-        entry.target.classList.add('is-motion-in');
+        scheduleReveal(entry.target);
         obs.unobserve(entry.target);
       });
     },
@@ -93,13 +105,12 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
 
   const registerElements = (elements: HTMLElement[]): void => {
     if (elements.length === 0) return;
-    setDelayVar(elements);
 
     elements.forEach((el) => {
       if (observed.has(el)) return;
       if (isInViewport(el)) {
         observed.add(el);
-        el.classList.add('is-motion-in');
+        scheduleReveal(el);
         return;
       }
       observed.add(el);
@@ -134,5 +145,7 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
   return () => {
     observer.disconnect();
     mutationObserver?.disconnect();
+    pendingTimers.forEach((timer) => window.clearTimeout(timer));
+    pendingTimers.clear();
   };
 };

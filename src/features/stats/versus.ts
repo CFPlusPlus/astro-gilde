@@ -21,6 +21,82 @@ export type VersusMetricDef = {
 
 export type VersusGroupedMetrics = Array<{ cat: string; items: VersusMetricDef[] }>;
 
+type VersusKpiPreset = {
+  ids: string[];
+  terms: string[];
+};
+
+const VERSUS_KPI_PRESETS: readonly VersusKpiPreset[] = [
+  {
+    ids: ['stat:minecraft:play_time', 'stat:play_time', 'stat:hours'],
+    terms: ['spielzeit', 'spielstunden', 'play time', 'onlinezeit'],
+  },
+  {
+    ids: ['stat:minecraft:walk_one_cm', 'stat:distance', 'stat:walk_one_cm'],
+    terms: ['distanz', 'laufdistanz', 'distance', 'walk'],
+  },
+  {
+    ids: [
+      'stat:minecraft:mob_kills',
+      'stat:mob_kills',
+      'stat:minecraft:player_kills',
+      'stat:player_kills',
+    ],
+    terms: ['mob-kills', 'kills', 'toetungen', 'getoetet'],
+  },
+  {
+    ids: ['mob:killed:minecraft:creeper', 'stat:creeper', 'stat:minecraft:creeper_kills'],
+    terms: ['creeper'],
+  },
+];
+
+function normalizeForVersusSearch(value: string): string {
+  return normalizeUmlauts(value).toLowerCase();
+}
+
+function pickVersusPresetMetric(
+  catalog: VersusMetricDef[],
+  byId: Map<string, VersusMetricDef>,
+  preset: VersusKpiPreset,
+  usedIds: Set<string>,
+) {
+  for (const id of preset.ids) {
+    const entry = byId.get(id);
+    if (entry && !usedIds.has(entry.id)) return entry;
+  }
+
+  return catalog.find((entry) => {
+    if (usedIds.has(entry.id)) return false;
+    const haystack = `${normalizeForVersusSearch(entry.id)} ${normalizeForVersusSearch(entry.label)}`;
+    return preset.terms.some((term) => haystack.includes(normalizeForVersusSearch(term)));
+  });
+}
+
+export function getVersusKpiSelection(catalog: VersusMetricDef[]) {
+  const selected: string[] = [];
+  const usedIds = new Set<string>();
+  const byId = new Map(catalog.map((entry) => [entry.id, entry]));
+
+  for (const preset of VERSUS_KPI_PRESETS) {
+    const picked = pickVersusPresetMetric(catalog, byId, preset, usedIds);
+    if (!picked) continue;
+    selected.push(picked.id);
+    usedIds.add(picked.id);
+  }
+
+  const general = catalog.filter((entry) => entry.group === 'Allgemein');
+  const fallbackBase = general.length > 0 ? general : catalog;
+
+  for (const entry of fallbackBase) {
+    if (selected.length >= 4) break;
+    if (usedIds.has(entry.id)) continue;
+    selected.push(entry.id);
+    usedIds.add(entry.id);
+  }
+
+  return selected.slice(0, 4);
+}
+
 export function filterVersusCatalog(catalog: VersusMetricDef[], filter: string) {
   const q = filter.trim().toLowerCase();
   if (!q) return catalog;
@@ -49,9 +125,7 @@ export function groupVersusCatalog(catalog: VersusMetricDef[]): VersusGroupedMet
 }
 
 export function getQuickVersusSelection(catalog: VersusMetricDef[]) {
-  const general = catalog.filter((entry) => entry.group === 'Allgemein');
-  const base = general.length > 0 ? general : catalog;
-  return base.slice(0, 4).map((entry) => entry.id);
+  return getVersusKpiSelection(catalog);
 }
 
 export function formatVersusValue(value: number, def?: VersusMetricDef) {

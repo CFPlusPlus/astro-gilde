@@ -49,8 +49,8 @@ export default defineConfig({
   integrations: [
     react(),
     sitemap({
-      // Nicht ins Sitemap aufnehmen (SEO): /404/
-      filter: (page) => !page.endsWith('/404/'),
+      // Nicht ins Sitemap aufnehmen (SEO): /404/ und variable Detailseiten.
+      filter: (page) => !page.endsWith('/404/') && !page.endsWith('/statistiken/spieler/'),
     }),
   ],
   experimental: {
@@ -60,10 +60,7 @@ export default defineConfig({
         resources: ["'self'"],
       },
       styleDirective: {
-        // Aktuell erforderlich: Teile der UI setzen Styles zur Laufzeit
-        // (z. B. Scroll-Lock/Restore in nav-menu und Modals).
-        // Siehe README Abschnitt "CSP (style-src)" fuer Details und Reduktionsstand.
-        resources: ["'self'", "'unsafe-inline'"],
+        resources: ["'self'"],
       },
       directives: [
         "default-src 'self'",

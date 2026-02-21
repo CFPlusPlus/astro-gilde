@@ -85,11 +85,13 @@ export function useStatsData({
   pageSize,
   metricFilter,
   initialActiveMetricId,
+  initialSearchQuery,
 }: {
   activeTab: TabKey;
   pageSize: number;
   metricFilter: string;
   initialActiveMetricId?: string | null;
+  initialSearchQuery?: string;
 }) {
   const [generatedIso, setGeneratedIso] = useState<string | null>(null);
   const [playerCount, setPlayerCount] = useState<number | null>(null);
@@ -115,6 +117,8 @@ export function useStatsData({
   );
 
   const playerNamesRef = useRef<Record<string, string>>({});
+  const metricsRef = useRef<Record<string, MetricDef> | null>(null);
+  const metricsFetchPromiseRef = useRef<Promise<Record<string, MetricDef> | null> | null>(null);
   const kingRef = useRef(king);
   const boardsRef = useRef(boards);
   const pageSizeRef = useRef(pageSize);
@@ -126,6 +130,10 @@ export function useStatsData({
   useEffect(() => {
     boardsRef.current = boards;
   }, [boards]);
+
+  useEffect(() => {
+    metricsRef.current = metrics;
+  }, [metrics]);
 
   useEffect(() => {
     pageSizeRef.current = pageSize;
@@ -211,6 +219,7 @@ export function useStatsData({
   const mainSearch = usePlayerAutocomplete({
     onGeneratedIso: setGeneratedIso,
     onError: handleAutocompleteError,
+    initialValue: initialSearchQuery,
   });
 
   const mergePlayers = useCallback((players?: Record<string, string>) => {
@@ -242,12 +251,77 @@ export function useStatsData({
     [],
   );
 
+  const ensureMetricsLoaded = useCallback(
+    ({
+      signal,
+      silent = false,
+    }: {
+      signal?: AbortSignal;
+      silent?: boolean;
+    } = {}): Promise<Record<string, MetricDef> | null> => {
+      if (metricsRef.current) return Promise.resolve(metricsRef.current);
+      if (metricsFetchPromiseRef.current) return metricsFetchPromiseRef.current;
+
+      const request = (async () => {
+        try {
+          const data = await getMetrics(signal);
+          if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
+
+          const rawMetrics = (data.metrics || {}) as Record<string, MetricDef>;
+          const normalized = Object.fromEntries(
+            Object.entries(rawMetrics).map(([id, def]) => [
+              id,
+              {
+                ...def,
+                label: normalizeUmlauts(def?.label || id),
+                category: normalizeUmlauts(def?.category || ''),
+              },
+            ]),
+          ) as Record<string, MetricDef>;
+
+          setMetrics(normalized);
+          if (!silent) {
+            setApiErrorWithKind(null, null);
+          }
+
+          return normalized;
+        } catch (error) {
+          if ((error as Error)?.name === 'AbortError') return null;
+
+          if (!silent) {
+            console.warn('Metrics Fehler', error);
+            const errorKind = resolveLeaderboardErrorKind(error);
+            setApiErrorWithKind(
+              getLiveMessage({ status: 'error', errorKind }) ?? API_ERROR_MESSAGE,
+              errorKind,
+            );
+          }
+          return null;
+        } finally {
+          metricsFetchPromiseRef.current = null;
+        }
+      })();
+
+      metricsFetchPromiseRef.current = request;
+      return request;
+    },
+    [setApiErrorWithKind],
+  );
+
   const loadLeaderboard = useCallback(
-    async (metricId: string, stateKey: string, opts?: { openLoadedPage?: boolean }) => {
+    async (
+      metricId: string,
+      stateKey: string,
+      opts?: { openLoadedPage?: boolean; forceRefresh?: boolean; silent?: boolean },
+    ) => {
       if (isRateLimitBlocked) return;
 
-      setApiErrorWithKind(null, null);
       const openLoadedPage = opts?.openLoadedPage ?? false;
+      const forceRefresh = opts?.forceRefresh ?? false;
+      const silent = opts?.silent ?? false;
+      if (!silent) {
+        setApiErrorWithKind(null, null);
+      }
       const currentState =
         stateKey === 'king'
           ? kingRef.current
@@ -259,7 +333,8 @@ export function useStatsData({
 
       try {
         const isSamePageSize = currentState.pageSize === pageSizeRef.current;
-        const cursor = currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
+        const cursor =
+          !forceRefresh && currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
         const data = await getLeaderboard(metricId, pageSizeRef.current, cursor);
 
         if (typeof data.__generated === 'string') {
@@ -292,15 +367,24 @@ export function useStatsData({
           };
         });
       } catch (error) {
-        console.warn('Leaderboard Fehler', error);
+        if (!silent) {
+          console.warn('Leaderboard Fehler', error);
+        }
         const liveErrorKind = resolveLeaderboardErrorKind(error);
-        if (liveErrorKind === 'rate_limit') {
+        if (!silent && liveErrorKind === 'rate_limit') {
           registerRateLimit(resolveRetryAfterMs(error));
-        } else {
+        } else if (!silent) {
           setApiErrorWithKind(
             getLiveMessage({ status: 'error', errorKind: liveErrorKind }) ?? API_ERROR_MESSAGE,
             liveErrorKind,
           );
+        }
+        if (silent) {
+          setBoardState(stateKey, (state) => ({
+            ...state,
+            loading: false,
+          }));
+          return;
         }
         setBoardState(stateKey, (state) => ({
           ...state,
@@ -344,6 +428,8 @@ export function useStatsData({
   );
 
   useEffect(() => {
+    if (activeTab !== 'uebersicht') return;
+
     const ac = new AbortController();
     const thresholds = LIVE_WIDGET_THRESHOLDS['stats-kpi'];
 
@@ -473,10 +559,15 @@ export function useStatsData({
       }
     })();
 
-    return () => ac.abort();
-  }, [registerRateLimit, setApiErrorWithKind, summaryReloadTrigger]);
+    return () => {
+      ac.abort();
+      setSummaryLoading(false);
+    };
+  }, [activeTab, registerRateLimit, setApiErrorWithKind, summaryReloadTrigger]);
 
   useEffect(() => {
+    if (activeTab !== 'uebersicht') return;
+
     const staleAfterMs = LIVE_WIDGET_THRESHOLDS['stats-kpi'].staleAfterMs;
 
     const onVisibilityChange = (): void => {
@@ -500,42 +591,16 @@ export function useStatsData({
     return () => {
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
-  }, [isRateLimitBlocked]);
+  }, [activeTab, isRateLimitBlocked]);
 
   useEffect(() => {
-    if (activeTab !== 'ranglisten' || metrics) return;
+    if (activeTab !== 'ranglisten') return;
 
     const ac = new AbortController();
-
-    (async () => {
-      try {
-        const data = await getMetrics(ac.signal);
-        if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
-        const rawMetrics = (data.metrics || {}) as Record<string, MetricDef>;
-        const normalized = Object.fromEntries(
-          Object.entries(rawMetrics).map(([id, def]) => [
-            id,
-            {
-              ...def,
-              label: normalizeUmlauts(def?.label || id),
-              category: normalizeUmlauts(def?.category || ''),
-            },
-          ]),
-        ) as Record<string, MetricDef>;
-        setMetrics(normalized);
-        setApiErrorWithKind(null, null);
-      } catch (error) {
-        console.warn('Metrics Fehler', error);
-        const errorKind = resolveLeaderboardErrorKind(error);
-        setApiErrorWithKind(
-          getLiveMessage({ status: 'error', errorKind }) ?? API_ERROR_MESSAGE,
-          errorKind,
-        );
-      }
-    })();
+    void ensureMetricsLoaded({ signal: ac.signal });
 
     return () => ac.abort();
-  }, [activeTab, metrics, setApiErrorWithKind]);
+  }, [activeTab, ensureMetricsLoaded]);
 
   const filteredMetricIds = useMemo(
     () => filterMetricIds(metrics, metricFilter),
@@ -597,6 +662,26 @@ export function useStatsData({
   ]);
 
   const hasNoRanklistResults = !!metrics && filteredMetricIds.length === 0;
+  const prefetchRankings = useCallback(async () => {
+    if (activeTab === 'ranglisten') return;
+    if (isRateLimitBlocked) return;
+
+    const resolvedMetrics = await ensureMetricsLoaded({ silent: true });
+    if (!resolvedMetrics) return;
+
+    const candidates = filterMetricIds(resolvedMetrics, '');
+    const metricId =
+      (activeMetricId && resolvedMetrics[activeMetricId] ? activeMetricId : null) ||
+      pickDefaultRankMetricId(candidates, resolvedMetrics);
+
+    if (!metricId) return;
+
+    const board = boardsRef.current[metricId];
+    const boardIsFresh = Boolean(board?.loaded) && board?.pageSize === pageSizeRef.current;
+    if (boardIsFresh) return;
+
+    await loadLeaderboard(metricId, metricId, { silent: true });
+  }, [activeMetricId, activeTab, ensureMetricsLoaded, isRateLimitBlocked, loadLeaderboard]);
   const setApiErrorMessage = useCallback(
     (message: string | null) => {
       setApiErrorWithKind(message, message ? 'unknown' : null);
@@ -613,6 +698,7 @@ export function useStatsData({
     summaryLoading,
     summaryError,
     summaryLastUpdatedAt,
+    prefetchRankings,
     retrySummary,
     summaryRetryDisabled: isRateLimitBlocked,
     summaryRetryInSeconds: rateLimitRetryInSeconds,
@@ -626,6 +712,7 @@ export function useStatsData({
     king,
     setKingCurrentPage,
     loadMoreKing: () => loadLeaderboard('king', 'king', { openLoadedPage: true }),
+    reloadKing: () => loadLeaderboard('king', 'king', { forceRefresh: true }),
     boards,
     activeMetricId,
     setActiveMetricId,
@@ -636,6 +723,10 @@ export function useStatsData({
     loadMoreActiveMetric: () => {
       if (!activeMetricId) return Promise.resolve();
       return loadLeaderboard(activeMetricId, activeMetricId, { openLoadedPage: true });
+    },
+    reloadActiveMetric: () => {
+      if (!activeMetricId) return Promise.resolve();
+      return loadLeaderboard(activeMetricId, activeMetricId, { forceRefresh: true });
     },
     getPlayerName,
     goToPlayer,

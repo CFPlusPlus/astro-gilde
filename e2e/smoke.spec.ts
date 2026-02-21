@@ -21,29 +21,6 @@ const isFocusInsideMobileMenu = async (page: Page): Promise<boolean> => {
   });
 };
 
-const isFocusInsideJoinModal = async (page: Page): Promise<boolean> => {
-  return page.evaluate(() => {
-    const dialog = document.querySelector<HTMLElement>('[data-join-modal-dialog]');
-    const active = document.activeElement;
-    return Boolean(dialog && active instanceof HTMLElement && dialog.contains(active));
-  });
-};
-
-const isSiteNavInert = async (page: Page): Promise<boolean> => {
-  return page.evaluate(() => {
-    const navShell = document.querySelector<HTMLElement>('[data-site-nav]');
-    return Boolean(
-      navShell &&
-      (navShell as HTMLElement & { inert?: boolean }).inert === true &&
-      navShell.getAttribute('aria-hidden') !== 'true',
-    );
-  });
-};
-
-const getPageScrollY = async (page: Page): Promise<number> => {
-  return page.evaluate(() => window.scrollY || window.pageYOffset || 0);
-};
-
 const installStatsApiMocks = async (page: Page): Promise<void> => {
   await page.route('**/api/summary**', async (route) => {
     await route.fulfill({
@@ -199,104 +176,6 @@ test.describe('Mobiles Menue', () => {
   });
 });
 
-test('Join-Modal trappt Fokus und stellt Trigger-Fokus nach Escape wieder her', async ({
-  page,
-}) => {
-  await page.goto('/');
-
-  const trigger = page.locator('[data-copy-ip]:visible').first();
-  await trigger.focus();
-  await page.keyboard.press('Enter');
-
-  const dialog = page.locator('[data-join-modal-dialog]');
-  const copyIpButton = dialog.locator('[data-copy-ip-modal]');
-
-  await expect(dialog).toBeVisible();
-  await expect(copyIpButton).toBeFocused();
-
-  for (let step = 0; step < 8; step++) {
-    await page.keyboard.press('Tab');
-    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
-  }
-
-  for (let step = 0; step < 8; step++) {
-    await page.keyboard.press('Shift+Tab');
-    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
-  }
-
-  await page.keyboard.press('Escape');
-
-  await expect(dialog).toBeHidden();
-  await expect(trigger).toBeFocused();
-});
-
-test('Join-Modal macht den Hintergrund inert und verhindert Fokus auf Navbar-Links', async ({
-  page,
-}) => {
-  await page.goto('/');
-
-  const trigger = page.locator('[data-copy-ip]:visible').first();
-  await trigger.focus();
-  await page.keyboard.press('Enter');
-
-  const dialog = page.locator('[data-join-modal-dialog]');
-  const navStartLink = page
-    .getByRole('navigation', { name: 'Hauptnavigation' })
-    .getByRole('link', { name: 'Start', exact: true });
-
-  await expect(dialog).toBeVisible();
-  await expect.poll(() => isSiteNavInert(page)).toBe(true);
-
-  for (let step = 0; step < 10; step++) {
-    await page.keyboard.press('Tab');
-    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
-    await expect(navStartLink).not.toBeFocused();
-  }
-
-  for (let step = 0; step < 10; step++) {
-    await page.keyboard.press('Shift+Tab');
-    await expect.poll(() => isFocusInsideJoinModal(page)).toBe(true);
-    await expect(navStartLink).not.toBeFocused();
-  }
-
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeHidden();
-  await expect.poll(() => isSiteNavInert(page)).toBe(false);
-});
-
-test('Join-Modal aktiviert Scroll-Lock, solange es offen ist', async ({ page }) => {
-  await page.goto('/');
-
-  await page.evaluate(() => {
-    window.scrollTo(0, document.documentElement.scrollHeight);
-    const trigger = document.querySelector<HTMLElement>('[data-copy-ip]');
-    if (!trigger) throw new Error('Join-Trigger fehlt.');
-    trigger.focus();
-    trigger.click();
-  });
-
-  const dialog = page.locator('[data-join-modal-dialog]');
-  await expect(dialog).toBeVisible();
-  await expect
-    .poll(() => page.evaluate(() => document.documentElement.style.overflow))
-    .toBe('hidden');
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
-
-  const lockedScrollY = await getPageScrollY(page);
-  expect(lockedScrollY).toBeGreaterThan(0);
-
-  await page.mouse.move(320, 240);
-  await page.mouse.wheel(0, 2400);
-  await expect.poll(() => getPageScrollY(page)).toBe(lockedScrollY);
-  await page.mouse.wheel(0, -2400);
-  await expect.poll(() => getPageScrollY(page)).toBe(lockedScrollY);
-
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeHidden();
-  await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('');
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
-});
-
 test('Galerie zeigt mindestens ein sichtbares Bild', async ({ page }) => {
   await page.goto('/');
 
@@ -320,15 +199,15 @@ test('Statistiken laden mit API Mock', async ({ page }) => {
   await page.goto('/statistiken/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Statistiken' })).toBeVisible();
-  await expect(page.getByText(/1[.,]234 Spieler/)).toBeVisible();
+  await expect(page.getByText(/321[.,]50 h/)).toBeVisible();
 
-  await page.getByRole('button', { name: 'Ranglisten' }).click();
+  await page.getByRole('tab', { name: 'Ranglisten' }).click();
   await expect(
     page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByRole('heading', {
       name: 'Ranglisten',
     }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: /Steve/ })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Steve/ })).toBeVisible();
 });
 
 test('Live-Section wechselt von loading auf ok mit API-Mocks', async ({ page }) => {

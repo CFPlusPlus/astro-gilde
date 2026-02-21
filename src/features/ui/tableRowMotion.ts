@@ -1,5 +1,3 @@
-import type { CSSProperties } from 'react';
-
 export type TableRowMotionConfig = {
   triggerKey: string;
   enabled?: boolean;
@@ -11,7 +9,7 @@ export type TableRowMotionConfig = {
 
 export type TableRowMotion = {
   tbodyKey: string;
-  getRowProps: (index: number) => { className?: string; style?: CSSProperties };
+  getRowProps: (index: number) => { className?: string };
 };
 
 const DEFAULT_CLASS = 'mg-table-row-enter';
@@ -27,17 +25,13 @@ export function createTableRowMotion({
   const limit = Math.max(0, maxRows);
   const step = Math.max(0, stepMs);
   const start = Math.max(0, startDelayMs);
-  const tbodyKey = `${enabled ? 'motion' : 'static'}:${triggerKey}`;
+  const tbodyKey = `${enabled ? 'motion' : 'static'}:${triggerKey}:${step}:${start}`;
 
   const getRowProps = (index: number) => {
     if (!enabled || index < 0 || index >= limit) return {};
 
-    const delay = start + index * step;
     return {
       className,
-      style: {
-        '--mg-table-row-delay': `${delay}ms`,
-      } as CSSProperties,
     };
   };
 

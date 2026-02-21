@@ -8,26 +8,36 @@ import { LIVE_COPY_DE } from '../../lib/live/copy.de';
 export function usePlayerAutocomplete({
   onGeneratedIso,
   onError,
+  initialValue = '',
 }: {
   onGeneratedIso?: (iso: string) => void;
   onError?: (message: string | null) => void;
+  initialValue?: string;
 }) {
-  const [value, setValueState] = useState('');
+  const normalizedInitialValue = initialValue.trim();
+  const [value, setValueState] = useState(normalizedInitialValue);
   const [items, setItems] = useState<PlayersSearchItem[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const wrapRef = useRef<HTMLDivElement | null>(null);
-  const suppressOpenForQueryRef = useRef<string | null>(null);
+  const suppressOpenForQueryRef = useRef<string | null>(
+    normalizedInitialValue.length > 0 ? normalizedInitialValue.toLowerCase() : null,
+  );
   const knownItemsRef = useRef<Map<string, PlayersSearchItem>>(new Map());
 
   function setValue(next: string) {
     suppressOpenForQueryRef.current = null;
+    setErrorMessage(null);
     setValueState(next);
   }
 
   function setValueWithoutAutoOpen(next: string) {
     suppressOpenForQueryRef.current = next.trim().toLowerCase();
+    setErrorMessage(null);
+    setIsLoading(false);
     setValueState(next);
     setOpen(false);
     setSelectedIndex(-1);
@@ -44,9 +54,19 @@ export function usePlayerAutocomplete({
   }, []);
 
   useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
+
+  useEffect(() => {
     const q = value.trim();
     if (q.length < 2) {
+      abortRef.current?.abort();
+      abortRef.current = null;
       suppressOpenForQueryRef.current = null;
+      setIsLoading(false);
+      setErrorMessage(null);
       setItems([]);
       setOpen(false);
       setSelectedIndex(-1);
@@ -57,6 +77,8 @@ export function usePlayerAutocomplete({
       abortRef.current?.abort();
       const ac = new AbortController();
       abortRef.current = ac;
+      setIsLoading(true);
+      setErrorMessage(null);
 
       try {
         const data = await searchPlayers(q, 6, ac.signal);
@@ -70,13 +92,20 @@ export function usePlayerAutocomplete({
         const nextItems = rankPlayersForQuery(q, apiItems, knownItemsRef.current.values(), 6);
         const suppressOpen = suppressOpenForQueryRef.current === q.toLowerCase();
         setItems(nextItems);
-        setOpen(!suppressOpen && nextItems.length > 0);
+        setOpen(!suppressOpen);
         if (suppressOpen) suppressOpenForQueryRef.current = null;
         setSelectedIndex(-1);
+        setIsLoading(false);
+        setErrorMessage(null);
         onError?.(null);
       } catch (e) {
         if ((e as Error)?.name === 'AbortError') return;
         console.warn('Autocomplete Fehler', e);
+        setItems([]);
+        setOpen(true);
+        setSelectedIndex(-1);
+        setIsLoading(false);
+        setErrorMessage(LIVE_COPY_DE.error_generic);
         onError?.(LIVE_COPY_DE.error_generic);
       }
     }, 180);
@@ -95,5 +124,7 @@ export function usePlayerAutocomplete({
     selectedIndex,
     setSelectedIndex,
     wrapRef,
+    isLoading,
+    errorMessage,
   };
 }

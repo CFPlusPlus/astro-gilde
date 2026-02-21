@@ -1,6 +1,7 @@
 import React from 'react';
 import { Filter, X } from 'lucide-react';
 import type { MetricDef } from '../types';
+import { resolveStatsCategoryDef } from '../statsCategories';
 
 export type GroupedMetrics = Array<{ cat: string; ids: string[] }>;
 
@@ -12,6 +13,7 @@ function MetricPickerImpl({
   activeMetricId,
   onSelectMetric,
   surface = true,
+  scrollClassName,
 }: {
   metrics: Record<string, MetricDef>;
   grouped: GroupedMetrics;
@@ -20,9 +22,12 @@ function MetricPickerImpl({
   activeMetricId: string | null;
   onSelectMetric: (id: string) => void;
   surface?: boolean;
+  scrollClassName?: string;
 }) {
   const visibleCount = grouped.reduce((sum, group) => sum + group.ids.length, 0);
-  const activeMetric = activeMetricId ? metrics[activeMetricId] : null;
+  const activeCategory = activeMetricId
+    ? resolveStatsCategoryDef(activeMetricId, metrics[activeMetricId])
+    : null;
 
   return (
     <section className={surface ? 'mg-surface-2 p-4' : undefined}>
@@ -35,10 +40,10 @@ function MetricPickerImpl({
         <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
           <span className="text-muted text-xs">Ausgewählt:</span>
           <span className="border-border/80 bg-accent/14 text-fg inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
-            <span className="truncate">{activeMetric?.label || activeMetricId}</span>
-            {activeMetric?.category ? (
+            <span className="truncate">{activeCategory?.label || activeMetricId}</span>
+            {activeCategory?.group ? (
               <span className="text-muted border-border/70 border-l pl-2">
-                {activeMetric.category}
+                {activeCategory.group}
               </span>
             ) : null}
           </span>
@@ -49,11 +54,11 @@ function MetricPickerImpl({
         <Filter size={16} className="text-muted" />
         <input
           value={filter}
-          onChange={(e) => onFilterChange(e.target.value)}
+          onChange={(event) => onFilterChange(event.target.value)}
           type="search"
-          placeholder={'Filtern\u2026'}
+          placeholder="Kategorie suchen..."
           className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
-          aria-label="Ranglisten filtern"
+          aria-label="Ranglisten Kategorie suchen"
         />
         <button
           type="button"
@@ -62,15 +67,20 @@ function MetricPickerImpl({
             'mg-search-clear',
             filter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
           ].join(' ')}
-          aria-label={'Ranglisten-Filter zur\u00fccksetzen'}
-          title={'Filter zur\u00fccksetzen'}
+          aria-label="Ranglisten-Filter zurücksetzen"
+          title="Filter zurücksetzen"
           tabIndex={filter.trim().length > 0 ? 0 : -1}
         >
           <X size={14} />
         </button>
       </div>
 
-      <div className="mt-4 max-h-[520px] overflow-auto pr-1 [overflow-anchor:none]">
+      <div
+        className={[
+          'mt-4 [overflow-anchor:none]',
+          scrollClassName || 'max-h-[520px] overflow-auto pr-1',
+        ].join(' ')}
+      >
         <div className="space-y-5">
           {grouped.map(({ cat, ids }) => {
             const isCategoryActive = !!activeMetricId && ids.includes(activeMetricId);
@@ -99,6 +109,7 @@ function MetricPickerImpl({
                 <ul className="mg-list divide-border/75 divide-y" role="list">
                   {ids.map((id) => {
                     const def = metrics[id];
+                    const categoryDef = resolveStatsCategoryDef(id, def);
                     const isActive = id === activeMetricId;
                     return (
                       <li key={id}>
@@ -124,10 +135,12 @@ function MetricPickerImpl({
                             />
                             <span className="min-w-0 flex-1">
                               <span className="flex items-start justify-between gap-3">
-                                <span className="min-w-0 flex-1 truncate">{def?.label || id}</span>
-                                {def?.unit ? (
+                                <span className="min-w-0 flex-1 truncate">
+                                  {categoryDef.label || id}
+                                </span>
+                                {categoryDef.unit ? (
                                   <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                                    {def.unit}
+                                    {categoryDef.unit}
                                   </span>
                                 ) : null}
                               </span>

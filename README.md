@@ -85,7 +85,7 @@ Für prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit a
 Aktuelle Policy:
 
 - `script-src 'self';` (via `scriptDirective.resources`)
-- `style-src 'self' 'unsafe-inline';` (via `styleDirective.resources`)
+- `style-src 'self';` (via `styleDirective.resources`)
 - `default-src 'self';`
 - `img-src 'self' data: https:;`
 - `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com;`
@@ -101,18 +101,8 @@ Hinweis zur Einbettung:
 Hinweis:
 
 - JSON-LD bleibt als nicht-ausführender Script-Block im HTML eingebettet.
-- `style-src 'unsafe-inline'` ist derzeit bewusst aktiv, weil einzelne UI-Teile zur Laufzeit
-  `element.style` setzen:
-- `src/scripts/app/nav-menu.ts` (Scroll-Lock inkl. Restore der Scrollposition)
-- `src/scripts/app/join-modal.ts` und `src/features/player-stats/SkinViewerModal.tsx`
-  (Body-Scroll während Modal offen)
-- Bereits reduziert: vermeidbare statische Inline-Styles wurden entfernt
-  (`src/pages/partner.astro`, `src/features/player-stats/PlayerStatsHeader.tsx`) und
-  Home-Animationen/-Galerie laufen
-  jetzt klassenbasiert statt per Inline-Style (`src/scripts/app-home.ts`,
-  `src/scripts/home-reveal.ts`, `src/styles/home.css`).
-- Für ein komplettes Entfernen von `unsafe-inline` müssen die verbleibenden
-  Runtime-Style-Änderungen auf rein klassenbasierte Mechaniken umgestellt werden.
+- UI-Motion und Scroll-Lock laufen ohne Inline-`style`-Attribute.
+- Durch die hash-basierte Astro-CSP ohne `unsafe-inline` werden Inline-Style-Attribute blockiert.
 
 Optionale Browser-Konsole-Prüfung:
 
@@ -177,7 +167,6 @@ npm run dev
 ### API-Hinweis (Statistiken)
 
 Mini-Doku zur Live-Daten-Architektur: `docs/live-data.md`
-Mini-Doku zum Modal-Pattern: `docs/modal-pattern.md`
 
 Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
 

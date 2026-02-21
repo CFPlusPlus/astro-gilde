@@ -1,6 +1,8 @@
-import { ArrowLeftRight, Info, Swords, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { ArrowLeftRight, Check, Copy, Info, Swords, X } from 'lucide-react';
 
-import { PlayerAutocomplete } from '../PlayerAutocomplete';
+import { buildVersusShareUrlSearch } from '../../url-state';
+import { PlayerSearchCombobox } from '../PlayerSearchCombobox';
 import type { VersusSectionProps } from './types';
 
 type VersusPlayerPickerProps = Pick<
@@ -41,6 +43,8 @@ type VersusPlayerRowProps = {
   onUpdateVersusSearch: VersusSectionProps['onUpdateVersusSearch'];
   onGoToPlayer: VersusSectionProps['onGoToPlayer'];
 };
+
+const COPY_FEEDBACK_MS = 1_400;
 
 function VersusPlayerRow({
   side,
@@ -109,7 +113,7 @@ function VersusPlayerRow({
       </div>
 
       <div className="mt-3 min-w-0">
-        <PlayerAutocomplete
+        <PlayerSearchCombobox
           value={search.value}
           onChange={(next) => onUpdateVersusSearch(side, next)}
           items={search.items}
@@ -119,6 +123,8 @@ function VersusPlayerRow({
           onSelectedIndexChange={search.setSelectedIndex}
           onChoose={(uuid) => onSetVersusPlayer(side, uuid)}
           wrapRef={search.wrapRef}
+          isLoading={search.isLoading}
+          errorMessage={search.errorMessage}
         />
       </div>
 
@@ -152,6 +158,66 @@ export function VersusPlayerPicker({
   onGoToPlayer,
   surface = true,
 }: VersusPlayerPickerProps) {
+  const [copiedLink, setCopiedLink] = useState(false);
+  const copiedLinkTimeoutRef = useRef<number | null>(null);
+  const canCopyLink = Boolean(versusPlayerA && versusPlayerB);
+
+  useEffect(() => {
+    return () => {
+      if (copiedLinkTimeoutRef.current !== null) {
+        window.clearTimeout(copiedLinkTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    setCopiedLink(false);
+  }, [versusPlayerA?.uuid, versusPlayerB?.uuid]);
+
+  const markCopied = () => {
+    setCopiedLink(true);
+
+    if (copiedLinkTimeoutRef.current !== null) {
+      window.clearTimeout(copiedLinkTimeoutRef.current);
+    }
+
+    copiedLinkTimeoutRef.current = window.setTimeout(() => {
+      setCopiedLink(false);
+    }, COPY_FEEDBACK_MS);
+  };
+
+  const copyVersusLink = async () => {
+    if (typeof window === 'undefined') return;
+
+    const search = buildVersusShareUrlSearch({
+      playerAUuid: versusPlayerA?.uuid || null,
+      playerBUuid: versusPlayerB?.uuid || null,
+    });
+    const nextPath = `${window.location.pathname}${search}${window.location.hash}`;
+    const absoluteUrl = new URL(
+      `${window.location.pathname}${search}`,
+      window.location.origin,
+    ).toString();
+
+    try {
+      window.history.replaceState({}, '', nextPath);
+    } catch {
+      // Unkritisch: History-API kann blockiert sein.
+    }
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(absoluteUrl);
+        markCopied();
+        return;
+      }
+    } catch {
+      // Absichtlich leer: Fallback via prompt folgt.
+    }
+
+    window.prompt('Link kopieren:', absoluteUrl);
+  };
+
   return (
     <div
       className={[
@@ -200,6 +266,18 @@ export function VersusPlayerPicker({
         >
           <ArrowLeftRight size={16} />
           Tauschen
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            void copyVersusLink();
+          }}
+          disabled={!canCopyLink}
+          className="mg-btn mg-btn--sm mg-btn--secondary"
+          aria-live="polite"
+        >
+          {copiedLink ? <Check size={16} /> : <Copy size={16} />}
+          {copiedLink ? 'Link kopiert' : 'Link kopieren'}
         </button>
         <button
           type="button"

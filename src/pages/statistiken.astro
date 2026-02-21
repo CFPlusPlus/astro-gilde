@@ -2,10 +2,14 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import StatsApp from '../features/stats/StatsApp';
+import { canonicalFor } from '../config/site';
+
+const statsCanonicalUrl = canonicalFor('/statistiken/');
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Statistiken"
+  canonical={statsCanonicalUrl}
   description="Live-Spielerstatistiken für Minecraft Gilde - Ranglisten, Server-König und Spielerübersicht."
 >
   <!-- Performance: Avatar-CDN früh auflösen -->

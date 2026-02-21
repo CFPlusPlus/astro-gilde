@@ -15,6 +15,8 @@ export type AutocompleteViewModel = {
   selectedIndex: number;
   setSelectedIndex: (next: number) => void;
   wrapRef: RefObject<HTMLDivElement | null>;
+  isLoading: boolean;
+  errorMessage: string | null;
 };
 
 export type VersusSummary = {

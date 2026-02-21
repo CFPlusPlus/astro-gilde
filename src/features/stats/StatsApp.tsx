@@ -1,17 +1,66 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
 import { RankingsSection } from './components/sections/RankingsSection';
-import { StatsHeader } from './components/sections/StatsHeader';
+import { getStatsPanelId, getStatsTabId } from './components/StatsNavPills';
+import { StatsToolbar } from './components/StatsToolbar';
 import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
+import { useStatsUrlState } from './hooks/useStatsUrlState';
 import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
-import type { TabKey } from './types-ui';
-import { buildStatsUrlSearch, parseStatsUrlState } from './url-state';
+import { parseStatsUrlState } from './url-state';
+import { normalizeUmlauts } from './normalizeUmlauts';
+import type { MetricDef } from './types';
+
+function resolveRankMetricFromCandidates(
+  candidates: string[],
+  metrics: Record<string, MetricDef> | null,
+): string | null {
+  if (!metrics) return null;
+  if (candidates.length === 0) return null;
+
+  const availableIds = Object.keys(metrics);
+  const normalizedAvailable = new Map<string, string>(
+    availableIds.map((id) => [id.toLowerCase(), id]),
+  );
+
+  for (const rawCandidate of candidates) {
+    const candidate = rawCandidate.trim();
+    if (!candidate) continue;
+
+    const normalizedCandidate = candidate.toLowerCase();
+    const exact = normalizedAvailable.get(normalizedCandidate);
+    if (exact) return exact;
+  }
+
+  for (const rawCandidate of candidates) {
+    const candidate = rawCandidate.trim().toLowerCase();
+    if (!candidate) continue;
+
+    const idMatch = availableIds.find((id) => id.toLowerCase().includes(candidate));
+    if (idMatch) return idMatch;
+  }
+
+  for (const rawCandidate of candidates) {
+    const candidate = normalizeUmlauts(rawCandidate.trim()).toLowerCase();
+    if (!candidate) continue;
+
+    const fromMeta = availableIds.find((id) => {
+      const metricDef = metrics[id];
+      const searchable = normalizeUmlauts(
+        `${metricDef?.label || ''} ${metricDef?.category || ''}`.trim(),
+      ).toLowerCase();
+      return searchable.includes(candidate);
+    });
+    if (fromMeta) return fromMeta;
+  }
+
+  return null;
+}
 
 export default function StatsApp() {
   const initialUrlState = useMemo(
@@ -21,10 +70,6 @@ export default function StatsApp() {
         : parseStatsUrlState(window.location.search),
     [],
   );
-  const canAutoCompareFromUrl = useMemo(() => {
-    if (typeof window === 'undefined') return false;
-    return window.location.hash.replace('#', '').trim() === 'versus';
-  }, []);
 
   const {
     activeTab,
@@ -37,12 +82,13 @@ export default function StatsApp() {
     dismissWelcome,
     showPageSize,
     consumeScrollToRestore,
-  } = useStatsState();
+  } = useStatsState({
+    initialTab: initialUrlState.tab,
+    initialPageSize: initialUrlState.pageSize,
+  });
 
   const {
-    generatedIso,
     setGeneratedIso,
-    playerCount,
     totals,
     summaryLoaded,
     summaryLoading,
@@ -52,6 +98,7 @@ export default function StatsApp() {
     summaryRetryDisabled,
     summaryRetryInSeconds,
     apiError,
+    prefetchRankings,
     mainSearch,
     metrics,
     groupedMetrics,
@@ -59,11 +106,13 @@ export default function StatsApp() {
     king,
     setKingCurrentPage,
     loadMoreKing,
+    reloadKing,
     activeMetricId,
     setActiveMetricId,
     activeMetricState,
     setActiveMetricCurrentPage,
     loadMoreActiveMetric,
+    reloadActiveMetric,
     getPlayerName,
     goToPlayer,
   } = useStatsData({
@@ -71,6 +120,7 @@ export default function StatsApp() {
     pageSize,
     metricFilter,
     initialActiveMetricId: initialUrlState.rankMetricId,
+    initialSearchQuery: initialUrlState.searchQuery,
   });
 
   const versus = useVersusState({
@@ -78,46 +128,96 @@ export default function StatsApp() {
     initialState: {
       playerA: initialUrlState.versus.playerA,
       playerB: initialUrlState.versus.playerB,
-      metricFilter: initialUrlState.versus.metricFilter,
-      metricIds: initialUrlState.versus.metricIds,
-      autoCompare: initialUrlState.versus.shouldAutoCompare && canAutoCompareFromUrl,
+      autoCompare: initialUrlState.versus.shouldAutoCompare,
     },
   });
   const tabsDisabled = Boolean(apiError);
-  const tabMeta = useMemo<
-    Record<
-      TabKey,
-      {
-        title: string;
-        description: string;
+  const pendingRankMetricCandidatesRef = useRef<string[] | null>(null);
+  const runVersusCompare = versus.runVersusCompare;
+  const toolbarLiveVariant = useMemo(() => {
+    if (summaryRetryDisabled) return 'rate_limit';
+    if (summaryError) return summaryLastUpdatedAt ? 'stale' : 'error';
+    if (summaryLoading && summaryLoaded) return 'stale';
+
+    if (activeTab === 'king') {
+      if (king.liveErrorKind === 'rate_limit') return 'rate_limit';
+      if (king.liveStatus === 'stale') return 'stale';
+      if (king.liveStatus === 'error') return king.loaded ? 'stale' : 'error';
+    }
+
+    if (activeTab === 'ranglisten') {
+      if (activeMetricState.liveErrorKind === 'rate_limit') return 'rate_limit';
+      if (activeMetricState.liveStatus === 'stale') return 'stale';
+      if (activeMetricState.liveStatus === 'error') {
+        return activeMetricState.loaded ? 'stale' : 'error';
       }
-    >
-  >(
-    () => ({
-      uebersicht: {
-        title: '\u00dcbersicht',
-        description:
-          'Entdecke die wichtigsten Kennzahlen unseres Servers und finde heraus, wie sich die Welt entwickelt.',
-      },
-      king: {
-        title: 'Server-K\u00f6nig',
-        description:
-          'Hier siehst du, wer \u00fcber alle Kategorien hinweg die meisten Punkte gesammelt hat.',
-      },
-      ranglisten: {
-        title: 'Ranglisten',
-        description:
-          'W\u00e4hle eine Kategorie aus und verfolge direkt, welche Spieler in diesem Bereich f\u00fchren.',
-      },
-      versus: {
-        title: 'Versus',
-        description:
-          'Vergleiche zwei Spieler Seite an Seite in den Kategorien, die f\u00fcr dich relevant sind.',
-      },
-    }),
-    [],
-  );
-  const activeTabMeta = tabMeta[activeTab];
+    }
+
+    return 'ok';
+  }, [
+    activeMetricState.liveErrorKind,
+    activeMetricState.liveStatus,
+    activeMetricState.loaded,
+    activeTab,
+    king.liveErrorKind,
+    king.liveStatus,
+    king.loaded,
+    summaryError,
+    summaryLastUpdatedAt,
+    summaryLoaded,
+    summaryLoading,
+    summaryRetryDisabled,
+  ]);
+  const handleReload = useCallback(() => {
+    if (activeTab === 'uebersicht') {
+      retrySummary();
+      return;
+    }
+
+    if (activeTab === 'king') {
+      void reloadKing();
+      return;
+    }
+
+    if (activeTab === 'ranglisten') {
+      void reloadActiveMetric();
+      return;
+    }
+
+    if (activeTab === 'versus') {
+      void runVersusCompare();
+    }
+  }, [activeTab, reloadActiveMetric, reloadKing, retrySummary, runVersusCompare]);
+
+  useEffect(() => {
+    if (activeTab !== 'uebersicht') return;
+
+    let timeoutId: number | null = null;
+    let idleId: number | null = null;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout?: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+
+    const runPrefetch = () => {
+      void prefetchRankings();
+    };
+
+    if (typeof idleWindow.requestIdleCallback === 'function') {
+      idleId = idleWindow.requestIdleCallback(runPrefetch, { timeout: 2_500 });
+    } else {
+      timeoutId = window.setTimeout(runPrefetch, 1_200);
+    }
+
+    return () => {
+      if (idleId !== null && typeof idleWindow.cancelIdleCallback === 'function') {
+        idleWindow.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== null) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [activeTab, prefetchRankings]);
   const handleSelectMetric = useCallback(
     (id: string) => {
       if (id === activeMetricId) return;
@@ -129,15 +229,73 @@ export default function StatsApp() {
     if (!metrics) return null;
     return pickDefaultRankMetricId(filterMetricIds(metrics, ''), metrics);
   }, [metrics]);
-  const rankMetricIdForUrl = useMemo(() => {
-    if (!activeMetricId) return null;
-    if (metricFilter.trim().length > 0) return activeMetricId;
-    return activeMetricId === defaultRankMetricId ? null : activeMetricId;
-  }, [activeMetricId, defaultRankMetricId, metricFilter]);
   const handleResetRankings = useCallback(() => {
     setMetricFilter('');
     setActiveMetricId(defaultRankMetricId);
   }, [defaultRankMetricId, setActiveMetricId, setMetricFilter]);
+  const handleOpenRankingsFromOverview = useCallback(
+    (metricId?: string | string[]) => {
+      setMetricFilter('');
+
+      const candidates =
+        typeof metricId === 'string' ? [metricId] : Array.isArray(metricId) ? metricId : [];
+      const normalizedCandidates = candidates
+        .map((candidate) => candidate.trim())
+        .filter((candidate) => candidate.length > 0);
+
+      if (normalizedCandidates.length > 0) {
+        const resolved = resolveRankMetricFromCandidates(normalizedCandidates, metrics);
+
+        if (resolved) {
+          pendingRankMetricCandidatesRef.current = null;
+          setActiveMetricId(resolved);
+        } else {
+          pendingRankMetricCandidatesRef.current = normalizedCandidates;
+          setActiveMetricId(normalizedCandidates[0]);
+        }
+      }
+
+      setTab('ranglisten');
+    },
+    [metrics, setActiveMetricId, setMetricFilter, setTab],
+  );
+  useEffect(() => {
+    if (activeTab !== 'ranglisten') return;
+
+    const candidates = pendingRankMetricCandidatesRef.current;
+    if (!candidates || candidates.length === 0) return;
+
+    const resolved = resolveRankMetricFromCandidates(candidates, metrics);
+    if (!resolved) return;
+
+    pendingRankMetricCandidatesRef.current = null;
+    setActiveMetricId(resolved);
+  }, [activeTab, metrics, setActiveMetricId]);
+
+  const handlePopState = useCallback(
+    (state: ReturnType<typeof parseStatsUrlState>) => {
+      setTab(state.tab);
+      setPageSize(state.pageSize);
+      setActiveMetricId(state.rankMetricId);
+      mainSearch.setValueWithoutAutoOpen(state.searchQuery);
+      versus.applyUrlState({
+        playerAUuid: state.versus.playerA?.uuid || null,
+        playerBUuid: state.versus.playerB?.uuid || null,
+        autoCompare: state.versus.shouldAutoCompare,
+      });
+    },
+    [mainSearch, setActiveMetricId, setPageSize, setTab, versus],
+  );
+
+  useStatsUrlState({
+    activeTab,
+    pageSize,
+    activeMetricId,
+    searchQuery: mainSearch.value,
+    versusPlayerA: versus.versusPlayerA,
+    versusPlayerB: versus.versusPlayerB,
+    onPopState: handlePopState,
+  });
 
   useEffect(() => {
     const y = consumeScrollToRestore();
@@ -145,152 +303,143 @@ export default function StatsApp() {
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [activeTab, consumeScrollToRestore]);
 
-  useEffect(() => {
-    const nextSearch =
-      activeTab === 'ranglisten'
-        ? buildStatsUrlSearch({
-            activeMetricId: rankMetricIdForUrl,
-            versusMetricFilter: '',
-            versusMetricIds: [],
-            versusPlayerA: null,
-            versusPlayerB: null,
-          })
-        : activeTab === 'versus'
-          ? buildStatsUrlSearch({
-              activeMetricId: null,
-              versusMetricFilter: versus.versusMetricFilter,
-              versusMetricIds: versus.versusMetricIds,
-              versusPlayerA: versus.versusPlayerA,
-              versusPlayerB: versus.versusPlayerB,
-            })
-          : '';
-
-    if (window.location.search === nextSearch) return;
-
-    try {
-      const nextUrl = `${window.location.pathname}${nextSearch}${window.location.hash}`;
-      window.history.replaceState({}, '', nextUrl);
-    } catch {
-      // Unkritisch: History-API kann blockiert sein.
-    }
-  }, [
-    activeTab,
-    rankMetricIdForUrl,
-    versus.versusMetricFilter,
-    versus.versusMetricIds,
-    versus.versusPlayerA,
-    versus.versusPlayerB,
-  ]);
-
   return (
     <StatsLayout
+      stickyTopBar
+      topBarClassName="py-4"
       topBar={
-        <StatsHeader
-          title={activeTabMeta.title}
-          description={activeTabMeta.description}
+        <StatsToolbar
           activeTab={activeTab}
           onTabChange={setTab}
           tabsDisabled={tabsDisabled}
           search={mainSearch}
           onChoosePlayer={goToPlayer}
-          playerCount={playerCount}
-          generatedIso={generatedIso}
           showPageSize={showPageSize}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
+          liveVariant={toolbarLiveVariant}
+          updatedAt={summaryLastUpdatedAt}
           apiError={apiError}
+          onReload={handleReload}
+          reloadDisabled={summaryRetryDisabled}
+          reloadInSeconds={summaryRetryInSeconds}
         />
       }
     >
       {activeTab === 'uebersicht' ? (
-        <OverviewSection
-          showWelcome={showWelcome}
-          onDismissWelcome={dismissWelcome}
-          totals={totals}
-          summaryLoaded={summaryLoaded}
-          summaryLoading={summaryLoading}
-          summaryError={summaryError}
-          summaryLastUpdatedAt={summaryLastUpdatedAt}
-          onRetrySummary={retrySummary}
-          summaryRetryDisabled={summaryRetryDisabled}
-          summaryRetryInSeconds={summaryRetryInSeconds}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('uebersicht')}
+          aria-labelledby={getStatsTabId('uebersicht')}
+        >
+          <OverviewSection
+            showWelcome={showWelcome}
+            onDismissWelcome={dismissWelcome}
+            onOpenRankings={handleOpenRankingsFromOverview}
+            navigationDisabled={tabsDisabled}
+            totals={totals}
+            summaryLoaded={summaryLoaded}
+            summaryLoading={summaryLoading}
+            summaryError={summaryError}
+            onRetrySummary={retrySummary}
+            summaryRetryDisabled={summaryRetryDisabled}
+            summaryRetryInSeconds={summaryRetryInSeconds}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'king' ? (
-        <KingSection
-          king={king}
-          pageSize={pageSize}
-          getPlayerName={getPlayerName}
-          onPlayerClick={goToPlayer}
-          onGoPage={setKingCurrentPage}
-          onLoadMore={() => {
-            void loadMoreKing();
-          }}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('king')}
+          aria-labelledby={getStatsTabId('king')}
+        >
+          <KingSection
+            king={king}
+            pageSize={pageSize}
+            getPlayerName={getPlayerName}
+            onPlayerClick={goToPlayer}
+            onGoPage={setKingCurrentPage}
+            onLoadMore={() => {
+              void loadMoreKing();
+            }}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'ranglisten' ? (
-        <RankingsSection
-          metrics={metrics}
-          groupedMetrics={groupedMetrics}
-          metricFilter={metricFilter}
-          onMetricFilterChange={setMetricFilter}
-          activeMetricId={activeMetricId}
-          onSelectMetric={handleSelectMetric}
-          onReset={handleResetRankings}
-          hasNoRanklistResults={hasNoRanklistResults}
-          activeMetricState={activeMetricState}
-          pageSize={pageSize}
-          getPlayerName={getPlayerName}
-          onPlayerClick={goToPlayer}
-          onGoPage={setActiveMetricCurrentPage}
-          onLoadMore={() => {
-            void loadMoreActiveMetric();
-          }}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('ranglisten')}
+          aria-labelledby={getStatsTabId('ranglisten')}
+        >
+          <RankingsSection
+            metrics={metrics}
+            groupedMetrics={groupedMetrics}
+            metricFilter={metricFilter}
+            onMetricFilterChange={setMetricFilter}
+            activeMetricId={activeMetricId}
+            onSelectMetric={handleSelectMetric}
+            onReset={handleResetRankings}
+            hasNoRanklistResults={hasNoRanklistResults}
+            activeMetricState={activeMetricState}
+            pageSize={pageSize}
+            getPlayerName={getPlayerName}
+            onPlayerClick={goToPlayer}
+            onGoPage={setActiveMetricCurrentPage}
+            onLoadMore={() => {
+              void loadMoreActiveMetric();
+            }}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'versus' ? (
-        <VersusSection
-          maxMetrics={versus.maxMetrics}
-          searchA={versus.searchA}
-          searchB={versus.searchB}
-          versusMetricFilter={versus.versusMetricFilter}
-          onVersusMetricFilterChange={versus.setVersusMetricFilter}
-          versusMetricIds={versus.versusMetricIds}
-          versusPlayerA={versus.versusPlayerA}
-          versusPlayerB={versus.versusPlayerB}
-          versusCatalog={versus.versusCatalog}
-          versusLoading={versus.versusLoading}
-          versusError={versus.versusError}
-          versusNotice={versus.versusNotice}
-          versusFilteredCatalog={versus.versusFilteredCatalog}
-          versusGroupedMetrics={versus.versusGroupedMetrics}
-          hasNoVersusResults={versus.hasNoVersusResults}
-          isSameVersusPlayer={versus.isSameVersusPlayer}
-          canRunVersus={versus.canRunVersus}
-          versusSwapFxClass={versus.versusSwapFxClass}
-          versusCardAZClass={versus.versusCardAZClass}
-          versusCardBZClass={versus.versusCardBZClass}
-          hasVersusData={versus.hasVersusData}
-          versusRows={versus.versusRows}
-          versusSummary={versus.versusSummary}
-          hasVersusResults={versus.hasVersusResults}
-          hasMissingVersusValues={versus.hasMissingVersusValues}
-          onSetVersusPlayer={versus.setVersusPlayer}
-          onClearVersusPlayer={versus.clearVersusPlayer}
-          onSetVersusSearchOpen={versus.setVersusSearchOpen}
-          onSwapVersusPlayers={versus.swapVersusPlayers}
-          onUpdateVersusSearch={versus.updateVersusSearch}
-          onRunVersusCompare={() => {
-            void versus.runVersusCompare();
-          }}
-          onApplyVersusSelection={versus.applyVersusSelection}
-          onToggleVersusMetric={versus.toggleVersusMetric}
-          onResetVersus={versus.resetVersus}
-          onGoToPlayer={goToPlayer}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('versus')}
+          aria-labelledby={getStatsTabId('versus')}
+        >
+          <VersusSection
+            maxMetrics={versus.maxMetrics}
+            searchA={versus.searchA}
+            searchB={versus.searchB}
+            versusMetricFilter={versus.versusMetricFilter}
+            onVersusMetricFilterChange={versus.setVersusMetricFilter}
+            versusMetricIds={versus.versusMetricIds}
+            versusPlayerA={versus.versusPlayerA}
+            versusPlayerB={versus.versusPlayerB}
+            versusCatalog={versus.versusCatalog}
+            versusLoading={versus.versusLoading}
+            versusError={versus.versusError}
+            versusNotice={versus.versusNotice}
+            versusFilteredCatalog={versus.versusFilteredCatalog}
+            versusGroupedMetrics={versus.versusGroupedMetrics}
+            hasNoVersusResults={versus.hasNoVersusResults}
+            isSameVersusPlayer={versus.isSameVersusPlayer}
+            canRunVersus={versus.canRunVersus}
+            versusSwapFxClass={versus.versusSwapFxClass}
+            versusCardAZClass={versus.versusCardAZClass}
+            versusCardBZClass={versus.versusCardBZClass}
+            hasVersusData={versus.hasVersusData}
+            versusRows={versus.versusRows}
+            versusSummary={versus.versusSummary}
+            hasVersusResults={versus.hasVersusResults}
+            hasMissingVersusValues={versus.hasMissingVersusValues}
+            onSetVersusPlayer={versus.setVersusPlayer}
+            onClearVersusPlayer={versus.clearVersusPlayer}
+            onSetVersusSearchOpen={versus.setVersusSearchOpen}
+            onSwapVersusPlayers={versus.swapVersusPlayers}
+            onUpdateVersusSearch={versus.updateVersusSearch}
+            onRunVersusCompare={() => {
+              void versus.runVersusCompare();
+            }}
+            onApplyVersusSelection={versus.applyVersusSelection}
+            onToggleVersusMetric={versus.toggleVersusMetric}
+            onResetVersus={versus.resetVersus}
+            onGoToPlayer={goToPlayer}
+          />
+        </section>
       ) : null}
     </StatsLayout>
   );

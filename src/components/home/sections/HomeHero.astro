@@ -1,5 +1,6 @@
 ---
 import Button from '../../ui/Button.astro';
+import IconButton from '../../ui/IconButton.astro';
 import Badge from '../../ui/Badge.astro';
 import HomeSection from '../HomeSection.astro';
 import { Image } from 'astro:assets';
@@ -14,7 +15,6 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
-const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 
 const HERO_BACKGROUND_WIDTH = 1920;
 const HERO_BACKGROUND_HEIGHT = Math.round(
@@ -61,7 +61,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
         </p>
 
         <div class="mt-12 flex flex-wrap items-center gap-3" data-reveal data-reveal-delay="140">
-          <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
+          <Button variant="primary" class="gap-2" data-copy-ip>
             <Download size={18} /> Jetzt Spielen
           </Button>
           <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
@@ -114,8 +114,8 @@ const HERO_BACKGROUND_SIZES = '100vw';
             Server-IP
           </div>
           <div class="mt-1.5 flex items-center gap-2">
-            <a
-              href={JOIN_FALLBACK_HREF}
+            <button
+              type="button"
               class="focus-visible:ring-offset-bg border-border/70 bg-surface-solid/24 text-fg hover:border-accent/60 inline-flex h-10 min-w-[13rem] items-center justify-center rounded-lg border px-3.5 font-mono text-[0.95rem] font-semibold tracking-[0.01em] transition-colors hover:bg-[color:var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 sm:justify-start"
               aria-label="Server-IP kopieren"
               data-copy-ip-inline
@@ -136,15 +136,15 @@ const HERO_BACKGROUND_SIZES = '100vw';
                   <span>IP kopiert</span>
                 </span>
               </span>
-            </a>
-            <a
-              href={JOIN_FALLBACK_HREF}
-              aria-label="Jetzt spielen"
-              class="text-fg/85 hover:border-accent/60 hover:text-fg focus-visible:ring-offset-bg inline-flex h-10 min-h-10 w-10 min-w-10 items-center justify-center rounded-lg bg-transparent transition-colors duration-200 hover:bg-[var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+            </button>
+            <IconButton
+              ariaLabel="Jetzt spielen"
+              variant="ghost"
+              class="hover:border-accent/60 duration-200 hover:bg-[var(--accent-soft)]"
               data-copy-ip
             >
               <Download size={16} />
-            </a>
+            </IconButton>
           </div>
         </div>
 

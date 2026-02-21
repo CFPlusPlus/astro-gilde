@@ -1,4 +1,5 @@
 import type { Qs, Qsa } from './dom';
+import { lockPageScroll, unlockPageScroll } from './scroll-lock';
 
 export interface NavMenuController {
   closeMenu: () => void;
@@ -6,6 +7,7 @@ export interface NavMenuController {
 }
 
 export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuController => {
+  const MENU_SCROLL_LOCK_ID = 'nav-menu';
   const navRoot = qs<HTMLElement>('[data-site-nav]');
   const panel = qs<HTMLElement>('[data-nav-panel]', navRoot ?? document);
   const toggle = qs<HTMLElement>('[data-nav-toggle]', navRoot ?? document);
@@ -133,43 +135,25 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
   };
 
   const root = document.documentElement;
-  let lockedScrollY = 0;
   let isScrollLocked = false;
 
   const lockScroll = (): void => {
     if (isScrollLocked) return;
-    lockedScrollY = window.scrollY || window.pageYOffset || 0;
     isScrollLocked = true;
 
     root.dataset.menuOpen = '1';
-    root.style.overflow = 'hidden';
-
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${lockedScrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
+    lockPageScroll(MENU_SCROLL_LOCK_ID);
   };
 
   const unlockScroll = (): void => {
     if (!isScrollLocked) {
       delete root.dataset.menuOpen;
-      root.style.overflow = '';
       return;
     }
 
     isScrollLocked = false;
     delete root.dataset.menuOpen;
-    root.style.overflow = '';
-
-    const y = lockedScrollY;
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    document.body.style.width = '';
-
-    window.scrollTo(0, y);
+    unlockPageScroll(MENU_SCROLL_LOCK_ID);
   };
 
   const closeMenu = (): void => {
