@@ -199,15 +199,15 @@ test('Statistiken laden mit API Mock', async ({ page }) => {
   await page.goto('/statistiken/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Statistiken' })).toBeVisible();
-  await expect(page.getByText(/1[.,]234 Spieler/)).toBeVisible();
+  await expect(page.getByText(/321[.,]50 h/)).toBeVisible();
 
-  await page.getByRole('button', { name: 'Ranglisten' }).click();
+  await page.getByRole('tab', { name: 'Ranglisten' }).click();
   await expect(
     page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByRole('heading', {
       name: 'Ranglisten',
     }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: /Steve/ })).toBeVisible();
+  await expect(page.getByRole('row', { name: /Steve/ })).toBeVisible();
 });
 
 test('Live-Section wechselt von loading auf ok mit API-Mocks', async ({ page }) => {
