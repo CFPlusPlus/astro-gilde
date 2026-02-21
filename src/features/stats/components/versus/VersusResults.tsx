@@ -171,7 +171,7 @@ export function VersusResults({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-border divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3">
+                    <tbody className="divide-border divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 [&>tr>td]:text-left sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 [&>tr>th]:text-left sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3">
                       {versusRows.map((row) => {
                         const def = row.def;
                         const label = def?.label || row.id;

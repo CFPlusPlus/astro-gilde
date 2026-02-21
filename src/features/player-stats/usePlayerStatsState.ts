@@ -64,6 +64,7 @@ export function usePlayerStatsState(): UsePlayerStatsState {
   const [uuidFull, setUuidFull] = useState<string>('');
   const [playerName, setPlayerName] = useState<string>('');
   const [generatedIso, setGeneratedIso] = useState<string | null>(null);
+  const [queryReady, setQueryReady] = useState(false);
 
   const [translations, setTranslations] = useState<PlayerTranslations | null>(null);
   const [stats, setStats] = useState<Record<string, unknown> | null>(null);
@@ -99,9 +100,12 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     if (i18nCheck === '1' || i18nCheck === 'true' || i18nCheck === 'yes') {
       setForceTranslationCheck(true);
     }
+    setQueryReady(true);
   }, []);
 
   useEffect(() => {
+    if (!queryReady) return;
+
     const qp = new URLSearchParams(window.location.search);
     if (uuidParam) qp.set('uuid', uuidParam);
     else qp.delete('uuid');
@@ -116,7 +120,7 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     if (nextUrl !== currentUrl) {
       window.history.replaceState({}, '', nextUrl);
     }
-  }, [uuidParam, activeTab, filterRaw]);
+  }, [queryReady, uuidParam, activeTab, filterRaw]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

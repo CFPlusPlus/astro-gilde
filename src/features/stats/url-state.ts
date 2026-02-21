@@ -54,6 +54,9 @@ function parseTab(value: string | null): TabKey {
   const safeTab = cleanString(value)?.toLowerCase();
   if (!safeTab) return 'uebersicht';
 
+  if (safeTab === 'uebersicht') return 'uebersicht';
+  if (safeTab === 'ranglisten') return 'ranglisten';
+
   if (
     safeTab === 'overview' ||
     safeTab === 'king' ||

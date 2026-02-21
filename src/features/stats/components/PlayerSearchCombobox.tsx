@@ -73,7 +73,7 @@ export function PlayerSearchCombobox({
         {label}
       </label>
 
-      <div className="bg-surface-solid/60 border-border/80 focus-within:ring-offset-bg flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 focus-within:ring-2 focus-within:ring-[color:var(--ring)] focus-within:ring-offset-2">
+      <div className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
         <Search size={18} className="text-muted" aria-hidden="true" />
         <input
           id={inputId}

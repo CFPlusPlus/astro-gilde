@@ -27,6 +27,13 @@ describe('stats url-state', () => {
     expect(parsed.versus.shouldAutoCompare).toBe(false);
   });
 
+  it('accepts legacy german tab values', () => {
+    const parsed = parseStatsUrlState('?tab=ranglisten&cat=playtime');
+
+    expect(parsed.tab).toBe('ranglisten');
+    expect(parsed.rankMetricId).toBe('playtime');
+  });
+
   it('builds deterministic url search params for rankings', () => {
     const search = buildStatsUrlSearch({
       activeTab: 'ranglisten',
@@ -69,5 +76,20 @@ describe('stats url-state', () => {
     });
 
     expect(search).toBe('?tab=versus');
+  });
+
+  it('roundtrips parse and serialize for versus url state', () => {
+    const parsed = parseStatsUrlState('?tab=versus&top=30&q=Steve&a=uuid-a&b=uuid-b');
+
+    const serialized = buildStatsUrlSearch({
+      activeTab: parsed.tab,
+      pageSize: parsed.pageSize,
+      activeMetricId: parsed.rankMetricId,
+      searchQuery: parsed.searchQuery,
+      versusPlayerA: parsed.versus.playerA,
+      versusPlayerB: parsed.versus.playerB,
+    });
+
+    expect(parseStatsUrlState(serialized)).toEqual(parsed);
   });
 });

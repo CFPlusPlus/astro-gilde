@@ -69,7 +69,7 @@ export function PlayerStatsTables({
   const tableHeadClass =
     'bg-surface-solid/35 text-muted sticky top-0 z-10 text-xs backdrop-blur-md';
   const tableBodyClass =
-    'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>th]:px-4 [&>tr>th]:py-3';
+    'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
     'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none';
   const generalMotion = createTableRowMotion({
@@ -185,9 +185,9 @@ export function PlayerStatsTables({
                               dir: s.key === 'raw' ? nextSort(s.dir) : 'asc',
                             }))
                           }
-                          aria-label="Technischen Schl\u00fcssel sortieren"
+                          aria-label={'Technischen Schl\u00fcssel sortieren'}
                         >
-                          Technischer Schl\u00fcssel
+                          {'Technischer Schl\u00fcssel'}
                           <SortIcon dir={sortGeneral.key === 'raw' ? sortGeneral.dir : 'none'} />
                           <span className="sr-only">
                             {sortHint(sortGeneral.key, 'raw', sortGeneral.dir)}
@@ -251,7 +251,7 @@ export function PlayerStatsTables({
           <DataSurface
             header={
               <>
-                <p className="text-fg text-sm font-semibold">Gegenst\u00e4nde</p>
+                <p className="text-fg text-sm font-semibold">{'Gegenst\u00e4nde'}</p>
                 <p className="text-muted text-xs">{nf(filtered.items.length)} Treffer</p>
               </>
             }
