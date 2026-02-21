@@ -1,4 +1,5 @@
-﻿import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import { installStatsMocks } from './helpers/stats-mocks';
 
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 
@@ -41,6 +42,23 @@ const LEADERBOARDS: Record<string, Array<{ uuid: string; value: number }>> = {
   mob_kills: [{ uuid: '00000000-0000-0000-0000-000000000005', value: 300 }],
 };
 
+const SUMMARY_PAYLOAD = {
+  __generated: '2026-02-20T12:00:00.000Z',
+  player_count: 2222,
+  totals: {
+    hours: 321.5,
+    distance: 8765.4,
+    mob_kills: 777,
+    creeper: 45,
+  },
+};
+
+const DEFAULT_PLAYER_STATS = {
+  'minecraft:custom': {
+    'minecraft:play_time': 72_000,
+  },
+};
+
 function intersects(
   a: { x: number; y: number; width: number; height: number },
   b: { x: number; y: number; width: number; height: number },
@@ -53,99 +71,6 @@ function intersects(
   return a.x < bRight && aRight > b.x && a.y < bBottom && aBottom > b.y;
 }
 
-async function installStatsMocks(page: Page): Promise<void> {
-  await page.route('**/api/summary**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        player_count: 2222,
-        totals: {
-          hours: 321.5,
-          distance: 8765.4,
-          mob_kills: 777,
-          creeper: 45,
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/metrics**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        metrics: STATS_METRICS,
-      }),
-    });
-  });
-
-  await page.route('**/api/leaderboard**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const metricId = requestUrl.searchParams.get('metric') || 'hours';
-    const rows = LEADERBOARDS[metricId] || [];
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        __players: STATS_PLAYERS,
-        boards: {
-          [metricId]: rows,
-        },
-        cursors: {
-          [metricId]: null,
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/players**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const query = (requestUrl.searchParams.get('q') || '').trim().toLowerCase();
-    const items = Object.entries(STATS_PLAYERS)
-      .filter(([uuid, name]) => {
-        if (!query) return false;
-        return uuid.toLowerCase().includes(query) || name.toLowerCase().includes(query);
-      })
-      .slice(0, 6)
-      .map(([uuid, name]) => ({ uuid, name }));
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        items,
-      }),
-    });
-  });
-
-  await page.route('**/api/player**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const uuid = requestUrl.searchParams.get('uuid') || '';
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        found: true,
-        uuid,
-        name: STATS_PLAYERS[uuid] || uuid,
-        player: {
-          'minecraft:custom': {
-            'minecraft:play_time': 72_000,
-          },
-        },
-      }),
-    });
-  });
-}
-
 async function gotoRankingsReady(page: Page): Promise<void> {
   await page.goto('/statistiken/?tab=ranglisten&cat=hours');
   const rankingsRegion = page.getByRole('region', { name: 'Ranglisten Ergebnisse' });
@@ -156,7 +81,13 @@ test.describe('Statistiken Mobile Regressionen', () => {
   test.use({ viewport: MOBILE_VIEWPORT });
 
   test.beforeEach(async ({ page }) => {
-    await installStatsMocks(page);
+    await installStatsMocks(page, {
+      metrics: STATS_METRICS,
+      players: STATS_PLAYERS,
+      leaderboards: LEADERBOARDS,
+      defaultPlayerStats: DEFAULT_PLAYER_STATS,
+      summaryPayload: SUMMARY_PAYLOAD,
+    });
   });
 
   test('Sticky Toolbar bleibt <= 64px und Tabs sind voll lesbar', async ({ page }) => {

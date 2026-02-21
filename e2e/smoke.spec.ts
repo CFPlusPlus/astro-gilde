@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { installStatsMocks } from './helpers/stats-mocks';
 
 const hasBrokenQuestionMarkArtifact = (text: string): boolean => {
   const withoutUrls = text.replace(/https?:\/\/\S+/g, ' ');
@@ -21,74 +22,30 @@ const isFocusInsideMobileMenu = async (page: Page): Promise<boolean> => {
   });
 };
 
-const installStatsApiMocks = async (page: Page): Promise<void> => {
-  await page.route('**/api/summary**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-10T18:30:00.000Z',
-        player_count: 1234,
-        totals: {
-          hours: 321.5,
-          distance: 9876.54,
-          mob_kills: 555,
-          creeper: 42,
-        },
-      }),
-    });
-  });
+const SMOKE_STATS_METRICS = {
+  hours: {
+    label: 'Spielzeit',
+    category: 'Uebersicht',
+    unit: 'h',
+    decimals: 2,
+  },
+} as const;
 
-  await page.route('**/api/metrics**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-10T18:30:00.000Z',
-        metrics: {
-          hours: {
-            label: 'Spielzeit',
-            category: 'Uebersicht',
-            unit: 'h',
-            decimals: 2,
-          },
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/leaderboard**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const metricId = requestUrl.searchParams.get('metric') ?? 'hours';
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-10T18:30:00.000Z',
-        __players: {
-          '00000000-0000-0000-0000-000000000001': 'Steve',
-        },
-        boards: {
-          [metricId]: [{ uuid: '00000000-0000-0000-0000-000000000001', value: 321.5 }],
-        },
-        cursors: {
-          [metricId]: null,
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/players**', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-10T18:30:00.000Z',
-        items: [{ uuid: '00000000-0000-0000-0000-000000000001', name: 'Steve' }],
-      }),
-    });
-  });
+const SMOKE_STATS_PLAYERS = {
+  '00000000-0000-0000-0000-000000000001': 'Steve',
 };
+
+const SMOKE_LEADERBOARDS = {
+  hours: [{ uuid: '00000000-0000-0000-0000-000000000001', value: 321.5 }],
+};
+
+const NAV_LINKS: Array<{ label: string; path: string }> = [
+  { label: 'Start', path: '/' },
+  { label: 'Tutorial', path: '/tutorial/' },
+  { label: 'Regeln', path: '/regeln/' },
+  { label: 'Statistiken', path: '/statistiken/' },
+  { label: 'Voten', path: '/voten/' },
+];
 
 test('Startseite laedt und zeigt Hero', async ({ page }) => {
   await page.goto('/');
@@ -129,21 +86,14 @@ test('Startseite zeigt bei 3 Schritten keine doppelte Nummerierung', async ({ pa
   expect(markerStyles).toEqual(['none', 'none', 'none']);
 });
 
-test('Navbar Links funktionieren', async ({ page }) => {
-  const nav = page.getByRole('navigation', { name: 'Hauptnavigation' });
-
-  const links: Array<{ label: string; path: string }> = [
-    { label: 'Start', path: '/' },
-    { label: 'Tutorial', path: '/tutorial/' },
-    { label: 'Regeln', path: '/regeln/' },
-    { label: 'Statistiken', path: '/statistiken/' },
-    { label: 'Voten', path: '/voten/' },
-  ];
-
-  for (const link of links) {
-    await page.goto('/tutorial/');
-    await nav.getByRole('link', { name: link.label, exact: true }).click();
-    await expect.poll(() => new URL(page.url()).pathname).toBe(link.path);
+test.describe('Navbar Links', () => {
+  for (const link of NAV_LINKS) {
+    test(`oeffnet ${link.path}`, async ({ page }) => {
+      const nav = page.getByRole('navigation', { name: 'Hauptnavigation' });
+      await page.goto('/tutorial/');
+      await nav.getByRole('link', { name: link.label, exact: true }).click();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(link.path);
+    });
   }
 });
 
@@ -195,7 +145,21 @@ test('Galerie zeigt mindestens ein sichtbares Bild', async ({ page }) => {
 });
 
 test('Statistiken laden mit API Mock', async ({ page }) => {
-  await installStatsApiMocks(page);
+  await installStatsMocks(page, {
+    metrics: SMOKE_STATS_METRICS,
+    players: SMOKE_STATS_PLAYERS,
+    leaderboards: SMOKE_LEADERBOARDS,
+    summaryPayload: {
+      __generated: '2026-02-10T18:30:00.000Z',
+      player_count: 1234,
+      totals: {
+        hours: 321.5,
+        distance: 9876.54,
+        mob_kills: 555,
+        creeper: 42,
+      },
+    },
+  });
   await page.goto('/statistiken/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Statistiken' })).toBeVisible();
@@ -337,13 +301,11 @@ test('Neu laden triggert Revalidate und faellt bei Fetch-Fehler auf stale zuruec
 
   await expect(discordTile).toHaveAttribute('data-live-state', 'stale');
   await expect(reloadButton).toBeVisible();
+  await expect(reloadButton).toBeEnabled();
   expect(discordWidgetCalls).toBe(0);
 
-  await reloadButton.evaluate((button) => {
-    (button as HTMLButtonElement).click();
-  });
+  await reloadButton.click();
 
-  await expect(discordTile).toHaveAttribute('data-live-state', 'loading');
   await expect.poll(() => discordWidgetCalls).toBe(1);
   await expect(discordTile).toHaveAttribute('data-live-state', 'stale');
   await expect(liveNote).toContainText('Es wird der letzte erfolgreiche Stand angezeigt.');

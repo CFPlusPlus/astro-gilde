@@ -1,7 +1,19 @@
 import { expect, test, type Page } from '@playwright/test';
+import { installStatsMocks } from './helpers/stats-mocks';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
 const SUMMARY_CACHE_STORAGE_KEY = 'mg:live-resource:v1:stats-kpi-summary';
+
+const SUMMARY_PAYLOAD = {
+  __generated: '2026-02-20T12:00:00.000Z',
+  player_count: 2222,
+  totals: {
+    hours: 321.5,
+    distance: 8765.4,
+    mob_kills: 777,
+    creeper: 45,
+  },
+};
 
 const STATS_METRICS = {
   playtime: {
@@ -125,132 +137,24 @@ const VERSUS_PLAYER_DATA: Record<string, Record<string, unknown>> = {
   },
 };
 
-async function installStatsMocks(
+async function installUtilityStatsMocks(
   page: Page,
   {
-    summaryDelayMs = 0,
-    summaryStatus = 200,
+    summaryDelayMs,
+    summaryStatus,
   }: {
     summaryDelayMs?: number;
     summaryStatus?: 200 | 500;
   } = {},
 ): Promise<void> {
-  await page.route('**/api/summary**', async (route) => {
-    if (summaryDelayMs > 0) {
-      await new Promise((resolve) => {
-        setTimeout(resolve, summaryDelayMs);
-      });
-    }
-
-    if (summaryStatus !== 200) {
-      await route.fulfill({
-        status: summaryStatus,
-        contentType: 'application/json; charset=utf-8',
-        body: JSON.stringify({ error: 'summary-failed' }),
-      });
-      return;
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        player_count: 2222,
-        totals: {
-          hours: 321.5,
-          distance: 8765.4,
-          mob_kills: 777,
-          creeper: 45,
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/metrics', async (route) => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        metrics: STATS_METRICS,
-      }),
-    });
-  });
-
-  await page.route('**/api/leaderboard**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const metricId = requestUrl.searchParams.get('metric') || 'hours';
-    const rows = LEADERBOARDS[metricId] || [];
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        __players: STATS_PLAYERS,
-        boards: {
-          [metricId]: rows,
-        },
-        cursors: {
-          [metricId]: null,
-        },
-      }),
-    });
-  });
-
-  await page.route('**/api/players**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const query = (requestUrl.searchParams.get('q') || '').trim().toLowerCase();
-
-    const items = Object.entries(STATS_PLAYERS)
-      .filter(([uuid, name]) => {
-        if (!query) return false;
-        return uuid.toLowerCase().includes(query) || name.toLowerCase().includes(query);
-      })
-      .slice(0, 6)
-      .map(([uuid, name]) => ({ uuid, name }));
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        items,
-      }),
-    });
-  });
-
-  await page.route('**/api/player**', async (route) => {
-    const requestUrl = new URL(route.request().url());
-    const uuid = (requestUrl.searchParams.get('uuid') || '').trim();
-    const playerData = VERSUS_PLAYER_DATA[uuid];
-
-    if (!playerData) {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json; charset=utf-8',
-        body: JSON.stringify({
-          __generated: '2026-02-20T12:00:00.000Z',
-          found: false,
-          uuid,
-          name: uuid,
-        }),
-      });
-      return;
-    }
-
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        found: true,
-        uuid,
-        name: STATS_PLAYERS[uuid] || uuid,
-        player: playerData,
-      }),
-    });
+  await installStatsMocks(page, {
+    metrics: STATS_METRICS,
+    players: STATS_PLAYERS,
+    leaderboards: LEADERBOARDS,
+    playerStatsByUuid: VERSUS_PLAYER_DATA,
+    summaryPayload: SUMMARY_PAYLOAD,
+    summaryDelayMs,
+    summaryStatus,
   });
 }
 
@@ -309,7 +213,7 @@ async function installPlayerStatsSortMock(page: Page): Promise<void> {
 }
 
 test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
-  await installStatsMocks(page, { summaryDelayMs: 450, summaryStatus: 200 });
+  await installUtilityStatsMocks(page, { summaryDelayMs: 450, summaryStatus: 200 });
   await page.goto('/statistiken/');
 
   await expect(page.locator('.animate-pulse').first()).toBeVisible();
@@ -317,7 +221,7 @@ test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
 });
 
 test('Overview Mock: zeigt error ohne Cache', async ({ page }) => {
-  await installStatsMocks(page, { summaryStatus: 500 });
+  await installUtilityStatsMocks(page, { summaryStatus: 500 });
   await page.goto('/statistiken/');
 
   await expect(page.getByText('Daten konnten nicht geladen werden').first()).toBeVisible();
@@ -325,7 +229,7 @@ test('Overview Mock: zeigt error ohne Cache', async ({ page }) => {
 
 test('Overview Mock: zeigt stale mit Cache bei API-Fehler', async ({ page }) => {
   await seedSummaryCache(page);
-  await installStatsMocks(page, { summaryStatus: 500 });
+  await installUtilityStatsMocks(page, { summaryStatus: 500 });
   await page.goto('/statistiken/');
 
   await expect(page.getByText(/111[.,]50 h/)).toBeVisible();
@@ -333,7 +237,7 @@ test('Overview Mock: zeigt stale mit Cache bei API-Fehler', async ({ page }) => 
 });
 
 test('URL ?tab=ranglisten&cat=playtime&top=20 oeffnet Ranglisten-View', async ({ page }) => {
-  await installStatsMocks(page);
+  await installUtilityStatsMocks(page);
   await page.goto('/statistiken/?tab=ranglisten&cat=playtime&top=20');
 
   await expect(page.getByRole('tab', { name: 'Ranglisten' })).toHaveAttribute(
@@ -349,7 +253,7 @@ test('URL ?tab=ranglisten&cat=playtime&top=20 oeffnet Ranglisten-View', async ({
 });
 
 test('Schnellzugriff-Pill setzt Kategorie und URL', async ({ page }) => {
-  await installStatsMocks(page);
+  await installUtilityStatsMocks(page);
   await page.goto('/statistiken/?tab=leaderboards');
 
   const quickAccess = page.locator('section[aria-label="Schnellzugriff"]');
@@ -365,7 +269,7 @@ test('Schnellzugriff-Pill setzt Kategorie und URL', async ({ page }) => {
 });
 
 test('Kategorie-Auswahl schreibt Zuletzt angesehen und rendert Pills', async ({ page }) => {
-  await installStatsMocks(page);
+  await installUtilityStatsMocks(page);
   await page.goto('/statistiken/?tab=leaderboards');
 
   await page.getByRole('button', { name: 'Warden Defeats' }).click();
@@ -386,7 +290,7 @@ test('Kategorie-Auswahl schreibt Zuletzt angesehen und rendert Pills', async ({ 
 });
 
 test('URL ?tab=versus&a=...&b=... zeigt Vergleich', async ({ page }) => {
-  await installStatsMocks(page);
+  await installUtilityStatsMocks(page);
   await page.goto('/statistiken/?tab=versus&a=uuid-alpha&b=uuid-beta');
 
   await expect(page.getByRole('tab', { name: 'Versus' })).toHaveAttribute('aria-selected', 'true');
