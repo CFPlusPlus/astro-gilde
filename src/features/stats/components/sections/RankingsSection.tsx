@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, ListFilter, RotateCcw, SearchX, X } from 'lucide-react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ListFilter, RotateCcw, SearchX } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
@@ -7,18 +7,19 @@ import { LeaderboardTable } from '../LeaderboardTable';
 import { MetricPicker } from '../MetricPicker';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
 import { SectionTitle } from '../StatsPrimitives';
+import { QuickAccessPills } from './QuickAccessPills';
+import { RecentPills } from './RecentPills';
 import type { MetricDef } from '../../types';
 import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
 import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
+import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from '../../ui/events';
+import { CategoriesSheet } from '../../ui/sheets/CategoriesSheet';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
-import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
 const LAST_CATEGORIES_LIMIT = 5;
 const LAST_CATEGORIES_VISIBLE_LIMIT = 5;
-const HORIZONTAL_SCROLL_EPSILON = 2;
-const RANKINGS_DRAWER_SCROLL_LOCK_ID = 'rankings-drawer';
 
 function normalizeLastCategories(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -73,35 +74,6 @@ function clearLastCategories(): void {
   }
 }
 
-function resolveHorizontalScrollState(container: HTMLDivElement | null): {
-  canScrollLeft: boolean;
-  canScrollRight: boolean;
-} {
-  if (!container) {
-    return { canScrollLeft: false, canScrollRight: false };
-  }
-
-  const maxScrollLeft = container.scrollWidth - container.clientWidth;
-  if (maxScrollLeft <= HORIZONTAL_SCROLL_EPSILON) {
-    return { canScrollLeft: false, canScrollRight: false };
-  }
-
-  return {
-    canScrollLeft: container.scrollLeft > HORIZONTAL_SCROLL_EPSILON,
-    canScrollRight: container.scrollLeft < maxScrollLeft - HORIZONTAL_SCROLL_EPSILON,
-  };
-}
-
-function scrollHorizontal(container: HTMLDivElement | null, direction: 'left' | 'right'): void {
-  if (!container) return;
-
-  const distance = Math.max(180, Math.round(container.clientWidth * 0.75));
-  container.scrollBy({
-    left: direction === 'left' ? -distance : distance,
-    behavior: 'smooth',
-  });
-}
-
 function resolveRankingsLiveVariant(state: LeaderboardState): LiveBadgeVariant | null {
   if (state.liveErrorKind === 'rate_limit') return 'rate_limit';
   if (state.liveStatus === 'stale') return 'stale';
@@ -140,19 +112,10 @@ export function RankingsSection({
   onGoPage: (pageIndex: number) => void;
   onLoadMore: () => void;
 }) {
+  const categoriesSheetId = useId();
   const lastLoadedMetricRef = useRef<{ id: string; state: LeaderboardState } | null>(null);
   const [mobilePickerOpen, setMobilePickerOpen] = useState(false);
   const [lastCategoryIds, setLastCategoryIds] = useState<string[]>([]);
-  const quickAccessScrollRef = useRef<HTMLDivElement | null>(null);
-  const recentlyViewedScrollRef = useRef<HTMLDivElement | null>(null);
-  const [quickAccessScrollState, setQuickAccessScrollState] = useState({
-    canScrollLeft: false,
-    canScrollRight: false,
-  });
-  const [recentlyViewedScrollState, setRecentlyViewedScrollState] = useState({
-    canScrollLeft: false,
-    canScrollRight: false,
-  });
 
   useEffect(() => {
     if (!activeMetricId || !activeMetricState.loaded) return;
@@ -164,36 +127,15 @@ export function RankingsSection({
   }, []);
 
   useEffect(() => {
-    if (!mobilePickerOpen) return;
-
-    lockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setMobilePickerOpen(false);
-      }
+    const onOpenCategoriesSheet = () => {
+      setMobilePickerOpen(true);
     };
 
-    const onResize = () => {
-      if (window.matchMedia('(min-width: 1024px)').matches) {
-        setMobilePickerOpen(false);
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-
+    window.addEventListener(STATS_OPEN_CATEGORIES_SHEET_EVENT, onOpenCategoriesSheet);
     return () => {
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('resize', onResize);
-      unlockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
+      window.removeEventListener(STATS_OPEN_CATEGORIES_SHEET_EVENT, onOpenCategoriesSheet);
     };
-  }, [mobilePickerOpen]);
-
-  useEffect(() => {
-    if (!activeMetricId) return;
-    setMobilePickerOpen(false);
-  }, [activeMetricId]);
+  }, []);
 
   const canUseLoadedFallback = useMemo(() => {
     if (!activeMetricId) return false;
@@ -270,46 +212,6 @@ export function RankingsSection({
       .slice(0, LAST_CATEGORIES_VISIBLE_LIMIT);
   }, [lastCategoryIds, metrics]);
 
-  useEffect(() => {
-    const container = quickAccessScrollRef.current;
-    const update = () => {
-      setQuickAccessScrollState(resolveHorizontalScrollState(container));
-    };
-
-    update();
-    if (!container) return;
-
-    const rafId = window.requestAnimationFrame(update);
-    container.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      container.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-    };
-  }, [metrics, quickAccessMetricIds.length]);
-
-  useEffect(() => {
-    const container = recentlyViewedScrollRef.current;
-    const update = () => {
-      setRecentlyViewedScrollState(resolveHorizontalScrollState(container));
-    };
-
-    update();
-    if (!container) return;
-
-    const rafId = window.requestAnimationFrame(update);
-    container.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      container.removeEventListener('scroll', update);
-      window.removeEventListener('resize', update);
-    };
-  }, [metrics, recentlyViewedMetricIds.length]);
-
   const handleSelectMetric = (id: string) => {
     setLastCategoryIds((previous) => {
       const next = [id, ...previous.filter((entry) => entry !== id)].slice(
@@ -322,11 +224,6 @@ export function RankingsSection({
     onSelectMetric(id);
   };
 
-  const handleSelectMetricFromDrawer = (id: string) => {
-    handleSelectMetric(id);
-    setMobilePickerOpen(false);
-  };
-
   const handleQuickAccessSelect = (id: string) => {
     if (metricFilter.trim().length > 0) {
       onMetricFilterChange('');
@@ -334,25 +231,14 @@ export function RankingsSection({
     handleSelectMetric(id);
   };
 
+  const handleCloseMobilePicker = useCallback(() => {
+    setMobilePickerOpen(false);
+  }, []);
+
   const handleClearLastCategories = () => {
     setLastCategoryIds([]);
     clearLastCategories();
   };
-
-  const handleQuickAccessScroll = (direction: 'left' | 'right') => {
-    scrollHorizontal(quickAccessScrollRef.current, direction);
-  };
-
-  const handleRecentlyViewedScroll = (direction: 'left' | 'right') => {
-    scrollHorizontal(recentlyViewedScrollRef.current, direction);
-  };
-
-  const showQuickAccessScrollControls =
-    quickAccessScrollState.canScrollLeft || quickAccessScrollState.canScrollRight;
-  const showRecentlyViewedScrollControls =
-    recentlyViewedScrollState.canScrollLeft || recentlyViewedScrollState.canScrollRight;
-
-  const visibleCategoryCount = groupedMetrics.reduce((sum, group) => sum + group.ids.length, 0);
 
   return (
     <>
@@ -369,7 +255,7 @@ export function RankingsSection({
                 size={15}
                 className="text-muted group-hover:text-accent transition-colors"
               />
-              Zurücksetzen
+              {'Zur\u00fccksetzen'}
             </button>
           </div>
 
@@ -389,15 +275,15 @@ export function RankingsSection({
         </StatsLayoutRail>
 
         <StatsLayoutMain className="lg:col-span-8" ariaLabel="Ranglisten Ergebnisse">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <SectionTitle
                 title="Ranglisten"
-                subtitle="Kategorie finden, auswählen und sofort die Top-N sehen."
+                subtitle={'Kategorie finden, ausw\u00e4hlen und sofort die Top-N sehen.'}
               />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => setMobilePickerOpen(true)}
@@ -405,6 +291,7 @@ export function RankingsSection({
                 disabled={!metrics}
                 aria-haspopup="dialog"
                 aria-expanded={mobilePickerOpen ? 'true' : 'false'}
+                aria-controls={categoriesSheetId}
               >
                 <ListFilter size={15} />
                 Kategorien
@@ -414,148 +301,21 @@ export function RankingsSection({
           </div>
 
           <div className="mt-5 space-y-4">
-            <section aria-label="Schnellzugriff">
-              <p className="text-fg/90 text-xs font-semibold tracking-wide uppercase">
-                Schnellzugriff
-              </p>
-
-              <div className="mt-2 min-h-10">
-                {metrics && quickAccessMetricIds.length > 0 ? (
-                  <div className="flex items-center gap-2">
-                    {showQuickAccessScrollControls ? (
-                      <button
-                        type="button"
-                        onClick={() => handleQuickAccessScroll('left')}
-                        className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
-                        aria-label="Schnellzugriff nach links scrollen"
-                        disabled={!quickAccessScrollState.canScrollLeft}
-                      >
-                        <ChevronLeft size={13} />
-                      </button>
-                    ) : null}
-
-                    <div
-                      ref={quickAccessScrollRef}
-                      className="min-w-0 flex-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                    >
-                      <ul className="flex w-max translate-y-[2px] items-center gap-2" role="list">
-                        {quickAccessMetricIds.map((id) => {
-                          const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
-                          const isActive = id === activeMetricId;
-
-                          return (
-                            <li key={id}>
-                              <button
-                                type="button"
-                                onClick={() => handleQuickAccessSelect(id)}
-                                className={[
-                                  'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
-                                  isActive
-                                    ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
-                                    : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
-                                ].join(' ')}
-                                aria-pressed={isActive}
-                              >
-                                {categoryDef.label || id}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-
-                    {showQuickAccessScrollControls ? (
-                      <button
-                        type="button"
-                        onClick={() => handleQuickAccessScroll('right')}
-                        className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
-                        aria-label="Schnellzugriff nach rechts scrollen"
-                        disabled={!quickAccessScrollState.canScrollRight}
-                      >
-                        <ChevronRight size={13} />
-                      </button>
-                    ) : null}
-                  </div>
-                ) : (
-                  <div
-                    className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
-                    aria-hidden="true"
-                  />
-                )}
-              </div>
-            </section>
+            <QuickAccessPills
+              metrics={metrics}
+              metricIds={quickAccessMetricIds}
+              activeMetricId={activeMetricId}
+              onSelectMetric={handleQuickAccessSelect}
+            />
 
             {metrics && recentlyViewedMetricIds.length > 0 ? (
-              <section aria-label="Zuletzt angesehen">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-fg/90 text-xs font-semibold tracking-wide uppercase">
-                    Zuletzt angesehen (dieses Ger&auml;t)
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleClearLastCategories}
-                    className="focus-visible:ring-offset-bg text-muted hover:text-accent inline-flex items-center rounded-md px-1 py-0.5 text-xs font-semibold underline-offset-4 transition-colors hover:underline focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-                  >
-                    Zur&uuml;cksetzen
-                  </button>
-                </div>
-
-                <div className="mt-2 flex items-center gap-2">
-                  {showRecentlyViewedScrollControls ? (
-                    <button
-                      type="button"
-                      onClick={() => handleRecentlyViewedScroll('left')}
-                      className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
-                      aria-label="Zuletzt angesehen nach links scrollen"
-                      disabled={!recentlyViewedScrollState.canScrollLeft}
-                    >
-                      <ChevronLeft size={13} />
-                    </button>
-                  ) : null}
-
-                  <div
-                    ref={recentlyViewedScrollRef}
-                    className="min-w-0 flex-1 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-                  >
-                    <ul className="flex w-max translate-y-[2px] items-center gap-2" role="list">
-                      {recentlyViewedMetricIds.map((id) => {
-                        const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
-                        const isActive = id === activeMetricId;
-
-                        return (
-                          <li key={id}>
-                            <button
-                              type="button"
-                              onClick={() => handleSelectMetric(id)}
-                              className={[
-                                'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
-                                isActive
-                                  ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
-                                  : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
-                              ].join(' ')}
-                              aria-pressed={isActive}
-                            >
-                              {categoryDef.label || id}
-                            </button>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-
-                  {showRecentlyViewedScrollControls ? (
-                    <button
-                      type="button"
-                      onClick={() => handleRecentlyViewedScroll('right')}
-                      className="focus-visible:ring-offset-bg text-muted hover:text-fg disabled:text-muted/35 border-border/70 bg-surface-solid/35 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed"
-                      aria-label="Zuletzt angesehen nach rechts scrollen"
-                      disabled={!recentlyViewedScrollState.canScrollRight}
-                    >
-                      <ChevronRight size={13} />
-                    </button>
-                  ) : null}
-                </div>
-              </section>
+              <RecentPills
+                metrics={metrics}
+                metricIds={recentlyViewedMetricIds}
+                activeMetricId={activeMetricId}
+                onSelectMetric={handleSelectMetric}
+                onReset={handleClearLastCategories}
+              />
             ) : null}
 
             {!metrics ? (
@@ -587,7 +347,7 @@ export function RankingsSection({
               <div className="mg-notice text-sm" data-variant="neutral" role="status">
                 <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
                 <span className="text-fg/90">
-                  Keine Rangliste ausgewählt. Wähle eine Kategorie aus.
+                  {'Keine Rangliste ausgew\u00e4hlt. W\u00e4hle eine Kategorie aus.'}
                 </span>
               </div>
             ) : null}
@@ -662,50 +422,18 @@ export function RankingsSection({
         </StatsLayoutMain>
       </StatsLayoutGrid>
 
-      {mobilePickerOpen && metrics ? (
-        <div
-          className="fixed inset-0 z-50 lg:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Ranglisten Kategorien"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/45"
-            aria-label="Kategorien schließen"
-            onClick={() => setMobilePickerOpen(false)}
-          />
-
-          <section className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-hidden rounded-t-[1rem] border-t shadow-2xl">
-            <header className="border-border/80 flex items-center justify-between gap-3 border-b px-4 py-3">
-              <div className="min-w-0">
-                <p className="text-fg text-sm font-semibold">Kategorie auswählen</p>
-                <p className="text-muted text-xs">{visibleCategoryCount} Treffer</p>
-              </div>
-              <button
-                type="button"
-                className="focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-                aria-label="Kategorien schließen"
-                onClick={() => setMobilePickerOpen(false)}
-              >
-                <X size={16} />
-              </button>
-            </header>
-
-            <div className="max-h-[calc(82dvh-4.5rem)] overflow-y-auto px-4 pt-3 pb-4">
-              <MetricPicker
-                metrics={metrics}
-                grouped={groupedMetrics}
-                filter={metricFilter}
-                onFilterChange={onMetricFilterChange}
-                activeMetricId={activeMetricId}
-                onSelectMetric={handleSelectMetricFromDrawer}
-                surface={false}
-                scrollClassName="max-h-none overflow-visible pr-0"
-              />
-            </div>
-          </section>
-        </div>
+      {metrics ? (
+        <CategoriesSheet
+          open={mobilePickerOpen}
+          sheetId={categoriesSheetId}
+          metrics={metrics}
+          grouped={groupedMetrics}
+          filter={metricFilter}
+          onFilterChange={onMetricFilterChange}
+          activeMetricId={activeMetricId}
+          onSelectMetric={handleSelectMetric}
+          onClose={handleCloseMobilePicker}
+        />
       ) : null}
     </>
   );

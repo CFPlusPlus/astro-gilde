@@ -1,0 +1,321 @@
+import { RefreshCw, X } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef } from 'react';
+
+import { LastUpdated } from '../../../../components/live/LastUpdated';
+import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
+import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
+import { LiveBadgeSlot, type LiveBadgeVariant } from '../../components/LiveBadge';
+import { STATS_PAGE_SIZES } from '../../constants';
+import type { TabKey } from '../../types-ui';
+
+const OPTIONS_SHEET_SCROLL_LOCK_ID = 'stats-options-sheet';
+
+function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
+  if (!root) return [];
+
+  const selector =
+    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter((element) => {
+    if (element.getAttribute('aria-hidden') === 'true') return false;
+    if (element.hasAttribute('disabled')) return false;
+    return true;
+  });
+}
+
+function resolveReloadLabel({
+  reloadDisabled,
+  reloadInSeconds,
+}: {
+  reloadDisabled: boolean;
+  reloadInSeconds: number;
+}): string {
+  if (!reloadDisabled || reloadInSeconds <= 0) return 'Neu laden';
+  return `Neu laden (${reloadInSeconds}s)`;
+}
+
+function resolveStatusDetails({
+  liveVariant,
+  apiError,
+  reloadInSeconds,
+}: {
+  liveVariant: LiveBadgeVariant;
+  apiError: string | null;
+  reloadInSeconds: number;
+}): string | null {
+  if (liveVariant === 'rate_limit') {
+    if (reloadInSeconds > 0) return LIVE_COPY_DE.rate_limit_retry_in(reloadInSeconds);
+    return LIVE_COPY_DE.rate_limit;
+  }
+
+  if (liveVariant === 'stale') {
+    if (apiError) return `${LIVE_COPY_DE.stale_hint} ${apiError}`;
+    return LIVE_COPY_DE.stale_hint;
+  }
+
+  if (liveVariant === 'error') {
+    return apiError || LIVE_COPY_DE.error_generic;
+  }
+
+  return null;
+}
+
+export function OptionsSheet({
+  open,
+  sheetId,
+  onClose,
+  activeTab,
+  liveVariant,
+  showPageSize,
+  pageSize,
+  onPageSizeChange,
+  topNHint,
+  updatedAt,
+  apiError,
+  onReload,
+  reloadDisabled,
+  reloadInSeconds,
+  activeLeaderboardCategoryLabel,
+  onOpenLeaderboardCategories,
+}: {
+  open: boolean;
+  sheetId: string;
+  onClose: () => void;
+  activeTab: TabKey;
+  liveVariant: LiveBadgeVariant;
+  showPageSize: boolean;
+  pageSize: number;
+  onPageSizeChange: (next: number) => void;
+  topNHint: string | null;
+  updatedAt: number | null;
+  apiError: string | null;
+  onReload?: () => void;
+  reloadDisabled: boolean;
+  reloadInSeconds: number;
+  activeLeaderboardCategoryLabel?: string | null;
+  onOpenLeaderboardCategories?: () => void;
+}) {
+  const titleId = useId();
+  const descriptionId = useId();
+  const dialogRef = useRef<HTMLElement | null>(null);
+  const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+  const showReload = typeof onReload === 'function';
+  const reloadLabel = useMemo(
+    () =>
+      resolveReloadLabel({
+        reloadDisabled,
+        reloadInSeconds,
+      }),
+    [reloadDisabled, reloadInSeconds],
+  );
+  const statusDetails = useMemo(
+    () =>
+      resolveStatusDetails({
+        liveVariant,
+        apiError,
+        reloadInSeconds,
+      }),
+    [apiError, liveVariant, reloadInSeconds],
+  );
+  const showLeaderboardControls = activeTab === 'ranglisten';
+
+  useEffect(() => {
+    if (!open) return;
+
+    lastFocusedElementRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    lockPageScroll(OPTIONS_SHEET_SCROLL_LOCK_ID);
+
+    const focusRaf = window.requestAnimationFrame(() => {
+      const focusable = getFocusableElements(dialogRef.current);
+      const first = focusable[0];
+      if (first) {
+        first.focus();
+        return;
+      }
+      dialogRef.current?.focus();
+    });
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusable = getFocusableElements(dialogRef.current);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialogRef.current?.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+        return;
+      }
+
+      if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusRaf);
+      window.removeEventListener('keydown', onKeyDown);
+      unlockPageScroll(OPTIONS_SHEET_SCROLL_LOCK_ID);
+
+      const lastFocusedElement = lastFocusedElementRef.current;
+      if (lastFocusedElement && document.contains(lastFocusedElement)) {
+        lastFocusedElement.focus();
+      }
+    };
+  }, [onClose, open]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      id={sheetId}
+      className="fixed inset-0 z-[180] md:hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descriptionId}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-black/45"
+        aria-label={'Optionen schlie\u00dfen'}
+        onClick={onClose}
+      />
+
+      <section
+        ref={dialogRef}
+        tabIndex={-1}
+        className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 flex h-[70dvh] max-h-[70dvh] min-h-[20rem] flex-col overflow-hidden rounded-t-[1rem] border-t shadow-2xl sm:h-[64dvh] sm:max-h-[64dvh]"
+      >
+        <header className="border-border/80 flex items-start justify-between gap-3 border-b px-4 py-3">
+          <div className="min-w-0">
+            <p id={titleId} className="text-fg text-sm font-semibold">
+              Optionen
+            </p>
+            <p id={descriptionId} className="text-muted text-xs">
+              Top-N, Aktualisierung und Status.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+            aria-label={'Optionen schlie\u00dfen'}
+            onClick={onClose}
+          >
+            <X size={16} />
+          </button>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="space-y-4">
+            <section>
+              <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">Top-N</p>
+              <div
+                role="radiogroup"
+                aria-label={'Top-N Eintr\u00e4ge'}
+                className="mt-2 grid grid-cols-5 gap-2"
+              >
+                {STATS_PAGE_SIZES.map((value) => {
+                  const isActive = pageSize === value;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={isActive ? 'true' : 'false'}
+                      className={[
+                        'focus-visible:ring-offset-bg inline-flex h-9 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
+                        isActive
+                          ? 'border-accent/55 bg-accent/18 text-fg'
+                          : 'border-border/80 bg-surface-solid/35 text-fg/88 hover:border-accent/45 hover:bg-surface-solid/55',
+                      ].join(' ')}
+                      disabled={!showPageSize}
+                      onClick={() => onPageSizeChange(value)}
+                    >
+                      {value}
+                    </button>
+                  );
+                })}
+              </div>
+              {topNHint ? (
+                <p className="text-muted mt-2 text-xs leading-relaxed">{topNHint}</p>
+              ) : null}
+            </section>
+
+            {showReload ? (
+              <section>
+                <button
+                  type="button"
+                  onClick={onReload}
+                  className="mg-btn mg-btn--md mg-btn--primary w-full justify-center"
+                  disabled={reloadDisabled}
+                  title={
+                    reloadDisabled && reloadInSeconds > 0 ? 'Bitte kurz warten.' : 'Daten neu laden'
+                  }
+                >
+                  <RefreshCw size={16} />
+                  {reloadLabel}
+                </button>
+              </section>
+            ) : null}
+
+            <section className="border-border/70 bg-surface-solid/25 space-y-2 rounded-[var(--radius)] border p-3">
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
+                  Status
+                </p>
+                <LiveBadgeSlot variant={liveVariant} showStaleIcon={false} className="shrink-0" />
+              </div>
+              <LastUpdated updatedAt={updatedAt} className="text-muted text-xs" showWhenMissing />
+              {statusDetails ? (
+                <p className="text-muted text-xs leading-relaxed">Statusdetails: {statusDetails}</p>
+              ) : null}
+            </section>
+
+            {showLeaderboardControls ? (
+              <section className="border-border/70 bg-surface-solid/25 space-y-3 rounded-[var(--radius)] border p-3">
+                <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
+                  Ranglisten
+                </p>
+                <p className="text-muted text-sm leading-relaxed">
+                  Aktive Kategorie:{' '}
+                  <span className="text-fg font-semibold">
+                    {activeLeaderboardCategoryLabel || '-'}
+                  </span>
+                </p>
+                <button
+                  type="button"
+                  className="mg-btn mg-btn--sm mg-btn--secondary w-full justify-center"
+                  onClick={() => {
+                    onOpenLeaderboardCategories?.();
+                    onClose();
+                  }}
+                >
+                  {'Kategorie \u00e4ndern'}
+                </button>
+              </section>
+            ) : null}
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

@@ -12,8 +12,10 @@ import { useStatsUrlState } from './hooks/useStatsUrlState';
 import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
+import { resolveStatsCategoryDef } from './statsCategories';
 import { parseStatsUrlState } from './url-state';
 import { normalizeUmlauts } from './normalizeUmlauts';
+import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from './ui/events';
 import type { MetricDef } from './types';
 
 function resolveRankMetricFromCandidates(
@@ -63,13 +65,8 @@ function resolveRankMetricFromCandidates(
 }
 
 export default function StatsApp() {
-  const initialUrlState = useMemo(
-    () =>
-      typeof window === 'undefined'
-        ? parseStatsUrlState('')
-        : parseStatsUrlState(window.location.search),
-    [],
-  );
+  const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
+  const initialUrlStateHydratedRef = useRef(false);
 
   const {
     activeTab,
@@ -131,9 +128,23 @@ export default function StatsApp() {
       autoCompare: initialUrlState.versus.shouldAutoCompare,
     },
   });
-  const tabsDisabled = Boolean(apiError);
+  const tabsDisabled = false;
   const pendingRankMetricCandidatesRef = useRef<string[] | null>(null);
   const runVersusCompare = versus.runVersusCompare;
+  const mobileSearchVersusSlot = useMemo<'A' | 'B' | null>(() => {
+    if (activeTab !== 'versus') return null;
+    if (versus.searchA.open) return 'A';
+    if (versus.searchB.open) return 'B';
+    if (!versus.versusPlayerA) return 'A';
+    if (!versus.versusPlayerB) return 'B';
+    return null;
+  }, [
+    activeTab,
+    versus.searchA.open,
+    versus.searchB.open,
+    versus.versusPlayerA,
+    versus.versusPlayerB,
+  ]);
   const toolbarLiveVariant = useMemo(() => {
     if (summaryRetryDisabled) return 'rate_limit';
     if (summaryError) return summaryLastUpdatedAt ? 'stale' : 'error';
@@ -168,6 +179,11 @@ export default function StatsApp() {
     summaryLoading,
     summaryRetryDisabled,
   ]);
+  const activeLeaderboardCategoryLabel = useMemo(() => {
+    if (!activeMetricId) return null;
+    if (!metrics) return activeMetricId;
+    return resolveStatsCategoryDef(activeMetricId, metrics[activeMetricId]).label || activeMetricId;
+  }, [activeMetricId, metrics]);
   const handleReload = useCallback(() => {
     if (activeTab === 'uebersicht') {
       retrySummary();
@@ -188,6 +204,10 @@ export default function StatsApp() {
       void runVersusCompare();
     }
   }, [activeTab, reloadActiveMetric, reloadKing, retrySummary, runVersusCompare]);
+  const handleOpenLeaderboardCategories = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new Event(STATS_OPEN_CATEGORIES_SHEET_EVENT));
+  }, []);
 
   useEffect(() => {
     if (activeTab !== 'uebersicht') return;
@@ -287,6 +307,14 @@ export default function StatsApp() {
     [mainSearch, setActiveMetricId, setPageSize, setTab, versus],
   );
 
+  useEffect(() => {
+    if (initialUrlStateHydratedRef.current) return;
+    initialUrlStateHydratedRef.current = true;
+    if (typeof window === 'undefined') return;
+    if (!window.location.search) return;
+    handlePopState(parseStatsUrlState(window.location.search));
+  }, [handlePopState]);
+
   useStatsUrlState({
     activeTab,
     pageSize,
@@ -306,7 +334,7 @@ export default function StatsApp() {
   return (
     <StatsLayout
       stickyTopBar
-      topBarClassName="py-4"
+      topBarClassName="py-0 md:py-4"
       topBar={
         <StatsToolbar
           activeTab={activeTab}
@@ -314,6 +342,8 @@ export default function StatsApp() {
           tabsDisabled={tabsDisabled}
           search={mainSearch}
           onChoosePlayer={goToPlayer}
+          activeVersusSlot={mobileSearchVersusSlot}
+          onChooseVersusPlayer={versus.setVersusPlayer}
           showPageSize={showPageSize}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
@@ -323,6 +353,8 @@ export default function StatsApp() {
           onReload={handleReload}
           reloadDisabled={summaryRetryDisabled}
           reloadInSeconds={summaryRetryInSeconds}
+          activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+          onOpenLeaderboardCategories={handleOpenLeaderboardCategories}
         />
       }
     >

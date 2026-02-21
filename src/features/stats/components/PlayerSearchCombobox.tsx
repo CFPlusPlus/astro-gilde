@@ -20,6 +20,7 @@ type PlayerSearchComboboxProps = {
   className?: string;
   label?: string;
   placeholder?: string;
+  popupPlacement?: 'bottom' | 'top' | 'auto';
 };
 
 export function PlayerSearchCombobox({
@@ -37,6 +38,7 @@ export function PlayerSearchCombobox({
   className,
   label = 'Spieler suchen',
   placeholder = 'Spieler suchen...',
+  popupPlacement = 'bottom',
 }: PlayerSearchComboboxProps) {
   const query = value.trim();
   const hasQuery = query.length >= MIN_QUERY_LENGTH;
@@ -51,6 +53,9 @@ export function PlayerSearchCombobox({
   const srLabelId = useId();
 
   const itemRefs = React.useRef<Array<HTMLLIElement | null>>([]);
+  const [resolvedPopupPlacement, setResolvedPopupPlacement] = React.useState<'bottom' | 'top'>(
+    popupPlacement === 'top' ? 'top' : 'bottom',
+  );
 
   React.useEffect(() => {
     if (!showPopup || selectedIndex < 0 || selectedIndex >= items.length) return;
@@ -63,6 +68,50 @@ export function PlayerSearchCombobox({
     showPopup && selectedIndex >= 0 && selectedIndex < items.length
       ? `${listboxId}-option-${selectedIndex}`
       : undefined;
+
+  React.useEffect(() => {
+    if (!showPopup) return;
+
+    if (popupPlacement === 'top') {
+      setResolvedPopupPlacement('top');
+      return;
+    }
+
+    if (popupPlacement === 'bottom') {
+      setResolvedPopupPlacement('bottom');
+      return;
+    }
+
+    const updatePlacement = () => {
+      const wrap = wrapRef.current;
+      if (!wrap) return;
+
+      const rect = wrap.getBoundingClientRect();
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      const spaceAbove = rect.top;
+      const spaceBelow = viewportHeight - rect.bottom;
+
+      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+        setResolvedPopupPlacement('top');
+        return;
+      }
+
+      setResolvedPopupPlacement('bottom');
+    };
+
+    updatePlacement();
+    window.addEventListener('resize', updatePlacement);
+    window.addEventListener('scroll', updatePlacement, true);
+    return () => {
+      window.removeEventListener('resize', updatePlacement);
+      window.removeEventListener('scroll', updatePlacement, true);
+    };
+  }, [popupPlacement, showPopup, wrapRef]);
+
+  const popupClassName =
+    resolvedPopupPlacement === 'top'
+      ? 'border-border bg-surface-solid/95 absolute right-0 left-0 bottom-[calc(100%+0.5rem)] z-[140] overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150'
+      : 'border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
 
   return (
     <div
@@ -183,12 +232,12 @@ export function PlayerSearchCombobox({
       </p>
 
       {showPopup ? (
-        <div className="border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150">
+        <div className={popupClassName}>
           <ul
             id={listboxId}
             role="listbox"
             aria-labelledby={srLabelId}
-            className="max-h-72 overflow-auto py-1"
+            className="max-h-[min(18rem,45dvh)] overflow-auto py-1"
           >
             {isLoading ? (
               <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">

@@ -1,10 +1,11 @@
-import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
-import { Check, ChevronDown, RefreshCw, SlidersHorizontal } from 'lucide-react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
+import { Check, ChevronDown, RefreshCw } from 'lucide-react';
 
 import { LastUpdated } from '../../../components/live/LastUpdated';
 import { STATS_PAGE_SIZES } from '../constants';
 import type { PlayersSearchItem } from '../types';
 import type { TabKey } from '../types-ui';
+import { StatsToolbarMobile } from '../ui/toolbar/StatsToolbarMobile';
 import { LiveBadgeSlot, type LiveBadgeVariant } from './LiveBadge';
 import { PlayerAutocomplete } from './PlayerAutocomplete';
 import { StatsNavPills } from './StatsNavPills';
@@ -29,6 +30,8 @@ type StatsToolbarProps = {
   tabsDisabled: boolean;
   search: AutocompleteViewModel;
   onChoosePlayer: (uuid: string) => void;
+  activeVersusSlot?: 'A' | 'B' | null;
+  onChooseVersusPlayer?: (side: 'A' | 'B', uuid: string, fallbackName?: string) => void;
   showPageSize: boolean;
   pageSize: number;
   onPageSizeChange: (next: number) => void;
@@ -38,7 +41,31 @@ type StatsToolbarProps = {
   onReload?: () => void;
   reloadDisabled?: boolean;
   reloadInSeconds?: number;
+  activeLeaderboardCategoryLabel?: string | null;
+  onOpenLeaderboardCategories?: () => void;
 };
+
+function useMediaQuery(query: string, initialValue = false): boolean {
+  const [matches, setMatches] = useState(initialValue);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const mediaQuery = window.matchMedia(query);
+    const update = () => {
+      setMatches(mediaQuery.matches);
+    };
+
+    update();
+
+    if (typeof mediaQuery.addEventListener !== 'function') return;
+
+    mediaQuery.addEventListener('change', update);
+    return () => mediaQuery.removeEventListener('change', update);
+  }, [query]);
+
+  return matches;
+}
 
 function TopNSelector({
   pageSize,
@@ -106,7 +133,7 @@ function TopNSelector({
         className={[
           'focus-visible:ring-offset-bg bg-surface-solid/45 border-border/85 text-fg inline-flex h-10 items-center gap-2 rounded-[var(--radius)] border px-3 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
           disabled
-            ? 'text-muted/80 cursor-not-allowed'
+            ? 'bg-surface-solid/20 border-border/60 text-muted/70 cursor-not-allowed opacity-65 grayscale'
             : 'hover:bg-surface-solid/62 hover:border-accent/35',
         ].join(' ')}
       >
@@ -124,7 +151,7 @@ function TopNSelector({
         <ul
           id={listboxId}
           role="listbox"
-          aria-label="Top-N Einträge"
+          aria-label="Top-N Eintr\u00e4ge"
           className="bg-surface-solid/96 border-border absolute top-[calc(100%+0.4rem)] right-0 z-[160] min-w-full overflow-hidden rounded-[var(--radius)] border py-1 shadow-xl backdrop-blur-xl"
         >
           {options.map((value, index) => {
@@ -190,6 +217,8 @@ export function StatsToolbar({
   tabsDisabled,
   search,
   onChoosePlayer,
+  activeVersusSlot = null,
+  onChooseVersusPlayer,
   showPageSize,
   pageSize,
   onPageSizeChange,
@@ -199,162 +228,131 @@ export function StatsToolbar({
   onReload,
   reloadDisabled = false,
   reloadInSeconds = 0,
+  activeLeaderboardCategoryLabel = null,
+  onOpenLeaderboardCategories,
 }: StatsToolbarProps) {
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const isDesktop = useMediaQuery('(min-width: 768px)');
   const showReload = typeof onReload === 'function';
   const reloadLabel = useMemo(() => {
     if (!reloadDisabled || reloadInSeconds <= 0) return 'Neu laden';
     return `Neu laden (${reloadInSeconds}s)`;
   }, [reloadDisabled, reloadInSeconds]);
+  const handleMobileChoosePlayer = useCallback(
+    (uuid: string) => {
+      if (activeTab === 'versus' && activeVersusSlot && onChooseVersusPlayer) {
+        const fallbackName = search.items.find((item) => item.uuid === uuid)?.name;
+        onChooseVersusPlayer(activeVersusSlot, uuid, fallbackName);
+        return;
+      }
 
-  useEffect(() => {
-    setMobileFiltersOpen(false);
-  }, [activeTab]);
+      onChoosePlayer(uuid);
+    },
+    [activeTab, activeVersusSlot, onChoosePlayer, onChooseVersusPlayer, search.items],
+  );
 
-  const topNHint = showPageSize ? null : 'Top-N wirkt in Server-König und Ranglisten.';
+  const topNHint = showPageSize ? null : 'Top-N wirkt in Server-K\u00f6nig und Ranglisten.';
 
   return (
-    <header className="mg-surface-2 p-3 sm:p-4" aria-label="Statistik Steuerung">
-      <div className="space-y-3">
-        <section className="border-border/75 bg-surface-solid/25 rounded-[var(--radius)] border p-2 sm:p-3">
-          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
-              Kategorie
-            </p>
-            <p className="text-muted text-xs">Wähle einen Bereich der Statistiken.</p>
-          </div>
-          <StatsNavPills
-            active={activeTab}
-            onChange={onTabChange}
-            disabled={tabsDisabled}
-            surface={false}
-            layout="one-row"
-          />
-        </section>
+    <header aria-label="Statistik Steuerung">
+      {isDesktop ? (
+        <>
+          <div className="mg-surface-2 p-3 sm:p-4">
+            <div className="space-y-3">
+              <section className="border-border/75 bg-surface-solid/25 rounded-[var(--radius)] border p-2 sm:p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
+                    Kategorie
+                  </p>
+                  <p className="text-muted text-xs">
+                    {'W\u00e4hle einen Bereich der Statistiken.'}
+                  </p>
+                </div>
+                <StatsNavPills
+                  active={activeTab}
+                  onChange={onTabChange}
+                  disabled={tabsDisabled}
+                  surface={false}
+                  layout="one-row"
+                />
+              </section>
 
-        <div className="hidden lg:grid lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:items-center lg:gap-3">
-          <PlayerAutocomplete
-            value={search.value}
-            onChange={search.setValue}
-            items={search.items}
-            open={search.open}
-            onOpenChange={search.setOpen}
-            selectedIndex={search.selectedIndex}
-            onSelectedIndexChange={search.setSelectedIndex}
-            onChoose={onChoosePlayer}
-            wrapRef={search.wrapRef}
-            isLoading={search.isLoading}
-            errorMessage={search.errorMessage}
-            className="w-full lg:max-w-none"
-          />
+              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-3">
+                <PlayerAutocomplete
+                  value={search.value}
+                  onChange={search.setValue}
+                  items={search.items}
+                  open={search.open}
+                  onOpenChange={search.setOpen}
+                  selectedIndex={search.selectedIndex}
+                  onSelectedIndexChange={search.setSelectedIndex}
+                  onChoose={onChoosePlayer}
+                  wrapRef={search.wrapRef}
+                  isLoading={search.isLoading}
+                  errorMessage={search.errorMessage}
+                  className="w-full"
+                />
 
-          <TopNSelector
-            pageSize={pageSize}
-            onPageSizeChange={onPageSizeChange}
-            disabled={!showPageSize}
-            className="justify-self-end"
-          />
+                <TopNSelector
+                  pageSize={pageSize}
+                  onPageSizeChange={onPageSizeChange}
+                  disabled={!showPageSize}
+                  className="justify-self-end"
+                />
 
-          <div className="flex min-w-0 items-center justify-end gap-2">
-            <LiveBadgeSlot variant={liveVariant} className="shrink-0" />
-            <LastUpdated
-              updatedAt={updatedAt}
-              className="text-muted max-w-[15rem] truncate text-xs"
-              showWhenMissing
-            />
-          </div>
+                <div className="flex min-w-0 items-center justify-end gap-2">
+                  <LiveBadgeSlot variant={liveVariant} className="shrink-0" />
+                  <LastUpdated
+                    updatedAt={updatedAt}
+                    className="text-muted max-w-[15rem] truncate text-xs"
+                    showWhenMissing
+                  />
+                </div>
 
-          {showReload ? (
-            <button
-              type="button"
-              onClick={onReload}
-              className="mg-btn mg-btn--sm mg-btn--surface justify-self-end"
-              disabled={reloadDisabled}
-              title={
-                reloadDisabled && reloadInSeconds > 0 ? 'Bitte kurz warten.' : 'Daten neu laden'
-              }
-            >
-              <RefreshCw size={15} />
-              {reloadLabel}
-            </button>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-        </div>
-
-        <div className="space-y-3 lg:hidden">
-          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-            <PlayerAutocomplete
-              value={search.value}
-              onChange={search.setValue}
-              items={search.items}
-              open={search.open}
-              onOpenChange={search.setOpen}
-              selectedIndex={search.selectedIndex}
-              onSelectedIndexChange={search.setSelectedIndex}
-              onChoose={onChoosePlayer}
-              wrapRef={search.wrapRef}
-              isLoading={search.isLoading}
-              errorMessage={search.errorMessage}
-              className="w-full lg:max-w-none"
-            />
-            <button
-              type="button"
-              className="mg-btn mg-btn--sm mg-btn--surface h-10 px-3"
-              onClick={() => setMobileFiltersOpen((open) => !open)}
-              aria-expanded={mobileFiltersOpen ? 'true' : 'false'}
-              aria-controls="stats-toolbar-mobile-filter-panel"
-            >
-              <SlidersHorizontal size={15} />
-              Filter
-            </button>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
-              <LiveBadgeSlot variant={liveVariant} className="shrink-0" showStaleIcon={false} />
-              <LastUpdated
-                updatedAt={updatedAt}
-                className="text-muted max-w-[12.5rem] truncate text-xs"
-                showWhenMissing
-              />
+                {showReload ? (
+                  <button
+                    type="button"
+                    onClick={onReload}
+                    className="mg-btn mg-btn--sm mg-btn--surface justify-self-end"
+                    disabled={reloadDisabled}
+                    title={
+                      reloadDisabled && reloadInSeconds > 0
+                        ? 'Bitte kurz warten.'
+                        : 'Daten neu laden'
+                    }
+                  >
+                    <RefreshCw size={15} />
+                    {reloadLabel}
+                  </button>
+                ) : (
+                  <span aria-hidden="true" />
+                )}
+              </div>
             </div>
-            {showReload ? (
-              <button
-                type="button"
-                onClick={onReload}
-                className="mg-btn mg-btn--xs mg-btn--surface"
-                disabled={reloadDisabled}
-                title={
-                  reloadDisabled && reloadInSeconds > 0 ? 'Bitte kurz warten.' : 'Daten neu laden'
-                }
-              >
-                <RefreshCw size={14} />
-                {reloadLabel}
-              </button>
-            ) : null}
           </div>
 
-          {mobileFiltersOpen ? (
-            <div
-              id="stats-toolbar-mobile-filter-panel"
-              className="border-border/80 bg-surface-solid/45 rounded-[var(--radius)] border p-3"
-            >
-              <TopNSelector
-                pageSize={pageSize}
-                onPageSizeChange={onPageSizeChange}
-                disabled={!showPageSize}
-                className="w-fit"
-              />
-              {topNHint ? (
-                <p className="text-muted mt-2 text-xs leading-relaxed">{topNHint}</p>
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <ApiAlert message={apiError} />
+          <ApiAlert message={apiError} />
+        </>
+      ) : (
+        <StatsToolbarMobile
+          activeTab={activeTab}
+          onTabChange={onTabChange}
+          tabsDisabled={tabsDisabled}
+          search={search}
+          onChoosePlayer={handleMobileChoosePlayer}
+          liveVariant={liveVariant}
+          showPageSize={showPageSize}
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+          topNHint={topNHint}
+          updatedAt={updatedAt}
+          apiError={apiError}
+          onReload={onReload}
+          reloadDisabled={reloadDisabled}
+          reloadInSeconds={reloadInSeconds}
+          activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+          onOpenLeaderboardCategories={onOpenLeaderboardCategories}
+        />
+      )}
     </header>
   );
 }
