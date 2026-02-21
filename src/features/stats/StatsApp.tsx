@@ -63,13 +63,8 @@ function resolveRankMetricFromCandidates(
 }
 
 export default function StatsApp() {
-  const initialUrlState = useMemo(
-    () =>
-      typeof window === 'undefined'
-        ? parseStatsUrlState('')
-        : parseStatsUrlState(window.location.search),
-    [],
-  );
+  const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
+  const initialUrlStateHydratedRef = useRef(false);
 
   const {
     activeTab,
@@ -131,7 +126,7 @@ export default function StatsApp() {
       autoCompare: initialUrlState.versus.shouldAutoCompare,
     },
   });
-  const tabsDisabled = Boolean(apiError);
+  const tabsDisabled = false;
   const pendingRankMetricCandidatesRef = useRef<string[] | null>(null);
   const runVersusCompare = versus.runVersusCompare;
   const toolbarLiveVariant = useMemo(() => {
@@ -287,6 +282,14 @@ export default function StatsApp() {
     [mainSearch, setActiveMetricId, setPageSize, setTab, versus],
   );
 
+  useEffect(() => {
+    if (initialUrlStateHydratedRef.current) return;
+    initialUrlStateHydratedRef.current = true;
+    if (typeof window === 'undefined') return;
+    if (!window.location.search) return;
+    handlePopState(parseStatsUrlState(window.location.search));
+  }, [handlePopState]);
+
   useStatsUrlState({
     activeTab,
     pageSize,
@@ -306,7 +309,7 @@ export default function StatsApp() {
   return (
     <StatsLayout
       stickyTopBar
-      topBarClassName="py-4"
+      topBarClassName="py-0 md:py-4"
       topBar={
         <StatsToolbar
           activeTab={activeTab}
