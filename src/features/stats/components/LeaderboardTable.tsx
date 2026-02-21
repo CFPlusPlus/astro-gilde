@@ -1,4 +1,12 @@
-import React, { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { Check, Copy, LoaderCircle } from 'lucide-react';
 import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
@@ -21,6 +29,104 @@ function resolvePlayerDetailUrl(uuid: string): string {
   if (typeof window === 'undefined') return path;
   return new URL(path, window.location.origin).toString();
 }
+
+type LeaderboardRenderRow = {
+  key: string;
+  uuid: string;
+  rank: number;
+  medalClass: string | null;
+  name: string;
+  formattedValue: string;
+  motionClassName?: string;
+  motionStyle?: CSSProperties;
+};
+
+const INTERACTIVE_ROW_CLASS =
+  'group hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35 focus-visible:ring-accent/45 focus-visible:ring-offset-bg cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-[-2px] focus-visible:outline-none';
+
+const LeaderboardRow = memo(function LeaderboardRow({
+  row,
+  isCopied,
+  showDesktopCopyAction,
+  onPlayerClick,
+  onCopyPlayerLink,
+}: {
+  row: LeaderboardRenderRow;
+  isCopied: boolean;
+  showDesktopCopyAction: boolean;
+  onPlayerClick: (uuid: string) => void;
+  onCopyPlayerLink: (uuid: string) => Promise<void>;
+}) {
+  const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
+    if (isInteractiveTarget(event.target)) return;
+    onPlayerClick(row.uuid);
+  };
+
+  const handleRowKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>) => {
+    if (isInteractiveTarget(event.target)) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onPlayerClick(row.uuid);
+    }
+  };
+
+  return (
+    <tr
+      tabIndex={0}
+      onClick={handleRowClick}
+      onKeyDown={handleRowKeyDown}
+      aria-label={`${row.name} \u00f6ffnen`}
+      className={[INTERACTIVE_ROW_CLASS, row.motionClassName].filter(Boolean).join(' ')}
+      style={row.motionStyle}
+    >
+      <td className="whitespace-nowrap">
+        <span className="inline-flex items-center gap-2">
+          {row.medalClass ? (
+            <span className={row.medalClass} aria-label={`Platz ${row.rank}`}>
+              {row.rank}
+            </span>
+          ) : (
+            <span className="inline-flex min-w-[1.5rem] items-center justify-center font-semibold tabular-nums">
+              {row.rank}
+            </span>
+          )}
+        </span>
+      </td>
+      <td className="min-w-0">
+        <div className="flex min-w-0 items-center justify-between gap-2">
+          <span className="text-fg/90 decoration-accent/70 group-hover:text-fg inline-flex min-w-0 items-center gap-2 rounded-md underline-offset-4 transition-colors group-hover:underline group-focus-visible:underline">
+            <img
+              src={`https://minotar.net/helm/${encodeURIComponent(row.name)}/32.png`}
+              alt=""
+              className="h-8 w-8 flex-none rounded-lg bg-black/20"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="truncate">{row.name}</span>
+          </span>
+
+          {showDesktopCopyAction ? (
+            <button
+              type="button"
+              data-row-action="copy-link"
+              onPointerDown={(event) => event.stopPropagation()}
+              onClick={(event) => {
+                event.stopPropagation();
+                void onCopyPlayerLink(row.uuid);
+              }}
+              className="focus-visible:ring-offset-bg text-muted hover:text-fg hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none lg:inline-flex"
+              aria-label={isCopied ? 'Spielerlink kopiert' : 'Spielerlink kopieren'}
+              title={isCopied ? 'Link kopiert' : 'Link kopieren'}
+            >
+              {isCopied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          ) : null}
+        </div>
+      </td>
+      <td className="whitespace-nowrap">{row.formattedValue}</td>
+    </tr>
+  );
+});
 
 export function LeaderboardTable({
   metricKey = 'default',
@@ -75,7 +181,7 @@ export function LeaderboardTable({
     setCopiedUuid(null);
   }, [metricKey, state.currentPage]);
 
-  const markCopied = (uuid: string) => {
+  const markCopied = useCallback((uuid: string) => {
     setCopiedUuid(uuid);
     if (copyFeedbackTimeoutRef.current !== null) {
       window.clearTimeout(copyFeedbackTimeoutRef.current);
@@ -83,45 +189,63 @@ export function LeaderboardTable({
     copyFeedbackTimeoutRef.current = window.setTimeout(() => {
       setCopiedUuid((current) => (current === uuid ? null : current));
     }, 1_400);
-  };
+  }, []);
 
-  const copyPlayerLink = async (uuid: string) => {
-    const url = resolvePlayerDetailUrl(uuid);
+  const copyPlayerLink = useCallback(
+    async (uuid: string) => {
+      const url = resolvePlayerDetailUrl(uuid);
 
-    try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        markCopied(uuid);
-        return;
+      try {
+        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+          await navigator.clipboard.writeText(url);
+          markCopied(uuid);
+          return;
+        }
+      } catch {
+        // Absichtlich leer: Fallback via prompt folgt.
       }
-    } catch {
-      // Absichtlich leer: Fallback via prompt folgt.
-    }
 
-    if (typeof window !== 'undefined') {
-      window.prompt('Link kopieren:', url);
-    }
-  };
+      if (typeof window !== 'undefined') {
+        window.prompt('Link kopieren:', url);
+      }
+    },
+    [markCopied],
+  );
 
-  const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>, uuid: string) => {
-    if (isInteractiveTarget(event.target)) return;
-    onPlayerClick(uuid);
-  };
+  const tableMotion = useMemo(
+    () =>
+      createTableRowMotion({
+        triggerKey: `${metricKey}-${state.currentPage}`,
+        enabled: state.loaded && page.length > 0,
+        maxRows: 10,
+        stepMs: 30,
+      }),
+    [metricKey, page.length, state.currentPage, state.loaded],
+  );
 
-  const handleRowKeyDown = (event: React.KeyboardEvent<HTMLTableRowElement>, uuid: string) => {
-    if (isInteractiveTarget(event.target)) return;
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      onPlayerClick(uuid);
-    }
-  };
+  const renderedRows = useMemo<LeaderboardRenderRow[]>(
+    () =>
+      page.map((row, index) => {
+        const rank = state.currentPage * pageSize + (index + 1);
+        const motion = tableMotion.getRowProps(index);
+        return {
+          key: `${row.uuid}-${index}`,
+          uuid: row.uuid,
+          rank,
+          medalClass: rank <= 3 ? `mg-rank-medal mg-rank-medal--${rank}` : null,
+          name: getPlayerName(row.uuid),
+          formattedValue: formatMetricValue(row.value, def),
+          motionClassName: motion.className,
+          motionStyle: motion.style,
+        };
+      }),
+    [def, getPlayerName, page, pageSize, state.currentPage, tableMotion],
+  );
 
-  const tableMotion = createTableRowMotion({
-    triggerKey: `${metricKey}-${state.currentPage}`,
-    enabled: state.loaded && page.length > 0,
-    maxRows: 10,
-    stepMs: 30,
-  });
+  const placeholderRows = useMemo(
+    () => Array.from({ length: initialPlaceholderRows }, (_, index) => index),
+    [initialPlaceholderRows],
+  );
   const headerCellClass = 'px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3';
   const stickyHeaderStyle = {
     background: 'var(--glass-nav-bg)',
@@ -164,7 +288,7 @@ export function LeaderboardTable({
             className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
           >
             {isInitialLoad
-              ? Array.from({ length: initialPlaceholderRows }).map((_, index) => (
+              ? placeholderRows.map((index) => (
                   <tr key={`placeholder-${index}`} aria-hidden="true">
                     <td className="whitespace-nowrap">
                       <span className="bg-surface-solid/45 inline-block h-4 w-8 animate-pulse rounded-md" />
@@ -190,75 +314,16 @@ export function LeaderboardTable({
               </tr>
             ) : null}
 
-            {page.map((row, i) => {
-              const rank = state.currentPage * pageSize + (i + 1);
-              const medalClass = rank <= 3 ? `mg-rank-medal mg-rank-medal--${rank}` : null;
-              const name = getPlayerName(row.uuid);
-              const motionProps = tableMotion.getRowProps(i);
-              const isCopied = copiedUuid === row.uuid;
-              return (
-                <tr
-                  key={`${row.uuid}-${i}`}
-                  tabIndex={0}
-                  onClick={(event) => handleRowClick(event, row.uuid)}
-                  onKeyDown={(event) => handleRowKeyDown(event, row.uuid)}
-                  aria-label={`${name} öffnen`}
-                  className={[
-                    'group hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35 focus-visible:ring-accent/45 focus-visible:ring-offset-bg cursor-pointer transition-colors focus-visible:ring-2 focus-visible:ring-offset-[-2px] focus-visible:outline-none',
-                    motionProps.className,
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  style={motionProps.style}
-                >
-                  <td className="whitespace-nowrap">
-                    <span className="inline-flex items-center gap-2">
-                      {medalClass ? (
-                        <span className={medalClass} aria-label={`Platz ${rank}`}>
-                          {rank}
-                        </span>
-                      ) : (
-                        <span className="inline-flex min-w-[1.5rem] items-center justify-center font-semibold tabular-nums">
-                          {rank}
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                  <td className="min-w-0">
-                    <div className="flex min-w-0 items-center justify-between gap-2">
-                      <span className="text-fg/90 decoration-accent/70 group-hover:text-fg inline-flex min-w-0 items-center gap-2 rounded-md underline-offset-4 transition-colors group-hover:underline group-focus-visible:underline">
-                        <img
-                          src={`https://minotar.net/helm/${encodeURIComponent(name)}/32.png`}
-                          alt=""
-                          className="h-8 w-8 flex-none rounded-lg bg-black/20"
-                          loading="lazy"
-                          decoding="async"
-                        />
-                        <span className="truncate">{name}</span>
-                      </span>
-
-                      {showDesktopCopyAction ? (
-                        <button
-                          type="button"
-                          data-row-action="copy-link"
-                          onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            void copyPlayerLink(row.uuid);
-                          }}
-                          className="focus-visible:ring-offset-bg text-muted hover:text-fg hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none lg:inline-flex"
-                          aria-label={isCopied ? 'Spielerlink kopiert' : 'Spielerlink kopieren'}
-                          title={isCopied ? 'Link kopiert' : 'Link kopieren'}
-                        >
-                          {isCopied ? <Check size={14} /> : <Copy size={14} />}
-                        </button>
-                      ) : null}
-                    </div>
-                  </td>
-                  <td className="whitespace-nowrap">{formatMetricValue(row.value, def)}</td>
-                </tr>
-              );
-            })}
+            {renderedRows.map((row) => (
+              <LeaderboardRow
+                key={row.key}
+                row={row}
+                isCopied={copiedUuid === row.uuid}
+                showDesktopCopyAction={showDesktopCopyAction}
+                onPlayerClick={onPlayerClick}
+                onCopyPlayerLink={copyPlayerLink}
+              />
+            ))}
           </tbody>
         </table>
       </div>
