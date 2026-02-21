@@ -101,9 +101,10 @@ function TopNSelector({
         aria-haspopup="listbox"
         aria-expanded={open ? 'true' : 'false'}
         aria-controls={listboxId}
+        aria-label={`Top-N: ${pageSize}`}
         disabled={disabled}
         className={[
-          'focus-visible:ring-offset-bg bg-surface-solid/45 border-border/85 text-fg inline-flex h-10 items-center gap-2 rounded-[var(--radius)] border px-3 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2',
+          'focus-visible:ring-offset-bg bg-surface-solid/45 border-border/85 text-fg inline-flex h-10 items-center gap-2 rounded-[var(--radius)] border px-3 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
           disabled
             ? 'text-muted/80 cursor-not-allowed'
             : 'hover:bg-surface-solid/62 hover:border-accent/35',
@@ -138,7 +139,7 @@ function TopNSelector({
                   aria-selected={isSelected ? 'true' : 'false'}
                   type="button"
                   className={[
-                    'inline-flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors',
+                    'focus-visible:ring-offset-bg inline-flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
                     isSelected
                       ? 'bg-accent/16 text-fg'
                       : 'text-fg/88 hover:bg-surface-solid/70 hover:text-fg',

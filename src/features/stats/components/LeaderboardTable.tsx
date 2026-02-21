@@ -34,6 +34,7 @@ type LeaderboardRenderRow = {
   key: string;
   uuid: string;
   rank: number;
+  rowHeaderId: string;
   medalClass: string | null;
   name: string;
   formattedValue: string;
@@ -79,7 +80,7 @@ const LeaderboardRow = memo(function LeaderboardRow({
       className={[INTERACTIVE_ROW_CLASS, row.motionClassName].filter(Boolean).join(' ')}
       style={row.motionStyle}
     >
-      <td className="whitespace-nowrap">
+      <td className="whitespace-nowrap" headers="leaderboard-col-rank">
         <span className="inline-flex items-center gap-2">
           {row.medalClass ? (
             <span className={row.medalClass} aria-label={`Platz ${row.rank}`}>
@@ -92,7 +93,12 @@ const LeaderboardRow = memo(function LeaderboardRow({
           )}
         </span>
       </td>
-      <td className="min-w-0">
+      <th
+        id={row.rowHeaderId}
+        scope="row"
+        className="min-w-0 text-left font-normal"
+        headers="leaderboard-col-player"
+      >
         <div className="flex min-w-0 items-center justify-between gap-2">
           <span className="text-fg/90 decoration-accent/70 group-hover:text-fg inline-flex min-w-0 items-center gap-2 rounded-md underline-offset-4 transition-colors group-hover:underline group-focus-visible:underline">
             <img
@@ -122,8 +128,10 @@ const LeaderboardRow = memo(function LeaderboardRow({
             </button>
           ) : null}
         </div>
+      </th>
+      <td className="whitespace-nowrap" headers={`${row.rowHeaderId} leaderboard-col-value`}>
+        {row.formattedValue}
       </td>
-      <td className="whitespace-nowrap">{row.formattedValue}</td>
     </tr>
   );
 });
@@ -232,6 +240,7 @@ export function LeaderboardTable({
           key: `${row.uuid}-${index}`,
           uuid: row.uuid,
           rank,
+          rowHeaderId: `leaderboard-row-player-${state.currentPage}-${index}`,
           medalClass: rank <= 3 ? `mg-rank-medal mg-rank-medal--${rank}` : null,
           name: getPlayerName(row.uuid),
           formattedValue: formatMetricValue(row.value, def),
@@ -267,25 +276,28 @@ export function LeaderboardTable({
     >
       <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible">
         <table className="w-full min-w-[390px] border-collapse text-sm sm:min-w-[520px]">
+          <caption className="sr-only">
+            Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
+          </caption>
           <thead
             className="text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top)-1px)] lg:z-10"
             style={stickyHeaderStyle}
           >
             <tr>
-              <th className={headerCellClass} scope="col">
+              <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
                 Platz
               </th>
-              <th className={headerCellClass} scope="col">
+              <th id="leaderboard-col-player" className={headerCellClass} scope="col">
                 Spieler
               </th>
-              <th className={headerCellClass} scope="col">
+              <th id="leaderboard-col-value" className={headerCellClass} scope="col">
                 {def?.unit ? `Wert (${def.unit})` : 'Wert'}
               </th>
             </tr>
           </thead>
           <tbody
             key={tableMotion.tbodyKey}
-            className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3"
+            className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3"
           >
             {isInitialLoad
               ? placeholderRows.map((index) => (

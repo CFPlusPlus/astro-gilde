@@ -50,7 +50,7 @@ export function PlayerSearchCombobox({
   const srStatusId = useId();
   const srLabelId = useId();
 
-  const itemRefs = React.useRef<Array<HTMLDivElement | null>>([]);
+  const itemRefs = React.useRef<Array<HTMLLIElement | null>>([]);
 
   React.useEffect(() => {
     if (!showPopup || selectedIndex < 0 || selectedIndex >= items.length) return;
@@ -73,7 +73,7 @@ export function PlayerSearchCombobox({
         {label}
       </label>
 
-      <div className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+      <div className="bg-surface-solid/60 border-border/80 focus-within:ring-offset-bg flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 focus-within:ring-2 focus-within:ring-[color:var(--ring)] focus-within:ring-offset-2">
         <Search size={18} className="text-muted" aria-hidden="true" />
         <input
           id={inputId}
@@ -141,6 +141,7 @@ export function PlayerSearchCombobox({
           placeholder={placeholder}
           role="combobox"
           aria-autocomplete="list"
+          aria-haspopup="listbox"
           aria-expanded={showPopup ? 'true' : 'false'}
           aria-controls={showPopup ? listboxId : undefined}
           aria-activedescendant={activeOptionId}
@@ -186,7 +187,7 @@ export function PlayerSearchCombobox({
           <ul
             id={listboxId}
             role="listbox"
-            aria-label="Spieler Trefferliste"
+            aria-labelledby={srLabelId}
             className="max-h-72 overflow-auto py-1"
           >
             {isLoading ? (
@@ -215,32 +216,31 @@ export function PlayerSearchCombobox({
                 const isActive = index === selectedIndex;
                 const optionId = `${listboxId}-option-${index}`;
                 return (
-                  <li key={`${item.uuid}-${index}`} role="presentation">
-                    <div
-                      id={optionId}
-                      ref={(element) => {
-                        itemRefs.current[index] = element;
-                      }}
-                      role="option"
-                      aria-selected={isActive ? 'true' : 'false'}
-                      onMouseDown={(event) => {
-                        // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten stabil bleibt.
-                        event.preventDefault();
-                        onChoose(item.uuid);
-                      }}
-                      onMouseEnter={() => onSelectedIndexChange(index)}
-                      className="mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
-                      data-active={isActive ? 'true' : 'false'}
-                    >
-                      <img
-                        src={`https://minotar.net/helm/${encodeURIComponent(item.name)}/32.png`}
-                        alt=""
-                        className="h-8 w-8 flex-none rounded-lg bg-black/20"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                      <span className="min-w-0 truncate">{item.name}</span>
-                    </div>
+                  <li
+                    key={`${item.uuid}-${index}`}
+                    id={optionId}
+                    ref={(element) => {
+                      itemRefs.current[index] = element;
+                    }}
+                    role="option"
+                    aria-selected={isActive ? 'true' : 'false'}
+                    onMouseDown={(event) => {
+                      // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten stabil bleibt.
+                      event.preventDefault();
+                      onChoose(item.uuid);
+                    }}
+                    onMouseEnter={() => onSelectedIndexChange(index)}
+                    className="mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
+                    data-active={isActive ? 'true' : 'false'}
+                  >
+                    <img
+                      src={`https://minotar.net/helm/${encodeURIComponent(item.name)}/32.png`}
+                      alt=""
+                      className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="min-w-0 truncate">{item.name}</span>
                   </li>
                 );
               })}

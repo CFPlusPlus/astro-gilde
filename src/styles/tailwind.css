@@ -1183,7 +1183,7 @@ html[data-theme='dark'] {
 
   /* Einheitlicher Reset-Button fuer Suchfelder */
   .mg-search-clear {
-    @apply text-muted hover:text-fg inline-flex h-6 w-6 flex-none items-center justify-center rounded-md transition-colors;
+    @apply focus-visible:ring-offset-bg text-muted hover:text-fg inline-flex h-6 w-6 flex-none items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none;
   }
 
   .mg-search-clear--hidden {

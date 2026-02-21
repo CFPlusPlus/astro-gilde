@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
 import { RankingsSection } from './components/sections/RankingsSection';
+import { getStatsPanelId, getStatsTabId } from './components/StatsNavPills';
 import { StatsToolbar } from './components/StatsToolbar';
 import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
@@ -326,95 +327,119 @@ export default function StatsApp() {
       }
     >
       {activeTab === 'uebersicht' ? (
-        <OverviewSection
-          showWelcome={showWelcome}
-          onDismissWelcome={dismissWelcome}
-          onOpenRankings={handleOpenRankingsFromOverview}
-          navigationDisabled={tabsDisabled}
-          totals={totals}
-          summaryLoaded={summaryLoaded}
-          summaryLoading={summaryLoading}
-          summaryError={summaryError}
-          onRetrySummary={retrySummary}
-          summaryRetryDisabled={summaryRetryDisabled}
-          summaryRetryInSeconds={summaryRetryInSeconds}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('uebersicht')}
+          aria-labelledby={getStatsTabId('uebersicht')}
+        >
+          <OverviewSection
+            showWelcome={showWelcome}
+            onDismissWelcome={dismissWelcome}
+            onOpenRankings={handleOpenRankingsFromOverview}
+            navigationDisabled={tabsDisabled}
+            totals={totals}
+            summaryLoaded={summaryLoaded}
+            summaryLoading={summaryLoading}
+            summaryError={summaryError}
+            onRetrySummary={retrySummary}
+            summaryRetryDisabled={summaryRetryDisabled}
+            summaryRetryInSeconds={summaryRetryInSeconds}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'king' ? (
-        <KingSection
-          king={king}
-          pageSize={pageSize}
-          getPlayerName={getPlayerName}
-          onPlayerClick={goToPlayer}
-          onGoPage={setKingCurrentPage}
-          onLoadMore={() => {
-            void loadMoreKing();
-          }}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('king')}
+          aria-labelledby={getStatsTabId('king')}
+        >
+          <KingSection
+            king={king}
+            pageSize={pageSize}
+            getPlayerName={getPlayerName}
+            onPlayerClick={goToPlayer}
+            onGoPage={setKingCurrentPage}
+            onLoadMore={() => {
+              void loadMoreKing();
+            }}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'ranglisten' ? (
-        <RankingsSection
-          metrics={metrics}
-          groupedMetrics={groupedMetrics}
-          metricFilter={metricFilter}
-          onMetricFilterChange={setMetricFilter}
-          activeMetricId={activeMetricId}
-          onSelectMetric={handleSelectMetric}
-          onReset={handleResetRankings}
-          hasNoRanklistResults={hasNoRanklistResults}
-          activeMetricState={activeMetricState}
-          pageSize={pageSize}
-          getPlayerName={getPlayerName}
-          onPlayerClick={goToPlayer}
-          onGoPage={setActiveMetricCurrentPage}
-          onLoadMore={() => {
-            void loadMoreActiveMetric();
-          }}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('ranglisten')}
+          aria-labelledby={getStatsTabId('ranglisten')}
+        >
+          <RankingsSection
+            metrics={metrics}
+            groupedMetrics={groupedMetrics}
+            metricFilter={metricFilter}
+            onMetricFilterChange={setMetricFilter}
+            activeMetricId={activeMetricId}
+            onSelectMetric={handleSelectMetric}
+            onReset={handleResetRankings}
+            hasNoRanklistResults={hasNoRanklistResults}
+            activeMetricState={activeMetricState}
+            pageSize={pageSize}
+            getPlayerName={getPlayerName}
+            onPlayerClick={goToPlayer}
+            onGoPage={setActiveMetricCurrentPage}
+            onLoadMore={() => {
+              void loadMoreActiveMetric();
+            }}
+          />
+        </section>
       ) : null}
 
       {activeTab === 'versus' ? (
-        <VersusSection
-          maxMetrics={versus.maxMetrics}
-          searchA={versus.searchA}
-          searchB={versus.searchB}
-          versusMetricFilter={versus.versusMetricFilter}
-          onVersusMetricFilterChange={versus.setVersusMetricFilter}
-          versusMetricIds={versus.versusMetricIds}
-          versusPlayerA={versus.versusPlayerA}
-          versusPlayerB={versus.versusPlayerB}
-          versusCatalog={versus.versusCatalog}
-          versusLoading={versus.versusLoading}
-          versusError={versus.versusError}
-          versusNotice={versus.versusNotice}
-          versusFilteredCatalog={versus.versusFilteredCatalog}
-          versusGroupedMetrics={versus.versusGroupedMetrics}
-          hasNoVersusResults={versus.hasNoVersusResults}
-          isSameVersusPlayer={versus.isSameVersusPlayer}
-          canRunVersus={versus.canRunVersus}
-          versusSwapFxClass={versus.versusSwapFxClass}
-          versusCardAZClass={versus.versusCardAZClass}
-          versusCardBZClass={versus.versusCardBZClass}
-          hasVersusData={versus.hasVersusData}
-          versusRows={versus.versusRows}
-          versusSummary={versus.versusSummary}
-          hasVersusResults={versus.hasVersusResults}
-          hasMissingVersusValues={versus.hasMissingVersusValues}
-          onSetVersusPlayer={versus.setVersusPlayer}
-          onClearVersusPlayer={versus.clearVersusPlayer}
-          onSetVersusSearchOpen={versus.setVersusSearchOpen}
-          onSwapVersusPlayers={versus.swapVersusPlayers}
-          onUpdateVersusSearch={versus.updateVersusSearch}
-          onRunVersusCompare={() => {
-            void versus.runVersusCompare();
-          }}
-          onApplyVersusSelection={versus.applyVersusSelection}
-          onToggleVersusMetric={versus.toggleVersusMetric}
-          onResetVersus={versus.resetVersus}
-          onGoToPlayer={goToPlayer}
-        />
+        <section
+          role="tabpanel"
+          id={getStatsPanelId('versus')}
+          aria-labelledby={getStatsTabId('versus')}
+        >
+          <VersusSection
+            maxMetrics={versus.maxMetrics}
+            searchA={versus.searchA}
+            searchB={versus.searchB}
+            versusMetricFilter={versus.versusMetricFilter}
+            onVersusMetricFilterChange={versus.setVersusMetricFilter}
+            versusMetricIds={versus.versusMetricIds}
+            versusPlayerA={versus.versusPlayerA}
+            versusPlayerB={versus.versusPlayerB}
+            versusCatalog={versus.versusCatalog}
+            versusLoading={versus.versusLoading}
+            versusError={versus.versusError}
+            versusNotice={versus.versusNotice}
+            versusFilteredCatalog={versus.versusFilteredCatalog}
+            versusGroupedMetrics={versus.versusGroupedMetrics}
+            hasNoVersusResults={versus.hasNoVersusResults}
+            isSameVersusPlayer={versus.isSameVersusPlayer}
+            canRunVersus={versus.canRunVersus}
+            versusSwapFxClass={versus.versusSwapFxClass}
+            versusCardAZClass={versus.versusCardAZClass}
+            versusCardBZClass={versus.versusCardBZClass}
+            hasVersusData={versus.hasVersusData}
+            versusRows={versus.versusRows}
+            versusSummary={versus.versusSummary}
+            hasVersusResults={versus.hasVersusResults}
+            hasMissingVersusValues={versus.hasMissingVersusValues}
+            onSetVersusPlayer={versus.setVersusPlayer}
+            onClearVersusPlayer={versus.clearVersusPlayer}
+            onSetVersusSearchOpen={versus.setVersusSearchOpen}
+            onSwapVersusPlayers={versus.swapVersusPlayers}
+            onUpdateVersusSearch={versus.updateVersusSearch}
+            onRunVersusCompare={() => {
+              void versus.runVersusCompare();
+            }}
+            onApplyVersusSelection={versus.applyVersusSelection}
+            onToggleVersusMetric={versus.toggleVersusMetric}
+            onResetVersus={versus.resetVersus}
+            onGoToPlayer={goToPlayer}
+          />
+        </section>
       ) : null}
     </StatsLayout>
   );
