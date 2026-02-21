@@ -1,7 +1,15 @@
 import { Cog, Search } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 
-import { PlayerAutocomplete } from '../../components/PlayerAutocomplete';
+import { SearchSheet } from '../sheets/SearchSheet';
 import { StatsTabsScroller } from './StatsTabsScroller';
 import type { PlayersSearchItem } from '../../types';
 import type { TabKey } from '../../types-ui';
@@ -45,23 +53,48 @@ export function StatsToolbarMobile({
   const [searchOpen, setSearchOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const searchPanelId = useId();
+  const searchApiRef = useRef<{
+    setOpen: (next: boolean) => void;
+    setSelectedIndex: (next: number) => void;
+  }>({
+    setOpen: () => undefined,
+    setSelectedIndex: () => undefined,
+  });
+  const searchSheetId = useId();
   const optionsPanelId = useId();
   const staleChipLabel = resolveStaleChipLabel(liveVariant);
 
-  useEffect(() => {
+  searchApiRef.current = {
+    setOpen: search.setOpen,
+    setSelectedIndex: search.setSelectedIndex,
+  };
+
+  const closeSearchSheet = useCallback(() => {
     setSearchOpen(false);
-    setOptionsOpen(false);
-  }, [activeTab]);
+    searchApiRef.current.setOpen(false);
+    searchApiRef.current.setSelectedIndex(-1);
+  }, []);
+
+  const handleChooseFromSearch = useCallback(
+    (uuid: string) => {
+      onChoosePlayer(uuid);
+      closeSearchSheet();
+    },
+    [closeSearchSheet, onChoosePlayer],
+  );
 
   useEffect(() => {
-    if (!searchOpen && !optionsOpen) return;
+    closeSearchSheet();
+    setOptionsOpen(false);
+  }, [activeTab, closeSearchSheet]);
+
+  useEffect(() => {
+    if (!optionsOpen) return;
 
     const onPointerDown = (event: MouseEvent | TouchEvent) => {
       const wrap = rootRef.current;
       if (!wrap) return;
       if (wrap.contains(event.target as Node)) return;
-      setSearchOpen(false);
       setOptionsOpen(false);
     };
 
@@ -71,7 +104,7 @@ export function StatsToolbarMobile({
       window.removeEventListener('mousedown', onPointerDown);
       window.removeEventListener('touchstart', onPointerDown);
     };
-  }, [optionsOpen, searchOpen]);
+  }, [optionsOpen]);
 
   return (
     <div className="relative" ref={rootRef}>
@@ -92,12 +125,20 @@ export function StatsToolbarMobile({
           type="button"
           className="focus-visible:ring-offset-bg border-border/80 bg-surface-solid/35 text-fg hover:border-accent/40 hover:bg-surface-solid/55 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
           onClick={() => {
-            setSearchOpen((open) => !open);
+            setSearchOpen((open) => {
+              const next = !open;
+              if (!next) {
+                searchApiRef.current.setOpen(false);
+                searchApiRef.current.setSelectedIndex(-1);
+              }
+              return next;
+            });
             setOptionsOpen(false);
           }}
           aria-label="Suche"
+          aria-haspopup="dialog"
           aria-expanded={searchOpen ? 'true' : 'false'}
-          aria-controls={searchPanelId}
+          aria-controls={searchSheetId}
         >
           <Search size={16} />
         </button>
@@ -117,27 +158,13 @@ export function StatsToolbarMobile({
         </button>
       </div>
 
-      {searchOpen ? (
-        <div
-          id={searchPanelId}
-          className="bg-surface-solid/96 border-border absolute top-[calc(100%+0.35rem)] right-0 left-0 z-[170] rounded-[var(--radius)] border p-2 shadow-xl backdrop-blur-xl"
-        >
-          <PlayerAutocomplete
-            value={search.value}
-            onChange={search.setValue}
-            items={search.items}
-            open={search.open}
-            onOpenChange={search.setOpen}
-            selectedIndex={search.selectedIndex}
-            onSelectedIndexChange={search.setSelectedIndex}
-            onChoose={onChoosePlayer}
-            wrapRef={search.wrapRef}
-            isLoading={search.isLoading}
-            errorMessage={search.errorMessage}
-            className="w-full lg:max-w-none"
-          />
-        </div>
-      ) : null}
+      <SearchSheet
+        open={searchOpen}
+        sheetId={searchSheetId}
+        search={search}
+        onClose={closeSearchSheet}
+        onChoosePlayer={handleChooseFromSearch}
+      />
 
       {optionsOpen ? (
         <div

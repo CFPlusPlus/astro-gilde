@@ -129,6 +129,20 @@ export default function StatsApp() {
   const tabsDisabled = false;
   const pendingRankMetricCandidatesRef = useRef<string[] | null>(null);
   const runVersusCompare = versus.runVersusCompare;
+  const mobileSearchVersusSlot = useMemo<'A' | 'B' | null>(() => {
+    if (activeTab !== 'versus') return null;
+    if (versus.searchA.open) return 'A';
+    if (versus.searchB.open) return 'B';
+    if (!versus.versusPlayerA) return 'A';
+    if (!versus.versusPlayerB) return 'B';
+    return null;
+  }, [
+    activeTab,
+    versus.searchA.open,
+    versus.searchB.open,
+    versus.versusPlayerA,
+    versus.versusPlayerB,
+  ]);
   const toolbarLiveVariant = useMemo(() => {
     if (summaryRetryDisabled) return 'rate_limit';
     if (summaryError) return summaryLastUpdatedAt ? 'stale' : 'error';
@@ -317,6 +331,8 @@ export default function StatsApp() {
           tabsDisabled={tabsDisabled}
           search={mainSearch}
           onChoosePlayer={goToPlayer}
+          activeVersusSlot={mobileSearchVersusSlot}
+          onChooseVersusPlayer={versus.setVersusPlayer}
           showPageSize={showPageSize}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}

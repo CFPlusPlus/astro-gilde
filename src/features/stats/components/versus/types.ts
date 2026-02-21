@@ -52,7 +52,7 @@ export type VersusSectionProps = {
   versusSummary: VersusSummary;
   hasVersusResults: boolean;
   hasMissingVersusValues: boolean;
-  onSetVersusPlayer: (side: VersusPlayerSide, uuid: string) => void;
+  onSetVersusPlayer: (side: VersusPlayerSide, uuid: string, fallbackName?: string) => void;
   onClearVersusPlayer: (side: VersusPlayerSide) => void;
   onSetVersusSearchOpen: (side: VersusPlayerSide, open: boolean) => void;
   onSwapVersusPlayers: () => void;

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
 import { Check, ChevronDown, RefreshCw } from 'lucide-react';
 
 import { LastUpdated } from '../../../components/live/LastUpdated';
@@ -30,6 +30,8 @@ type StatsToolbarProps = {
   tabsDisabled: boolean;
   search: AutocompleteViewModel;
   onChoosePlayer: (uuid: string) => void;
+  activeVersusSlot?: 'A' | 'B' | null;
+  onChooseVersusPlayer?: (side: 'A' | 'B', uuid: string, fallbackName?: string) => void;
   showPageSize: boolean;
   pageSize: number;
   onPageSizeChange: (next: number) => void;
@@ -213,6 +215,8 @@ export function StatsToolbar({
   tabsDisabled,
   search,
   onChoosePlayer,
+  activeVersusSlot = null,
+  onChooseVersusPlayer,
   showPageSize,
   pageSize,
   onPageSizeChange,
@@ -229,6 +233,18 @@ export function StatsToolbar({
     if (!reloadDisabled || reloadInSeconds <= 0) return 'Neu laden';
     return `Neu laden (${reloadInSeconds}s)`;
   }, [reloadDisabled, reloadInSeconds]);
+  const handleMobileChoosePlayer = useCallback(
+    (uuid: string) => {
+      if (activeTab === 'versus' && activeVersusSlot && onChooseVersusPlayer) {
+        const fallbackName = search.items.find((item) => item.uuid === uuid)?.name;
+        onChooseVersusPlayer(activeVersusSlot, uuid, fallbackName);
+        return;
+      }
+
+      onChoosePlayer(uuid);
+    },
+    [activeTab, activeVersusSlot, onChoosePlayer, onChooseVersusPlayer, search.items],
+  );
 
   const topNHint = showPageSize ? null : 'Top-N wirkt in Server-K\u00f6nig und Ranglisten.';
 
@@ -318,7 +334,7 @@ export function StatsToolbar({
           onTabChange={onTabChange}
           tabsDisabled={tabsDisabled}
           search={search}
-          onChoosePlayer={onChoosePlayer}
+          onChoosePlayer={handleMobileChoosePlayer}
           liveVariant={liveVariant}
           optionsPanel={
             <div className="space-y-3">

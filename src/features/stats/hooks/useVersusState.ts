@@ -124,11 +124,17 @@ export function useVersusState({
   }, [versusCatalog]);
 
   const setVersusPlayer = useCallback(
-    (side: 'A' | 'B', uuid: string) => {
+    (side: 'A' | 'B', uuid: string, fallbackName?: string) => {
       const search = side === 'A' ? searchA : searchB;
       const items = search.items;
       const found = items.find((item) => item.uuid === uuid);
-      const next = found || { uuid, name: uuid };
+      const normalizedFallbackName = fallbackName?.trim();
+      const knownName = playerNamesRef.current[uuid];
+      const next = found ||
+        (normalizedFallbackName ? { uuid, name: normalizedFallbackName } : null) || {
+          uuid,
+          name: knownName || uuid,
+        };
 
       if (side === 'A') {
         setVersusPlayerA(next);
