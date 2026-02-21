@@ -342,7 +342,9 @@ test('URL ?tab=ranglisten&cat=playtime&top=20 oeffnet Ranglisten-View', async ({
   );
   await expect(page.getByRole('button', { name: 'Top-N: 20' })).toBeVisible();
   await expect(
-    page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByText('PlaytimePro'),
+    page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByRole('row', {
+      name: /PlaytimePro/,
+    }),
   ).toBeVisible();
 });
 
@@ -356,7 +358,9 @@ test('Schnellzugriff-Pill setzt Kategorie und URL', async ({ page }) => {
   await expect.poll(() => new URL(page.url()).searchParams.get('tab')).toBe('leaderboards');
   await expect.poll(() => new URL(page.url()).searchParams.get('cat')).toBe('mob_kills');
   await expect(
-    page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByText('MobsterOne'),
+    page.getByRole('region', { name: 'Ranglisten Ergebnisse' }).getByRole('row', {
+      name: /MobsterOne/,
+    }),
   ).toBeVisible();
 });
 
