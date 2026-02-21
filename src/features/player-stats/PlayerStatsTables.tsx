@@ -201,7 +201,7 @@ export function PlayerStatsTables({
                       const motionProps = generalMotion.getRowProps(index);
                       const rowId = `player-general-row-${index}`;
                       return (
-                        <tr key={r.raw} className={motionProps.className} style={motionProps.style}>
+                        <tr key={r.raw} className={motionProps.className}>
                           <th
                             id={rowId}
                             scope="row"
@@ -328,7 +328,7 @@ export function PlayerStatsTables({
                       const motionProps = itemsMotion.getRowProps(index);
                       const rowId = `player-items-row-${index}`;
                       return (
-                        <tr key={r.key} className={motionProps.className} style={motionProps.style}>
+                        <tr key={r.key} className={motionProps.className}>
                           <th
                             id={rowId}
                             scope="row"
@@ -466,7 +466,7 @@ export function PlayerStatsTables({
                       const motionProps = mobsMotion.getRowProps(index);
                       const rowId = `player-mobs-row-${index}`;
                       return (
-                        <tr key={r.key} className={motionProps.className} style={motionProps.style}>
+                        <tr key={r.key} className={motionProps.className}>
                           <th
                             id={rowId}
                             scope="row"

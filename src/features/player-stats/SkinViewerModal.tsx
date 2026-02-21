@@ -3,6 +3,7 @@ import { RefreshCcw, X } from 'lucide-react';
 import { SkinViewerControls } from './skinviewer/SkinViewerControls';
 import { SkinViewerStage } from './skinviewer/SkinViewerStage';
 import { useSkinViewer } from './skinviewer/useSkinViewer';
+import { lockPageScroll, unlockPageScroll } from '../../scripts/app/scroll-lock';
 
 type Props = {
   open: boolean;
@@ -23,6 +24,7 @@ export default function SkinViewerModal({
   playerUuid,
   playerName,
 }: Props) {
+  const SKIN_VIEWER_SCROLL_LOCK_ID = 'skin-viewer-modal';
   const dialogTitle = title || (playerName ? `Skin von ${playerName}` : 'Skin von Spieler');
   const {
     canvasRef,
@@ -48,8 +50,7 @@ export default function SkinViewerModal({
   useEffect(() => {
     if (!open) return;
 
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockPageScroll(SKIN_VIEWER_SCROLL_LOCK_ID);
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -58,7 +59,7 @@ export default function SkinViewerModal({
     window.addEventListener('keydown', onKey);
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
+      unlockPageScroll(SKIN_VIEWER_SCROLL_LOCK_ID);
     };
   }, [open, onClose]);
 

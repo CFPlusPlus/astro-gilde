@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 type StatsLayoutProps = {
   topBar: ReactNode;
@@ -24,6 +24,15 @@ function joinClassNames(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
+const STICKY_OFFSET_STEP_PX = 8;
+const STICKY_OFFSET_MAX_PX = 400;
+
+function resolveStickyOffsetClass(offsetPx: number): string {
+  const clamped = Math.max(0, Math.min(STICKY_OFFSET_MAX_PX, Math.round(offsetPx)));
+  const snapped = Math.round(clamped / STICKY_OFFSET_STEP_PX) * STICKY_OFFSET_STEP_PX;
+  return `mg-stats-sticky-offset-${snapped}`;
+}
+
 export function StatsLayout({
   topBar,
   children,
@@ -32,11 +41,11 @@ export function StatsLayout({
   stickyTopBar = false,
 }: StatsLayoutProps) {
   const stickyTopBarRef = useRef<HTMLElement | null>(null);
-  const [stickyContentTopPx, setStickyContentTopPx] = useState('0px');
+  const [stickyContentTopClass, setStickyContentTopClass] = useState('mg-stats-sticky-offset-0');
 
   useEffect(() => {
     if (!stickyTopBar) {
-      setStickyContentTopPx('0px');
+      setStickyContentTopClass('mg-stats-sticky-offset-0');
       return;
     }
 
@@ -47,7 +56,7 @@ export function StatsLayout({
       const top = Number.parseFloat(window.getComputedStyle(element).top || '0') || 0;
       const height = element.getBoundingClientRect().height;
       const offset = Math.max(0, top + height);
-      setStickyContentTopPx(`${Math.round(offset)}px`);
+      setStickyContentTopClass(resolveStickyOffsetClass(offset));
     };
 
     updateOffset();
@@ -64,12 +73,8 @@ export function StatsLayout({
     };
   }, [stickyTopBar]);
 
-  const rootStyle = {
-    '--stats-sticky-content-top': stickyContentTopPx,
-  } as CSSProperties;
-
   return (
-    <div className="pb-12" style={rootStyle}>
+    <div className={joinClassNames('pb-12', stickyContentTopClass)}>
       <section
         ref={stickyTopBarRef}
         className={joinClassNames(

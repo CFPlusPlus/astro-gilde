@@ -60,10 +60,7 @@ export default defineConfig({
         resources: ["'self'"],
       },
       styleDirective: {
-        // Aktuell erforderlich: Teile der UI setzen Styles zur Laufzeit
-        // (z. B. Scroll-Lock/Restore in nav-menu und Modals).
-        // Siehe README Abschnitt "CSP (style-src)" fuer Details und Reduktionsstand.
-        resources: ["'self'", "'unsafe-inline'"],
+        resources: ["'self'"],
       },
       directives: [
         "default-src 'self'",

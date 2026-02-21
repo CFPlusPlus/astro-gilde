@@ -1,12 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-} from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Copy, LoaderCircle } from 'lucide-react';
 import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
@@ -39,7 +31,6 @@ type LeaderboardRenderRow = {
   name: string;
   formattedValue: string;
   motionClassName?: string;
-  motionStyle?: CSSProperties;
 };
 
 const INTERACTIVE_ROW_CLASS =
@@ -78,7 +69,6 @@ const LeaderboardRow = memo(function LeaderboardRow({
       onKeyDown={handleRowKeyDown}
       aria-label={`${row.name} \u00f6ffnen`}
       className={[INTERACTIVE_ROW_CLASS, row.motionClassName].filter(Boolean).join(' ')}
-      style={row.motionStyle}
     >
       <td className="whitespace-nowrap" headers="leaderboard-col-rank">
         <span className="inline-flex items-center gap-2">
@@ -245,7 +235,6 @@ export function LeaderboardTable({
           name: getPlayerName(row.uuid),
           formattedValue: formatMetricValue(row.value, def),
           motionClassName: motion.className,
-          motionStyle: motion.style,
         };
       }),
     [def, getPlayerName, page, pageSize, state.currentPage, tableMotion],
@@ -256,14 +245,6 @@ export function LeaderboardTable({
     [initialPlaceholderRows],
   );
   const headerCellClass = 'px-2.5 py-2.5 text-left font-semibold sm:px-4 sm:py-3';
-  const stickyHeaderStyle = {
-    background: 'var(--glass-nav-bg)',
-    borderColor: 'transparent',
-    boxShadow: 'inset 0 -1px 0 var(--glass-nav-border)',
-    WebkitBackdropFilter: 'saturate(150%) blur(var(--glass-nav-blur))',
-    backdropFilter: 'saturate(150%) blur(var(--glass-nav-blur))',
-  } satisfies CSSProperties;
-
   return (
     <section
       className={[
@@ -279,10 +260,7 @@ export function LeaderboardTable({
           <caption className="sr-only">
             Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
           </caption>
-          <thead
-            className="text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top)-1px)] lg:z-10"
-            style={stickyHeaderStyle}
-          >
+          <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top)-1px)] lg:z-10">
             <tr>
               <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
                 Platz

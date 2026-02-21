@@ -1,4 +1,5 @@
 import type { Qs, Qsa } from './dom';
+import { lockPageScroll, unlockPageScroll } from './scroll-lock';
 import type { ShowToast } from './toast';
 
 export const initJoinModal = ({
@@ -16,6 +17,7 @@ export const initJoinModal = ({
   closeMenu: () => void;
   isMenuOpen: () => boolean;
 }): void => {
+  const JOIN_MODAL_SCROLL_LOCK_ID = 'join-modal';
   const fallbackCopy = (text: string): boolean => {
     try {
       const result = window.prompt('Server-IP kopieren:', text);
@@ -61,7 +63,6 @@ export const initJoinModal = ({
   const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
 
   let modalLastFocusedEl: HTMLElement | null = null;
-  let bodyOverflowBeforeModal = '';
 
   const isJoinModalOpen = (): boolean =>
     Boolean(joinModalRoot && !joinModalRoot.classList.contains('hidden'));
@@ -80,7 +81,7 @@ export const initJoinModal = ({
 
     joinModalRoot.classList.add('hidden');
     joinModalRoot.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = bodyOverflowBeforeModal;
+    unlockPageScroll(JOIN_MODAL_SCROLL_LOCK_ID);
 
     if (modalLastFocusedEl && document.contains(modalLastFocusedEl)) {
       modalLastFocusedEl.focus();
@@ -92,11 +93,10 @@ export const initJoinModal = ({
 
     modalLastFocusedEl =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    bodyOverflowBeforeModal = document.body.style.overflow;
 
     joinModalRoot.classList.remove('hidden');
     joinModalRoot.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
+    lockPageScroll(JOIN_MODAL_SCROLL_LOCK_ID);
 
     window.setTimeout(() => {
       const focusTarget = getJoinModalFocusable()[0] ?? joinModalDialog;

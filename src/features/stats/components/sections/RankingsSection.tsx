@@ -12,11 +12,13 @@ import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
 import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
+import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
 const LAST_CATEGORIES_LIMIT = 5;
 const LAST_CATEGORIES_VISIBLE_LIMIT = 5;
 const HORIZONTAL_SCROLL_EPSILON = 2;
+const RANKINGS_DRAWER_SCROLL_LOCK_ID = 'rankings-drawer';
 
 function normalizeLastCategories(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -164,8 +166,7 @@ export function RankingsSection({
   useEffect(() => {
     if (!mobilePickerOpen) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    lockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -185,7 +186,7 @@ export function RankingsSection({
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', onResize);
-      document.body.style.overflow = previousOverflow;
+      unlockPageScroll(RANKINGS_DRAWER_SCROLL_LOCK_ID);
     };
   }, [mobilePickerOpen]);
 
