@@ -4,6 +4,7 @@ import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
+import { LeaderboardCards } from '../tabs/leaderboards/LeaderboardCards';
 import { createTableRowMotion } from '../../ui/tableRowMotion';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
@@ -255,71 +256,82 @@ export function LeaderboardTable({
       ].join(' ')}
       aria-busy={isLoading}
     >
-      <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible">
-        <table className="w-full min-w-[390px] border-collapse text-sm sm:min-w-[520px]">
-          <caption className="sr-only">
-            Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
-          </caption>
-          <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top)-1px)] lg:z-10">
-            <tr>
-              <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
-                Platz
-              </th>
-              <th id="leaderboard-col-player" className={headerCellClass} scope="col">
-                Spieler
-              </th>
-              <th id="leaderboard-col-value" className={headerCellClass} scope="col">
-                {def?.unit ? `Wert (${def.unit})` : 'Wert'}
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            key={tableMotion.tbodyKey}
-            className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3"
-          >
-            {isInitialLoad
-              ? placeholderRows.map((index) => (
-                  <tr key={`placeholder-${index}`} aria-hidden="true">
-                    <td className="whitespace-nowrap">
-                      <span className="bg-surface-solid/45 inline-block h-4 w-8 animate-pulse rounded-md" />
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <span className="bg-surface-solid/45 inline-block h-8 w-8 animate-pulse rounded-lg" />
-                        <span className="bg-surface-solid/45 inline-block h-4 w-[min(14rem,80%)] animate-pulse rounded-md" />
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap">
-                      <span className="bg-surface-solid/45 inline-block h-4 w-16 animate-pulse rounded-md" />
-                    </td>
-                  </tr>
-                ))
-              : null}
-
-            {state.loaded && page.length === 0 ? (
-              <tr>
-                <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
-                  {LIVE_COPY_DE.no_data_available}
-                </td>
-              </tr>
-            ) : null}
-
-            {renderedRows.map((row) => (
-              <LeaderboardRow
-                key={row.key}
-                row={row}
-                isCopied={copiedUuid === row.uuid}
-                showDesktopCopyAction={showDesktopCopyAction}
-                onPlayerClick={onPlayerClick}
-                onCopyPlayerLink={copyPlayerLink}
-              />
-            ))}
-          </tbody>
-        </table>
+      <div className="md:hidden">
+        <LeaderboardCards
+          rows={renderedRows}
+          listKey={tableMotion.tbodyKey}
+          def={def}
+          isInitialLoad={isInitialLoad}
+          placeholderRows={placeholderRows}
+          loaded={state.loaded}
+          onPlayerClick={onPlayerClick}
+        />
       </div>
-      <p className="text-muted px-2.5 pb-2 text-[11px] sm:hidden">
-        Seitlich wischen, um alle Spalten zu sehen.
-      </p>
+
+      <div className="hidden md:block">
+        <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible">
+          <table className="w-full min-w-[390px] border-collapse text-sm sm:min-w-[520px]">
+            <caption className="sr-only">
+              Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
+            </caption>
+            <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top)-1px)] lg:z-10">
+              <tr>
+                <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
+                  Platz
+                </th>
+                <th id="leaderboard-col-player" className={headerCellClass} scope="col">
+                  Spieler
+                </th>
+                <th id="leaderboard-col-value" className={headerCellClass} scope="col">
+                  {def?.unit ? `Wert (${def.unit})` : 'Wert'}
+                </th>
+              </tr>
+            </thead>
+            <tbody
+              key={tableMotion.tbodyKey}
+              className="divide-border/75 divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3"
+            >
+              {isInitialLoad
+                ? placeholderRows.map((index) => (
+                    <tr key={`placeholder-${index}`} aria-hidden="true">
+                      <td className="whitespace-nowrap">
+                        <span className="bg-surface-solid/45 inline-block h-4 w-8 animate-pulse rounded-md" />
+                      </td>
+                      <td>
+                        <div className="flex items-center gap-2">
+                          <span className="bg-surface-solid/45 inline-block h-8 w-8 animate-pulse rounded-lg" />
+                          <span className="bg-surface-solid/45 inline-block h-4 w-[min(14rem,80%)] animate-pulse rounded-md" />
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap">
+                        <span className="bg-surface-solid/45 inline-block h-4 w-16 animate-pulse rounded-md" />
+                      </td>
+                    </tr>
+                  ))
+                : null}
+
+              {state.loaded && page.length === 0 ? (
+                <tr>
+                  <td className="text-muted px-2.5 py-5 text-sm sm:px-4" colSpan={3}>
+                    {LIVE_COPY_DE.no_data_available}
+                  </td>
+                </tr>
+              ) : null}
+
+              {renderedRows.map((row) => (
+                <LeaderboardRow
+                  key={row.key}
+                  row={row}
+                  isCopied={copiedUuid === row.uuid}
+                  showDesktopCopyAction={showDesktopCopyAction}
+                  onPlayerClick={onPlayerClick}
+                  onCopyPlayerLink={copyPlayerLink}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {isLoading ? (
         <div className="pointer-events-none absolute top-3 right-3">
