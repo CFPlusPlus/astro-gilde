@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
@@ -12,6 +12,54 @@ import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
 import { parseStatsUrlState } from './url-state';
+import { normalizeUmlauts } from './normalizeUmlauts';
+import type { MetricDef } from './types';
+
+function resolveRankMetricFromCandidates(
+  candidates: string[],
+  metrics: Record<string, MetricDef> | null,
+): string | null {
+  if (!metrics) return null;
+  if (candidates.length === 0) return null;
+
+  const availableIds = Object.keys(metrics);
+  const normalizedAvailable = new Map<string, string>(
+    availableIds.map((id) => [id.toLowerCase(), id]),
+  );
+
+  for (const rawCandidate of candidates) {
+    const candidate = rawCandidate.trim();
+    if (!candidate) continue;
+
+    const normalizedCandidate = candidate.toLowerCase();
+    const exact = normalizedAvailable.get(normalizedCandidate);
+    if (exact) return exact;
+  }
+
+  for (const rawCandidate of candidates) {
+    const candidate = rawCandidate.trim().toLowerCase();
+    if (!candidate) continue;
+
+    const idMatch = availableIds.find((id) => id.toLowerCase().includes(candidate));
+    if (idMatch) return idMatch;
+  }
+
+  for (const rawCandidate of candidates) {
+    const candidate = normalizeUmlauts(rawCandidate.trim()).toLowerCase();
+    if (!candidate) continue;
+
+    const fromMeta = availableIds.find((id) => {
+      const metricDef = metrics[id];
+      const searchable = normalizeUmlauts(
+        `${metricDef?.label || ''} ${metricDef?.category || ''}`.trim(),
+      ).toLowerCase();
+      return searchable.includes(candidate);
+    });
+    if (fromMeta) return fromMeta;
+  }
+
+  return null;
+}
 
 export default function StatsApp() {
   const initialUrlState = useMemo(
@@ -82,6 +130,7 @@ export default function StatsApp() {
     },
   });
   const tabsDisabled = Boolean(apiError);
+  const pendingRankMetricCandidatesRef = useRef<string[] | null>(null);
   const runVersusCompare = versus.runVersusCompare;
   const toolbarLiveVariant = useMemo(() => {
     if (summaryRetryDisabled) return 'rate_limit';
@@ -149,6 +198,44 @@ export default function StatsApp() {
     setMetricFilter('');
     setActiveMetricId(defaultRankMetricId);
   }, [defaultRankMetricId, setActiveMetricId, setMetricFilter]);
+  const handleOpenRankingsFromOverview = useCallback(
+    (metricId?: string | string[]) => {
+      setMetricFilter('');
+
+      const candidates =
+        typeof metricId === 'string' ? [metricId] : Array.isArray(metricId) ? metricId : [];
+      const normalizedCandidates = candidates
+        .map((candidate) => candidate.trim())
+        .filter((candidate) => candidate.length > 0);
+
+      if (normalizedCandidates.length > 0) {
+        const resolved = resolveRankMetricFromCandidates(normalizedCandidates, metrics);
+
+        if (resolved) {
+          pendingRankMetricCandidatesRef.current = null;
+          setActiveMetricId(resolved);
+        } else {
+          pendingRankMetricCandidatesRef.current = normalizedCandidates;
+          setActiveMetricId(normalizedCandidates[0]);
+        }
+      }
+
+      setTab('ranglisten');
+    },
+    [metrics, setActiveMetricId, setMetricFilter, setTab],
+  );
+  useEffect(() => {
+    if (activeTab !== 'ranglisten') return;
+
+    const candidates = pendingRankMetricCandidatesRef.current;
+    if (!candidates || candidates.length === 0) return;
+
+    const resolved = resolveRankMetricFromCandidates(candidates, metrics);
+    if (!resolved) return;
+
+    pendingRankMetricCandidatesRef.current = null;
+    setActiveMetricId(resolved);
+  }, [activeTab, metrics, setActiveMetricId]);
 
   const handlePopState = useCallback(
     (state: ReturnType<typeof parseStatsUrlState>) => {
@@ -208,11 +295,12 @@ export default function StatsApp() {
         <OverviewSection
           showWelcome={showWelcome}
           onDismissWelcome={dismissWelcome}
+          onOpenRankings={handleOpenRankingsFromOverview}
+          navigationDisabled={tabsDisabled}
           totals={totals}
           summaryLoaded={summaryLoaded}
           summaryLoading={summaryLoading}
           summaryError={summaryError}
-          summaryLastUpdatedAt={summaryLastUpdatedAt}
           onRetrySummary={retrySummary}
           summaryRetryDisabled={summaryRetryDisabled}
           summaryRetryInSeconds={summaryRetryInSeconds}

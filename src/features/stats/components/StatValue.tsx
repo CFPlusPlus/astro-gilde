@@ -50,7 +50,10 @@ export function StatValue({
           {onRetry ? (
             <button
               type="button"
-              onClick={onRetry}
+              onClick={(event) => {
+                event.stopPropagation();
+                onRetry();
+              }}
               className="mg-btn mg-btn--xs mg-btn--surface"
               disabled={retryDisabled}
               title={retryDisabled ? retryDisabledHint : undefined}
