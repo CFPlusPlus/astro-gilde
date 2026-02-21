@@ -366,7 +366,7 @@ export function RankingsSection({
         </StatsLayoutRail>
 
         <StatsLayoutMain className="lg:col-span-8" ariaLabel="Ranglisten Ergebnisse">
-          <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <SectionTitle
                 title="Ranglisten"
@@ -374,7 +374,7 @@ export function RankingsSection({
               />
             </div>
 
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => setMobilePickerOpen(true)}
