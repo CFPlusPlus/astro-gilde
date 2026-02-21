@@ -17,7 +17,6 @@ const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
-const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 const FOLIA_IMAGE_WIDTH = 704;
 const FOLIA_IMAGE_HEIGHT = Math.round((foliaImage.height / foliaImage.width) * FOLIA_IMAGE_WIDTH);
 
@@ -59,7 +58,7 @@ const articleLd = buildArticle({
     actionsClass="flex flex-wrap gap-2"
   >
     <Fragment slot="actions">
-      <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
+      <Button variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
       <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
@@ -77,7 +76,7 @@ const articleLd = buildArticle({
     </div>
   </PageHeader>
 
-  <section class="mg-container pb-16" id="spielen">
+  <section class="mg-container pb-16">
     <div
       class="border-border/70 from-surface/40 to-surface/10 rounded-[var(--radius)] border bg-gradient-to-b p-6 sm:p-7"
       data-motion="reveal"

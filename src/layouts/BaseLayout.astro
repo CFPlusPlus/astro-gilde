@@ -6,6 +6,7 @@ import '@fontsource-variable/space-grotesk';
 
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import JoinModal from '../components/modals/JoinModal.astro';
 import ToastHost from '../components/ui/ToastHost.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildBaseGraph } from '../lib/structuredData';
@@ -86,7 +87,6 @@ const ldBase = buildBaseGraph({
 <html
   lang="de"
   data-server-ip={browserAppConfig.serverIp}
-  data-mc-version={browserAppConfig.mcVersion}
   data-discord-guild-id={browserAppConfig.discordGuildId}
   data-discord-invite={browserAppConfig.discordInvite}
   data-discord-invite-code={browserAppConfig.discordInviteCode}
@@ -168,7 +168,7 @@ const ldBase = buildBaseGraph({
 
     {showFooter ? <Footer /> : null}
 
-    <div id="join-modal-root"></div>
+    <JoinModal />
     <ToastHost />
 
     <script>

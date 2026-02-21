@@ -72,7 +72,6 @@ export const minecraftGilde = {
 // Wird im Browser ueber data-* Attribute am <html>-Element genutzt (ohne sensible Daten).
 export const browserAppConfig = {
   serverIp: minecraftGilde.serverIp,
-  mcVersion: minecraftGilde.mcVersion,
   discordGuildId: minecraftGilde.discord.guildId,
   discordInvite: minecraftGilde.discord.url,
   discordInviteCode: minecraftGilde.discord.inviteCode,

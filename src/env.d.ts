@@ -14,7 +14,6 @@ interface ImportMeta {
 declare global {
   interface BrowserAppConfig {
     readonly serverIp?: string;
-    readonly mcVersion?: string;
     readonly discordGuildId?: string;
     readonly discordInvite?: string;
     readonly discordInviteCode?: string;
