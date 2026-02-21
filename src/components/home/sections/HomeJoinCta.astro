@@ -7,6 +7,7 @@ import { ArrowRight, Download } from '@lucide/astro';
 const DISCORD_URL = minecraftGilde.discord.url;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 ---
 
 <HomeSection id="join" size="normal">
@@ -18,7 +19,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
         und ohne Reset-Stress.
       </p>
       <div class="mt-7 flex flex-wrap gap-3">
-        <Button variant="primary" class="gap-2" data-copy-ip>
+        <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
           <Download size={18} /> Jetzt Spielen
         </Button>
         <Button href={DISCORD_URL} external variant="secondary" class="gap-2">

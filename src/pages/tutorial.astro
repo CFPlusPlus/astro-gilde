@@ -20,6 +20,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { buildHowTo } from '../lib/structuredData';
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
+const JOIN_FALLBACK_HREF = '/serverinfos/#spielen';
 
 const howToLd = buildHowTo({
   canonicalUrl,
@@ -79,7 +80,7 @@ const sections = await Promise.all(
 
   <PageHeader title={tutorialHeaderIntro.title} subtitle={tutorialHeaderIntro.subtitle}>
     <Fragment slot="actions">
-      <Button variant="primary" class="gap-2" data-copy-ip>
+      <Button href={JOIN_FALLBACK_HREF} variant="primary" class="gap-2" data-copy-ip>
         <Download size={18} /> Jetzt Spielen
       </Button>
       {
