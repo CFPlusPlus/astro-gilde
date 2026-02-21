@@ -1,14 +1,7 @@
 import { Cog, Search } from 'lucide-react';
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type ReactNode,
-  type RefObject,
-} from 'react';
+import { useCallback, useEffect, useId, useRef, useState, type RefObject } from 'react';
 
+import { OptionsSheet } from '../sheets/OptionsSheet';
 import { SearchSheet } from '../sheets/SearchSheet';
 import { StatsTabsScroller } from './StatsTabsScroller';
 import type { PlayersSearchItem } from '../../types';
@@ -40,7 +33,17 @@ export function StatsToolbarMobile({
   search,
   onChoosePlayer,
   liveVariant,
-  optionsPanel,
+  showPageSize,
+  pageSize,
+  onPageSizeChange,
+  topNHint,
+  updatedAt,
+  apiError,
+  onReload,
+  reloadDisabled,
+  reloadInSeconds,
+  activeLeaderboardCategoryLabel,
+  onOpenLeaderboardCategories,
 }: {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
@@ -48,11 +51,20 @@ export function StatsToolbarMobile({
   search: AutocompleteViewModel;
   onChoosePlayer: (uuid: string) => void;
   liveVariant: LiveBadgeVariant;
-  optionsPanel: ReactNode;
+  showPageSize: boolean;
+  pageSize: number;
+  onPageSizeChange: (next: number) => void;
+  topNHint: string | null;
+  updatedAt: number | null;
+  apiError: string | null;
+  onReload?: () => void;
+  reloadDisabled: boolean;
+  reloadInSeconds: number;
+  activeLeaderboardCategoryLabel?: string | null;
+  onOpenLeaderboardCategories?: () => void;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement | null>(null);
   const searchApiRef = useRef<{
     setOpen: (next: boolean) => void;
     setSelectedIndex: (next: number) => void;
@@ -61,7 +73,7 @@ export function StatsToolbarMobile({
     setSelectedIndex: () => undefined,
   });
   const searchSheetId = useId();
-  const optionsPanelId = useId();
+  const optionsSheetId = useId();
   const staleChipLabel = resolveStaleChipLabel(liveVariant);
 
   searchApiRef.current = {
@@ -88,26 +100,8 @@ export function StatsToolbarMobile({
     setOptionsOpen(false);
   }, [activeTab, closeSearchSheet]);
 
-  useEffect(() => {
-    if (!optionsOpen) return;
-
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      const wrap = rootRef.current;
-      if (!wrap) return;
-      if (wrap.contains(event.target as Node)) return;
-      setOptionsOpen(false);
-    };
-
-    window.addEventListener('mousedown', onPointerDown);
-    window.addEventListener('touchstart', onPointerDown);
-    return () => {
-      window.removeEventListener('mousedown', onPointerDown);
-      window.removeEventListener('touchstart', onPointerDown);
-    };
-  }, [optionsOpen]);
-
   return (
-    <div className="relative" ref={rootRef}>
+    <div className="relative">
       <div className="mg-surface-2 flex h-14 items-center gap-2 overflow-hidden px-2">
         <StatsTabsScroller
           activeTab={activeTab}
@@ -152,7 +146,7 @@ export function StatsToolbarMobile({
           }}
           aria-label="Optionen"
           aria-expanded={optionsOpen ? 'true' : 'false'}
-          aria-controls={optionsPanelId}
+          aria-controls={optionsSheetId}
         >
           <Cog size={16} />
         </button>
@@ -166,14 +160,24 @@ export function StatsToolbarMobile({
         onChoosePlayer={handleChooseFromSearch}
       />
 
-      {optionsOpen ? (
-        <div
-          id={optionsPanelId}
-          className="bg-surface-solid/96 border-border absolute top-[calc(100%+0.35rem)] right-0 left-0 z-[170] rounded-[var(--radius)] border p-3 shadow-xl backdrop-blur-xl"
-        >
-          {optionsPanel}
-        </div>
-      ) : null}
+      <OptionsSheet
+        open={optionsOpen}
+        sheetId={optionsSheetId}
+        onClose={() => setOptionsOpen(false)}
+        activeTab={activeTab}
+        liveVariant={liveVariant}
+        showPageSize={showPageSize}
+        pageSize={pageSize}
+        onPageSizeChange={onPageSizeChange}
+        topNHint={topNHint}
+        updatedAt={updatedAt}
+        apiError={apiError}
+        onReload={onReload}
+        reloadDisabled={reloadDisabled}
+        reloadInSeconds={reloadInSeconds}
+        activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+        onOpenLeaderboardCategories={onOpenLeaderboardCategories}
+      />
     </div>
   );
 }

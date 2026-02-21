@@ -129,7 +129,7 @@ export function SearchSheet({
       <button
         type="button"
         className="absolute inset-0 bg-black/45"
-        aria-label="Spielersuche schließen"
+        aria-label={'Spielersuche schlie\u00dfen'}
         onClick={onClose}
       />
 
@@ -144,13 +144,13 @@ export function SearchSheet({
               Spieler suchen
             </p>
             <p id={descriptionId} className="text-muted text-xs">
-              Namen eingeben und Treffer auswählen.
+              {'Namen eingeben und Treffer ausw\u00e4hlen.'}
             </p>
           </div>
           <button
             type="button"
             className="focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-            aria-label="Spielersuche schließen"
+            aria-label={'Spielersuche schlie\u00dfen'}
             onClick={onClose}
           >
             <X size={16} />

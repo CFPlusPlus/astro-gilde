@@ -41,6 +41,8 @@ type StatsToolbarProps = {
   onReload?: () => void;
   reloadDisabled?: boolean;
   reloadInSeconds?: number;
+  activeLeaderboardCategoryLabel?: string | null;
+  onOpenLeaderboardCategories?: () => void;
 };
 
 function useMediaQuery(query: string, initialValue = false): boolean {
@@ -226,6 +228,8 @@ export function StatsToolbar({
   onReload,
   reloadDisabled = false,
   reloadInSeconds = 0,
+  activeLeaderboardCategoryLabel = null,
+  onOpenLeaderboardCategories,
 }: StatsToolbarProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const showReload = typeof onReload === 'function';
@@ -336,47 +340,17 @@ export function StatsToolbar({
           search={search}
           onChoosePlayer={handleMobileChoosePlayer}
           liveVariant={liveVariant}
-          optionsPanel={
-            <div className="space-y-3">
-              <div className="flex min-w-0 items-center justify-between gap-2">
-                <LiveBadgeSlot variant={liveVariant} className="shrink-0" showStaleIcon={false} />
-                <LastUpdated
-                  updatedAt={updatedAt}
-                  className="text-muted max-w-[12.5rem] truncate text-xs"
-                  showWhenMissing
-                />
-              </div>
-
-              <div className="flex flex-wrap items-center gap-2">
-                <TopNSelector
-                  pageSize={pageSize}
-                  onPageSizeChange={onPageSizeChange}
-                  disabled={!showPageSize}
-                  className="w-fit"
-                />
-
-                {showReload ? (
-                  <button
-                    type="button"
-                    onClick={onReload}
-                    className="mg-btn mg-btn--xs mg-btn--surface"
-                    disabled={reloadDisabled}
-                    title={
-                      reloadDisabled && reloadInSeconds > 0
-                        ? 'Bitte kurz warten.'
-                        : 'Daten neu laden'
-                    }
-                  >
-                    <RefreshCw size={14} />
-                    {reloadLabel}
-                  </button>
-                ) : null}
-              </div>
-
-              {topNHint ? <p className="text-muted text-xs leading-relaxed">{topNHint}</p> : null}
-              <ApiAlert message={apiError} />
-            </div>
-          }
+          showPageSize={showPageSize}
+          pageSize={pageSize}
+          onPageSizeChange={onPageSizeChange}
+          topNHint={topNHint}
+          updatedAt={updatedAt}
+          apiError={apiError}
+          onReload={onReload}
+          reloadDisabled={reloadDisabled}
+          reloadInSeconds={reloadInSeconds}
+          activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+          onOpenLeaderboardCategories={onOpenLeaderboardCategories}
         />
       )}
     </header>

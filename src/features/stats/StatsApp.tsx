@@ -12,8 +12,10 @@ import { useStatsUrlState } from './hooks/useStatsUrlState';
 import { useVersusState } from './hooks/useVersusState';
 import { StatsLayout } from './layout/StatsLayout';
 import { filterMetricIds, pickDefaultRankMetricId } from './metric-utils';
+import { resolveStatsCategoryDef } from './statsCategories';
 import { parseStatsUrlState } from './url-state';
 import { normalizeUmlauts } from './normalizeUmlauts';
+import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from './ui/events';
 import type { MetricDef } from './types';
 
 function resolveRankMetricFromCandidates(
@@ -177,6 +179,11 @@ export default function StatsApp() {
     summaryLoading,
     summaryRetryDisabled,
   ]);
+  const activeLeaderboardCategoryLabel = useMemo(() => {
+    if (!activeMetricId) return null;
+    if (!metrics) return activeMetricId;
+    return resolveStatsCategoryDef(activeMetricId, metrics[activeMetricId]).label || activeMetricId;
+  }, [activeMetricId, metrics]);
   const handleReload = useCallback(() => {
     if (activeTab === 'uebersicht') {
       retrySummary();
@@ -197,6 +204,10 @@ export default function StatsApp() {
       void runVersusCompare();
     }
   }, [activeTab, reloadActiveMetric, reloadKing, retrySummary, runVersusCompare]);
+  const handleOpenLeaderboardCategories = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new Event(STATS_OPEN_CATEGORIES_SHEET_EVENT));
+  }, []);
 
   useEffect(() => {
     if (activeTab !== 'uebersicht') return;
@@ -342,6 +353,8 @@ export default function StatsApp() {
           onReload={handleReload}
           reloadDisabled={summaryRetryDisabled}
           reloadInSeconds={summaryRetryInSeconds}
+          activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+          onOpenLeaderboardCategories={handleOpenLeaderboardCategories}
         />
       }
     >

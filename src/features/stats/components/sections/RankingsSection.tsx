@@ -11,6 +11,7 @@ import type { MetricDef } from '../../types';
 import type { LeaderboardState } from '../../types-ui';
 import { resolveStatsCategoryDef } from '../../statsCategories';
 import { RANKINGS_TOP_CATEGORY_KEYS } from '../../constants';
+import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from '../../ui/events';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
 import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 
@@ -195,6 +196,17 @@ export function RankingsSection({
     setMobilePickerOpen(false);
   }, [activeMetricId]);
 
+  useEffect(() => {
+    const onOpenCategoriesSheet = () => {
+      setMobilePickerOpen(true);
+    };
+
+    window.addEventListener(STATS_OPEN_CATEGORIES_SHEET_EVENT, onOpenCategoriesSheet);
+    return () => {
+      window.removeEventListener(STATS_OPEN_CATEGORIES_SHEET_EVENT, onOpenCategoriesSheet);
+    };
+  }, []);
+
   const canUseLoadedFallback = useMemo(() => {
     if (!activeMetricId) return false;
     if (activeMetricState.loaded) return false;
@@ -369,7 +381,7 @@ export function RankingsSection({
                 size={15}
                 className="text-muted group-hover:text-accent transition-colors"
               />
-              Zurücksetzen
+              {'Zur\u00fccksetzen'}
             </button>
           </div>
 
@@ -393,7 +405,7 @@ export function RankingsSection({
             <div className="min-w-0 flex-1">
               <SectionTitle
                 title="Ranglisten"
-                subtitle="Kategorie finden, auswählen und sofort die Top-N sehen."
+                subtitle={'Kategorie finden, ausw\u00e4hlen und sofort die Top-N sehen.'}
               />
             </div>
 
@@ -587,7 +599,7 @@ export function RankingsSection({
               <div className="mg-notice text-sm" data-variant="neutral" role="status">
                 <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
                 <span className="text-fg/90">
-                  Keine Rangliste ausgewählt. Wähle eine Kategorie aus.
+                  {'Keine Rangliste ausgew\u00e4hlt. W\u00e4hle eine Kategorie aus.'}
                 </span>
               </div>
             ) : null}
@@ -672,20 +684,20 @@ export function RankingsSection({
           <button
             type="button"
             className="absolute inset-0 bg-black/45"
-            aria-label="Kategorien schließen"
+            aria-label={'Kategorien schlie\u00dfen'}
             onClick={() => setMobilePickerOpen(false)}
           />
 
           <section className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 max-h-[82dvh] overflow-hidden rounded-t-[1rem] border-t shadow-2xl">
             <header className="border-border/80 flex items-center justify-between gap-3 border-b px-4 py-3">
               <div className="min-w-0">
-                <p className="text-fg text-sm font-semibold">Kategorie auswählen</p>
+                <p className="text-fg text-sm font-semibold">{'Kategorie ausw\u00e4hlen'}</p>
                 <p className="text-muted text-xs">{visibleCategoryCount} Treffer</p>
               </div>
               <button
                 type="button"
                 className="focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-                aria-label="Kategorien schließen"
+                aria-label={'Kategorien schlie\u00dfen'}
                 onClick={() => setMobilePickerOpen(false)}
               >
                 <X size={16} />
