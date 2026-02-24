@@ -8,6 +8,7 @@
   <a href="https://discord.minecraft-gilde.de" target="_blank" rel="noopener noreferrer">
     <img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&logo=discord&logoColor=white" />
   </a>
+ <a href="https://www.codefactor.io/repository/github/minecraft-gilde/website/overview/main"><img src="https://www.codefactor.io/repository/github/minecraft-gilde/website/badge/main" alt="CodeFactor" /></a>
 </p>
 
 # Minecraft Gilde Web
