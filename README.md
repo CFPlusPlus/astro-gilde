@@ -5,10 +5,11 @@
 </p>
 
 <p align="center">
-  <a href="https://discord.minecraft-gilde.de" target="_blank" rel="noopener noreferrer">
-    <img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&logo=discord&logoColor=white" />
-  </a>
- <a href="https://www.codefactor.io/repository/github/minecraft-gilde/website/overview/main"><img src="https://www.codefactor.io/repository/github/minecraft-gilde/website/badge/main" alt="CodeFactor" /></a>
+  <a href="https://minecraft-gilde.de"><img alt="Website" src="https://img.shields.io/badge/Website-minecraft--gilde.de-f2c94c" /></a>&nbsp;
+  <a href="https://discord.minecraft-gilde.de"><img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&logo=discord&logoColor=white" /></a>&nbsp;
+  <a href="https://github.com/CFPlusPlus/minecraft-gilde-web/actions/workflows/quality.yml"><img alt="Build &amp; Quality" src="https://img.shields.io/github/actions/workflow/status/CFPlusPlus/minecraft-gilde-web/quality.yml?branch=main&amp;label=Build%20%26%20Quality" /></a>&nbsp;</a>&nbsp;
+  <a href="https://www.codefactor.io/repository/github/minecraft-gilde/website/overview/main"><img src="https://www.codefactor.io/repository/github/minecraft-gilde/website/badge/main" alt="CodeFactor" /></a></a>&nbsp;
+  <a href="https://github.com/CFPlusPlus/minecraft-gilde-web/blob/main/LICENSE"><img alt="MIT License" src="https://img.shields.io/github/license/CFPlusPlus/minecraft-gilde-web?label=License" /></a>
 </p>
 
 # Minecraft Gilde Web
