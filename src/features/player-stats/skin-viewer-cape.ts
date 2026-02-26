@@ -1,3 +1,5 @@
+import { toApiUrl } from '../../lib/http/apiUrl';
+
 export const CAPE_CACHE_TTL_MS = 1000 * 60 * 60 * 12;
 export const CAPE_EMPTY_CACHE_TTL_MS = 1000 * 60 * 30;
 
@@ -136,7 +138,7 @@ export async function fetchCapeFromServerCache(
   signal: AbortSignal,
 ): Promise<string | null | undefined> {
   try {
-    const res = await fetch(`/api/cape?uuid=${encodeURIComponent(uuidCompact)}`, {
+    const res = await fetch(toApiUrl(`/api/cape?uuid=${encodeURIComponent(uuidCompact)}`), {
       signal,
       cache: 'no-store',
       headers: {
