@@ -80,7 +80,7 @@ export function StatsLayout({
         className={joinClassNames(
           'mg-surface-1',
           stickyTopBar
-            ? 'border-border/70 sticky top-[calc(4.5rem+env(safe-area-inset-top))] z-40 border-b'
+            ? 'border-border/70 sticky top-[calc(4rem+env(safe-area-inset-top))] z-40 border-b'
             : undefined,
         )}
       >
