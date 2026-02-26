@@ -2,24 +2,12 @@ import { ChevronDown, Filter, X } from 'lucide-react';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 
 import type { GroupedMetrics } from '../../components/MetricPicker';
+import { MetricCategoryOption } from '../../components/MetricCategoryOption';
 import type { MetricDef } from '../../types';
 import { resolveStatsCategoryDef } from '../../statsCategories';
-import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
+import { useSheetDialog } from './useSheetDialog';
 
 const CATEGORIES_SHEET_SCROLL_LOCK_ID = 'stats-categories-sheet';
-
-function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return [];
-
-  const selector =
-    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-
-  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter((element) => {
-    if (element.getAttribute('aria-hidden') === 'true') return false;
-    if (element.hasAttribute('disabled')) return false;
-    return true;
-  });
-}
 
 function deriveExpandedGroups({
   grouped,
@@ -74,7 +62,6 @@ export function CategoriesSheet({
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
-  const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<string[]>([]);
 
   const visibleCount = useMemo(
@@ -95,76 +82,13 @@ export function CategoriesSheet({
     );
   }, [open, grouped, activeMetricId, filter]);
 
-  useEffect(() => {
-    if (!open) return;
-
-    lastFocusedElementRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    lockPageScroll(CATEGORIES_SHEET_SCROLL_LOCK_ID);
-
-    const focusRaf = window.requestAnimationFrame(() => {
-      const focusable = getFocusableElements(dialogRef.current);
-      const first = focusable[0];
-      if (first) {
-        first.focus();
-        return;
-      }
-      dialogRef.current?.focus();
-    });
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-
-      const focusable = getFocusableElements(dialogRef.current);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-
-      if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last.focus();
-        return;
-      }
-
-      if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    const onResize = () => {
-      if (window.matchMedia('(min-width: 1024px)').matches) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      window.cancelAnimationFrame(focusRaf);
-      window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('resize', onResize);
-      unlockPageScroll(CATEGORIES_SHEET_SCROLL_LOCK_ID);
-
-      const lastFocusedElement = lastFocusedElementRef.current;
-      if (lastFocusedElement && document.contains(lastFocusedElement)) {
-        lastFocusedElement.focus();
-      }
-    };
-  }, [onClose, open]);
+  useSheetDialog({
+    open,
+    onClose,
+    dialogRef,
+    scrollLockId: CATEGORIES_SHEET_SCROLL_LOCK_ID,
+    closeAtDesktopMinWidthPx: 1024,
+  });
 
   if (!open) return null;
 
@@ -296,48 +220,19 @@ export function CategoriesSheet({
 
                           return (
                             <li key={id}>
-                              <button
-                                type="button"
-                                onClick={() => {
+                              <MetricCategoryOption
+                                id={id}
+                                label={categoryDef.label || id}
+                                unit={categoryDef.unit}
+                                isActive={isActive}
+                                size="compact"
+                                onSelect={() => {
                                   onSelectMetric(id);
                                   onClose();
                                 }}
-                                className={[
-                                  'group relative w-full px-2.5 py-2.5 text-left text-sm font-semibold transition-colors sm:px-3.5 sm:py-3',
-                                  'focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
-                                  isActive
-                                    ? 'bg-surface-solid/55 text-fg'
-                                    : 'text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35',
-                                ].join(' ')}
-                                data-active={isActive ? 'true' : 'false'}
-                              >
-                                <div className="flex items-start gap-3">
-                                  <span
-                                    className={[
-                                      'mt-0.5 h-4 w-1 flex-none rounded-full transition-colors',
-                                      isActive
-                                        ? 'bg-accent'
-                                        : 'group-hover:bg-accent/35 bg-transparent',
-                                    ].join(' ')}
-                                    aria-hidden="true"
-                                  />
-                                  <span className="min-w-0 flex-1">
-                                    <span className="flex items-start justify-between gap-3">
-                                      <span className="min-w-0 flex-1 truncate">
-                                        {categoryDef.label || id}
-                                      </span>
-                                      {categoryDef.unit ? (
-                                        <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                                          {categoryDef.unit}
-                                        </span>
-                                      ) : null}
-                                    </span>
-                                    <span className="text-muted mt-1 block text-xs break-all">
-                                      ID: {id}
-                                    </span>
-                                  </span>
-                                </div>
-                              </button>
+                                activeClassName="bg-surface-solid/55 text-fg"
+                                inactiveClassName="text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35"
+                              />
                             </li>
                           );
                         })}

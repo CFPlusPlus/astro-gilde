@@ -8,43 +8,65 @@ import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
 import { SectionTitle } from '../StatsPrimitives';
 import { LIVE_COPY_DE, getLiveMessage } from '../../../../lib/live/copy.de';
 
+const KING_PREFERRED_SCORE_KEYS = [
+  'value',
+  'points',
+  'score',
+  'punkte',
+  'punktzahl',
+  'raw',
+] as const;
+
+function parseFiniteNumberFromString(value: string): number | null {
+  if (value.trim().length === 0) return null;
+  const compact = value.trim().replace(/\s+/g, '');
+  const normalizedThousands = compact.replace(/(\d)\.(?=\d{3}(\D|$))/g, '$1');
+  const normalized = normalizedThousands.replace(',', '.');
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseFromIterable(values: Iterable<unknown>, depth: number): number | null {
+  for (const item of values) {
+    const parsed = toFiniteNumber(item, depth + 1);
+    if (parsed !== null) return parsed;
+  }
+  return null;
+}
+
+function parseFromRecord(record: Record<string, unknown>, depth: number): number | null {
+  for (const key of KING_PREFERRED_SCORE_KEYS) {
+    if (!(key in record)) continue;
+    const parsed = toFiniteNumber(record[key], depth + 1);
+    if (parsed !== null) return parsed;
+  }
+  return parseFromIterable(Object.values(record), depth);
+}
+
 function toFiniteNumber(value: unknown, depth = 0): number | null {
   if (depth > 2) return null;
+
   if (typeof value === 'number' && Number.isFinite(value)) return value;
+
   if (typeof value === 'bigint') {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
-  if (typeof value === 'string' && value.trim().length > 0) {
-    const compact = value.trim().replace(/\s+/g, '');
-    const normalizedThousands = compact.replace(/(\d)\.(?=\d{3}(\D|$))/g, '$1');
-    const normalized = normalizedThousands.replace(',', '.');
-    const parsed = Number(normalized);
-    if (Number.isFinite(parsed)) return parsed;
+
+  if (typeof value === 'string') {
+    return parseFiniteNumberFromString(value);
   }
+
   if (Array.isArray(value)) {
-    for (const item of value) {
-      const parsed = toFiniteNumber(item, depth + 1);
-      if (parsed !== null) return parsed;
-    }
-    return null;
+    return parseFromIterable(value, depth);
   }
+
   if (value && typeof value === 'object') {
     const direct = Number(value);
     if (Number.isFinite(direct)) return direct;
-
-    const record = value as Record<string, unknown>;
-    const preferredKeys = ['value', 'points', 'score', 'punkte', 'punktzahl', 'raw'];
-    for (const key of preferredKeys) {
-      if (!(key in record)) continue;
-      const parsed = toFiniteNumber(record[key], depth + 1);
-      if (parsed !== null) return parsed;
-    }
-    for (const nested of Object.values(record)) {
-      const parsed = toFiniteNumber(nested, depth + 1);
-      if (parsed !== null) return parsed;
-    }
+    return parseFromRecord(value as Record<string, unknown>, depth);
   }
+
   return null;
 }
 

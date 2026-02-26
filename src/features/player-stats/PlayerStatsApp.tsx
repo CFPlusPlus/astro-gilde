@@ -16,9 +16,22 @@ import {
 } from '../stats/layout/StatsLayout';
 
 export default function PlayerStatsApp() {
+  const playerStatsState = usePlayerStatsState();
   const {
     activeTab,
     setActiveTab,
+    filterRaw,
+    setFilterRaw,
+    filterInputRef,
+    filtered,
+    sortGeneral,
+    setSortGeneral,
+    sortItems,
+    setSortItems,
+    sortMobs,
+    setSortMobs,
+  } = playerStatsState;
+  const {
     isGerman,
     setIsGerman,
     uuidParam,
@@ -26,16 +39,6 @@ export default function PlayerStatsApp() {
     playerName,
     generatedIso,
     apiError,
-    filterRaw,
-    setFilterRaw,
-    filterInputRef,
-    sortGeneral,
-    setSortGeneral,
-    sortItems,
-    setSortItems,
-    sortMobs,
-    setSortMobs,
-    filtered,
     stats,
     uuidCopied,
     setUuidCopied,
@@ -43,7 +46,7 @@ export default function PlayerStatsApp() {
     skinHeadFallback,
     skinFullUrl,
     skinFullFallback,
-  } = usePlayerStatsState();
+  } = playerStatsState;
 
   const [skinOpen, setSkinOpen] = useState(false);
   const hasUuidInLocation = uuidParam.trim().length > 0;

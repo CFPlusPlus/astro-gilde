@@ -109,28 +109,32 @@ export async function fetchCapeFromMojangProfile(
 function parseCapeApiResponse(data: CapeApiResponse): string | null | undefined {
   if (!data || typeof data !== 'object') return undefined;
 
-  if ('capeUrl' in data) {
-    if (typeof data.capeUrl === 'string' && data.capeUrl) return data.capeUrl;
-    if (data.capeUrl === null) return null;
-  }
+  const directCapeUrl = readCapeUrl(data.capeUrl);
+  if (directCapeUrl !== undefined) return directCapeUrl;
 
-  if ('cape' in data) {
-    if (typeof data.cape === 'string' && data.cape) return data.cape;
-    if (data.cape && typeof data.cape === 'object') {
-      const nested = data.cape.url;
-      if (typeof nested === 'string' && nested) return nested;
-      if (nested === null) return null;
-    }
-    if (data.cape === null) return null;
-  }
+  const nestedCapeUrl = readCapeField(data.cape);
+  if (nestedCapeUrl !== undefined) return nestedCapeUrl;
 
-  if ('url' in data) {
-    if (typeof data.url === 'string' && data.url) return data.url;
-    if (data.url === null) return null;
-  }
+  const fallbackUrl = readCapeUrl(data.url);
+  if (fallbackUrl !== undefined) return fallbackUrl;
 
   if (data.hasCape === false) return null;
   return undefined;
+}
+
+function readCapeUrl(value: unknown): string | null | undefined {
+  if (typeof value === 'string' && value) return value;
+  if (value === null) return null;
+  return undefined;
+}
+
+function readCapeField(value: CapeApiResponse['cape']): string | null | undefined {
+  if (typeof value === 'string' || value === null) {
+    return readCapeUrl(value);
+  }
+
+  if (!value || typeof value !== 'object') return undefined;
+  return readCapeUrl(value.url);
 }
 
 export async function fetchCapeFromServerCache(

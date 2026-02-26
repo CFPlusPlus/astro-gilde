@@ -23,6 +23,248 @@ type PlayerSearchComboboxProps = {
   popupPlacement?: 'bottom' | 'top' | 'auto';
 };
 
+type PopupState = {
+  hasQuery: boolean;
+  hasItems: boolean;
+  hasError: boolean;
+  isEmpty: boolean;
+  showPopup: boolean;
+};
+
+type ComboboxKeyDownContext = {
+  open: boolean;
+  showPopup: boolean;
+  items: PlayersSearchItem[];
+  selectedIndex: number;
+  onOpenChange: (open: boolean) => void;
+  onSelectedIndexChange: (next: number) => void;
+  onChoose: (uuid: string) => void;
+};
+
+function resolvePopupState({
+  value,
+  items,
+  open,
+  isLoading,
+  errorMessage,
+}: {
+  value: string;
+  items: PlayersSearchItem[];
+  open: boolean;
+  isLoading: boolean;
+  errorMessage: string | null;
+}): PopupState {
+  const query = value.trim();
+  const hasQuery = query.length >= MIN_QUERY_LENGTH;
+  const hasItems = items.length > 0;
+  const hasError = typeof errorMessage === 'string' && errorMessage.trim().length > 0;
+  const isEmpty = hasQuery && !isLoading && !hasError && !hasItems;
+
+  return {
+    hasQuery,
+    hasItems,
+    hasError,
+    isEmpty,
+    showPopup: open && (hasQuery || hasItems || isLoading || hasError),
+  };
+}
+
+function resolveStatusMessage({
+  isLoading,
+  hasError,
+  isEmpty,
+  hasItems,
+  hasQuery,
+  itemCount,
+}: {
+  isLoading: boolean;
+  hasError: boolean;
+  isEmpty: boolean;
+  hasItems: boolean;
+  hasQuery: boolean;
+  itemCount: number;
+}): string {
+  if (isLoading) return 'Suche laeuft.';
+  if (hasError) return 'Fehler beim Laden der Spieler.';
+  if (isEmpty) return 'Kein Treffer.';
+  if (hasItems) return `${itemCount} Treffer verfuegbar.`;
+  if (hasQuery) return 'Keine Treffer verfuegbar.';
+  return '';
+}
+
+function resolvePopupClassName(placement: 'bottom' | 'top'): string {
+  if (placement === 'top') {
+    return 'border-border bg-surface-solid/95 absolute right-0 left-0 bottom-[calc(100%+0.5rem)] z-[140] overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
+  }
+
+  return 'border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
+}
+
+function resolveAutoPopupPlacement(wrap: HTMLDivElement | null): 'bottom' | 'top' {
+  if (!wrap) return 'bottom';
+
+  const rect = wrap.getBoundingClientRect();
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const spaceAbove = rect.top;
+  const spaceBelow = viewportHeight - rect.bottom;
+
+  if (spaceBelow < 240 && spaceAbove > spaceBelow) {
+    return 'top';
+  }
+
+  return 'bottom';
+}
+
+function handleComboboxKeyDown(
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+): void {
+  const { open, showPopup, items, selectedIndex, onOpenChange, onSelectedIndexChange, onChoose } =
+    ctx;
+  const itemCount = items.length;
+
+  if (event.key === 'ArrowDown') {
+    event.preventDefault();
+    if (!open) onOpenChange(true);
+    if (itemCount <= 0) return;
+    if (selectedIndex < 0) {
+      onSelectedIndexChange(0);
+      return;
+    }
+    onSelectedIndexChange((selectedIndex + 1) % itemCount);
+    return;
+  }
+
+  if (event.key === 'ArrowUp') {
+    event.preventDefault();
+    if (!open) onOpenChange(true);
+    if (itemCount <= 0) return;
+    if (selectedIndex < 0) {
+      onSelectedIndexChange(itemCount - 1);
+      return;
+    }
+    onSelectedIndexChange((selectedIndex - 1 + itemCount) % itemCount);
+    return;
+  }
+
+  if (event.key === 'Enter') {
+    if (!showPopup || itemCount <= 0) return;
+    event.preventDefault();
+    const candidate = items[selectedIndex] || items[0];
+    if (!candidate?.uuid) return;
+    onChoose(candidate.uuid);
+    return;
+  }
+
+  if (event.key === 'Escape') {
+    if (!open) return;
+    event.preventDefault();
+    onOpenChange(false);
+    onSelectedIndexChange(-1);
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    if (!open) return;
+    if (selectedIndex >= 0 && selectedIndex < itemCount) {
+      const candidate = items[selectedIndex];
+      if (candidate?.uuid) onChoose(candidate.uuid);
+    }
+    onOpenChange(false);
+    onSelectedIndexChange(-1);
+  }
+}
+
+function ResultsList({
+  items,
+  isLoading,
+  hasError,
+  isEmpty,
+  errorMessage,
+  selectedIndex,
+  listboxId,
+  srLabelId,
+  itemRefs,
+  onChoose,
+  onSelectedIndexChange,
+}: {
+  items: PlayersSearchItem[];
+  isLoading: boolean;
+  hasError: boolean;
+  isEmpty: boolean;
+  errorMessage: string | null;
+  selectedIndex: number;
+  listboxId: string;
+  srLabelId: string;
+  itemRefs: { current: Array<HTMLLIElement | null> };
+  onChoose: (uuid: string) => void;
+  onSelectedIndexChange: (next: number) => void;
+}) {
+  return (
+    <ul
+      id={listboxId}
+      role="listbox"
+      aria-labelledby={srLabelId}
+      className="max-h-[min(18rem,45dvh)] overflow-auto py-1"
+    >
+      {isLoading ? (
+        <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
+          Suche laeuft...
+        </li>
+      ) : null}
+
+      {!isLoading && hasError ? (
+        <li className="px-2 py-1" role="status" aria-live="polite">
+          <div className="mg-notice mt-0 text-xs" data-variant="warning">
+            {errorMessage}
+          </div>
+        </li>
+      ) : null}
+
+      {!isLoading && !hasError && isEmpty ? (
+        <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
+          Kein Treffer. Pruefe die Schreibweise oder gib mehr Zeichen ein.
+        </li>
+      ) : null}
+
+      {!isLoading &&
+        !hasError &&
+        items.map((item, index) => {
+          const isActive = index === selectedIndex;
+          const optionId = `${listboxId}-option-${index}`;
+          return (
+            <li
+              key={`${item.uuid}-${index}`}
+              id={optionId}
+              ref={(element) => {
+                itemRefs.current[index] = element;
+              }}
+              role="option"
+              aria-selected={isActive ? 'true' : 'false'}
+              onMouseDown={(event) => {
+                // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten stabil bleibt.
+                event.preventDefault();
+                onChoose(item.uuid);
+              }}
+              onMouseEnter={() => onSelectedIndexChange(index)}
+              className="mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
+              data-active={isActive ? 'true' : 'false'}
+            >
+              <img
+                src={`https://minotar.net/helm/${encodeURIComponent(item.name)}/32.png`}
+                alt=""
+                className="h-8 w-8 flex-none rounded-lg bg-black/20"
+                loading="lazy"
+                decoding="async"
+              />
+              <span className="min-w-0 truncate">{item.name}</span>
+            </li>
+          );
+        })}
+    </ul>
+  );
+}
+
 export function PlayerSearchCombobox({
   value,
   onChange,
@@ -40,12 +282,13 @@ export function PlayerSearchCombobox({
   placeholder = 'Spieler suchen...',
   popupPlacement = 'bottom',
 }: PlayerSearchComboboxProps) {
-  const query = value.trim();
-  const hasQuery = query.length >= MIN_QUERY_LENGTH;
-  const hasItems = items.length > 0;
-  const hasError = typeof errorMessage === 'string' && errorMessage.trim().length > 0;
-  const isEmpty = hasQuery && !isLoading && !hasError && !hasItems;
-  const showPopup = open && (hasQuery || hasItems || isLoading || hasError);
+  const { hasQuery, hasItems, hasError, isEmpty, showPopup } = resolvePopupState({
+    value,
+    items,
+    open,
+    isLoading,
+    errorMessage,
+  });
 
   const inputId = useId();
   const listboxId = useId();
@@ -83,20 +326,7 @@ export function PlayerSearchCombobox({
     }
 
     const updatePlacement = () => {
-      const wrap = wrapRef.current;
-      if (!wrap) return;
-
-      const rect = wrap.getBoundingClientRect();
-      const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-      const spaceAbove = rect.top;
-      const spaceBelow = viewportHeight - rect.bottom;
-
-      if (spaceBelow < 240 && spaceAbove > spaceBelow) {
-        setResolvedPopupPlacement('top');
-        return;
-      }
-
-      setResolvedPopupPlacement('bottom');
+      setResolvedPopupPlacement(resolveAutoPopupPlacement(wrapRef.current));
     };
 
     updatePlacement();
@@ -108,10 +338,7 @@ export function PlayerSearchCombobox({
     };
   }, [popupPlacement, showPopup, wrapRef]);
 
-  const popupClassName =
-    resolvedPopupPlacement === 'top'
-      ? 'border-border bg-surface-solid/95 absolute right-0 left-0 bottom-[calc(100%+0.5rem)] z-[140] overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150'
-      : 'border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
+  const popupClassName = resolvePopupClassName(resolvedPopupPlacement);
 
   return (
     <div
@@ -131,60 +358,17 @@ export function PlayerSearchCombobox({
           onFocus={() => {
             if (hasQuery || hasItems || isLoading || hasError) onOpenChange(true);
           }}
-          onKeyDown={(event) => {
-            const itemCount = items.length;
-
-            if (event.key === 'ArrowDown') {
-              event.preventDefault();
-              if (!open) onOpenChange(true);
-              if (itemCount <= 0) return;
-              if (selectedIndex < 0) {
-                onSelectedIndexChange(0);
-                return;
-              }
-              onSelectedIndexChange((selectedIndex + 1) % itemCount);
-              return;
-            }
-
-            if (event.key === 'ArrowUp') {
-              event.preventDefault();
-              if (!open) onOpenChange(true);
-              if (itemCount <= 0) return;
-              if (selectedIndex < 0) {
-                onSelectedIndexChange(itemCount - 1);
-                return;
-              }
-              onSelectedIndexChange((selectedIndex - 1 + itemCount) % itemCount);
-              return;
-            }
-
-            if (event.key === 'Enter') {
-              if (!showPopup || itemCount <= 0) return;
-              event.preventDefault();
-              const candidate = items[selectedIndex] || items[0];
-              if (!candidate?.uuid) return;
-              onChoose(candidate.uuid);
-              return;
-            }
-
-            if (event.key === 'Escape') {
-              if (!open) return;
-              event.preventDefault();
-              onOpenChange(false);
-              onSelectedIndexChange(-1);
-              return;
-            }
-
-            if (event.key === 'Tab') {
-              if (!open) return;
-              if (selectedIndex >= 0 && selectedIndex < itemCount) {
-                const candidate = items[selectedIndex];
-                if (candidate?.uuid) onChoose(candidate.uuid);
-              }
-              onOpenChange(false);
-              onSelectedIndexChange(-1);
-            }
-          }}
+          onKeyDown={(event) =>
+            handleComboboxKeyDown(event, {
+              open,
+              showPopup,
+              items,
+              selectedIndex,
+              onOpenChange,
+              onSelectedIndexChange,
+              onChoose,
+            })
+          }
           type="search"
           autoComplete="off"
           placeholder={placeholder}
@@ -218,82 +402,31 @@ export function PlayerSearchCombobox({
       </div>
 
       <p id={srStatusId} className="sr-only" aria-live="polite">
-        {isLoading
-          ? 'Suche laeuft.'
-          : hasError
-            ? 'Fehler beim Laden der Spieler.'
-            : isEmpty
-              ? 'Kein Treffer.'
-              : hasItems
-                ? `${items.length} Treffer verfuegbar.`
-                : hasQuery
-                  ? 'Keine Treffer verfuegbar.'
-                  : ''}
+        {resolveStatusMessage({
+          isLoading,
+          hasError,
+          isEmpty,
+          hasItems,
+          hasQuery,
+          itemCount: items.length,
+        })}
       </p>
 
       {showPopup ? (
         <div className={popupClassName}>
-          <ul
-            id={listboxId}
-            role="listbox"
-            aria-labelledby={srLabelId}
-            className="max-h-[min(18rem,45dvh)] overflow-auto py-1"
-          >
-            {isLoading ? (
-              <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
-                Suche laeuft...
-              </li>
-            ) : null}
-
-            {!isLoading && hasError ? (
-              <li className="px-2 py-1" role="status" aria-live="polite">
-                <div className="mg-notice mt-0 text-xs" data-variant="warning">
-                  {errorMessage}
-                </div>
-              </li>
-            ) : null}
-
-            {!isLoading && !hasError && isEmpty ? (
-              <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
-                Kein Treffer. Pruefe die Schreibweise oder gib mehr Zeichen ein.
-              </li>
-            ) : null}
-
-            {!isLoading &&
-              !hasError &&
-              items.map((item, index) => {
-                const isActive = index === selectedIndex;
-                const optionId = `${listboxId}-option-${index}`;
-                return (
-                  <li
-                    key={`${item.uuid}-${index}`}
-                    id={optionId}
-                    ref={(element) => {
-                      itemRefs.current[index] = element;
-                    }}
-                    role="option"
-                    aria-selected={isActive ? 'true' : 'false'}
-                    onMouseDown={(event) => {
-                      // Hinweis: mouseDown statt click, damit das Input-Focus-Verhalten stabil bleibt.
-                      event.preventDefault();
-                      onChoose(item.uuid);
-                    }}
-                    onMouseEnter={() => onSelectedIndexChange(index)}
-                    className="mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
-                    data-active={isActive ? 'true' : 'false'}
-                  >
-                    <img
-                      src={`https://minotar.net/helm/${encodeURIComponent(item.name)}/32.png`}
-                      alt=""
-                      className="h-8 w-8 flex-none rounded-lg bg-black/20"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <span className="min-w-0 truncate">{item.name}</span>
-                  </li>
-                );
-              })}
-          </ul>
+          <ResultsList
+            items={items}
+            isLoading={isLoading}
+            hasError={hasError}
+            isEmpty={isEmpty}
+            errorMessage={errorMessage}
+            selectedIndex={selectedIndex}
+            listboxId={listboxId}
+            srLabelId={srLabelId}
+            itemRefs={itemRefs}
+            onChoose={onChoose}
+            onSelectedIndexChange={onSelectedIndexChange}
+          />
         </div>
       ) : null}
     </div>
