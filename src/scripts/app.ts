@@ -47,7 +47,7 @@ const hasAnyTarget = (selector: string): boolean => document.querySelector(selec
         const menu = initNavMenu({ qs, qsa });
         addCleanup(menu.cleanup);
 
-        if (hasAnyTarget('[data-motion], [data-reveal]')) {
+        if (hasAnyTarget('[data-motion]')) {
           const { initPageMotion } = await import('./app/motion');
           if (runId !== mountRunId) return;
           addCleanup(initPageMotion());

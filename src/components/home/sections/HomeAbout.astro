@@ -18,8 +18,14 @@ const { galleryUrls, galleryInitialImage } = Astro.props as Props;
 <HomeSection id="about" size="normal">
   <div class="grid items-center gap-16 lg:grid-cols-2 lg:gap-20">
     <div>
-      <h2 class="text-3xl font-semibold tracking-tight" data-reveal>Worum geht's bei uns?</h2>
-      <div class="mg-prose text-muted mt-5 max-w-2xl text-base" data-reveal data-reveal-delay="80">
+      <h2 class="text-3xl font-semibold tracking-tight" data-motion="reveal">
+        Worum geht's bei uns?
+      </h2>
+      <div
+        class="mg-prose text-muted mt-5 max-w-2xl text-base"
+        data-motion="reveal"
+        data-motion-delay="80"
+      >
         <p>
           Die Minecraft Gilde ist ein deutscher Vanilla-SMP mit Fokus auf Survival und Freebuild.
           Statt Minigames oder Citybuild findest du bei uns eine ruhige Langzeitwelt, in der große
@@ -30,7 +36,7 @@ const { galleryUrls, galleryInitialImage } = Astro.props as Props;
           mit Claims. Danach gilt: spielen, bauen, entdecken - ohne Reset-Stress.
         </p>
       </div>
-      <div class="mt-8 flex flex-wrap gap-3" data-reveal data-reveal-delay="140">
+      <div class="mt-8 flex flex-wrap gap-3" data-motion="reveal" data-motion-delay="140">
         <Button href="/serverinfos" variant="secondary" class="gap-2">
           <ScrollText size={18} /> Serverinfos
         </Button>
@@ -40,7 +46,12 @@ const { galleryUrls, galleryInitialImage } = Astro.props as Props;
       </div>
     </div>
 
-    <div class="relative" data-reveal="right" data-reveal-delay="120">
+    <div
+      class="relative"
+      data-motion="reveal"
+      data-motion-direction="right"
+      data-motion-delay="120"
+    >
       <HomePanel
         variant="outline"
         class="overflow-hidden"

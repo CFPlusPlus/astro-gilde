@@ -26,7 +26,7 @@ const { anchorItems, galleryUrls, galleryInitialImage } = Astro.props as Props;
 <div data-home>
   <HomeHero />
 
-  <div class="mt-3 mb-2" data-reveal data-reveal-delay="60">
+  <div class="mt-3 mb-2" data-motion="reveal" data-motion-delay="60">
     <HomeQuickNav items={anchorItems} />
   </div>
 

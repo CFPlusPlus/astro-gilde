@@ -8,7 +8,7 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
 ---
 
 <HomeSection id="support" size="normal" divider>
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-reveal>
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between" data-motion="reveal">
     <div>
       <h2 class="text-2xl font-semibold tracking-tight">Voting & Hilfe</h2>
       <p class="text-muted mt-3 max-w-2xl text-sm">
@@ -18,7 +18,7 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
   </div>
 
   <div class="mt-12 grid gap-14 lg:grid-cols-2">
-    <div class="flex items-start gap-5" data-reveal>
+    <div class="flex items-start gap-5" data-motion="reveal">
       <div
         class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
       >
@@ -41,7 +41,12 @@ const MC_SERVER_EU_VOTE = minecraftGilde.voting.minecraftServerEuVoteUrl;
       </div>
     </div>
 
-    <div class="flex items-start gap-5" data-reveal="right" data-reveal-delay="80">
+    <div
+      class="flex items-start gap-5"
+      data-motion="reveal"
+      data-motion-direction="right"
+      data-motion-delay="80"
+    >
       <div
         class="bg-accent/10 text-accent mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl"
       >
