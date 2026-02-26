@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 import { installStatsMocks } from './helpers/stats-mocks';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
@@ -188,7 +188,7 @@ async function seedSummaryCache(page: Page): Promise<void> {
 }
 
 async function installPlayerStatsSortMock(page: Page): Promise<void> {
-  await page.route('**/api/player**', async (route) => {
+  const handler = async (route: Route) => {
     const requestUrl = new URL(route.request().url());
     const uuid = (requestUrl.searchParams.get('uuid') || '').trim();
 
@@ -209,7 +209,10 @@ async function installPlayerStatsSortMock(page: Page): Promise<void> {
         },
       }),
     });
-  });
+  };
+
+  await page.route('**/api/player**', handler);
+  await page.route('**/api.minecraft-gilde.de/player**', handler);
 }
 
 test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
