@@ -1,9 +1,10 @@
 import type { APIRoute } from 'astro';
+import { siteUrl } from '../config/site';
 
 export const prerender = true;
 
 export const GET: APIRoute = ({ site }) => {
-  const baseUrl = site ?? new URL('https://minecraft-gilde.de');
+  const baseUrl = site ?? new URL(siteUrl);
   const sitemapUrl = new URL('/sitemap-index.xml', baseUrl);
 
   const body = [
