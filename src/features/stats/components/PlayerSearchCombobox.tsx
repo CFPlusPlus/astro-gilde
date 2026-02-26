@@ -41,6 +41,12 @@ type ComboboxKeyDownContext = {
   onChoose: (uuid: string) => void;
 };
 
+type ComboboxKeyDownHandler = (
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+  itemCount: number,
+) => void;
+
 function resolvePopupState({
   value,
   items,
@@ -115,64 +121,96 @@ function resolveAutoPopupPlacement(wrap: HTMLDivElement | null): 'bottom' | 'top
   return 'bottom';
 }
 
+function handleArrowDownKey(
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+  itemCount: number,
+): void {
+  const { open, selectedIndex, onOpenChange, onSelectedIndexChange } = ctx;
+
+  event.preventDefault();
+  if (!open) onOpenChange(true);
+  if (itemCount <= 0) return;
+  if (selectedIndex < 0) {
+    onSelectedIndexChange(0);
+    return;
+  }
+
+  onSelectedIndexChange((selectedIndex + 1) % itemCount);
+}
+
+function handleArrowUpKey(
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+  itemCount: number,
+): void {
+  const { open, selectedIndex, onOpenChange, onSelectedIndexChange } = ctx;
+
+  event.preventDefault();
+  if (!open) onOpenChange(true);
+  if (itemCount <= 0) return;
+  if (selectedIndex < 0) {
+    onSelectedIndexChange(itemCount - 1);
+    return;
+  }
+
+  onSelectedIndexChange((selectedIndex - 1 + itemCount) % itemCount);
+}
+
+function handleEnterKey(
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+  itemCount: number,
+): void {
+  const { showPopup, items, selectedIndex, onChoose } = ctx;
+  if (!showPopup || itemCount <= 0) return;
+
+  event.preventDefault();
+  const candidate = items[selectedIndex] || items[0];
+  if (!candidate?.uuid) return;
+  onChoose(candidate.uuid);
+}
+
+function handleEscapeKey(
+  event: React.KeyboardEvent<HTMLInputElement>,
+  ctx: ComboboxKeyDownContext,
+): void {
+  const { open, onOpenChange, onSelectedIndexChange } = ctx;
+  if (!open) return;
+
+  event.preventDefault();
+  onOpenChange(false);
+  onSelectedIndexChange(-1);
+}
+
+function handleTabKey(ctx: ComboboxKeyDownContext, itemCount: number): void {
+  const { open, items, selectedIndex, onChoose, onOpenChange, onSelectedIndexChange } = ctx;
+  if (!open) return;
+
+  if (selectedIndex >= 0 && selectedIndex < itemCount) {
+    const candidate = items[selectedIndex];
+    if (candidate?.uuid) onChoose(candidate.uuid);
+  }
+  onOpenChange(false);
+  onSelectedIndexChange(-1);
+}
+
+const COMBOBOX_KEY_HANDLERS: Record<string, ComboboxKeyDownHandler> = {
+  ArrowDown: handleArrowDownKey,
+  ArrowUp: handleArrowUpKey,
+  Enter: handleEnterKey,
+  Escape: (event, ctx) => handleEscapeKey(event, ctx),
+  Tab: (_event, ctx, itemCount) => handleTabKey(ctx, itemCount),
+};
+
 function handleComboboxKeyDown(
   event: React.KeyboardEvent<HTMLInputElement>,
   ctx: ComboboxKeyDownContext,
 ): void {
-  const { open, showPopup, items, selectedIndex, onOpenChange, onSelectedIndexChange, onChoose } =
-    ctx;
-  const itemCount = items.length;
-
-  if (event.key === 'ArrowDown') {
-    event.preventDefault();
-    if (!open) onOpenChange(true);
-    if (itemCount <= 0) return;
-    if (selectedIndex < 0) {
-      onSelectedIndexChange(0);
-      return;
-    }
-    onSelectedIndexChange((selectedIndex + 1) % itemCount);
-    return;
-  }
-
-  if (event.key === 'ArrowUp') {
-    event.preventDefault();
-    if (!open) onOpenChange(true);
-    if (itemCount <= 0) return;
-    if (selectedIndex < 0) {
-      onSelectedIndexChange(itemCount - 1);
-      return;
-    }
-    onSelectedIndexChange((selectedIndex - 1 + itemCount) % itemCount);
-    return;
-  }
-
-  if (event.key === 'Enter') {
-    if (!showPopup || itemCount <= 0) return;
-    event.preventDefault();
-    const candidate = items[selectedIndex] || items[0];
-    if (!candidate?.uuid) return;
-    onChoose(candidate.uuid);
-    return;
-  }
-
-  if (event.key === 'Escape') {
-    if (!open) return;
-    event.preventDefault();
-    onOpenChange(false);
-    onSelectedIndexChange(-1);
-    return;
-  }
-
-  if (event.key === 'Tab') {
-    if (!open) return;
-    if (selectedIndex >= 0 && selectedIndex < itemCount) {
-      const candidate = items[selectedIndex];
-      if (candidate?.uuid) onChoose(candidate.uuid);
-    }
-    onOpenChange(false);
-    onSelectedIndexChange(-1);
-  }
+  const itemCount = ctx.items.length;
+  const keyHandler = COMBOBOX_KEY_HANDLERS[event.key];
+  if (!keyHandler) return;
+  keyHandler(event, ctx, itemCount);
 }
 
 function ResultsList({
