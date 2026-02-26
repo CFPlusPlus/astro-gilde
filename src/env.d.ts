@@ -21,10 +21,6 @@ declare global {
     readonly dynmapUrl?: string;
     readonly statusUrl?: string;
   }
-
-  interface Window {
-    __APP_CONFIG__?: BrowserAppConfig;
-  }
 }
 
 export {};
