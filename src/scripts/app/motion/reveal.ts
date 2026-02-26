@@ -2,6 +2,7 @@ const REVEAL_SELECTOR = '[data-motion="reveal"]';
 const STAGGER_SELECTOR = '[data-motion-stagger]';
 
 const DEFAULT_STAGGER_STEP = 70;
+const INITIAL_VIEWPORT_MIN_DELAY_MS = 120;
 
 const parseMs = (value: string | null | undefined, fallback: number): number => {
   if (!value) return fallback;
@@ -51,7 +52,9 @@ const collectRevealElements = (root: ParentNode): HTMLElement[] => {
 };
 
 export const initRevealMotion = (root: ParentNode = document): (() => void) => {
-  document.documentElement.classList.add('js-motion');
+  const rootElement = document.documentElement;
+  rootElement.classList.add('js-motion');
+  rootElement.classList.remove('js-motion-prep');
 
   applyStaggerDelays(root);
 
@@ -70,11 +73,11 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
   const scheduledReveal = new WeakSet<HTMLElement>();
   const pendingTimers = new Set<number>();
 
-  const scheduleReveal = (element: HTMLElement): void => {
+  const scheduleReveal = (element: HTMLElement, minDelayMs = 0): void => {
     if (scheduledReveal.has(element)) return;
     scheduledReveal.add(element);
 
-    const delay = Math.max(0, parseMs(element.getAttribute('data-motion-delay'), 0));
+    const delay = Math.max(minDelayMs, parseMs(element.getAttribute('data-motion-delay'), 0));
     if (delay === 0) {
       element.classList.add('is-motion-in');
       return;
@@ -110,7 +113,7 @@ export const initRevealMotion = (root: ParentNode = document): (() => void) => {
       if (observed.has(el)) return;
       if (isInViewport(el)) {
         observed.add(el);
-        scheduleReveal(el);
+        scheduleReveal(el, INITIAL_VIEWPORT_MIN_DELAY_MS);
         return;
       }
       observed.add(el);
