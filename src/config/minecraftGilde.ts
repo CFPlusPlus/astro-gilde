@@ -44,10 +44,15 @@ const brandConfig = {
   ],
 } as const;
 
+const defaultApiOrigin = 'https://api.minecraft-gilde.de';
+const envApiOrigin = import.meta.env.PUBLIC_API_ORIGIN;
+const apiOrigin = (envApiOrigin ?? defaultApiOrigin).replace(/\/+$/, '');
+
 export const minecraftGilde = {
   brand: brandConfig,
   serverIp: 'minecraft-gilde.de',
   mcVersion: '1.21.x',
+  apiOrigin,
 
   // Optional: Link zum GitHub-Repository (wird im Footer angezeigt)
   // Beispiel: 'https://github.com/<user>/<repo>'

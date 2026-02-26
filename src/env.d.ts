@@ -5,6 +5,7 @@ interface ImportMetaEnv {
   readonly GIT_COMMIT_HASH?: string;
   readonly GIT_BRANCH?: string;
   readonly GIT_REPO_URL?: string;
+  readonly PUBLIC_API_ORIGIN?: string;
 }
 
 interface ImportMeta {
@@ -19,10 +20,6 @@ declare global {
     readonly discordInviteCode?: string;
     readonly dynmapUrl?: string;
     readonly statusUrl?: string;
-  }
-
-  interface Window {
-    __APP_CONFIG__?: BrowserAppConfig;
   }
 }
 

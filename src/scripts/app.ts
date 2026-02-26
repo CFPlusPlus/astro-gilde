@@ -47,7 +47,7 @@ const hasAnyTarget = (selector: string): boolean => document.querySelector(selec
         const menu = initNavMenu({ qs, qsa });
         addCleanup(menu.cleanup);
 
-        if (hasAnyTarget('[data-motion], [data-reveal]')) {
+        if (hasAnyTarget('[data-motion]')) {
           const { initPageMotion } = await import('./app/motion');
           if (runId !== mountRunId) return;
           addCleanup(initPageMotion());
@@ -72,6 +72,12 @@ const hasAnyTarget = (selector: string): boolean => document.querySelector(selec
               isMenuOpen: menu.isMenuOpen,
             }),
           );
+        }
+
+        if (hasAnyTarget('[data-home]')) {
+          const { initHomeApp } = await import('./app-home');
+          if (runId !== mountRunId) return;
+          addCleanup(initHomeApp());
         }
       } finally {
         const runCleanup = (): void => {

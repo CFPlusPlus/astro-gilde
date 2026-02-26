@@ -1,11 +1,11 @@
-/* Home-spezifisches Verhalten (Bootstrap): Module initialisieren und auf Astro-Navigation reagieren. */
+/* Home-spezifisches Verhalten: Einmal pro Mount initialisieren und Cleanup zurueckgeben. */
 
 import { initHomeGallery } from './home/gallery';
 import { initHomePlayers } from './home/players';
 import { initHomeQuickNav } from './home/quick-nav';
 import { initHomeWorldAge } from './home/world-age';
 
-function initHomeApp(): () => void {
+export function initHomeApp(): () => void {
   const stopGallery = initHomeGallery();
   const stopQuickNav = initHomeQuickNav();
   const stopPlayers = initHomePlayers();
@@ -17,19 +17,3 @@ function initHomeApp(): () => void {
     stopQuickNav();
   };
 }
-
-let cleanup: (() => void) | null = null;
-
-const mountHome = () => {
-  cleanup?.();
-  cleanup = initHomeApp();
-};
-
-const unmountHome = () => {
-  cleanup?.();
-  cleanup = null;
-};
-
-mountHome();
-document.addEventListener('astro:before-swap', unmountHome);
-document.addEventListener('astro:page-load', mountHome);

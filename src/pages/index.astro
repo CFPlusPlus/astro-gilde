@@ -1,7 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HomePage from '../components/home/HomePage.astro';
-import HomeInlineScripts from '../components/home/HomeInlineScripts.astro';
 
 import { HOME_ANCHORS } from '../lib/home/anchors';
 import { getHomeGallery } from '../lib/home/gallery';
@@ -28,6 +27,4 @@ const SERVER_IP = minecraftGilde.serverIp;
     galleryUrls={galleryUrls}
     galleryInitialImage={galleryInitialImage}
   />
-
-  <HomeInlineScripts slot="afterScripts" />
 </BaseLayout>

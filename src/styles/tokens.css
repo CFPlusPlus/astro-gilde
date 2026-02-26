@@ -1,0 +1,298 @@
+/*
+  Design-Tokens (klar + subtiler Glas-Look + minimal)
+  - Auto Hell/Dunkel ueber prefers-color-scheme
+  - Optionales manuelles Ueberschreiben via: html[data-theme="light|dark"]
+  - Anthrazit (nicht reines Schwarz) + Gold-Akzent
+*/
+
+:root {
+  /* Typografie */
+  --font-sans:
+    'Geist Variable', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-display:
+    'Space Grotesk Variable', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+    Arial;
+
+  /* Hell */
+  --bg: #f2f5fa;
+  --fg: #0f1826;
+  --muted: #43556f;
+
+  --surface: rgba(255, 255, 255, 0.86);
+  --surface-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.34);
+  --glass-shadow-color: rgba(15, 23, 42, 0.12);
+  --glass-blur: 14px;
+  --glass-bg: color-mix(in oklab, var(--surface) 90%, transparent);
+  --glass-bg-fallback: color-mix(in oklab, var(--surface-solid) 92%, var(--bg) 8%);
+  --glass-border: color-mix(in oklab, var(--border) 92%, white 8%);
+  --glass-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+    0 12px 28px -24px var(--glass-shadow-color);
+  --glass-strong-blur: 24px;
+  --glass-strong-bg: color-mix(in oklab, var(--surface-solid) 86%, transparent);
+  --glass-strong-bg-fallback: color-mix(in oklab, var(--surface-solid) 95%, var(--bg) 5%);
+  --glass-strong-border: color-mix(in oklab, var(--border) 92%, white 8%);
+  --glass-strong-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+    0 22px 46px -30px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(255, 255, 255, 0.38);
+  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
+  --glass-nav-border: rgba(255, 255, 255, 0.34);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  --glass-overlay-blur: 56px;
+  --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
+  --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
+  --glass-overlay-border: transparent;
+  --glass-overlay-shadow: none;
+
+  --ambient-1: rgba(242, 201, 76, 0.4);
+  --ambient-2: rgba(120, 176, 246, 0.34);
+  --ambient-3: rgba(29, 44, 64, 0.22);
+
+  --accent: #f2c94c;
+  --accent2: #ffd56a;
+  --ring: rgba(242, 201, 76, 0.45);
+  --accent-dark: color-mix(in oklab, var(--accent) 85%, black 15%);
+  --accent-soft: color-mix(in oklab, var(--accent) 18%, transparent);
+  --nav-underline-muted: color-mix(in oklab, var(--fg) 50%, transparent);
+
+  --radius: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme='light']) {
+    /* Dunkel (Obsidian / Anthrazit) */
+    --bg: #101216;
+    --fg: #e4e7ec;
+    --muted: #adb2bb;
+
+    --surface: rgba(26, 28, 32, 0.82);
+    --surface-solid: #20242b;
+    --border: rgba(231, 237, 245, 0.24);
+    --glass-highlight: rgba(255, 255, 255, 0.1);
+    --glass-shadow-color: rgba(5, 6, 8, 0.55);
+    --glass-bg: color-mix(in oklab, var(--surface) 86%, transparent);
+    --glass-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
+    --glass-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+      0 14px 30px -24px var(--glass-shadow-color);
+    --glass-strong-bg: color-mix(in oklab, var(--surface-solid) 82%, transparent);
+    --glass-strong-bg-fallback: color-mix(in oklab, var(--surface-solid) 92%, var(--bg) 8%);
+    --glass-strong-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
+      0 24px 48px -30px var(--glass-shadow-color);
+    --glass-nav-blur: 20px;
+    --glass-nav-bg: rgba(34, 37, 42, 0.52);
+    --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+    --glass-nav-border: rgba(255, 255, 255, 0.18);
+    --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
+    --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
+    --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
+
+    --ambient-1: rgba(242, 201, 76, 0.34);
+    --ambient-2: rgba(82, 92, 105, 0.2);
+    --ambient-3: rgba(55, 60, 68, 0.18);
+
+    --accent: #f2c94c;
+    --accent2: #ffd56a;
+    --ring: rgba(242, 201, 76, 0.3);
+    --nav-underline-muted: color-mix(in oklab, var(--fg) 62%, transparent);
+  }
+}
+
+html[data-theme='light'] {
+  --fg: #0f172a;
+}
+
+html[data-theme='dark'] {
+  --bg: #101216;
+  --fg: #e4e7ec;
+  --muted: #adb2bb;
+
+  --surface: rgba(26, 28, 32, 0.82);
+  --surface-solid: #20242b;
+  --border: rgba(231, 237, 245, 0.24);
+  --glass-highlight: rgba(255, 255, 255, 0.1);
+  --glass-shadow-color: rgba(5, 6, 8, 0.55);
+  --glass-blur: 14px;
+  --glass-bg: color-mix(in oklab, var(--surface) 86%, transparent);
+  --glass-bg-fallback: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
+  --glass-border: color-mix(in oklab, var(--border) 92%, white 8%);
+  --glass-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
+    0 14px 30px -24px var(--glass-shadow-color);
+  --glass-strong-blur: 24px;
+  --glass-strong-bg: color-mix(in oklab, var(--surface-solid) 82%, transparent);
+  --glass-strong-bg-fallback: color-mix(in oklab, var(--surface-solid) 92%, var(--bg) 8%);
+  --glass-strong-border: color-mix(in oklab, var(--border) 92%, white 8%);
+  --glass-strong-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 66%, transparent),
+    0 24px 48px -30px var(--glass-shadow-color);
+  --glass-nav-blur: 20px;
+  --glass-nav-bg: rgba(34, 37, 42, 0.52);
+  --glass-nav-bg-fallback: color-mix(in oklab, #2a2d33 72%, var(--surface-solid) 28%);
+  --glass-nav-border: rgba(255, 255, 255, 0.18);
+  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
+  --glass-overlay-blur: 56px;
+  --glass-overlay-bg: color-mix(in oklab, black 55%, transparent);
+  --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
+  --glass-overlay-border: transparent;
+  --glass-overlay-shadow: none;
+
+  --ambient-1: rgba(242, 201, 76, 0.34);
+  --ambient-2: rgba(82, 92, 105, 0.2);
+  --ambient-3: rgba(55, 60, 68, 0.18);
+
+  --accent: #f2c94c;
+  --accent2: #ffd56a;
+  --ring: rgba(242, 201, 76, 0.3);
+  --nav-underline-muted: color-mix(in oklab, var(--fg) 62%, transparent);
+}
+
+/* Tokens in Tailwind v4 CSS-first Theme-Variablen spiegeln */
+@theme {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+
+  --color-surface: var(--surface);
+  --color-surface-solid: var(--surface-solid);
+  --color-border: var(--border);
+
+  --color-accent: var(--accent);
+  --color-accent2: var(--accent2);
+  --color-ring: var(--ring);
+
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+}
+
+@layer base {
+  html {
+    /* UA kann Controls passend rendern, wir ueberschreiben das
+       aber im manuellen Theme-Modus (siehe unten). */
+    background: var(--bg);
+    color-scheme: light dark;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Wenn das Mobile-Menue offen ist, nur den Inhalt blurrieren (nicht die Navbar). */
+  html[data-menu-open='1'] main {
+    filter: blur(12px);
+    transform: translateZ(0);
+  }
+
+  html.mg-scroll-lock,
+  body.mg-scroll-lock {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Wenn der Nutzer das Theme erzwingt, auch das UA color-scheme setzen.
+     Das behebt z. B. falsche Farben bei nativen Clear-Buttons. */
+  html[data-theme='light'] {
+    color-scheme: light;
+  }
+
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      color-scheme: dark;
+    }
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme]) {
+      color-scheme: light;
+    }
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+
+  :focus-visible {
+    outline: none;
+  }
+
+  /* Native Search-Clear-Buttons ausblenden (wir nutzen eigene Reset-Buttons). */
+  input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+  }
+
+  input[type='search']::-ms-clear {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  /* Link-Standards */
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  a[href],
+  button:not(:disabled),
+  input[type='button']:not(:disabled),
+  input[type='submit']:not(:disabled),
+  input[type='reset']:not(:disabled),
+  summary,
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  input[type='button']:disabled,
+  input[type='submit']:disabled,
+  input[type='reset']:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  code,
+  kbd {
+    font-family:
+      ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+      monospace;
+  }
+
+  code {
+    background: color-mix(in oklab, var(--surface-solid) 70%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.12rem 0.45rem;
+  }
+
+  kbd {
+    background: color-mix(in oklab, var(--surface-solid) 70%, transparent);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.12rem 0.45rem;
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--fg) 10%, transparent);
+  }
+}

@@ -18,11 +18,9 @@ const readConfigFromDataset = (): BrowserAppConfig => {
 
 export const readBrowserAppConfig = (fallback: BrowserAppConfig): BrowserAppConfig => {
   const fromDataset = readConfigFromDataset();
-  const fromLegacy = window.__APP_CONFIG__ ?? {};
 
   return {
     ...fallback,
-    ...fromLegacy,
     ...fromDataset,
   };
 };

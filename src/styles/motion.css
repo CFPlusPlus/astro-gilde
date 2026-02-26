@@ -1,0 +1,39 @@
+@layer utilities {
+  html.js-motion-prep [data-motion='reveal'],
+  html.js-motion [data-motion='reveal'] {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+    transition:
+      opacity 620ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    will-change: opacity, transform;
+  }
+
+  html.js-motion-prep [data-motion='reveal'][data-motion-direction='left'],
+  html.js-motion [data-motion='reveal'][data-motion-direction='left'] {
+    transform: translate3d(-18px, 0, 0);
+  }
+
+  html.js-motion-prep [data-motion='reveal'][data-motion-direction='right'],
+  html.js-motion [data-motion='reveal'][data-motion-direction='right'] {
+    transform: translate3d(18px, 0, 0);
+  }
+
+  html.js-motion-prep [data-motion='reveal'][data-motion-direction='down'],
+  html.js-motion [data-motion='reveal'][data-motion-direction='down'] {
+    transform: translate3d(0, -16px, 0);
+  }
+
+  html.js-motion-prep [data-motion='reveal'].is-motion-in,
+  html.js-motion [data-motion='reveal'].is-motion-in {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html.js-motion [data-motion='reveal'] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+}
