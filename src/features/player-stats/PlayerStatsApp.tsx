@@ -17,36 +17,32 @@ import {
 
 export default function PlayerStatsApp() {
   const playerStatsState = usePlayerStatsState();
-  const {
-    activeTab,
-    setActiveTab,
-    filterRaw,
-    setFilterRaw,
-    filterInputRef,
-    filtered,
-    sortGeneral,
-    setSortGeneral,
-    sortItems,
-    setSortItems,
-    sortMobs,
-    setSortMobs,
-  } = playerStatsState;
-  const {
-    isGerman,
-    setIsGerman,
-    uuidParam,
-    uuidFull,
-    playerName,
-    generatedIso,
-    apiError,
-    stats,
-    uuidCopied,
-    setUuidCopied,
-    skinHeadUrl,
-    skinHeadFallback,
-    skinFullUrl,
-    skinFullFallback,
-  } = playerStatsState;
+  const activeTab = playerStatsState.activeTab;
+  const setActiveTab = playerStatsState.setActiveTab;
+  const filterRaw = playerStatsState.filterRaw;
+  const setFilterRaw = playerStatsState.setFilterRaw;
+  const filterInputRef = playerStatsState.filterInputRef;
+  const filtered = playerStatsState.filtered;
+  const sortGeneral = playerStatsState.sortGeneral;
+  const setSortGeneral = playerStatsState.setSortGeneral;
+  const sortItems = playerStatsState.sortItems;
+  const setSortItems = playerStatsState.setSortItems;
+  const sortMobs = playerStatsState.sortMobs;
+  const setSortMobs = playerStatsState.setSortMobs;
+  const isGerman = playerStatsState.isGerman;
+  const setIsGerman = playerStatsState.setIsGerman;
+  const uuidParam = playerStatsState.uuidParam;
+  const uuidFull = playerStatsState.uuidFull;
+  const playerName = playerStatsState.playerName;
+  const generatedIso = playerStatsState.generatedIso;
+  const apiError = playerStatsState.apiError;
+  const stats = playerStatsState.stats;
+  const uuidCopied = playerStatsState.uuidCopied;
+  const setUuidCopied = playerStatsState.setUuidCopied;
+  const skinHeadUrl = playerStatsState.skinHeadUrl;
+  const skinHeadFallback = playerStatsState.skinHeadFallback;
+  const skinFullUrl = playerStatsState.skinFullUrl;
+  const skinFullFallback = playerStatsState.skinFullFallback;
 
   const [skinOpen, setSkinOpen] = useState(false);
   const hasUuidInLocation = uuidParam.trim().length > 0;
