@@ -66,7 +66,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  html:not([data-theme='light']) {
     /* Dunkel (Obsidian / Anthrazit) */
     --bg: #101216;
     --fg: #e4e7ec;
@@ -106,50 +106,8 @@
   }
 }
 
-/* Manueller Override (gesetzt durch den Theme-Toggle) */
 html[data-theme='light'] {
-  --bg: #f2f5fa;
   --fg: #0f172a;
-  --muted: #43556f;
-
-  --surface: rgba(255, 255, 255, 0.86);
-  --surface-solid: #ffffff;
-  --border: rgba(15, 23, 42, 0.16);
-  --glass-highlight: rgba(255, 255, 255, 0.34);
-  --glass-shadow-color: rgba(15, 23, 42, 0.12);
-  --glass-blur: 14px;
-  --glass-bg: color-mix(in oklab, var(--surface) 90%, transparent);
-  --glass-bg-fallback: color-mix(in oklab, var(--surface-solid) 92%, var(--bg) 8%);
-  --glass-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
-    0 12px 28px -24px var(--glass-shadow-color);
-  --glass-strong-blur: 24px;
-  --glass-strong-bg: color-mix(in oklab, var(--surface-solid) 86%, transparent);
-  --glass-strong-bg-fallback: color-mix(in oklab, var(--surface-solid) 95%, var(--bg) 5%);
-  --glass-strong-border: color-mix(in oklab, var(--border) 92%, white 8%);
-  --glass-strong-shadow:
-    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 70%, transparent),
-    0 22px 46px -30px var(--glass-shadow-color);
-  --glass-nav-blur: 20px;
-  --glass-nav-bg: rgba(255, 255, 255, 0.38);
-  --glass-nav-bg-fallback: color-mix(in oklab, white 86%, var(--bg) 14%);
-  --glass-nav-border: rgba(255, 255, 255, 0.34);
-  --glass-nav-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-  --glass-overlay-blur: 56px;
-  --glass-overlay-bg: color-mix(in oklab, var(--bg) 70%, transparent);
-  --glass-overlay-bg-fallback: color-mix(in oklab, var(--bg) 86%, black 14%);
-  --glass-overlay-border: transparent;
-  --glass-overlay-shadow: none;
-
-  --ambient-1: rgba(242, 201, 76, 0.4);
-  --ambient-2: rgba(120, 176, 246, 0.34);
-  --ambient-3: rgba(29, 44, 64, 0.22);
-
-  --accent: #f2c94c;
-  --accent2: #ffd56a;
-  --ring: rgba(242, 201, 76, 0.45);
-  --nav-underline-muted: color-mix(in oklab, var(--fg) 50%, transparent);
 }
 
 html[data-theme='dark'] {

@@ -12,6 +12,41 @@ type NavigatorWithConnection = Navigator & {
   webkitConnection?: NetworkInformationLike;
 };
 
+type GalleryElements = {
+  root: HTMLElement;
+  imgA: HTMLImageElement;
+  imgB: HTMLImageElement;
+  placeholder: HTMLElement | null;
+  prevBtn: HTMLElement | null;
+  nextBtn: HTMLElement | null;
+};
+
+type GalleryRuntime = {
+  elements: GalleryElements;
+  order: string[];
+  bad: Set<string>;
+  intervalMs: number;
+  fadeMs: number;
+  preloadDelayMs: number;
+  autoplayAllowed: boolean;
+  allowIdlePreload: boolean;
+  index: number;
+  front: HTMLImageElement;
+  back: HTMLImageElement;
+  timer: number | null;
+  transitionTimer: number | null;
+  idlePreloadTimer: number | null;
+  idlePreloadHandle: number | null;
+  pendingPreloadSrc: string | null;
+  isAutoplayPaused: boolean;
+  isTransitioning: boolean;
+  touchStartX: number | null;
+  touchStartY: number | null;
+  disposed: boolean;
+  preloadOk: (src: string) => Promise<boolean>;
+  cleanupFns: Array<() => void>;
+};
+
 const getNetworkHints = (): { saveData: boolean; slowNetwork: boolean } => {
   if (typeof navigator === 'undefined') {
     return { saveData: false, slowNetwork: false };
@@ -36,91 +71,70 @@ const shuffleInPlace = <T>(arr: T[]): T[] => {
   return arr;
 };
 
-export function initHomeGallery(): () => void {
-  const root = qs<HTMLElement>('[data-gallery]');
-  if (!root) return () => {};
-
-  const imgA = root.querySelector<HTMLImageElement>('[data-gallery-a]');
-  const imgB = root.querySelector<HTMLImageElement>('[data-gallery-b]');
-  const placeholder = root.querySelector<HTMLElement>('[data-gallery-placeholder]');
-  const prevBtn = root.querySelector<HTMLElement>('[data-gallery-prev]');
-  const nextBtn = root.querySelector<HTMLElement>('[data-gallery-next]');
-  if (!imgA || !imgB) return () => {};
-
-  const setVisible = (el: HTMLElement, visible: boolean): void => {
-    el.classList.toggle('opacity-100', visible);
-    el.classList.toggle('opacity-0', !visible);
-  };
-
-  const revealPlaceholder = (): void => {
-    if (!placeholder) return;
-    placeholder.classList.add('opacity-0');
-  };
-
-  const showSingle = (): void => {
-    setVisible(imgA, true);
-    setVisible(imgB, false);
-    revealPlaceholder();
-  };
-
+function parseImageList(root: HTMLElement): string[] {
   const raw = root.getAttribute('data-gallery-images') || '[]';
-  let images: string[] = [];
+
   try {
     const parsed = JSON.parse(raw) as unknown;
-    if (Array.isArray(parsed)) {
-      images = parsed.filter((s): s is string => typeof s === 'string' && s.length > 0);
-    }
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((s): s is string => typeof s === 'string' && s.length > 0);
   } catch {
-    images = [];
+    return [];
   }
+}
 
-  if (images.length < 2) {
-    showSingle();
-    return () => {};
-  }
+function readNumberAttribute(root: HTMLElement, attr: string, fallback: number, min = 0): number {
+  const parsed = Number(root.getAttribute(attr) || String(fallback));
+  if (!Number.isFinite(parsed) || parsed < min) return fallback;
+  return parsed;
+}
 
-  const parsedInterval = Number(root.getAttribute('data-gallery-interval') || '5200');
-  const parsedPreloadDelayDefault = Number(
-    root.getAttribute('data-gallery-preload-delay-default') || '350',
+function resolveTiming(root: HTMLElement): {
+  intervalMs: number;
+  preloadDelayMs: number;
+  fadeMs: number;
+  autoplayAllowed: boolean;
+  allowIdlePreload: boolean;
+} {
+  const intervalMs = readNumberAttribute(root, 'data-gallery-interval', 5200, 1);
+  const preloadDelayDefaultMs = readNumberAttribute(
+    root,
+    'data-gallery-preload-delay-default',
+    350,
+    0,
   );
-  const parsedPreloadDelaySlow = Number(
-    root.getAttribute('data-gallery-preload-delay-slow') || '1200',
-  );
-  const intervalMs = Number.isFinite(parsedInterval) && parsedInterval > 0 ? parsedInterval : 5200;
-  const preloadDelayDefaultMs =
-    Number.isFinite(parsedPreloadDelayDefault) && parsedPreloadDelayDefault >= 0
-      ? parsedPreloadDelayDefault
-      : 350;
-  const preloadDelaySlowMs =
-    Number.isFinite(parsedPreloadDelaySlow) && parsedPreloadDelaySlow >= 0
-      ? parsedPreloadDelaySlow
-      : 1200;
+  const preloadDelaySlowMs = readNumberAttribute(root, 'data-gallery-preload-delay-slow', 1200, 0);
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fadeMs = prefersReduced ? 0 : 700;
   const { saveData, slowNetwork } = getNetworkHints();
-  const autoplayAllowed = !saveData;
-  const allowIdlePreload = !saveData;
-  const preloadDelayMs = slowNetwork ? preloadDelaySlowMs : preloadDelayDefaultMs;
-  const order = shuffleInPlace(images.slice());
 
-  let index = 0;
-  let front: HTMLImageElement = imgA;
-  let back: HTMLImageElement = imgB;
-  let timer: number | null = null;
-  let transitionTimer: number | null = null;
-  let idlePreloadTimer: number | null = null;
-  let idlePreloadHandle: number | null = null;
-  let pendingPreloadSrc: string | null = null;
-  let isAutoplayPaused = !autoplayAllowed;
-  let isTransitioning = false;
-  let touchStartX: number | null = null;
-  let touchStartY: number | null = null;
-  let disposed = false;
+  return {
+    intervalMs,
+    preloadDelayMs: slowNetwork ? preloadDelaySlowMs : preloadDelayDefaultMs,
+    fadeMs,
+    autoplayAllowed: !saveData,
+    allowIdlePreload: !saveData,
+  };
+}
 
-  const bad = new Set<string>();
-  const cleanupFns: Array<() => void> = [];
+function setVisible(el: HTMLElement, visible: boolean): void {
+  el.classList.toggle('opacity-100', visible);
+  el.classList.toggle('opacity-0', !visible);
+}
 
-  const preloadOk = (src: string): Promise<boolean> =>
+function revealPlaceholder(placeholder: HTMLElement | null): void {
+  if (!placeholder) return;
+  placeholder.classList.add('opacity-0');
+}
+
+function showSingle(elements: GalleryElements): void {
+  setVisible(elements.imgA, true);
+  setVisible(elements.imgB, false);
+  revealPlaceholder(elements.placeholder);
+}
+
+function createPreloadOk(bad: Set<string>): (src: string) => Promise<boolean> {
+  return (src: string) =>
     new Promise((resolve) => {
       if (!src) return resolve(false);
       if (bad.has(src)) return resolve(false);
@@ -145,240 +159,330 @@ export function initHomeGallery(): () => void {
         finish(tmp.naturalWidth > 0);
       }
     });
+}
 
-  const pickFirstLoadableIndex = async (startAt = 0): Promise<number | null> => {
-    for (let tries = 0; tries < order.length; tries++) {
-      const i = (startAt + tries) % order.length;
-      const ok = await preloadOk(order[i]);
-      if (ok) return i;
+function findNextIndex(runtime: GalleryRuntime, fromIndex: number, delta: number): number | null {
+  for (let tries = 1; tries <= runtime.order.length; tries++) {
+    const i = (fromIndex + delta * tries + runtime.order.length) % runtime.order.length;
+    if (!runtime.bad.has(runtime.order[i])) return i;
+  }
+  return null;
+}
+
+async function pickFirstLoadableIndex(
+  runtime: GalleryRuntime,
+  startAt = 0,
+): Promise<number | null> {
+  for (let tries = 0; tries < runtime.order.length; tries++) {
+    const i = (startAt + tries) % runtime.order.length;
+    const ok = await runtime.preloadOk(runtime.order[i]);
+    if (ok) return i;
+  }
+  return null;
+}
+
+function cancelPendingIdlePreload(runtime: GalleryRuntime): void {
+  if (runtime.idlePreloadTimer != null) {
+    window.clearTimeout(runtime.idlePreloadTimer);
+    runtime.idlePreloadTimer = null;
+  }
+
+  if (runtime.idlePreloadHandle != null && typeof window.cancelIdleCallback === 'function') {
+    window.cancelIdleCallback(runtime.idlePreloadHandle);
+    runtime.idlePreloadHandle = null;
+  }
+
+  runtime.pendingPreloadSrc = null;
+}
+
+function scheduleIdlePreload(runtime: GalleryRuntime, src: string): void {
+  if (!runtime.allowIdlePreload || !src || runtime.bad.has(src) || runtime.disposed) return;
+  if (
+    runtime.pendingPreloadSrc === src &&
+    (runtime.idlePreloadTimer != null || runtime.idlePreloadHandle != null)
+  ) {
+    return;
+  }
+
+  cancelPendingIdlePreload(runtime);
+  runtime.pendingPreloadSrc = src;
+
+  runtime.idlePreloadTimer = window.setTimeout(() => {
+    runtime.idlePreloadTimer = null;
+
+    const run = () => {
+      runtime.idlePreloadHandle = null;
+      const target = runtime.pendingPreloadSrc;
+      runtime.pendingPreloadSrc = null;
+      if (!target || runtime.disposed || document.hidden) return;
+      void runtime.preloadOk(target);
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      runtime.idlePreloadHandle = window.requestIdleCallback(run, {
+        timeout: runtime.preloadDelayMs + 1000,
+      });
+    } else {
+      run();
     }
-    return null;
-  };
+  }, runtime.preloadDelayMs);
+}
 
-  const findNextIndex = (fromIndex: number, delta: number): number | null => {
-    for (let tries = 1; tries <= order.length; tries++) {
-      const i = (fromIndex + delta * tries + order.length) % order.length;
-      if (!bad.has(order[i])) return i;
-    }
-    return null;
-  };
+function scheduleNextIdlePreload(runtime: GalleryRuntime, fromIndex: number): void {
+  const nextIndex = findNextIndex(runtime, fromIndex, +1);
+  if (nextIndex == null) return;
+  scheduleIdlePreload(runtime, runtime.order[nextIndex]);
+}
 
-  const cancelPendingIdlePreload = (): void => {
-    if (idlePreloadTimer != null) {
-      window.clearTimeout(idlePreloadTimer);
-      idlePreloadTimer = null;
-    }
+async function setSrcSafe(
+  runtime: GalleryRuntime,
+  el: HTMLImageElement,
+  src: string,
+): Promise<boolean> {
+  const ok = await runtime.preloadOk(src);
+  if (!ok) return false;
+  el.src = src;
+  return true;
+}
 
-    if (idlePreloadHandle != null && typeof window.cancelIdleCallback === 'function') {
-      window.cancelIdleCallback(idlePreloadHandle);
-      idlePreloadHandle = null;
-    }
-    pendingPreloadSrc = null;
-  };
+async function transitionTo(runtime: GalleryRuntime, targetIndex: number): Promise<void> {
+  if (runtime.disposed || document.hidden) return;
+  if (runtime.isTransitioning) return;
+  runtime.isTransitioning = true;
 
-  const scheduleIdlePreload = (src: string): void => {
-    if (!allowIdlePreload || !src || bad.has(src) || disposed) return;
-    if (pendingPreloadSrc === src && (idlePreloadTimer != null || idlePreloadHandle != null))
-      return;
+  let nextIndex: number | null = targetIndex;
+  let nextSrc = '';
+  let loaded = false;
 
-    cancelPendingIdlePreload();
-    pendingPreloadSrc = src;
+  for (let tries = 0; tries < runtime.order.length; tries++) {
+    if (nextIndex == null) break;
+    nextSrc = runtime.order[nextIndex];
+    loaded = await setSrcSafe(runtime, runtime.back, nextSrc);
+    if (loaded) break;
+    nextIndex = findNextIndex(runtime, nextIndex, +1);
+  }
 
-    idlePreloadTimer = window.setTimeout(() => {
-      idlePreloadTimer = null;
+  if (!loaded || nextIndex == null || runtime.disposed) {
+    runtime.isTransitioning = false;
+    return;
+  }
 
-      const run = () => {
-        idlePreloadHandle = null;
-        const target = pendingPreloadSrc;
-        pendingPreloadSrc = null;
-        if (!target || disposed || document.hidden) return;
-        void preloadOk(target);
-      };
+  scheduleNextIdlePreload(runtime, nextIndex);
 
-      if (typeof window.requestIdleCallback === 'function') {
-        idlePreloadHandle = window.requestIdleCallback(run, { timeout: preloadDelayMs + 1000 });
-      } else {
-        run();
-      }
-    }, preloadDelayMs);
-  };
+  if (runtime.fadeMs === 0) {
+    runtime.front.src = nextSrc;
+    runtime.index = nextIndex;
+    runtime.isTransitioning = false;
+    return;
+  }
 
-  const scheduleNextIdlePreload = (fromIndex: number): void => {
-    const nextIndex = findNextIndex(fromIndex, +1);
-    if (nextIndex == null) return;
-    scheduleIdlePreload(order[nextIndex]);
-  };
+  setVisible(runtime.back, true);
+  setVisible(runtime.front, false);
 
-  const setSrcSafe = async (el: HTMLImageElement, src: string): Promise<boolean> => {
-    const ok = await preloadOk(src);
-    if (!ok) return false;
-    el.src = src;
-    return true;
-  };
+  runtime.transitionTimer = window.setTimeout(() => {
+    if (runtime.disposed) return;
+    const tmp = runtime.front;
+    runtime.front = runtime.back;
+    runtime.back = tmp;
 
-  const transitionTo = async (targetIndex: number): Promise<void> => {
-    if (disposed || document.hidden) return;
-    if (isTransitioning) return;
-    isTransitioning = true;
+    setVisible(runtime.back, false);
+    runtime.index = nextIndex;
+    runtime.isTransitioning = false;
+  }, runtime.fadeMs + 30);
+}
 
-    let nextIndex: number | null = targetIndex;
-    let nextSrc = '';
-    let loaded = false;
+async function step(runtime: GalleryRuntime): Promise<void> {
+  if (runtime.disposed || runtime.isAutoplayPaused || document.hidden) return;
+  const nextIndex = findNextIndex(runtime, runtime.index, +1);
+  if (nextIndex == null) return;
+  void transitionTo(runtime, nextIndex);
+}
 
-    for (let tries = 0; tries < order.length; tries++) {
-      if (nextIndex == null) break;
-      nextSrc = order[nextIndex];
-      loaded = await setSrcSafe(back, nextSrc);
-      if (loaded) break;
-      nextIndex = findNextIndex(nextIndex, +1);
-    }
+function start(runtime: GalleryRuntime): void {
+  if (!runtime.autoplayAllowed || runtime.disposed) return;
+  if (runtime.timer != null) window.clearInterval(runtime.timer);
+  runtime.timer = window.setInterval(() => {
+    void step(runtime);
+  }, runtime.intervalMs);
+}
 
-    if (!loaded || nextIndex == null || disposed) {
-      isTransitioning = false;
-      return;
-    }
+function pause(runtime: GalleryRuntime): void {
+  runtime.isAutoplayPaused = true;
+  if (runtime.timer != null) window.clearInterval(runtime.timer);
+  runtime.timer = null;
+}
 
-    scheduleNextIdlePreload(nextIndex);
+function resume(runtime: GalleryRuntime): void {
+  if (!runtime.autoplayAllowed) return;
+  if (!runtime.isAutoplayPaused || runtime.disposed) return;
+  runtime.isAutoplayPaused = false;
+  start(runtime);
+}
 
-    if (fadeMs === 0) {
-      front.src = nextSrc;
-      index = nextIndex;
-      isTransitioning = false;
-      return;
-    }
+async function nudge(runtime: GalleryRuntime, delta: number): Promise<void> {
+  const nextIndex = findNextIndex(runtime, runtime.index, delta);
+  if (nextIndex == null) return;
+  void transitionTo(runtime, nextIndex);
+  if (!runtime.isAutoplayPaused) start(runtime);
+}
 
-    setVisible(back, true);
-    setVisible(front, false);
+function registerEvent(
+  runtime: GalleryRuntime,
+  target: EventTarget,
+  event: string,
+  handler: EventListener,
+  options?: AddEventListenerOptions,
+): void {
+  target.addEventListener(event, handler, options);
+  runtime.cleanupFns.push(() => target.removeEventListener(event, handler, options));
+}
 
-    transitionTimer = window.setTimeout(() => {
-      if (disposed) return;
-      const tmp = front;
-      front = back;
-      back = tmp;
+function registerInteractions(runtime: GalleryRuntime): void {
+  const { root, prevBtn, nextBtn } = runtime.elements;
 
-      setVisible(back, false);
-      index = nextIndex;
-      isTransitioning = false;
-    }, fadeMs + 30);
-  };
+  if (prevBtn) {
+    const onPrev: EventListener = () => {
+      void nudge(runtime, -1);
+    };
+    registerEvent(runtime, prevBtn, 'click', onPrev);
+  }
 
-  const step = async (): Promise<void> => {
-    if (disposed || isAutoplayPaused || document.hidden) return;
-    const nextIndex = findNextIndex(index, +1);
-    if (nextIndex == null) return;
-    void transitionTo(nextIndex);
-  };
+  if (nextBtn) {
+    const onNext: EventListener = () => {
+      void nudge(runtime, 1);
+    };
+    registerEvent(runtime, nextBtn, 'click', onNext);
+  }
 
-  const start = (): void => {
-    if (!autoplayAllowed || disposed) return;
-    if (timer != null) window.clearInterval(timer);
-    timer = window.setInterval(() => {
-      void step();
-    }, intervalMs);
-  };
-
-  const pause = (): void => {
-    isAutoplayPaused = true;
-    if (timer != null) window.clearInterval(timer);
-    timer = null;
-  };
-
-  const resume = (): void => {
-    if (!autoplayAllowed) return;
-    if (!isAutoplayPaused || disposed) return;
-    isAutoplayPaused = false;
-    start();
-  };
-
-  const nudge = async (delta: number): Promise<void> => {
-    const nextIndex = findNextIndex(index, delta);
-    if (nextIndex == null) return;
-    void transitionTo(nextIndex);
-    if (!isAutoplayPaused) start();
-  };
-
-  const onTouchStart = (e: TouchEvent) => {
+  const onTouchStart: EventListener = (event) => {
+    const e = event as TouchEvent;
     if (e.touches.length !== 1) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
+    runtime.touchStartX = e.touches[0].clientX;
+    runtime.touchStartY = e.touches[0].clientY;
   };
 
-  const onTouchEnd = (e: TouchEvent) => {
-    if (touchStartX == null || touchStartY == null) return;
+  const onTouchEnd: EventListener = (event) => {
+    const e = event as TouchEvent;
+    if (runtime.touchStartX == null || runtime.touchStartY == null) return;
     const touch = e.changedTouches[0];
     if (!touch) return;
 
-    const dx = touch.clientX - touchStartX;
-    const dy = touch.clientY - touchStartY;
-    touchStartX = null;
-    touchStartY = null;
+    const dx = touch.clientX - runtime.touchStartX;
+    const dy = touch.clientY - runtime.touchStartY;
+    runtime.touchStartX = null;
+    runtime.touchStartY = null;
 
     if (Math.abs(dx) < 40) return;
     if (Math.abs(dx) < Math.abs(dy)) return;
 
-    if (dx > 0) void nudge(-1);
-    else void nudge(1);
+    if (dx > 0) {
+      void nudge(runtime, -1);
+    } else {
+      void nudge(runtime, 1);
+    }
   };
 
-  const onVisibilityChange = () => {
-    if (document.hidden) pause();
-    else resume();
+  const onVisibilityChange: EventListener = () => {
+    if (document.hidden) pause(runtime);
+    else resume(runtime);
   };
 
-  if (prevBtn) {
-    const onPrev = () => void nudge(-1);
-    prevBtn.addEventListener('click', onPrev);
-    cleanupFns.push(() => prevBtn.removeEventListener('click', onPrev));
+  registerEvent(runtime, root, 'touchstart', onTouchStart, { passive: true });
+  registerEvent(runtime, root, 'touchend', onTouchEnd, { passive: true });
+  registerEvent(runtime, root, 'mouseenter', () => pause(runtime));
+  registerEvent(runtime, root, 'mouseleave', () => resume(runtime));
+  registerEvent(runtime, root, 'focusin', () => pause(runtime));
+  registerEvent(runtime, root, 'focusout', () => resume(runtime));
+  registerEvent(runtime, document, 'visibilitychange', onVisibilityChange);
+}
+
+function createGalleryRuntime(elements: GalleryElements, order: string[]): GalleryRuntime {
+  const timing = resolveTiming(elements.root);
+  const bad = new Set<string>();
+
+  return {
+    elements,
+    order,
+    bad,
+    intervalMs: timing.intervalMs,
+    fadeMs: timing.fadeMs,
+    preloadDelayMs: timing.preloadDelayMs,
+    autoplayAllowed: timing.autoplayAllowed,
+    allowIdlePreload: timing.allowIdlePreload,
+    index: 0,
+    front: elements.imgA,
+    back: elements.imgB,
+    timer: null,
+    transitionTimer: null,
+    idlePreloadTimer: null,
+    idlePreloadHandle: null,
+    pendingPreloadSrc: null,
+    isAutoplayPaused: !timing.autoplayAllowed,
+    isTransitioning: false,
+    touchStartX: null,
+    touchStartY: null,
+    disposed: false,
+    preloadOk: createPreloadOk(bad),
+    cleanupFns: [],
+  };
+}
+
+function cleanupRuntime(runtime: GalleryRuntime): void {
+  runtime.disposed = true;
+  if (runtime.timer != null) window.clearInterval(runtime.timer);
+  if (runtime.transitionTimer != null) window.clearTimeout(runtime.transitionTimer);
+  cancelPendingIdlePreload(runtime);
+  runtime.cleanupFns.forEach((fn) => fn());
+}
+
+async function bootGallery(runtime: GalleryRuntime): Promise<void> {
+  showSingle(runtime.elements);
+
+  const firstIndex = await pickFirstLoadableIndex(runtime, 0);
+  if (firstIndex == null || runtime.disposed) return;
+
+  runtime.index = firstIndex;
+  await setSrcSafe(runtime, runtime.front, runtime.order[runtime.index]);
+  if (runtime.disposed) return;
+
+  setVisible(runtime.front, true);
+  setVisible(runtime.back, false);
+  revealPlaceholder(runtime.elements.placeholder);
+  scheduleNextIdlePreload(runtime, runtime.index);
+  start(runtime);
+}
+
+export function initHomeGallery(): () => void {
+  const root = qs<HTMLElement>('[data-gallery]');
+  if (!root) return () => {};
+
+  const imgA = root.querySelector<HTMLImageElement>('[data-gallery-a]');
+  const imgB = root.querySelector<HTMLImageElement>('[data-gallery-b]');
+  const placeholder = root.querySelector<HTMLElement>('[data-gallery-placeholder]');
+  const prevBtn = root.querySelector<HTMLElement>('[data-gallery-prev]');
+  const nextBtn = root.querySelector<HTMLElement>('[data-gallery-next]');
+  if (!imgA || !imgB) return () => {};
+
+  const elements: GalleryElements = {
+    root,
+    imgA,
+    imgB,
+    placeholder,
+    prevBtn,
+    nextBtn,
+  };
+
+  const images = parseImageList(root);
+  if (images.length < 2) {
+    showSingle(elements);
+    return () => {};
   }
 
-  if (nextBtn) {
-    const onNext = () => void nudge(1);
-    nextBtn.addEventListener('click', onNext);
-    cleanupFns.push(() => nextBtn.removeEventListener('click', onNext));
-  }
-
-  root.addEventListener('touchstart', onTouchStart, { passive: true });
-  cleanupFns.push(() => root.removeEventListener('touchstart', onTouchStart));
-
-  root.addEventListener('touchend', onTouchEnd, { passive: true });
-  cleanupFns.push(() => root.removeEventListener('touchend', onTouchEnd));
-
-  root.addEventListener('mouseenter', pause);
-  cleanupFns.push(() => root.removeEventListener('mouseenter', pause));
-
-  root.addEventListener('mouseleave', resume);
-  cleanupFns.push(() => root.removeEventListener('mouseleave', resume));
-
-  root.addEventListener('focusin', pause);
-  cleanupFns.push(() => root.removeEventListener('focusin', pause));
-
-  root.addEventListener('focusout', resume);
-  cleanupFns.push(() => root.removeEventListener('focusout', resume));
-
-  document.addEventListener('visibilitychange', onVisibilityChange);
-  cleanupFns.push(() => document.removeEventListener('visibilitychange', onVisibilityChange));
-
-  void (async () => {
-    showSingle();
-    const firstIndex = await pickFirstLoadableIndex(0);
-    if (firstIndex == null || disposed) return;
-
-    index = firstIndex;
-    await setSrcSafe(front, order[index]);
-    if (disposed) return;
-
-    setVisible(front, true);
-    setVisible(back, false);
-    revealPlaceholder();
-    scheduleNextIdlePreload(index);
-    start();
-  })();
+  const runtime = createGalleryRuntime(elements, shuffleInPlace(images.slice()));
+  registerInteractions(runtime);
+  void bootGallery(runtime);
 
   return () => {
-    disposed = true;
-    if (timer != null) window.clearInterval(timer);
-    if (transitionTimer != null) window.clearTimeout(transitionTimer);
-    cancelPendingIdlePreload();
-    cleanupFns.forEach((fn) => fn());
+    cleanupRuntime(runtime);
   };
 }

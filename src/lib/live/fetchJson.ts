@@ -62,6 +62,88 @@ const toNetworkMessage = (error: unknown): string => {
   return LIVE_COPY_DE.error_network;
 };
 
+const createErrorResult = <T>(
+  fetchedAt: number,
+  error: FetchJsonError,
+  status?: number,
+): FetchJsonResult<T> => ({
+  ok: false,
+  fetchedAt,
+  status,
+  error,
+});
+
+const toHttpErrorResult = <T>(response: Response, fetchedAt: number): FetchJsonResult<T> | null => {
+  if (response.ok) return null;
+
+  if (response.status === 429) {
+    return createErrorResult(
+      fetchedAt,
+      {
+        kind: 'rate_limit',
+        message: LIVE_COPY_DE.rate_limit,
+        status: response.status,
+        retryAfterMs: toRetryAfterMs(response.headers.get('retry-after')),
+      },
+      response.status,
+    );
+  }
+
+  if (response.status >= 400 && response.status < 500) {
+    return createErrorResult(
+      fetchedAt,
+      {
+        kind: 'invalid',
+        message: `Ungueltige Antwort (HTTP ${response.status}).`,
+        status: response.status,
+      },
+      response.status,
+    );
+  }
+
+  return createErrorResult(
+    fetchedAt,
+    {
+      kind: 'network',
+      message: `${LIVE_COPY_DE.error_network} (HTTP ${response.status}).`,
+      status: response.status,
+    },
+    response.status,
+  );
+};
+
+const validatePayload = <T>(
+  payload: unknown,
+  responseStatus: number,
+  requiredKeys: string[],
+  validate?: (value: unknown) => value is T,
+): FetchJsonError | null => {
+  if (!hasRequiredKeys(payload, requiredKeys)) {
+    return {
+      kind: 'invalid',
+      message: `Antwort enthaelt nicht alle erwarteten Keys: ${requiredKeys.join(', ')}.`,
+      status: responseStatus,
+    };
+  }
+
+  if (!validate) return null;
+
+  let isValid = false;
+  try {
+    isValid = validate(payload);
+  } catch {
+    isValid = false;
+  }
+
+  if (isValid) return null;
+
+  return {
+    kind: 'invalid',
+    message: 'Antwort hat nicht das erwartete Format.',
+    status: responseStatus,
+  };
+};
+
 export const fetchJson = async <T>(
   url: string,
   options: FetchJsonOptions<T> = {},
@@ -109,96 +191,26 @@ export const fetchJson = async <T>(
       },
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return {
-          ok: false,
-          status: response.status,
-          fetchedAt,
-          error: {
-            kind: 'rate_limit',
-            message: LIVE_COPY_DE.rate_limit,
-            status: response.status,
-            retryAfterMs: toRetryAfterMs(response.headers.get('retry-after')),
-          },
-        };
-      }
-
-      if (response.status >= 400 && response.status < 500) {
-        return {
-          ok: false,
-          status: response.status,
-          fetchedAt,
-          error: {
-            kind: 'invalid',
-            message: `Ungueltige Antwort (HTTP ${response.status}).`,
-            status: response.status,
-          },
-        };
-      }
-
-      return {
-        ok: false,
-        status: response.status,
-        fetchedAt,
-        error: {
-          kind: 'network',
-          message: `${LIVE_COPY_DE.error_network} (HTTP ${response.status}).`,
-          status: response.status,
-        },
-      };
-    }
+    const httpErrorResult = toHttpErrorResult<T>(response, fetchedAt);
+    if (httpErrorResult) return httpErrorResult;
 
     let payload: unknown;
     try {
       payload = await response.json();
     } catch {
-      return {
-        ok: false,
-        status: response.status,
+      return createErrorResult(
         fetchedAt,
-        error: {
+        {
           kind: 'invalid',
           message: 'Antwort war kein gueltiges JSON.',
           status: response.status,
         },
-      };
+        response.status,
+      );
     }
 
-    if (!hasRequiredKeys(payload, requiredKeys)) {
-      return {
-        ok: false,
-        status: response.status,
-        fetchedAt,
-        error: {
-          kind: 'invalid',
-          message: `Antwort enthaelt nicht alle erwarteten Keys: ${requiredKeys.join(', ')}.`,
-          status: response.status,
-        },
-      };
-    }
-
-    if (validate) {
-      let isValid = false;
-      try {
-        isValid = validate(payload);
-      } catch {
-        isValid = false;
-      }
-
-      if (!isValid) {
-        return {
-          ok: false,
-          status: response.status,
-          fetchedAt,
-          error: {
-            kind: 'invalid',
-            message: 'Antwort hat nicht das erwartete Format.',
-            status: response.status,
-          },
-        };
-      }
-    }
+    const payloadError = validatePayload(payload, response.status, requiredKeys, validate);
+    if (payloadError) return createErrorResult(fetchedAt, payloadError, response.status);
 
     return {
       ok: true,
@@ -208,24 +220,16 @@ export const fetchJson = async <T>(
     };
   } catch (error) {
     if (didTimeout) {
-      return {
-        ok: false,
-        fetchedAt,
-        error: {
-          kind: 'timeout',
-          message: LIVE_COPY_DE.error_timeout,
-        },
-      };
+      return createErrorResult(fetchedAt, {
+        kind: 'timeout',
+        message: LIVE_COPY_DE.error_timeout,
+      });
     }
 
-    return {
-      ok: false,
-      fetchedAt,
-      error: {
-        kind: 'network',
-        message: toNetworkMessage(error),
-      },
-    };
+    return createErrorResult(fetchedAt, {
+      kind: 'network',
+      message: toNetworkMessage(error),
+    });
   } finally {
     if (timeoutId != null) clearTimeout(timeoutId);
     signal?.removeEventListener('abort', onExternalAbort);

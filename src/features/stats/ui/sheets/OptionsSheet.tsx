@@ -1,27 +1,14 @@
 import { RefreshCw, X } from 'lucide-react';
-import { useEffect, useId, useMemo, useRef } from 'react';
+import { useId, useMemo, useRef } from 'react';
 
 import { LastUpdated } from '../../../../components/live/LastUpdated';
-import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../../components/LiveBadge';
 import { STATS_PAGE_SIZES } from '../../constants';
 import type { TabKey } from '../../types-ui';
+import { useSheetDialog } from './useSheetDialog';
 
 const OPTIONS_SHEET_SCROLL_LOCK_ID = 'stats-options-sheet';
-
-function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return [];
-
-  const selector =
-    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-
-  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter((element) => {
-    if (element.getAttribute('aria-hidden') === 'true') return false;
-    if (element.hasAttribute('disabled')) return false;
-    return true;
-  });
-}
 
 function resolveReloadLabel({
   reloadDisabled,
@@ -98,7 +85,6 @@ export function OptionsSheet({
   const titleId = useId();
   const descriptionId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
-  const lastFocusedElementRef = useRef<HTMLElement | null>(null);
   const showReload = typeof onReload === 'function';
   const reloadLabel = useMemo(
     () =>
@@ -119,68 +105,12 @@ export function OptionsSheet({
   );
   const showLeaderboardControls = activeTab === 'ranglisten';
 
-  useEffect(() => {
-    if (!open) return;
-
-    lastFocusedElementRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    lockPageScroll(OPTIONS_SHEET_SCROLL_LOCK_ID);
-
-    const focusRaf = window.requestAnimationFrame(() => {
-      const focusable = getFocusableElements(dialogRef.current);
-      const first = focusable[0];
-      if (first) {
-        first.focus();
-        return;
-      }
-      dialogRef.current?.focus();
-    });
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (event.key !== 'Tab') return;
-
-      const focusable = getFocusableElements(dialogRef.current);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-
-      if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last.focus();
-        return;
-      }
-
-      if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-
-    return () => {
-      window.cancelAnimationFrame(focusRaf);
-      window.removeEventListener('keydown', onKeyDown);
-      unlockPageScroll(OPTIONS_SHEET_SCROLL_LOCK_ID);
-
-      const lastFocusedElement = lastFocusedElementRef.current;
-      if (lastFocusedElement && document.contains(lastFocusedElement)) {
-        lastFocusedElement.focus();
-      }
-    };
-  }, [onClose, open]);
+  useSheetDialog({
+    open,
+    onClose,
+    dialogRef,
+    scrollLockId: OPTIONS_SHEET_SCROLL_LOCK_ID,
+  });
 
   if (!open) return null;
 

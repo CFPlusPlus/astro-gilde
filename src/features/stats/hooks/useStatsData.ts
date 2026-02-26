@@ -80,6 +80,53 @@ function makeEmptyLeaderboardState(): LeaderboardState {
   };
 }
 
+type LoadLeaderboardOptions = {
+  openLoadedPage: boolean;
+  forceRefresh: boolean;
+  silent: boolean;
+};
+
+function normalizeLoadLeaderboardOptions(opts?: {
+  openLoadedPage?: boolean;
+  forceRefresh?: boolean;
+  silent?: boolean;
+}): LoadLeaderboardOptions {
+  return {
+    openLoadedPage: opts?.openLoadedPage ?? false,
+    forceRefresh: opts?.forceRefresh ?? false,
+    silent: opts?.silent ?? false,
+  };
+}
+
+function resolveCurrentLeaderboardState({
+  stateKey,
+  kingState,
+  boardStates,
+}: {
+  stateKey: string;
+  kingState: LeaderboardState;
+  boardStates: Record<string, LeaderboardState>;
+}): LeaderboardState {
+  if (stateKey === 'king') return kingState;
+  return boardStates[stateKey] || makeEmptyLeaderboardState();
+}
+
+function resolveNextCurrentPage({
+  previousState,
+  pagesLength,
+  usedCursor,
+  openLoadedPage,
+}: {
+  previousState: LeaderboardState;
+  pagesLength: number;
+  usedCursor: boolean;
+  openLoadedPage: boolean;
+}): number {
+  if (!usedCursor) return 0;
+  if (openLoadedPage) return pagesLength - 1;
+  return previousState.currentPage;
+}
+
 export function useStatsData({
   activeTab,
   pageSize,
@@ -308,6 +355,40 @@ export function useStatsData({
     [setApiErrorWithKind],
   );
 
+  const handleLeaderboardError = useCallback(
+    ({ error, stateKey, silent }: { error: unknown; stateKey: string; silent: boolean }) => {
+      if (!silent) {
+        console.warn('Leaderboard Fehler', error);
+      }
+
+      const liveErrorKind = resolveLeaderboardErrorKind(error);
+      if (!silent && liveErrorKind === 'rate_limit') {
+        registerRateLimit(resolveRetryAfterMs(error));
+      } else if (!silent) {
+        setApiErrorWithKind(
+          getLiveMessage({ status: 'error', errorKind: liveErrorKind }) ?? API_ERROR_MESSAGE,
+          liveErrorKind,
+        );
+      }
+
+      if (silent) {
+        setBoardState(stateKey, (state) => ({
+          ...state,
+          loading: false,
+        }));
+        return;
+      }
+
+      setBoardState(stateKey, (state) => ({
+        ...state,
+        loading: false,
+        liveStatus: state.loaded ? 'stale' : 'error',
+        liveErrorKind,
+      }));
+    },
+    [registerRateLimit, setApiErrorWithKind, setBoardState],
+  );
+
   const loadLeaderboard = useCallback(
     async (
       metricId: string,
@@ -316,16 +397,15 @@ export function useStatsData({
     ) => {
       if (isRateLimitBlocked) return;
 
-      const openLoadedPage = opts?.openLoadedPage ?? false;
-      const forceRefresh = opts?.forceRefresh ?? false;
-      const silent = opts?.silent ?? false;
+      const { openLoadedPage, forceRefresh, silent } = normalizeLoadLeaderboardOptions(opts);
       if (!silent) {
         setApiErrorWithKind(null, null);
       }
-      const currentState =
-        stateKey === 'king'
-          ? kingRef.current
-          : boardsRef.current[stateKey] || makeEmptyLeaderboardState();
+      const currentState = resolveCurrentLeaderboardState({
+        stateKey,
+        kingState: kingRef.current,
+        boardStates: boardsRef.current,
+      });
 
       if (currentState.loading) return;
 
@@ -348,11 +428,12 @@ export function useStatsData({
 
         setBoardState(stateKey, (state) => {
           const pages = cursor ? [...state.pages, list] : [list];
-          const nextCurrentPage = cursor
-            ? openLoadedPage
-              ? pages.length - 1
-              : state.currentPage
-            : 0;
+          const nextCurrentPage = resolveNextCurrentPage({
+            previousState: state,
+            pagesLength: pages.length,
+            usedCursor: Boolean(cursor),
+            openLoadedPage,
+          });
 
           return {
             loaded: true,
@@ -367,34 +448,10 @@ export function useStatsData({
           };
         });
       } catch (error) {
-        if (!silent) {
-          console.warn('Leaderboard Fehler', error);
-        }
-        const liveErrorKind = resolveLeaderboardErrorKind(error);
-        if (!silent && liveErrorKind === 'rate_limit') {
-          registerRateLimit(resolveRetryAfterMs(error));
-        } else if (!silent) {
-          setApiErrorWithKind(
-            getLiveMessage({ status: 'error', errorKind: liveErrorKind }) ?? API_ERROR_MESSAGE,
-            liveErrorKind,
-          );
-        }
-        if (silent) {
-          setBoardState(stateKey, (state) => ({
-            ...state,
-            loading: false,
-          }));
-          return;
-        }
-        setBoardState(stateKey, (state) => ({
-          ...state,
-          loading: false,
-          liveStatus: state.loaded ? 'stale' : 'error',
-          liveErrorKind,
-        }));
+        handleLeaderboardError({ error, stateKey, silent });
       }
     },
-    [isRateLimitBlocked, mergePlayers, registerRateLimit, setApiErrorWithKind, setBoardState],
+    [handleLeaderboardError, isRateLimitBlocked, mergePlayers, setApiErrorWithKind, setBoardState],
   );
 
   const retrySummary = useCallback(() => {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Filter, X } from 'lucide-react';
 import type { MetricDef } from '../types';
 import { resolveStatsCategoryDef } from '../statsCategories';
+import { MetricCategoryOption } from './MetricCategoryOption';
 
 export type GroupedMetrics = Array<{ cat: string; ids: string[] }>;
 
@@ -113,43 +114,15 @@ function MetricPickerImpl({
                     const isActive = id === activeMetricId;
                     return (
                       <li key={id}>
-                        <button
-                          type="button"
-                          onClick={() => onSelectMetric(id)}
-                          className={[
-                            'group relative w-full px-2.5 py-2.5 text-left text-sm font-semibold transition-colors sm:px-4 sm:py-3',
-                            'focus-visible:ring-offset-bg focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
-                            isActive
-                              ? 'bg-surface-solid/45 text-fg'
-                              : 'text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35',
-                          ].join(' ')}
-                          data-active={isActive ? 'true' : 'false'}
-                        >
-                          <div className="flex items-start gap-3">
-                            <span
-                              className={[
-                                'mt-0.5 h-4 w-1 flex-none rounded-full transition-colors',
-                                isActive ? 'bg-accent' : 'group-hover:bg-accent/35 bg-transparent',
-                              ].join(' ')}
-                              aria-hidden="true"
-                            />
-                            <span className="min-w-0 flex-1">
-                              <span className="flex items-start justify-between gap-3">
-                                <span className="min-w-0 flex-1 truncate">
-                                  {categoryDef.label || id}
-                                </span>
-                                {categoryDef.unit ? (
-                                  <span className="text-muted mt-0.5 text-xs font-semibold whitespace-nowrap">
-                                    {categoryDef.unit}
-                                  </span>
-                                ) : null}
-                              </span>
-                              <span className="text-muted mt-1 block text-xs break-all">
-                                ID: {id}
-                              </span>
-                            </span>
-                          </div>
-                        </button>
+                        <MetricCategoryOption
+                          id={id}
+                          label={categoryDef.label || id}
+                          unit={categoryDef.unit}
+                          isActive={isActive}
+                          onSelect={() => onSelectMetric(id)}
+                          activeClassName="bg-surface-solid/45 text-fg"
+                          inactiveClassName="text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35"
+                        />
                       </li>
                     );
                   })}

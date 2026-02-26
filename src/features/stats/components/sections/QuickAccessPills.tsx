@@ -1,6 +1,5 @@
-import { resolveStatsCategoryDef } from '../../statsCategories';
 import type { MetricDef } from '../../types';
-import { PillScroller } from '../../ui/common/PillScroller';
+import { MetricPills } from './MetricPills';
 
 export function QuickAccessPills({
   metrics,
@@ -19,35 +18,13 @@ export function QuickAccessPills({
 
       <div className="mt-2">
         {metrics && metricIds.length > 0 ? (
-          <PillScroller
+          <MetricPills
+            metrics={metrics}
+            metricIds={metricIds}
+            activeMetricId={activeMetricId}
+            onSelectMetric={onSelectMetric}
             ariaLabel="Schnellzugriff Kategorien"
-            itemCount={metricIds.length}
-            fadeEdges
-            listClassName="translate-y-[2px]"
-          >
-            {metricIds.map((id) => {
-              const categoryDef = resolveStatsCategoryDef(id, metrics[id]);
-              const isActive = id === activeMetricId;
-
-              return (
-                <li key={id}>
-                  <button
-                    type="button"
-                    onClick={() => onSelectMetric(id)}
-                    className={[
-                      'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
-                      isActive
-                        ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
-                        : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
-                    ].join(' ')}
-                    aria-pressed={isActive}
-                  >
-                    {categoryDef.label || id}
-                  </button>
-                </li>
-              );
-            })}
-          </PillScroller>
+          />
         ) : (
           <div
             className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
