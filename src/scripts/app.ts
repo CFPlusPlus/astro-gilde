@@ -73,6 +73,12 @@ const hasAnyTarget = (selector: string): boolean => document.querySelector(selec
             }),
           );
         }
+
+        if (hasAnyTarget('[data-home]')) {
+          const { initHomeApp } = await import('./app-home');
+          if (runId !== mountRunId) return;
+          addCleanup(initHomeApp());
+        }
       } finally {
         const runCleanup = (): void => {
           while (nextCleanup.length > 0) {
