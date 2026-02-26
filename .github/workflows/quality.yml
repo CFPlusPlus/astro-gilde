@@ -43,6 +43,9 @@ jobs:
       - name: Type / Template check (Astro)
         run: npm run check
 
+      - name: Config drift check (site URLs)
+        run: npm run config:check
+
       - name: Unit tests (Vitest)
         run: npm run test
 

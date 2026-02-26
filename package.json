@@ -22,6 +22,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "check": "astro check",
+    "config:check": "node scripts/check-config-drift.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test"
   },
