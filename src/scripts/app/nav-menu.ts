@@ -4,6 +4,7 @@ import { lockPageScroll, unlockPageScroll } from './scroll-lock';
 export interface NavMenuController {
   closeMenu: () => void;
   isMenuOpen: () => boolean;
+  cleanup: () => void;
 }
 
 export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuController => {
@@ -23,6 +24,20 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
   const menuSupportsInert = 'inert' in HTMLElement.prototype;
   let menuLastFocusedEl: HTMLElement | null = null;
   let menuFocusTrapBound = false;
+  let menuFocusTimer: number | null = null;
+  const cleanupListeners: Array<() => void> = [];
+
+  const addListener = <T extends EventTarget>(
+    target: T,
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions,
+  ): void => {
+    target.addEventListener(type, listener, options);
+    cleanupListeners.push(() => {
+      target.removeEventListener(type, listener, options);
+    });
+  };
 
   const getMenuBackgroundTargets = (): HTMLElement[] => {
     return Array.from(document.body.children).filter((child): child is HTMLElement => {
@@ -157,10 +172,9 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
   };
 
   const closeMenu = (): void => {
-    if (!panel || !toggle) return;
-    panel.classList.add('hidden');
+    if (panel) panel.classList.add('hidden');
     if (overlay) overlay.classList.add('hidden');
-    toggle.setAttribute('aria-expanded', 'false');
+    if (toggle) toggle.setAttribute('aria-expanded', 'false');
     if (iconOpen) iconOpen.classList.remove('hidden');
     if (iconClose) iconClose.classList.add('hidden');
 
@@ -190,7 +204,9 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
       setMenuBackgroundInert(true);
       bindMenuFocusTrap();
 
-      window.setTimeout(() => {
+      if (menuFocusTimer != null) window.clearTimeout(menuFocusTimer);
+      menuFocusTimer = window.setTimeout(() => {
+        menuFocusTimer = null;
         const firstFocusable = getMenuFocusable()[0];
         if (firstFocusable) firstFocusable.focus();
       }, 0);
@@ -210,33 +226,34 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
     }
     toggle.setAttribute('aria-expanded', isMenuOpen() ? 'true' : 'false');
 
-    toggle.addEventListener('click', (e: MouseEvent) => {
+    const onToggleClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       e.stopPropagation();
       if (isMenuOpen()) closeMenu();
       else openMenu();
-    });
+    };
 
-    document.addEventListener('click', (e: MouseEvent) => {
+    const onDocumentClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       if (!isMenuOpen()) return;
       const target = e.target;
       if (!(target instanceof Node)) return;
       if (panel.contains(target) || toggle.contains(target)) return;
       closeMenu();
-    });
+    };
 
-    if (overlay) {
-      overlay.addEventListener('click', () => closeMenu());
-    }
+    const onOverlayClick: EventListener = (): void => closeMenu();
 
-    panel.addEventListener('click', (e: MouseEvent) => {
+    const onPanelClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       const target = e.target;
       if (!(target instanceof Element)) return;
       const link = target.closest('a');
       if (link) closeMenu();
-    });
+    };
 
     let lastMobileState = isMobile();
-    window.addEventListener('resize', () => {
+    const onResize: EventListener = (): void => {
       const mobileState = isMobile();
 
       // Menue bei mobilen Hoehenaenderungen (Adressleiste ein/aus) offen lassen,
@@ -251,8 +268,28 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
       if (overlay) overlay.classList.toggle('hidden', !mobileState);
       if (mobileState) lockScroll();
       else unlockScroll();
-    });
+    };
+
+    addListener(toggle, 'click', onToggleClick);
+    addListener(document, 'click', onDocumentClick);
+    if (overlay) addListener(overlay, 'click', onOverlayClick);
+    addListener(panel, 'click', onPanelClick);
+    addListener(window, 'resize', onResize);
   }
 
-  return { closeMenu, isMenuOpen };
+  const cleanup = (): void => {
+    if (menuFocusTimer != null) {
+      window.clearTimeout(menuFocusTimer);
+      menuFocusTimer = null;
+    }
+
+    closeMenu();
+
+    while (cleanupListeners.length > 0) {
+      const stop = cleanupListeners.pop();
+      stop?.();
+    }
+  };
+
+  return { closeMenu, isMenuOpen, cleanup };
 };
