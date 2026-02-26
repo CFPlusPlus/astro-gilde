@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from 'react';
 
-import { KingSection } from './components/sections/KingSection';
 import { OverviewSection } from './components/sections/OverviewSection';
-import { RankingsSection } from './components/sections/RankingsSection';
 import { getStatsPanelId, getStatsTabId } from './components/StatsNavPills';
 import { StatsToolbar } from './components/StatsToolbar';
-import { VersusSection } from './components/sections/VersusSection';
 import { useStatsData } from './hooks/useStatsData';
 import { useStatsState } from './hooks/useStatsState';
 import { useStatsUrlState } from './hooks/useStatsUrlState';
@@ -16,7 +13,36 @@ import { resolveStatsCategoryDef } from './statsCategories';
 import { parseStatsUrlState } from './url-state';
 import { normalizeUmlauts } from './normalizeUmlauts';
 import { STATS_OPEN_CATEGORIES_SHEET_EVENT } from './ui/events';
+import { LIVE_COPY_DE } from '../../lib/live/copy.de';
 import type { MetricDef } from './types';
+
+const LazyKingSection = lazy(() =>
+  import('./components/sections/KingSection').then((module) => ({ default: module.KingSection })),
+);
+const LazyRankingsSection = lazy(() =>
+  import('./components/sections/RankingsSection').then((module) => ({
+    default: module.RankingsSection,
+  })),
+);
+const LazyVersusSection = lazy(() =>
+  import('./components/sections/VersusSection').then((module) => ({
+    default: module.VersusSection,
+  })),
+);
+
+function StatsTabFallback({ label }: { label: string }) {
+  return (
+    <div className="pt-4" role="status" aria-live="polite" aria-busy="true">
+      <div className="mg-notice text-sm" data-variant="neutral">
+        <span className="text-fg/90">{label}</span>
+      </div>
+      <div
+        className="bg-surface-solid/25 border-border/70 mt-3 min-h-[20rem] rounded-[var(--radius)] border"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
 
 function resolveRankMetricFromCandidates(
   candidates: string[],
@@ -67,6 +93,18 @@ function resolveRankMetricFromCandidates(
 export default function StatsApp() {
   const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
   const initialUrlStateHydratedRef = useRef(false);
+
+  useEffect(() => {
+    const placeholder = document.getElementById('stats-overview-placeholder');
+    if (!placeholder) return;
+    placeholder.classList.add('opacity-0');
+    const timeoutId = window.setTimeout(() => {
+      placeholder.remove();
+    }, 220);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const {
     activeTab,
@@ -386,16 +424,18 @@ export default function StatsApp() {
           id={getStatsPanelId('king')}
           aria-labelledby={getStatsTabId('king')}
         >
-          <KingSection
-            king={king}
-            pageSize={pageSize}
-            getPlayerName={getPlayerName}
-            onPlayerClick={goToPlayer}
-            onGoPage={setKingCurrentPage}
-            onLoadMore={() => {
-              void loadMoreKing();
-            }}
-          />
+          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.table_loading} />}>
+            <LazyKingSection
+              king={king}
+              pageSize={pageSize}
+              getPlayerName={getPlayerName}
+              onPlayerClick={goToPlayer}
+              onGoPage={setKingCurrentPage}
+              onLoadMore={() => {
+                void loadMoreKing();
+              }}
+            />
+          </Suspense>
         </section>
       ) : null}
 
@@ -405,24 +445,26 @@ export default function StatsApp() {
           id={getStatsPanelId('ranglisten')}
           aria-labelledby={getStatsTabId('ranglisten')}
         >
-          <RankingsSection
-            metrics={metrics}
-            groupedMetrics={groupedMetrics}
-            metricFilter={metricFilter}
-            onMetricFilterChange={setMetricFilter}
-            activeMetricId={activeMetricId}
-            onSelectMetric={handleSelectMetric}
-            onReset={handleResetRankings}
-            hasNoRanklistResults={hasNoRanklistResults}
-            activeMetricState={activeMetricState}
-            pageSize={pageSize}
-            getPlayerName={getPlayerName}
-            onPlayerClick={goToPlayer}
-            onGoPage={setActiveMetricCurrentPage}
-            onLoadMore={() => {
-              void loadMoreActiveMetric();
-            }}
-          />
+          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.rankings_loading} />}>
+            <LazyRankingsSection
+              metrics={metrics}
+              groupedMetrics={groupedMetrics}
+              metricFilter={metricFilter}
+              onMetricFilterChange={setMetricFilter}
+              activeMetricId={activeMetricId}
+              onSelectMetric={handleSelectMetric}
+              onReset={handleResetRankings}
+              hasNoRanklistResults={hasNoRanklistResults}
+              activeMetricState={activeMetricState}
+              pageSize={pageSize}
+              getPlayerName={getPlayerName}
+              onPlayerClick={goToPlayer}
+              onGoPage={setActiveMetricCurrentPage}
+              onLoadMore={() => {
+                void loadMoreActiveMetric();
+              }}
+            />
+          </Suspense>
         </section>
       ) : null}
 
@@ -432,45 +474,47 @@ export default function StatsApp() {
           id={getStatsPanelId('versus')}
           aria-labelledby={getStatsTabId('versus')}
         >
-          <VersusSection
-            maxMetrics={versus.maxMetrics}
-            searchA={versus.searchA}
-            searchB={versus.searchB}
-            versusMetricFilter={versus.versusMetricFilter}
-            onVersusMetricFilterChange={versus.setVersusMetricFilter}
-            versusMetricIds={versus.versusMetricIds}
-            versusPlayerA={versus.versusPlayerA}
-            versusPlayerB={versus.versusPlayerB}
-            versusCatalog={versus.versusCatalog}
-            versusLoading={versus.versusLoading}
-            versusError={versus.versusError}
-            versusNotice={versus.versusNotice}
-            versusFilteredCatalog={versus.versusFilteredCatalog}
-            versusGroupedMetrics={versus.versusGroupedMetrics}
-            hasNoVersusResults={versus.hasNoVersusResults}
-            isSameVersusPlayer={versus.isSameVersusPlayer}
-            canRunVersus={versus.canRunVersus}
-            versusSwapFxClass={versus.versusSwapFxClass}
-            versusCardAZClass={versus.versusCardAZClass}
-            versusCardBZClass={versus.versusCardBZClass}
-            hasVersusData={versus.hasVersusData}
-            versusRows={versus.versusRows}
-            versusSummary={versus.versusSummary}
-            hasVersusResults={versus.hasVersusResults}
-            hasMissingVersusValues={versus.hasMissingVersusValues}
-            onSetVersusPlayer={versus.setVersusPlayer}
-            onClearVersusPlayer={versus.clearVersusPlayer}
-            onSetVersusSearchOpen={versus.setVersusSearchOpen}
-            onSwapVersusPlayers={versus.swapVersusPlayers}
-            onUpdateVersusSearch={versus.updateVersusSearch}
-            onRunVersusCompare={() => {
-              void versus.runVersusCompare();
-            }}
-            onApplyVersusSelection={versus.applyVersusSelection}
-            onToggleVersusMetric={versus.toggleVersusMetric}
-            onResetVersus={versus.resetVersus}
-            onGoToPlayer={goToPlayer}
-          />
+          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.loading} />}>
+            <LazyVersusSection
+              maxMetrics={versus.maxMetrics}
+              searchA={versus.searchA}
+              searchB={versus.searchB}
+              versusMetricFilter={versus.versusMetricFilter}
+              onVersusMetricFilterChange={versus.setVersusMetricFilter}
+              versusMetricIds={versus.versusMetricIds}
+              versusPlayerA={versus.versusPlayerA}
+              versusPlayerB={versus.versusPlayerB}
+              versusCatalog={versus.versusCatalog}
+              versusLoading={versus.versusLoading}
+              versusError={versus.versusError}
+              versusNotice={versus.versusNotice}
+              versusFilteredCatalog={versus.versusFilteredCatalog}
+              versusGroupedMetrics={versus.versusGroupedMetrics}
+              hasNoVersusResults={versus.hasNoVersusResults}
+              isSameVersusPlayer={versus.isSameVersusPlayer}
+              canRunVersus={versus.canRunVersus}
+              versusSwapFxClass={versus.versusSwapFxClass}
+              versusCardAZClass={versus.versusCardAZClass}
+              versusCardBZClass={versus.versusCardBZClass}
+              hasVersusData={versus.hasVersusData}
+              versusRows={versus.versusRows}
+              versusSummary={versus.versusSummary}
+              hasVersusResults={versus.hasVersusResults}
+              hasMissingVersusValues={versus.hasMissingVersusValues}
+              onSetVersusPlayer={versus.setVersusPlayer}
+              onClearVersusPlayer={versus.clearVersusPlayer}
+              onSetVersusSearchOpen={versus.setVersusSearchOpen}
+              onSwapVersusPlayers={versus.swapVersusPlayers}
+              onUpdateVersusSearch={versus.updateVersusSearch}
+              onRunVersusCompare={() => {
+                void versus.runVersusCompare();
+              }}
+              onApplyVersusSelection={versus.applyVersusSelection}
+              onToggleVersusMetric={versus.toggleVersusMetric}
+              onResetVersus={versus.resetVersus}
+              onGoToPlayer={goToPlayer}
+            />
+          </Suspense>
         </section>
       ) : null}
     </StatsLayout>

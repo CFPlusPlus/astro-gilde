@@ -11,7 +11,7 @@ export const initTheme = ({
   qs: Qs;
   qsa: Qsa;
   showToast: ShowToast;
-}): void => {
+}): (() => void) => {
   const THEME_KEY = 'theme';
   const VALID_THEMES: ReadonlySet<ThemeMode> = new Set(['system', 'light', 'dark']);
 
@@ -57,12 +57,18 @@ export const initTheme = ({
   applyTheme(getStoredTheme());
 
   const themeBtn = qs<HTMLElement>('[data-theme-toggle]');
-  if (!themeBtn) return;
+  if (!themeBtn) return () => {};
 
-  themeBtn.addEventListener('click', () => {
+  const onThemeClick = (): void => {
     const next = cycleTheme();
     applyTheme(next);
     const label = next === 'system' ? 'System' : next === 'dark' ? 'Dark' : 'Light';
     showToast(`Theme: ${label}`);
-  });
+  };
+
+  themeBtn.addEventListener('click', onThemeClick);
+
+  return () => {
+    themeBtn.removeEventListener('click', onThemeClick);
+  };
 };

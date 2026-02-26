@@ -85,7 +85,13 @@ const toLiveError = (error: FetchJsonError): LiveDataError => ({
   retryAfterMs: error.retryAfterMs,
 });
 
-export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qsa: Qsa }): void => {
+export const initLiveCounters = ({
+  config,
+  qsa,
+}: {
+  config: BrowserAppConfig;
+  qsa: Qsa;
+}): (() => void) => {
   const liveDebugEnabled = (() => {
     if (!import.meta.env.DEV) return false;
 
@@ -401,7 +407,24 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   );
 
   const hasLiveTargets = counterDefinitions.some((definition) => definition.targets.length > 0);
-  if (!hasLiveTargets) return;
+  if (!hasLiveTargets) return () => {};
+
+  let isDisposed = false;
+  const cleanupFns: Array<() => void> = [];
+  let liveNotesInterval: number | null = null;
+  const manualRevalidateTimers = new Set<number>();
+
+  const addListener = <T extends EventTarget>(
+    target: T,
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
+  ): void => {
+    target.addEventListener(type, listener, options);
+    cleanupFns.push(() => {
+      target.removeEventListener(type, listener, options);
+    });
+  };
 
   const isLiveTileKey = (key: LiveCounterKey): key is LiveTileKey =>
     key === 'mc-online' || key === 'discord-online';
@@ -429,6 +452,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     state: LiveDataState<string>,
     source?: LiveSource | null,
   ): void => {
+    if (isDisposed) return;
     if (!liveDebugEnabled) return;
 
     const nextSource = source ?? liveTileSourceByKey.get(key) ?? null;
@@ -454,6 +478,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   };
 
   const ensureLiveTileDebugElements = (): void => {
+    if (isDisposed) return;
     if (!liveDebugEnabled) return;
 
     (['mc-online', 'discord-online'] as const).forEach((key) => {
@@ -470,6 +495,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   };
 
   const setTargetsState = (targets: HTMLElement[], state: LiveDataStatus, text: string): void => {
+    if (isDisposed) return;
     targets.forEach((el) => {
       el.classList.add('mg-live-counter');
       el.dataset.liveState = state;
@@ -510,6 +536,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   };
 
   const syncLiveTileRetryState = (key: LiveTileKey, now = Date.now()): void => {
+    if (isDisposed) return;
     const refs = liveTileRefs[key];
     const isBusy = liveTileRetryBusyByKey.get(key) === true;
     const hasRateLimitCooldown = getRateLimitRemainingMs(key, now) > 0;
@@ -563,6 +590,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     state: LiveDataState<string>,
     source?: LiveSource | null,
   ): void => {
+    if (isDisposed) return;
     const refs = liveTileRefs[key];
     if (!refs.roots.length && !refs.notes.length && !refs.actions.length) return;
     liveTileStateByKey.set(key, state);
@@ -605,6 +633,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     errorValue?: string;
     debugSource?: LiveSource | null;
   }): void => {
+    if (isDisposed) return;
     const { key, targets, state, format, errorValue = LIVE_ERROR_VALUE, debugSource } = opts;
 
     if (state.status === 'loading') {
@@ -632,6 +661,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     definition: CounterDefinition,
     options?: CounterRevalidateOptions,
   ): Promise<void> => {
+    if (isDisposed) return;
     const { key, targets, fetcher, format, errorValue = LIVE_ERROR_VALUE, thresholds } = definition;
     if (!targets.length) return;
     if (inFlightKeys.has(key)) return;
@@ -666,6 +696,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
       if (!resource.revalidate) return;
       const latest = await resource.revalidate;
+      if (isDisposed) return;
       updateRateLimitWindow(key, latest);
 
       applyCounterState({
@@ -688,6 +719,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         const retryDelayMs = LIVE_AUTO_RETRY_BASE_DELAY_MS * 2 ** retryAttempt;
         const timer = window.setTimeout(() => {
           autoRetryTimerByKey.delete(key);
+          if (isDisposed) return;
           void updateCounter(definition, {
             applyInitialState: false,
             retryAttempt: retryAttempt + 1,
@@ -724,6 +756,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   };
 
   const revalidate = (key: LiveCounterKey, options?: { force?: boolean }): void => {
+    if (isDisposed) return;
     const definition = counterDefinitionsByKey.get(key);
     if (!definition) return;
 
@@ -742,9 +775,12 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
       manualRevalidateUntilByKey.set(key, now + LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS);
       syncLiveTileRetryState(key, now);
-      window.setTimeout(() => {
+      const timer = window.setTimeout(() => {
+        manualRevalidateTimers.delete(timer);
+        if (isDisposed) return;
         syncLiveTileRetryState(key);
       }, LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS + 40);
+      manualRevalidateTimers.add(timer);
 
       applyCounterState({
         key,
@@ -790,9 +826,10 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
   (['mc-online', 'discord-online'] as const).forEach((key) => {
     liveTileRefs[key].retries.forEach((button) => {
-      button.addEventListener('click', () => {
+      const onRetryClick = (): void => {
         revalidate(key, { force: true });
-      });
+      };
+      addListener(button, 'click', onRetryClick);
     });
   });
 
@@ -804,7 +841,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
     });
   };
 
-  const runWhenIdleOrInteracted = (cb: () => void): void => {
+  const runWhenIdleOrInteracted = (cb: () => void): (() => void) => {
     const idleApi = window as Window & {
       requestIdleCallback?: (callback: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
@@ -816,6 +853,7 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
 
     const runOnce = (): void => {
       if (started) return;
+      if (isDisposed) return;
       started = true;
 
       cleanup();
@@ -862,12 +900,13 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
         },
         { timeout: LIVE_IDLE_TIMEOUT_MS },
       );
-      return;
+      return cleanup;
     }
 
     idleTimeout = window.setTimeout(() => {
       runOnce();
     }, LIVE_IDLE_FALLBACK_DELAY_MS);
+    return cleanup;
   };
 
   counterDefinitions.forEach((definition) => {
@@ -883,17 +922,43 @@ export const initLiveCounters = ({ config, qsa }: { config: BrowserAppConfig; qs
   });
 
   if (hasLiveTileTargets) {
-    window.setInterval(() => {
+    liveNotesInterval = window.setInterval(() => {
       refreshLiveTileNotes();
     }, LIVE_RELATIVE_REFRESH_MS);
   }
 
-  document.addEventListener('visibilitychange', () => {
+  const onVisibilityChange = (): void => {
     if (document.visibilityState !== 'visible') return;
     refreshCounters({ onlyStale: true });
-  });
+  };
+  addListener(document, 'visibilitychange', onVisibilityChange);
 
-  runWhenIdleOrInteracted(() => {
+  const stopIdleBootstrap = runWhenIdleOrInteracted(() => {
     refreshCounters();
   });
+
+  return () => {
+    isDisposed = true;
+    stopIdleBootstrap();
+
+    if (liveNotesInterval != null) {
+      window.clearInterval(liveNotesInterval);
+      liveNotesInterval = null;
+    }
+
+    manualRevalidateTimers.forEach((timer) => {
+      window.clearTimeout(timer);
+    });
+    manualRevalidateTimers.clear();
+
+    autoRetryTimerByKey.forEach((timer) => {
+      window.clearTimeout(timer);
+    });
+    autoRetryTimerByKey.clear();
+
+    while (cleanupFns.length > 0) {
+      const stop = cleanupFns.pop();
+      stop?.();
+    }
+  };
 };

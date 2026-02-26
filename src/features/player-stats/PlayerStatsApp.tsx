@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Clock3, Info, Map as MapIcon, SearchX, Skull, Swords } from 'lucide-react';
 
 import { nf, nf2 } from './format';
@@ -49,6 +49,18 @@ export default function PlayerStatsApp() {
   const hasUuidInLocation = uuidParam.trim().length > 0;
   const isLoading = hasUuidInLocation && !apiError && !stats;
   const hasData = Boolean(stats) && !apiError;
+
+  useEffect(() => {
+    const placeholder = document.getElementById('player-stats-placeholder');
+    if (!placeholder) return;
+    placeholder.classList.add('opacity-0');
+    const timeoutId = window.setTimeout(() => {
+      placeholder.remove();
+    }, 220);
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
 
   const kpiItems = useMemo<KpiItem[]>(() => {
     const asObj = (v: unknown) =>

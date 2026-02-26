@@ -16,8 +16,23 @@ export const initJoinModal = ({
   showToast: ShowToast;
   closeMenu: () => void;
   isMenuOpen: () => boolean;
-}): void => {
+}): (() => void) => {
   const JOIN_MODAL_SCROLL_LOCK_ID = 'join-modal';
+  const cleanup: Array<() => void> = [];
+  const pendingTimers = new Set<number>();
+
+  const addListener = <T extends EventTarget>(
+    target: T,
+    type: string,
+    listener: EventListener,
+    options?: boolean | AddEventListenerOptions,
+  ): void => {
+    target.addEventListener(type, listener, options);
+    cleanup.push(() => {
+      target.removeEventListener(type, listener, options);
+    });
+  };
+
   const fallbackCopy = (text: string): boolean => {
     try {
       const result = window.prompt('Server-IP kopieren:', text);
@@ -61,6 +76,7 @@ export const initJoinModal = ({
   const joinModalCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
   const inlineCopyButtons = qsa<HTMLElement>('[data-copy-ip-inline]');
   const inlineCopyFeedbackTimers = new WeakMap<HTMLElement, number>();
+  const joinTriggerButtons = qsa<HTMLElement>('[data-copy-ip]');
 
   let modalLastFocusedEl: HTMLElement | null = null;
 
@@ -98,10 +114,12 @@ export const initJoinModal = ({
     joinModalRoot.setAttribute('aria-hidden', 'false');
     lockPageScroll(JOIN_MODAL_SCROLL_LOCK_ID);
 
-    window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
+      pendingTimers.delete(timer);
       const focusTarget = getJoinModalFocusable()[0] ?? joinModalDialog;
       focusTarget.focus();
     }, 0);
+    pendingTimers.add(timer);
   };
 
   const trapJoinModalFocus = (e: KeyboardEvent): void => {
@@ -130,12 +148,16 @@ export const initJoinModal = ({
     }
   };
 
-  if (joinModalOverlay) {
-    joinModalOverlay.addEventListener('click', () => closeJoinModal());
+  if (!joinModalRoot && joinTriggerButtons.length === 0 && inlineCopyButtons.length === 0) {
+    return () => {};
   }
 
+  const onOverlayClick: EventListener = (): void => closeJoinModal();
+  if (joinModalOverlay) addListener(joinModalOverlay, 'click', onOverlayClick);
+
+  const onCloseClick: EventListener = (): void => closeJoinModal();
   joinModalCloseButtons.forEach((btn) => {
-    btn.addEventListener('click', () => closeJoinModal());
+    addListener(btn, 'click', onCloseClick);
   });
 
   const setModalCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
@@ -153,23 +175,32 @@ export const initJoinModal = ({
 
   const flashModalCopyButton = (btn: HTMLElement): void => {
     const runningTimer = joinModalCopyFeedbackTimers.get(btn);
-    if (runningTimer != null) window.clearTimeout(runningTimer);
+    if (runningTimer != null) {
+      window.clearTimeout(runningTimer);
+      pendingTimers.delete(runningTimer);
+    }
 
     setModalCopyButtonState(btn, true);
 
     const timer = window.setTimeout(() => {
+      pendingTimers.delete(timer);
       setModalCopyButtonState(btn, false);
       joinModalCopyFeedbackTimers.delete(btn);
     }, 1600);
+    pendingTimers.add(timer);
     joinModalCopyFeedbackTimers.set(btn, timer);
   };
 
   joinModalCopyButtons.forEach((btn) => {
-    btn.addEventListener('click', async (e: MouseEvent) => {
+    const onModalCopyClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       e.preventDefault();
-      const ok = await copyIp({ silentSuccess: true });
-      if (ok) flashModalCopyButton(btn);
-    });
+      void (async () => {
+        const ok = await copyIp({ silentSuccess: true });
+        if (ok) flashModalCopyButton(btn);
+      })();
+    };
+    addListener(btn, 'click', onModalCopyClick);
   });
 
   const setInlineCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
@@ -187,26 +218,36 @@ export const initJoinModal = ({
 
   const flashInlineCopyButton = (btn: HTMLElement): void => {
     const runningTimer = inlineCopyFeedbackTimers.get(btn);
-    if (runningTimer != null) window.clearTimeout(runningTimer);
+    if (runningTimer != null) {
+      window.clearTimeout(runningTimer);
+      pendingTimers.delete(runningTimer);
+    }
 
     setInlineCopyButtonState(btn, true);
 
     const timer = window.setTimeout(() => {
+      pendingTimers.delete(timer);
       setInlineCopyButtonState(btn, false);
       inlineCopyFeedbackTimers.delete(btn);
     }, 1600);
+    pendingTimers.add(timer);
     inlineCopyFeedbackTimers.set(btn, timer);
   };
 
   inlineCopyButtons.forEach((btn) => {
-    btn.addEventListener('click', async (e: MouseEvent) => {
+    const onInlineCopyClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       e.preventDefault();
-      const ok = await copyIp({ silentSuccess: true });
-      if (ok) flashInlineCopyButton(btn);
-    });
+      void (async () => {
+        const ok = await copyIp({ silentSuccess: true });
+        if (ok) flashInlineCopyButton(btn);
+      })();
+    };
+    addListener(btn, 'click', onInlineCopyClick);
   });
 
-  document.addEventListener('keydown', (e: KeyboardEvent) => {
+  const onDocumentKeydown: EventListener = (event): void => {
+    const e = event as KeyboardEvent;
     if (e.key === 'Escape') {
       if (isJoinModalOpen()) {
         e.preventDefault();
@@ -219,13 +260,30 @@ export const initJoinModal = ({
     }
 
     trapJoinModalFocus(e);
-  });
+  };
+  addListener(document, 'keydown', onDocumentKeydown);
 
-  qsa<HTMLElement>('[data-copy-ip]').forEach((btn) => {
-    btn.addEventListener('click', (e: MouseEvent) => {
+  joinTriggerButtons.forEach((btn) => {
+    const onJoinTriggerClick: EventListener = (event): void => {
+      const e = event as MouseEvent;
       e.preventDefault();
       closeMenu();
       openJoinModal();
-    });
+    };
+    addListener(btn, 'click', onJoinTriggerClick);
   });
+
+  return () => {
+    closeJoinModal();
+
+    pendingTimers.forEach((timer) => {
+      window.clearTimeout(timer);
+    });
+    pendingTimers.clear();
+
+    while (cleanup.length > 0) {
+      const stop = cleanup.pop();
+      stop?.();
+    }
+  };
 };

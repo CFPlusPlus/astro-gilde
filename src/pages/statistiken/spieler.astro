@@ -19,5 +19,24 @@ const statsCanonicalUrl = canonicalFor('/statistiken/');
   <link slot="head" rel="preconnect" href="https://api.minetools.eu" crossorigin />
   <link slot="head" rel="preconnect" href="https://textures.minecraft.net" crossorigin />
 
-  <PlayerStatsApp client:load />
+  <div
+    id="player-stats-placeholder"
+    aria-hidden="true"
+    class="space-y-6 transition-opacity duration-200"
+  >
+    <section class="mg-surface-1">
+      <div class="mx-auto w-full max-w-[118rem] px-4 py-8 sm:px-6 xl:px-8">
+        <div class="bg-surface-solid/70 h-10 w-full max-w-2xl rounded-lg"></div>
+      </div>
+    </section>
+
+    <section class="mx-auto w-full max-w-[118rem] px-4 py-8 sm:px-6 xl:px-8">
+      <div class="grid gap-6 lg:grid-cols-12 lg:items-start">
+        <div class="mg-surface-2 min-h-[6rem] lg:col-span-12"></div>
+        <div class="mg-surface-2 min-h-[26rem] lg:col-span-12"></div>
+      </div>
+    </section>
+  </div>
+
+  <PlayerStatsApp client:idle />
 </BaseLayout>

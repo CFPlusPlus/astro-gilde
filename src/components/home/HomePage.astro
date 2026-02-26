@@ -11,15 +11,16 @@ import HomeSupport from './sections/HomeSupport.astro';
 import HomeQuickLinks from './sections/HomeQuickLinks.astro';
 import HomeJoinCta from './sections/HomeJoinCta.astro';
 
+import type { ImageMetadata } from 'astro';
 import type { AnchorItem } from './HomeQuickNav.astro';
 
 export interface Props {
   anchorItems: AnchorItem[];
   galleryUrls: string[];
-  galleryInitial: string;
+  galleryInitialImage: ImageMetadata;
 }
 
-const { anchorItems, galleryUrls, galleryInitial } = Astro.props as Props;
+const { anchorItems, galleryUrls, galleryInitialImage } = Astro.props as Props;
 ---
 
 <div data-home>
@@ -30,7 +31,7 @@ const { anchorItems, galleryUrls, galleryInitial } = Astro.props as Props;
   </div>
 
   <HomeUsps />
-  <HomeAbout galleryUrls={galleryUrls} galleryInitial={galleryInitial} />
+  <HomeAbout galleryUrls={galleryUrls} galleryInitialImage={galleryInitialImage} />
   <HomeVanillaPlus />
   <HomeStartSteps />
   <HomeLive />

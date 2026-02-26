@@ -3,6 +3,8 @@
 import '../styles/tailwind.css';
 import '@fontsource-variable/geist';
 import '@fontsource-variable/space-grotesk';
+import geistLatinWoff2 from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2';
+import spaceGroteskLatinWoff2 from '@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2';
 
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
@@ -97,6 +99,20 @@ const ldBase = buildBaseGraph({
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
+    <link
+      rel="preload"
+      href={geistLatinWoff2}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href={spaceGroteskLatinWoff2}
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
 
     <link rel="canonical" href={canonicalUrl} />
     <link rel="sitemap" href="/sitemap-index.xml" />
