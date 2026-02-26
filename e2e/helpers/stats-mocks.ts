@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Page, Route } from '@playwright/test';
 
 type StatsSummaryPayload = {
   __generated: string;
@@ -42,6 +42,20 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
+function apiRoutePatterns(endpoint: string): string[] {
+  return [`**/api/${endpoint}**`, `**/api.minecraft-gilde.de/${endpoint}**`];
+}
+
+async function routeApi(
+  page: Page,
+  endpoint: string,
+  handler: (route: Route) => Promise<void> | void,
+): Promise<void> {
+  for (const pattern of apiRoutePatterns(endpoint)) {
+    await page.route(pattern, handler);
+  }
+}
+
 const DEFAULT_SUMMARY_PAYLOAD: StatsSummaryPayload = {
   __generated: '2026-02-20T12:00:00.000Z',
   player_count: 2222,
@@ -69,7 +83,7 @@ export async function installStatsMocks(
   const generatedAt = summaryPayload.__generated;
   const fallbackMetricId = Object.keys(metrics)[0] ?? 'hours';
 
-  await page.route('**/api/summary**', async (route) => {
+  await routeApi(page, 'summary', async (route) => {
     if (summaryDelayMs > 0) {
       await new Promise((resolve) => {
         setTimeout(resolve, summaryDelayMs);
@@ -92,7 +106,7 @@ export async function installStatsMocks(
     });
   });
 
-  await page.route('**/api/metrics**', async (route) => {
+  await routeApi(page, 'metrics', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'application/json; charset=utf-8',
@@ -103,7 +117,7 @@ export async function installStatsMocks(
     });
   });
 
-  await page.route('**/api/leaderboard**', async (route) => {
+  await routeApi(page, 'leaderboard', async (route) => {
     const requestUrl = new URL(route.request().url());
     const metricId = requestUrl.searchParams.get('metric') ?? fallbackMetricId;
     const rows = leaderboards[metricId] ?? [];
@@ -124,7 +138,7 @@ export async function installStatsMocks(
     });
   });
 
-  await page.route('**/api/players**', async (route) => {
+  await routeApi(page, 'players', async (route) => {
     const requestUrl = new URL(route.request().url());
     const query = (requestUrl.searchParams.get('q') ?? '').trim().toLowerCase();
 
@@ -146,7 +160,7 @@ export async function installStatsMocks(
     });
   });
 
-  await page.route('**/api/player**', async (route) => {
+  await routeApi(page, 'player', async (route) => {
     const requestUrl = new URL(route.request().url());
     const uuid = (requestUrl.searchParams.get('uuid') ?? '').trim();
     const hasSpecificData =
