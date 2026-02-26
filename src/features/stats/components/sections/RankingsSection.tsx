@@ -173,7 +173,7 @@ function RankingsRail({
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <button type="button" onClick={onReset} className="mg-btn mg-btn--sm mg-btn--surface group">
           <RotateCcw size={15} className="text-muted group-hover:text-accent transition-colors" />
-          {'Zuruecksetzen'}
+          {'Zurücksetzen'}
         </button>
       </div>
 
