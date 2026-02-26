@@ -9,8 +9,10 @@ import PageHeader from '../components/layout/PageHeader.astro';
 import JsonLd from '../components/seo/JsonLd.astro';
 import { buildArticle } from '../lib/structuredData';
 import { ArrowRight, Flag, Globe, Rocket, Cpu, Paintbrush } from '@lucide/astro';
+import { Image } from 'astro:assets';
 import { canonicalFor, site } from '../config/site';
 import { minecraftGilde } from '../config/minecraftGilde';
+import type { ImageMetadata } from 'astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
 
@@ -35,14 +37,17 @@ type Milestone = {
   title: string;
   paragraphs: string[];
   image?: {
-    src: string;
+    src: ImageMetadata;
     alt: string;
+    decorative?: boolean;
+    sizes?: string;
+    widths?: number[];
   };
   cta?: boolean;
 };
 
 // Tipp: Wenn du Bilder integrieren willst, lege sie z. B. unter
-// /src/assets/images/history/ ab und setze pro Milestone optional `image`.
+// /src/assets/images/history/ ab, importiere sie lokal und setze pro Milestone optional `image`.
 const milestones: Milestone[] = [
   {
     id: 'feb-2024',
@@ -193,11 +198,14 @@ const milestones: Milestone[] = [
                       ))}
 
                       {m.image ? (
-                        <img
+                        <Image
                           src={m.image.src}
-                          alt={m.image.alt}
+                          alt={m.image.decorative ? '' : m.image.alt}
+                          aria-hidden={m.image.decorative ? 'true' : undefined}
                           loading="lazy"
                           decoding="async"
+                          sizes={m.image.sizes ?? '(min-width: 1024px) 42rem, 100vw'}
+                          widths={m.image.widths ?? [640, 960, 1280]}
                           class="border-border/60 mt-4 aspect-[16/9] w-full rounded-[calc(var(--radius)-6px)] border object-cover"
                         />
                       ) : null}

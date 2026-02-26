@@ -5,6 +5,7 @@ type HomeGallery = {
   urls: string[];
   fallback: string;
   initial: string;
+  initialImage: ImageMetadata;
 };
 
 type ImageUrlModule = {
@@ -22,20 +23,23 @@ const fileNameFromGlobPath = (value: string): string => {
   return parts[parts.length - 1] ?? '';
 };
 
-const toSortedGalleryUrls = (): string[] =>
+const toSortedGalleryImages = (): ImageMetadata[] =>
   Object.entries(galleryImageModules)
     .sort((a, b) =>
       fileNameFromGlobPath(a[0]).localeCompare(fileNameFromGlobPath(b[0]), 'de', {
         numeric: true,
       }),
     )
-    .map((entry) => entry[1].default.src);
+    .map((entry) => entry[1].default);
 
 // Build-Time: Galerie-Bilder aus src/assets/images/home/gallery einsammeln.
 export const getHomeGallery = (): HomeGallery => {
-  const fallback = headerBackgroundImage.src;
-  const urls = toSortedGalleryUrls();
-  const initial = urls[0] ?? fallback;
+  const fallbackImage = headerBackgroundImage;
+  const images = toSortedGalleryImages();
+  const initialImage = images[0] ?? fallbackImage;
+  const urls = images.map((image) => image.src);
+  const initial = initialImage.src;
+  const fallback = fallbackImage.src;
 
-  return { urls, fallback, initial };
+  return { urls, fallback, initial, initialImage };
 };

@@ -11,7 +11,7 @@ import { minecraftGilde } from '../config/minecraftGilde';
 import '../styles/home.css';
 
 // Build-Time: Galerie-URLs einsammeln (wird im Build aufgerufen).
-const { urls: galleryUrls, initial: galleryInitial } = getHomeGallery();
+const { urls: galleryUrls, initialImage: galleryInitialImage } = getHomeGallery();
 // Version/IP zentral aus der Konfiguration holen, damit SEO-Texte konsistent bleiben.
 const MC_VERSION = minecraftGilde.mcVersion;
 const SERVER_IP = minecraftGilde.serverIp;
@@ -23,7 +23,11 @@ const SERVER_IP = minecraftGilde.serverIp;
   keywords={`Minecraft Vanilla SMP Server, Minecraft Server deutsch, Vanilla Survival, Freebuild, Langzeitwelt, kein Pay2Win, Java ${MC_VERSION}, ${SERVER_IP}`}
   bodyClass="is-home"
 >
-  <HomePage anchorItems={HOME_ANCHORS} galleryUrls={galleryUrls} galleryInitial={galleryInitial} />
+  <HomePage
+    anchorItems={HOME_ANCHORS}
+    galleryUrls={galleryUrls}
+    galleryInitialImage={galleryInitialImage}
+  />
 
   <HomeInlineScripts slot="afterScripts" />
 </BaseLayout>
