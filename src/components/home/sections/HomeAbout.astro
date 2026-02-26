@@ -46,6 +46,8 @@ const { galleryUrls, galleryInitialImage } = Astro.props as Props;
         class="overflow-hidden"
         data-gallery
         data-gallery-interval="5200"
+        data-gallery-preload-delay-default="350"
+        data-gallery-preload-delay-slow="1200"
         data-gallery-images={JSON.stringify(galleryUrls)}
       >
         <div class="group relative h-[340px] w-full sm:h-[380px]">

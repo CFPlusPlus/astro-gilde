@@ -1,6 +1,33 @@
 const qs = <T extends Element>(sel: string, root: ParentNode = document): T | null =>
   root.querySelector<T>(sel);
 
+type NetworkInformationLike = {
+  saveData?: boolean;
+  effectiveType?: string;
+};
+
+type NavigatorWithConnection = Navigator & {
+  connection?: NetworkInformationLike;
+  mozConnection?: NetworkInformationLike;
+  webkitConnection?: NetworkInformationLike;
+};
+
+const getNetworkHints = (): { saveData: boolean; slowNetwork: boolean } => {
+  if (typeof navigator === 'undefined') {
+    return { saveData: false, slowNetwork: false };
+  }
+
+  const nav = navigator as NavigatorWithConnection;
+  const connection = nav.connection ?? nav.mozConnection ?? nav.webkitConnection;
+  const effectiveType = (connection?.effectiveType ?? '').toLowerCase();
+  const slowNetwork = effectiveType.includes('2g') || effectiveType === '3g';
+
+  return {
+    saveData: connection?.saveData === true,
+    slowNetwork,
+  };
+};
+
 const shuffleInPlace = <T>(arr: T[]): T[] => {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -53,9 +80,27 @@ export function initHomeGallery(): () => void {
   }
 
   const parsedInterval = Number(root.getAttribute('data-gallery-interval') || '5200');
+  const parsedPreloadDelayDefault = Number(
+    root.getAttribute('data-gallery-preload-delay-default') || '350',
+  );
+  const parsedPreloadDelaySlow = Number(
+    root.getAttribute('data-gallery-preload-delay-slow') || '1200',
+  );
   const intervalMs = Number.isFinite(parsedInterval) && parsedInterval > 0 ? parsedInterval : 5200;
+  const preloadDelayDefaultMs =
+    Number.isFinite(parsedPreloadDelayDefault) && parsedPreloadDelayDefault >= 0
+      ? parsedPreloadDelayDefault
+      : 350;
+  const preloadDelaySlowMs =
+    Number.isFinite(parsedPreloadDelaySlow) && parsedPreloadDelaySlow >= 0
+      ? parsedPreloadDelaySlow
+      : 1200;
   const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fadeMs = prefersReduced ? 0 : 700;
+  const { saveData, slowNetwork } = getNetworkHints();
+  const autoplayAllowed = !saveData;
+  const allowIdlePreload = !saveData;
+  const preloadDelayMs = slowNetwork ? preloadDelaySlowMs : preloadDelayDefaultMs;
   const order = shuffleInPlace(images.slice());
 
   let index = 0;
@@ -63,7 +108,10 @@ export function initHomeGallery(): () => void {
   let back: HTMLImageElement = imgB;
   let timer: number | null = null;
   let transitionTimer: number | null = null;
-  let isAutoplayPaused = false;
+  let idlePreloadTimer: number | null = null;
+  let idlePreloadHandle: number | null = null;
+  let pendingPreloadSrc: string | null = null;
+  let isAutoplayPaused = !autoplayAllowed;
   let isTransitioning = false;
   let touchStartX: number | null = null;
   let touchStartY: number | null = null;
@@ -107,13 +155,58 @@ export function initHomeGallery(): () => void {
     return null;
   };
 
-  const findNextIndex = async (fromIndex: number, delta: number): Promise<number | null> => {
+  const findNextIndex = (fromIndex: number, delta: number): number | null => {
     for (let tries = 1; tries <= order.length; tries++) {
       const i = (fromIndex + delta * tries + order.length) % order.length;
-      const ok = await preloadOk(order[i]);
-      if (ok) return i;
+      if (!bad.has(order[i])) return i;
     }
     return null;
+  };
+
+  const cancelPendingIdlePreload = (): void => {
+    if (idlePreloadTimer != null) {
+      window.clearTimeout(idlePreloadTimer);
+      idlePreloadTimer = null;
+    }
+
+    if (idlePreloadHandle != null && typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(idlePreloadHandle);
+      idlePreloadHandle = null;
+    }
+    pendingPreloadSrc = null;
+  };
+
+  const scheduleIdlePreload = (src: string): void => {
+    if (!allowIdlePreload || !src || bad.has(src) || disposed) return;
+    if (pendingPreloadSrc === src && (idlePreloadTimer != null || idlePreloadHandle != null))
+      return;
+
+    cancelPendingIdlePreload();
+    pendingPreloadSrc = src;
+
+    idlePreloadTimer = window.setTimeout(() => {
+      idlePreloadTimer = null;
+
+      const run = () => {
+        idlePreloadHandle = null;
+        const target = pendingPreloadSrc;
+        pendingPreloadSrc = null;
+        if (!target || disposed || document.hidden) return;
+        void preloadOk(target);
+      };
+
+      if (typeof window.requestIdleCallback === 'function') {
+        idlePreloadHandle = window.requestIdleCallback(run, { timeout: preloadDelayMs + 1000 });
+      } else {
+        run();
+      }
+    }, preloadDelayMs);
+  };
+
+  const scheduleNextIdlePreload = (fromIndex: number): void => {
+    const nextIndex = findNextIndex(fromIndex, +1);
+    if (nextIndex == null) return;
+    scheduleIdlePreload(order[nextIndex]);
   };
 
   const setSrcSafe = async (el: HTMLImageElement, src: string): Promise<boolean> => {
@@ -128,27 +221,24 @@ export function initHomeGallery(): () => void {
     if (isTransitioning) return;
     isTransitioning = true;
 
-    let nextIndex = targetIndex;
-    if (!(await preloadOk(order[nextIndex]))) {
-      const fallbackIndex = await findNextIndex(index, +1);
-      if (fallbackIndex == null) {
-        isTransitioning = false;
-        return;
-      }
-      nextIndex = fallbackIndex;
+    let nextIndex: number | null = targetIndex;
+    let nextSrc = '';
+    let loaded = false;
+
+    for (let tries = 0; tries < order.length; tries++) {
+      if (nextIndex == null) break;
+      nextSrc = order[nextIndex];
+      loaded = await setSrcSafe(back, nextSrc);
+      if (loaded) break;
+      nextIndex = findNextIndex(nextIndex, +1);
     }
 
-    const nextSrc = order[nextIndex];
-    const ok = await setSrcSafe(back, nextSrc);
-    if (!ok || disposed) {
+    if (!loaded || nextIndex == null || disposed) {
       isTransitioning = false;
       return;
     }
 
-    const afterIndex = await findNextIndex(nextIndex, +1);
-    if (afterIndex != null) {
-      void preloadOk(order[afterIndex]);
-    }
+    scheduleNextIdlePreload(nextIndex);
 
     if (fadeMs === 0) {
       front.src = nextSrc;
@@ -174,12 +264,13 @@ export function initHomeGallery(): () => void {
 
   const step = async (): Promise<void> => {
     if (disposed || isAutoplayPaused || document.hidden) return;
-    const nextIndex = await findNextIndex(index, +1);
+    const nextIndex = findNextIndex(index, +1);
     if (nextIndex == null) return;
     void transitionTo(nextIndex);
   };
 
   const start = (): void => {
+    if (!autoplayAllowed || disposed) return;
     if (timer != null) window.clearInterval(timer);
     timer = window.setInterval(() => {
       void step();
@@ -193,13 +284,14 @@ export function initHomeGallery(): () => void {
   };
 
   const resume = (): void => {
+    if (!autoplayAllowed) return;
     if (!isAutoplayPaused || disposed) return;
     isAutoplayPaused = false;
     start();
   };
 
   const nudge = async (delta: number): Promise<void> => {
-    const nextIndex = await findNextIndex(index, delta);
+    const nextIndex = findNextIndex(index, delta);
     if (nextIndex == null) return;
     void transitionTo(nextIndex);
     if (!isAutoplayPaused) start();
@@ -275,14 +367,10 @@ export function initHomeGallery(): () => void {
     await setSrcSafe(front, order[index]);
     if (disposed) return;
 
-    const nextIndex = await findNextIndex(index, +1);
-    if (nextIndex != null) {
-      back.src = order[nextIndex];
-    }
-
     setVisible(front, true);
     setVisible(back, false);
     revealPlaceholder();
+    scheduleNextIdlePreload(index);
     start();
   })();
 
@@ -290,6 +378,7 @@ export function initHomeGallery(): () => void {
     disposed = true;
     if (timer != null) window.clearInterval(timer);
     if (transitionTimer != null) window.clearTimeout(transitionTimer);
+    cancelPendingIdlePreload();
     cleanupFns.forEach((fn) => fn());
   };
 }

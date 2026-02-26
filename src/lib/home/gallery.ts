@@ -32,12 +32,25 @@ const toSortedGalleryImages = (): ImageMetadata[] =>
     )
     .map((entry) => entry[1].default);
 
+const toUniqueUrls = (images: ImageMetadata[]): string[] => {
+  const seen = new Set<string>();
+  const urls: string[] = [];
+
+  for (const image of images) {
+    if (seen.has(image.src)) continue;
+    seen.add(image.src);
+    urls.push(image.src);
+  }
+
+  return urls;
+};
+
 // Build-Time: Galerie-Bilder aus src/assets/images/home/gallery einsammeln.
 export const getHomeGallery = (): HomeGallery => {
   const fallbackImage = headerBackgroundImage;
   const images = toSortedGalleryImages();
   const initialImage = images[0] ?? fallbackImage;
-  const urls = images.map((image) => image.src);
+  const urls = toUniqueUrls(images);
   const initial = initialImage.src;
   const fallback = fallbackImage.src;
 
