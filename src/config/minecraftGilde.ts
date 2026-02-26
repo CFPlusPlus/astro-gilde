@@ -9,16 +9,22 @@ const externalLinks = {
   discord: 'https://discord.minecraft-gilde.de',
   map: 'https://map.minecraft-gilde.de',
   status: 'https://stats.uptimerobot.com/OnyzM9GmG2',
-  voteMinecraftServerEu: 'https://minecraft-server.eu/vote/index/2321D',
-  voteMinecraftServerlistNet: 'https://www.minecraft-serverlist.net/vote/59253',
-  voteServerlisteNet: 'https://serverliste.net/vote/5142',
 } as const;
 
-const communityProfiles = {
-  minecraftServerEu:
-    'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
-  minecraftServerlistNet: 'https://www.minecraft-serverlist.net/server/59253',
-  serverlisteNet: 'https://serverliste.net/server/5142',
+const communityListings = {
+  minecraftServerEu: {
+    profileUrl:
+      'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
+    voteUrl: 'https://minecraft-server.eu/vote/index/2321D',
+  },
+  minecraftServerlistNet: {
+    profileUrl: 'https://www.minecraft-serverlist.net/server/59253',
+    voteUrl: 'https://www.minecraft-serverlist.net/vote/59253',
+  },
+  serverlisteNet: {
+    profileUrl: 'https://serverliste.net/server/5142',
+    voteUrl: 'https://serverliste.net/vote/5142',
+  },
 } as const;
 
 const brandConfig = {
@@ -38,9 +44,9 @@ const brandConfig = {
   sameAs: [
     externalLinks.discord,
     externalLinks.map,
-    communityProfiles.minecraftServerEu,
-    communityProfiles.minecraftServerlistNet,
-    communityProfiles.serverlisteNet,
+    communityListings.minecraftServerEu.profileUrl,
+    communityListings.minecraftServerlistNet.profileUrl,
+    communityListings.serverlisteNet.profileUrl,
   ],
 } as const;
 
@@ -68,9 +74,9 @@ export const minecraftGilde = {
   statusUrl: externalLinks.status,
 
   voting: {
-    minecraftServerEuVoteUrl: externalLinks.voteMinecraftServerEu,
-    minecraftServerlistNetVoteUrl: externalLinks.voteMinecraftServerlistNet,
-    serverlisteNetVoteUrl: externalLinks.voteServerlisteNet,
+    minecraftServerEuVoteUrl: communityListings.minecraftServerEu.voteUrl,
+    minecraftServerlistNetVoteUrl: communityListings.minecraftServerlistNet.voteUrl,
+    serverlisteNetVoteUrl: communityListings.serverlisteNet.voteUrl,
   },
 } as const;
 
