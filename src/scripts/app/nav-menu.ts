@@ -252,6 +252,13 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
       if (link) closeMenu();
     };
 
+    const onDocumentKeydown: EventListener = (event): void => {
+      const e = event as KeyboardEvent;
+      if (e.key !== 'Escape' || !isMenuOpen()) return;
+      e.preventDefault();
+      closeMenu();
+    };
+
     let lastMobileState = isMobile();
     const onResize: EventListener = (): void => {
       const mobileState = isMobile();
@@ -272,6 +279,7 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
 
     addListener(toggle, 'click', onToggleClick);
     addListener(document, 'click', onDocumentClick);
+    addListener(document, 'keydown', onDocumentKeydown);
     if (overlay) addListener(overlay, 'click', onOverlayClick);
     addListener(panel, 'click', onPanelClick);
     addListener(window, 'resize', onResize);
