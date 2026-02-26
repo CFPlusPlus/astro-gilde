@@ -24,6 +24,8 @@ type HintConfig = {
   icon: 'players' | 'compare';
 };
 
+type VersusRow = VersusResultsProps['versusRows'][number];
+
 function resolveInitialHint({
   versusPlayerA,
   versusPlayerB,
@@ -144,6 +146,58 @@ function VersusSummaryBlock({
   );
 }
 
+function resolveVersusRowWinner(row: VersusRow): 'A' | 'B' | 'tie' | null {
+  if (row.valueA === null || row.valueB === null) return null;
+  if (row.valueA === row.valueB) return 'tie';
+  return row.valueA > row.valueB ? 'A' : 'B';
+}
+
+function resolveVersusRowDiff(row: VersusRow): number | null {
+  if (row.valueA === null || row.valueB === null) return null;
+  return row.valueA - row.valueB;
+}
+
+function resolveVersusRowHeaderId(rowId: string): string {
+  return `versus-row-${rowId.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
+}
+
+function VersusTableRow({ row, missingHint }: { row: VersusRow; missingHint: string }) {
+  const def = row.def;
+  const label = def?.label || row.id;
+  const winner = resolveVersusRowWinner(row);
+  const diff = resolveVersusRowDiff(row);
+  const rowHeaderId = resolveVersusRowHeaderId(row.id);
+
+  return (
+    <tr key={row.id}>
+      <th id={rowHeaderId} scope="row" headers="versus-col-category">
+        <p className="text-fg font-semibold">{label}</p>
+        <p className="text-muted mt-1 text-xs break-all">
+          Gruppe: {def?.group || '-'} - ID: {row.id}
+          {def?.unit ? ` - Einheit: ${def.unit}` : ''}
+        </p>
+      </th>
+      <td
+        className={winner === 'A' ? 'text-accent font-semibold' : 'text-fg'}
+        headers={`${rowHeaderId} versus-col-player-a`}
+      >
+        {row.valueA === null ? '-' : formatVersusValue(row.valueA, def)}
+        {row.valueA === null ? <p className="text-muted mt-1 text-xs">{missingHint}</p> : null}
+      </td>
+      <td
+        className={winner === 'B' ? 'text-accent font-semibold' : 'text-fg'}
+        headers={`${rowHeaderId} versus-col-player-b`}
+      >
+        {row.valueB === null ? '-' : formatVersusValue(row.valueB, def)}
+        {row.valueB === null ? <p className="text-muted mt-1 text-xs">{missingHint}</p> : null}
+      </td>
+      <td className="text-fg/90" headers={`${rowHeaderId} versus-col-diff`}>
+        {diff === null ? '-' : formatVersusDiff(diff, def)}
+      </td>
+    </tr>
+  );
+}
+
 function VersusTable({
   playerALabel,
   playerBLabel,
@@ -197,54 +251,9 @@ function VersusTable({
             </tr>
           </thead>
           <tbody className="divide-border divide-y [&>tr>td]:px-2.5 [&>tr>td]:py-2.5 [&>tr>td]:text-left sm:[&>tr>td]:px-4 sm:[&>tr>td]:py-3 [&>tr>th]:px-2.5 [&>tr>th]:py-2.5 [&>tr>th]:text-left sm:[&>tr>th]:px-4 sm:[&>tr>th]:py-3">
-            {rows.map((row) => {
-              const def = row.def;
-              const label = def?.label || row.id;
-              const winner =
-                row.valueA === null || row.valueB === null
-                  ? null
-                  : row.valueA === row.valueB
-                    ? 'tie'
-                    : row.valueA > row.valueB
-                      ? 'A'
-                      : 'B';
-              const diff =
-                row.valueA === null || row.valueB === null ? null : row.valueA - row.valueB;
-              const rowHeaderId = `versus-row-${row.id.replace(/[^a-zA-Z0-9_-]/g, '-')}`;
-
-              return (
-                <tr key={row.id}>
-                  <th id={rowHeaderId} scope="row" headers="versus-col-category">
-                    <p className="text-fg font-semibold">{label}</p>
-                    <p className="text-muted mt-1 text-xs break-all">
-                      Gruppe: {def?.group || '-'} - ID: {row.id}
-                      {def?.unit ? ` - Einheit: ${def.unit}` : ''}
-                    </p>
-                  </th>
-                  <td
-                    className={winner === 'A' ? 'text-accent font-semibold' : 'text-fg'}
-                    headers={`${rowHeaderId} versus-col-player-a`}
-                  >
-                    {row.valueA === null ? '-' : formatVersusValue(row.valueA, def)}
-                    {row.valueA === null ? (
-                      <p className="text-muted mt-1 text-xs">{missingHint}</p>
-                    ) : null}
-                  </td>
-                  <td
-                    className={winner === 'B' ? 'text-accent font-semibold' : 'text-fg'}
-                    headers={`${rowHeaderId} versus-col-player-b`}
-                  >
-                    {row.valueB === null ? '-' : formatVersusValue(row.valueB, def)}
-                    {row.valueB === null ? (
-                      <p className="text-muted mt-1 text-xs">{missingHint}</p>
-                    ) : null}
-                  </td>
-                  <td className="text-fg/90" headers={`${rowHeaderId} versus-col-diff`}>
-                    {diff === null ? '-' : formatVersusDiff(diff, def)}
-                  </td>
-                </tr>
-              );
-            })}
+            {rows.map((row) => (
+              <VersusTableRow key={row.id} row={row} missingHint={missingHint} />
+            ))}
           </tbody>
         </table>
       </div>
