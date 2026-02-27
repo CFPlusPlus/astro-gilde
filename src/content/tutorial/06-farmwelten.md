@@ -6,6 +6,8 @@ meta: Rohstoffe
 open: false
 ---
 
+**Wichtig:** Ressourcenabbau in der Oberwelt ist verboten und nur in den Farmwelten erlaubt.
+
 Für den Abbau von Ressourcen gibt es separate **Farmwelten**. Nutze dafür diese Befehle:
 
 - **`/farmwelt`** für Holz, Stein und Erze.
