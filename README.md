@@ -12,234 +12,94 @@
 
 # Minecraft Gilde Web
 
-Offizielle Website von **Minecraft-Gilde.de** (Minecraft-Server: **Minecraft Gilde**) – gebaut mit **Astro**.
-
-Dieses Repository enthält das Frontend (Pages, Layouts, Komponenten) sowie Content-Daten (Regeln & Befehle) über **Astro Content Collections**.
+Offizielle Website von **Minecraft-Gilde.de** (Minecraft-Server: **Minecraft Gilde**), gebaut mit **Astro**.
 
 ## Tech-Stack
 
-- **Astro** (statisch, schnelle Builds)
-- **TypeScript** (Strict)
-- **Tailwind CSS**
-- **React (Astro Islands)** für interaktive Bereiche (Statistiken & Spielerstatistiken)
-- **skinview3d** (lazy geladen) für den 3D-Skin-Viewer
+- Astro (statische Seite)
+- TypeScript (strict)
+- Tailwind CSS
+- React (Astro Islands)
+- Vitest (Unit-Tests)
+- Node.js >= 22
 
-## Inhalte pflegen
-
-- **Befehle:** `src/content/commands/list.json`
-- **Regeln:** `src/content/rules/main.json`
-- **Tutorial-Abschnitte:** `src/content/tutorial/*.md`
-
-> Hinweis: In den Regeln werden Abschnitte als HTML-Strings gespeichert (z. B. für Formatierung/Listen). Bitte entsprechend sauber escapen.
-
----
-
-## Projektstruktur (Auszug)
-
-```text
-/
-├── public/
-│   ├── images/
-│   └── i18n/
-├── src/
-│   ├── components/
-│   │   └── ui/
-│   ├── content/
-│   │   ├── commands/
-│   │   ├── rules/
-│   │   └── config.ts
-│   ├── features/
-│   │   ├── stats/              # /statistiken (React Island)
-│   │   └── player-stats/       # /statistiken/spieler (React Island)
-│   ├── layouts/
-│   │   └── BaseLayout.astro
-│   └── pages/
-│       ├── index.astro
-│       ├── regeln.astro
-│       ├── befehle.astro
-│       ├── statistiken.astro
-│       └── statistiken/spieler.astro
-├── astro.config.mjs
-└── package.json
-```
-
-Mehr zur Ordnerstruktur von Astro findest du in der offiziellen Doku: https://docs.astro.build/en/basics/project-structure/
-
----
-
-## Inline-Script Konvention
-
-- Inline-Skripte in `.astro` nach Möglichkeit vermeiden.
-- Früher Theme-/Config-Bootstraps wurden auf externe Dateien bzw. `data-*` Attribute verlagert.
-- Fachlogik, DOM-Logik und Event-Handling liegen in `src/scripts/*`.
-- Seiten/Komponenten importieren diese Skripte nur noch über kurze Bootstrap-Imports.
-- Keine großen JS-Blöcke direkt in `src/pages/*`.
-
----
-
-## Content Security Policy (CSP)
-
-Die Seite liefert eine aktive CSP über Astro `experimental.csp` (siehe `astro.config.mjs`).
-Für prerenderte Seiten wird die Policy als Meta-Tag mit Hashes erzeugt, damit auch Astro-interne Inline-Runtime-Skripte sauber abgedeckt sind.
-
-Aktuelle Policy:
-
-- `script-src 'self';` (via `scriptDirective.resources`)
-- `style-src 'self';` (via `styleDirective.resources`)
-- `default-src 'self';`
-- `img-src 'self' data: https:;`
-- `frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com;`
-- `connect-src 'self' https:;`
-- `base-uri 'self';`
-- `object-src 'none';`
-- `form-action 'self';`
-
-Hinweis zur Einbettung:
-
-- `frame-ancestors` ist aktuell nicht gesetzt.
-
-Hinweis:
-
-- JSON-LD bleibt als nicht-ausführender Script-Block im HTML eingebettet.
-- UI-Motion und Scroll-Lock laufen ohne Inline-`style`-Attribute.
-- Durch die hash-basierte Astro-CSP ohne `unsafe-inline` werden Inline-Style-Attribute blockiert.
-
-Optionale Browser-Konsole-Prüfung:
-
-```js
-const cspMeta = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-console.log(cspMeta?.content ?? 'Kein CSP-Meta-Tag gefunden');
-```
-
----
-
-## Befehle
-
-Alle Befehle werden im Projekt-Root in einem Terminal ausgeführt:
-
-| Befehl                    | Aktion                                              |
-| :------------------------ | :-------------------------------------------------- |
-| `npm install`             | Installiert Abhängigkeiten                          |
-| `npm run dev`             | Startet den lokalen Dev-Server auf `localhost:4321` |
-| `npm run build`           | Baut die Produktionsseite nach `./dist/`            |
-| `npm run preview`         | Preview des Builds lokal vor dem Deploy             |
-| `npm run format`          | Formatiert das Projekt (Prettier)                   |
-| `npm run format:check`    | Prüft Formatierung (CI-geeignet)                    |
-| `npm run lint`            | Linting (ESLint)                                    |
-| `npm run lint:fix`        | Linting + Auto-Fixes (ESLint)                       |
-| `npm run check`           | Type-/Template-Check (Astro)                        |
-| `npm run test`            | Unit-Tests (Vitest)                                 |
-| `npm run test:e2e`        | End-to-End-Tests (Playwright)                       |
-| `npm run astro ...`       | CLI-Befehle wie `astro add`, `astro check`          |
-| `npm run astro -- --help` | Hilfe zur Astro-CLI anzeigen                        |
-
----
-
-## Qualität & CI
-
-Das Repository enthält Quality-Gates, damit Code-Style und Typen stabil bleiben:
-
-- **Format-Check:** `npm run format:check`
-- **Linting:** `npm run lint`
-- **Type-/Template-Check:** `npm run check` (entspricht `astro check`)
-- **End-to-End-Tests:** `npm run test:e2e` (Playwright)
-- **Produktionsbuild:** `npm run build`
-
-Empfohlener lokaler Gate-Run:
-
-- `npm run lint && npm run check && npm run build`
-
-Hinweis:
-
-- Kommentare im Code bitte auf Deutsch verfassen (siehe `AGENTS.md`).
-
-In **GitHub Actions** läuft das automatisch bei **Push** und **Pull Requests** über `.github/workflows/quality.yml`.
-
----
-
-## Lokale Entwicklung
+## Schnellstart
 
 ```bash
 npm install
 npm run dev
 ```
 
-### API-Hinweis (Statistiken)
+Dev-Server: `http://localhost:4321`
 
-Mini-Doku zur Live-Daten-Architektur: `docs/live-data.md`
+## Wichtige Befehle
 
-Die Statistik-Seiten rufen Endpunkte unter `/api/...` auf:
+| Befehl                 | Zweck                         |
+| :--------------------- | :---------------------------- |
+| `npm run dev`          | Lokale Entwicklung            |
+| `npm run build`        | Produktionsbuild nach `dist/` |
+| `npm run preview`      | Lokale Vorschau des Builds    |
+| `npm run check`        | Astro Type-/Template-Check    |
+| `npm run lint`         | ESLint                        |
+| `npm run test`         | Unit-Tests (Vitest)           |
+| `npm run test:e2e`     | End-to-End-Tests (Playwright) |
+| `npm run config:check` | Konfigurations-Drift prüfen   |
+| `npm run format:check` | Prettier-Check (CI-tauglich)  |
 
-- `/api/summary?metrics=...` (KPI-Übersicht)
-- `/api/metrics` (Kategorien/Definitionen)
-- `/api/leaderboard?metric=...&limit=...&cursor=...` (Ranglisten / Pagination via Cursor)
-- `/api/players?q=...&limit=...` (Autocomplete)
-- `/api/player?uuid=...` (Spieler-Detail)
-- `/api/cape?uuid=...` (optional, empfohlen: serverseitiger Cape-Cache)
+## Inhalte pflegen
 
-Zusätzlich wird eine Übersetzungsdatei als statisches Asset geladen:
+- Befehle: `src/content/commands/list.json`
+- Regeln: `src/content/rules/main.json`
+- FAQ: `src/content/faq/main.json`
+- Tutorial: `src/content/tutorial/*.md`
 
-- `/i18n/translations.de.json`
+Hinweis: In Regeln werden Abschnitte teilweise als HTML-Strings gepflegt. Inhalte sauber escapen.
 
-Optionaler Debug-Check für fehlende Übersetzungen in `/statistiken/spieler`:
+## Projektbereiche
 
-- In `dev` ist die Konsolen-Ausgabe standardmäßig aktiv.
-- In Produktion kann sie gezielt per URL aktiviert werden:
-  `/statistiken/spieler?uuid=<UUID>&i18ncheck=1`
-- Die Ausgabe erscheint in der Browser-Konsole unter `Übersetzungsprüfung`.
+- `src/pages/` für Seiten
+- `src/layouts/` für Layouts
+- `src/components/` für UI-Komponenten
+- `src/features/` für Feature-Module
+- `src/scripts/` für Browser-Logik
+- `src/content/` für redaktionelle Inhalte
+- `public/` für statische Assets und Server-Dateien
+- `scripts/` für Build-Helfer
 
-Optionales Live-Debug-Overlay für Home-Live-Kacheln (`mc-online`, `discord-online`):
+## Doku unter `docs/`
 
-- Nur in Dev aktivierbar per URL-Flag: `?debugLive=1` (auch `?debugLive` oder `?debugLive=true`).
-- Zeigt pro Kachel kompakt: `status`, `age`, `source` (`cache|network`), `error.kind`.
-- In Produktion ist das Overlay deaktiviert und wird nicht ins DOM eingefügt.
+- [Doku-Index](./docs/index.md)
+- [Konfiguration und Umgebungsvariablen](./docs/configuration.md)
+- [Frontend-Bootstrap und Ladeverhalten](./docs/frontend-bootstrap.md)
+- [Content-Collections und Datenformate](./docs/content-collections.md)
+- [SEO, Canonical und strukturierte Daten](./docs/seo-canonical-structured-data.md)
+- [Build- und Output-Besonderheiten](./docs/build-output.md)
+- [Teststrategie (Unit und E2E)](./docs/testing.md)
+- [Projektstruktur und Frontend-Konventionen](./docs/project-structure.md)
+- [Statistik-API und lokaler Proxy](./docs/stats-api.md)
+- [Live-Daten Architektur](./docs/live-data.md)
+- [Content Security Policy (CSP)](./docs/security-csp.md)
 
-Lokal brauchst du entweder eine laufende API unter `http://localhost:4321/api/...` (Reverse Proxy) oder du richtest in `astro.config.mjs` einen Dev-Proxy ein (Vite Proxy).
+## Qualität
 
-### Empfohlener Cape-Endpoint
+Empfohlener lokaler Gate-Run:
 
-Das Frontend versucht beim Skin-Viewer zuerst:
-
-- `/api/cape?uuid=<32-hex-ohne-bindestriche>`
-
-Wenn der Endpoint nicht verfügbar ist (`404/405/501`) oder fehlschlägt, wird automatisch auf den externen Fallback zurückgegriffen.
-
-Empfohlene Response (JSON):
-
-```json
-{ "capeUrl": "https://textures.minecraft.net/texture/..." }
+```bash
+npm run format:check
+npm run lint
+npm run check
+npm run test
 ```
 
-oder ohne Cape:
+Bei Build-/Routing-/Asset-Änderungen zusätzlich:
 
-```json
-{ "capeUrl": null, "hasCape": false }
+```bash
+npm run build
 ```
 
-Empfohlene Caching-Strategie im Backend:
-
-- Mit Cape: TTL 6-24h
-- Ohne Cape (negative cache): TTL 15-60min
-- `Cache-Control` für CDN/Reverse-Proxy setzen (`s-maxage` + `stale-while-revalidate`)
-
-Beispiel für einen Dev-Proxy (optional):
-
-```js
-// astro.config.mjs
-export default defineConfig({
-  vite: {
-    server: {
-      proxy: {
-        '/api': 'http://localhost:8080',
-      },
-    },
-  },
-});
-```
-
----
+CI-Workflow: `.github/workflows/quality.yml`
 
 ## Deployment
 
 - `npm run build` erzeugt die statische Ausgabe in `dist/`.
-- Alles aus `public/` wird 1:1 nach `dist/` kopiert (z. B. `.htaccess`, `favicons/*`, `i18n/*`).
+- Inhalte aus `public/` werden 1:1 nach `dist/` kopiert.

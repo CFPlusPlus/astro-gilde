@@ -103,11 +103,11 @@ Frontend ruft relative Endpunkte auf:
 
 Das Zielsystem hinter `/api/...` wird über Infrastruktur geregelt (Reverse Proxy / Dev-Proxy), nicht in diesen Frontend-Dateien.
 
-Siehe auch README Abschnitt "API-Hinweis (Statistiken)" für lokales Proxy-Setup.
+Siehe auch `docs/stats-api.md` für Endpunkte und lokales Proxy-Setup.
 
 ## 6) Änderungen sicher durchführen
 
-Wenn du Live-Daten anpasst, pruefe mindestens:
+Wenn du Live-Daten anpasst, prüfe mindestens:
 
 1. Passende Thresholds in `src/lib/live/types.ts`
 2. Gewünschten Cache-Key/Prefix (`src/lib/live/cache.ts` und Aufrufer)
