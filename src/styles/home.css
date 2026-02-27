@@ -12,6 +12,11 @@
   top: -220px;
 }
 
+[data-home] {
+  overflow-x: hidden;
+  overflow-x: clip;
+}
+
 @media (min-width: 640px) {
   [data-home] .home-hero-bg {
     top: -240px;
