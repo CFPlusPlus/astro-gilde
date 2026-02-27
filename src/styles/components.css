@@ -65,6 +65,7 @@
   .glass,
   .mg-card--glass,
   .mg-glass--strong,
+  .mg-modal-panel,
   .glass-strong,
   .site-nav-shell,
   .mg-glass-overlay {
@@ -86,6 +87,7 @@
   }
 
   .mg-glass--strong,
+  .mg-modal-panel,
   .glass-strong {
     --mg-glass-blur: var(--glass-strong-blur);
     --mg-glass-bg: var(--glass-strong-bg);
@@ -116,11 +118,38 @@
     --mg-glass-shadow: var(--glass-overlay-shadow);
   }
 
+  .mg-modal-panel {
+    @apply w-full overflow-x-hidden overflow-y-auto rounded-[var(--radius)] shadow-2xl outline-none;
+  }
+
+  .mg-modal-header {
+    @apply border-border/80 bg-surface-solid sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .mg-modal-title {
+    @apply text-fg text-base font-semibold tracking-tight sm:text-xl;
+  }
+
+  .mg-modal-close {
+    @apply focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-10 w-10 items-center justify-center rounded-md bg-transparent transition-colors hover:bg-transparent focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none;
+  }
+
+  .mg-modal-body {
+    @apply p-3 sm:p-5;
+  }
+
+  .mg-modal-footer {
+    @apply border-border/80 bg-surface/70 border-t px-4 py-4 sm:px-6;
+  }
+
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .mg-glass,
     .glass,
     .mg-card--glass,
     .mg-glass--strong,
+    .mg-modal-panel,
     .glass-strong,
     .site-nav-shell,
     .mg-glass-overlay {
@@ -321,13 +350,30 @@
   }
 
   .mg-notice {
+    --mg-notice-tone: var(--info);
     @apply mt-4 flex items-start gap-3 rounded-[var(--radius)] px-4 py-3 text-sm;
-    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
+    background: color-mix(in oklab, var(--mg-notice-tone) 10%, var(--surface-solid) 90%);
+    border: 1px solid color-mix(in oklab, var(--mg-notice-tone) 40%, var(--border) 60%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-notice-tone) 62%, transparent);
+  }
+
+  .mg-notice[data-variant='warning'] {
+    --mg-notice-tone: var(--warning);
+  }
+
+  .mg-notice:not([data-variant='neutral']) > :where(span:first-child) {
+    background: color-mix(in oklab, var(--mg-notice-tone) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
+  }
+
+  .mg-notice:not([data-variant='neutral']) :where(.text-accent) {
+    color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
   }
 
   .mg-notice[data-variant='neutral'] {
     background: color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
     border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
+    box-shadow: none;
   }
 
   .mg-section {
@@ -515,6 +561,13 @@
     color: rgb(110 231 183);
   }
 
+  [data-copy-ip-inline][data-copied='true'],
+  [data-copy-ip-inline][data-copied='true']:hover {
+    border-color: rgb(74 222 128 / 0.7);
+    background: rgb(16 185 129 / 0.1);
+    color: rgb(110 231 183);
+  }
+
   .mg-copy-ip-btn--inline {
     @apply h-10 px-4 text-sm leading-none font-semibold;
   }
@@ -567,6 +620,95 @@
     margin: 0.35rem 0;
   }
 
+  .mg-prose .tutorial-roles {
+    display: grid;
+    align-items: stretch;
+    gap: 0.75rem;
+    margin: 0.95rem 0 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  }
+
+  .mg-prose .tutorial-role {
+    --tutorial-role-color: var(--accent);
+    display: flex;
+    flex-direction: column;
+    min-height: 7.4rem;
+    border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
+    border-left: 4px solid var(--tutorial-role-color);
+    border-radius: 0.8rem;
+    padding: 0.58rem 0.8rem 0.56rem;
+    background: color-mix(in oklab, var(--surface-solid) 96%, var(--fg) 4%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
+      0 1px 2px color-mix(in oklab, #000000 7%, transparent);
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      background 220ms ease;
+  }
+
+  .mg-prose .tutorial-role:hover {
+    border-color: color-mix(in oklab, var(--tutorial-role-color) 28%, var(--border) 72%);
+    background: linear-gradient(
+      145deg,
+      color-mix(in oklab, var(--tutorial-role-color) 12%, var(--surface-solid) 88%) 0%,
+      color-mix(in oklab, var(--tutorial-role-color) 4%, var(--surface-solid) 96%) 52%,
+      color-mix(in oklab, var(--surface-solid) 98%, var(--fg) 2%) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, #ffffff 8%, transparent),
+      0 6px 14px color-mix(in oklab, #000000 9%, transparent);
+  }
+
+  .mg-prose .tutorial-role__head {
+    display: flex;
+    align-items: center;
+    gap: 0.48rem;
+    margin: 0;
+    min-height: 1.6rem;
+  }
+
+  .mg-prose .tutorial-role__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 0.5rem;
+    border: 1px solid color-mix(in oklab, var(--tutorial-role-color) 48%, transparent);
+    background: color-mix(in oklab, var(--tutorial-role-color) 14%, transparent);
+    color: var(--tutorial-role-color);
+  }
+
+  .mg-prose .tutorial-role__icon svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .mg-prose .tutorial-role__icon svg * {
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  .mg-prose .tutorial-role__name {
+    margin: 0;
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--tutorial-role-color);
+  }
+
+  .mg-prose .tutorial-role__text {
+    margin: 0.28rem 0 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: color-mix(in oklab, var(--fg) 90%, transparent);
+  }
+
   .mg-prose a,
   a.mg-link {
     color: color-mix(in oklab, var(--accent) 85%, var(--fg) 15%);
@@ -615,25 +757,26 @@
 
   /* Einfaches Callout */
   .mg-callout {
+    --mg-callout-tone: var(--info);
     @apply p-4;
-    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    background: color-mix(in oklab, var(--mg-callout-tone) 8%, var(--surface-solid) 92%);
     border-radius: var(--radius);
+    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 38%, var(--border) 62%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 62%, transparent);
   }
 
   .mg-callout__icon {
-    @apply bg-accent/15 text-accent mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
-  }
-
-  .mg-callout[data-variant='warning'] .mg-callout__icon {
-    @apply bg-accent/20;
+    @apply mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+    background: color-mix(in oklab, var(--mg-callout-tone) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--mg-callout-tone) 78%, var(--fg) 22%);
   }
 
   .mg-callout[data-variant='warning'] {
-    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
+    --mg-callout-tone: var(--warning);
   }
 
   .mg-callout[data-variant='info'] {
-    background: color-mix(in oklab, var(--accent) 6%, var(--surface-solid) 94%);
+    --mg-callout-tone: var(--info);
   }
 
   /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */

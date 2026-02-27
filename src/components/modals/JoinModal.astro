@@ -18,29 +18,29 @@ const MC_VERSION = minecraftGilde.mcVersion;
 
   <div class="relative mx-auto flex min-h-full w-full items-center justify-center py-2 sm:py-4">
     <section
-      class="mg-glass--strong max-h-[calc(100dvh-1rem)] w-full max-w-4xl overflow-y-auto rounded-[var(--radius)] shadow-2xl sm:max-h-[calc(100dvh-2rem)]"
+      class="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-4xl sm:max-h-[calc(100dvh-2rem)]"
       role="dialog"
       aria-modal="true"
       aria-labelledby="join-modal-title"
       data-join-modal-dialog
       tabindex="-1"
     >
-      <header
-        class="border-border/80 bg-surface/80 flex items-center justify-between border-b px-4 py-4 sm:px-6"
-      >
-        <h2
-          id="join-modal-title"
-          class="flex items-center gap-3 text-xl font-semibold tracking-tight"
-        >
+      <header class="mg-modal-header">
+        <h2 id="join-modal-title" class="mg-modal-title flex items-center gap-3">
           <Download size={22} class="text-accent" /> Jetzt auf Minecraft Gilde spielen
         </h2>
 
-        <IconButton ariaLabel="Schließen" variant="plain" data-join-modal-close>
+        <IconButton
+          ariaLabel="Schließen"
+          variant="plain"
+          class="mg-modal-close"
+          data-join-modal-close
+        >
           <X size={20} />
         </IconButton>
       </header>
 
-      <div class="space-y-4 p-3 sm:p-5">
+      <div class="mg-modal-body space-y-4">
         <article class="border-border/70 bg-surface/45 rounded-[var(--radius)] border p-4 sm:p-5">
           <h3 class="text-base font-semibold sm:text-xl">Schritt 1: Minecraft Java installieren</h3>
           <p class="text-muted mt-3 text-sm leading-relaxed sm:text-base">
@@ -126,7 +126,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
         </article>
       </div>
 
-      <footer class="border-border/80 bg-surface/70 border-t px-4 py-4 text-right sm:px-6">
+      <footer class="mg-modal-footer text-right">
         <Button type="button" variant="primary" data-join-modal-close> Verstanden </Button>
       </footer>
     </section>

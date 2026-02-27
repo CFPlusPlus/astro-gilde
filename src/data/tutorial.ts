@@ -70,10 +70,16 @@ export const tutorialQuickstart = {
       text: 'Nimm eine Holzschaufel und markiere zwei Ecken per Rechtsklick.',
     },
     {
-      title: 'Rohstoffe farmen',
-      text: 'Nutze dafür nur die Farmwelten: /farmwelt, /netherfarm und /endfarm.',
+      title: 'Nur in Farmwelten abbauen',
+      text: 'Farmen in der Oberwelt ist verboten. Nutze nur /farmwelt, /netherfarm und /endfarm.',
     },
   ],
+} as const;
+
+export const tutorialQuickstartCallout = {
+  title: 'Wichtige Regel',
+  text: 'Farmen in der Oberwelt ist verboten. Ressourcen bitte ausschließlich in den Farmwelten abbauen.',
+  variant: 'warning' as const,
 } as const;
 
 export const tutorialQuickstartActions: readonly TutorialAction[] = [

@@ -14,7 +14,6 @@ import JsonLd from '../components/seo/JsonLd.astro';
 import { buildBaseGraph } from '../lib/structuredData';
 import { browserAppConfig, minecraftGilde } from '../config/minecraftGilde';
 import { canonicalFor, site as canonicalSite } from '../config/site';
-import ogDefaultImage from '../assets/images/seo/og-default.jpg';
 
 export interface Props {
   title?: string;
@@ -51,7 +50,7 @@ const {
 
   ogTitle,
   ogDescription,
-  ogImage = ogDefaultImage.src,
+  ogImage = '/og/og-default.jpg',
   ogType = 'website',
   twitterCard = 'summary_large_image',
   twitterSite,

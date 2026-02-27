@@ -5,7 +5,7 @@ import Badge from '../components/ui/Badge.astro';
 import DividerList from '../components/ui/DividerList.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { TEAM_GROUPS, TEAM_MEMBERS } from '../data/team';
-import { Shield, ArrowRight } from '@lucide/astro';
+import { Shield, Wrench, ArrowRight } from '@lucide/astro';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 const DISCORD_URL = minecraftGilde.discord.url;
@@ -16,6 +16,12 @@ const groups = TEAM_GROUPS.map((g) => ({
   ...g,
   members: TEAM_MEMBERS.filter((m) => m.group === g.key),
 })).filter((g) => g.members.length > 0);
+
+const groupIconByKey = {
+  admin: Wrench,
+  moderator: Shield,
+  streamer: Shield,
+} as const;
 ---
 
 <BaseLayout
@@ -38,44 +44,48 @@ const groups = TEAM_GROUPS.map((g) => ({
   <section class="mg-container pb-16">
     <div class="grid gap-4" data-motion-stagger="90">
       {
-        groups.map((g) => (
-          <section
-            class="border-border/70 bg-surface/25 rounded-[var(--radius)] border p-6"
-            data-motion="reveal"
-          >
-            <div class="flex items-center justify-between gap-4">
-              <div class="inline-flex items-center gap-2">
-                <Shield size={18} />
-                <h2 class="text-xl font-semibold tracking-tight">{g.label}</h2>
-              </div>
-              <Badge variant="accent">{g.members.length}</Badge>
-            </div>
+        groups.map((g) => {
+          const GroupIcon = groupIconByKey[g.key];
 
-            <DividerList as="ul" class="mt-4">
-              {g.members.map((m) => (
-                <li class="mg-row flex items-center gap-3 py-3">
-                  <div class="flex min-w-0 items-center gap-3">
-                    <img
-                      src={avatarUrl(m.inGameName)}
-                      alt={m.inGameName}
-                      width="48"
-                      height="48"
-                      loading="lazy"
-                      decoding="async"
-                      class="border-border bg-surface h-12 w-12 rounded-full border"
-                    />
-                    <div class="min-w-0">
-                      <div class="truncate text-sm font-semibold">{m.inGameName}</div>
+          return (
+            <section
+              class="border-border/70 bg-surface/25 rounded-[var(--radius)] border p-6"
+              data-motion="reveal"
+            >
+              <div class="flex items-center justify-between gap-4">
+                <div class="inline-flex items-center gap-2">
+                  <GroupIcon size={18} />
+                  <h2 class="text-xl font-semibold tracking-tight">{g.label}</h2>
+                </div>
+                <Badge variant="accent">{g.members.length}</Badge>
+              </div>
+
+              <DividerList as="ul" class="mt-4">
+                {g.members.map((m) => (
+                  <li class="mg-row flex items-center gap-3 py-3">
+                    <div class="flex min-w-0 items-center gap-3">
+                      <img
+                        src={avatarUrl(m.inGameName)}
+                        alt={m.inGameName}
+                        width="48"
+                        height="48"
+                        loading="lazy"
+                        decoding="async"
+                        class="border-border bg-surface h-12 w-12 rounded-full border"
+                      />
+                      <div class="min-w-0">
+                        <div class="truncate text-sm font-semibold">{m.inGameName}</div>
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant="neutral" class="shrink-0">
-                    {m.role}
-                  </Badge>
-                </li>
-              ))}
-            </DividerList>
-          </section>
-        ))
+                    <Badge variant="neutral" class="shrink-0">
+                      {m.role}
+                    </Badge>
+                  </li>
+                ))}
+              </DividerList>
+            </section>
+          );
+        })
       }
     </div>
   </section>
