@@ -65,6 +65,7 @@
   .glass,
   .mg-card--glass,
   .mg-glass--strong,
+  .mg-modal-panel,
   .glass-strong,
   .site-nav-shell,
   .mg-glass-overlay {
@@ -86,6 +87,7 @@
   }
 
   .mg-glass--strong,
+  .mg-modal-panel,
   .glass-strong {
     --mg-glass-blur: var(--glass-strong-blur);
     --mg-glass-bg: var(--glass-strong-bg);
@@ -116,11 +118,38 @@
     --mg-glass-shadow: var(--glass-overlay-shadow);
   }
 
+  .mg-modal-panel {
+    @apply w-full overflow-x-hidden overflow-y-auto rounded-[var(--radius)] shadow-2xl outline-none;
+  }
+
+  .mg-modal-header {
+    @apply border-border/80 bg-surface-solid sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .mg-modal-title {
+    @apply text-fg text-base font-semibold tracking-tight sm:text-xl;
+  }
+
+  .mg-modal-close {
+    @apply focus-visible:ring-offset-bg text-fg hover:text-accent inline-flex h-10 w-10 items-center justify-center rounded-md bg-transparent transition-colors hover:bg-transparent focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none;
+  }
+
+  .mg-modal-body {
+    @apply p-3 sm:p-5;
+  }
+
+  .mg-modal-footer {
+    @apply border-border/80 bg-surface/70 border-t px-4 py-4 sm:px-6;
+  }
+
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .mg-glass,
     .glass,
     .mg-card--glass,
     .mg-glass--strong,
+    .mg-modal-panel,
     .glass-strong,
     .site-nav-shell,
     .mg-glass-overlay {
@@ -527,6 +556,13 @@
 
   .mg-copy-ip-btn[data-copied='true'],
   .mg-copy-ip-btn[data-copied='true']:hover {
+    border-color: rgb(74 222 128 / 0.7);
+    background: rgb(16 185 129 / 0.1);
+    color: rgb(110 231 183);
+  }
+
+  [data-copy-ip-inline][data-copied='true'],
+  [data-copy-ip-inline][data-copied='true']:hover {
     border-color: rgb(74 222 128 / 0.7);
     background: rgb(16 185 129 / 0.1);
     color: rgb(110 231 183);

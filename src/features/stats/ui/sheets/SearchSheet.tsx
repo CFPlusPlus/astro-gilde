@@ -3,6 +3,7 @@ import { useEffect, useId, useRef, type RefObject } from 'react';
 
 import { PlayerAutocomplete } from '../../components/PlayerAutocomplete';
 import type { PlayersSearchItem } from '../../types';
+import { trapFocusInContainer } from '../../../../scripts/app/dialog';
 import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
 
 const SEARCH_SHEET_SCROLL_LOCK_ID = 'stats-search-sheet';
@@ -19,19 +20,6 @@ type AutocompleteViewModel = {
   isLoading: boolean;
   errorMessage: string | null;
 };
-
-function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return [];
-
-  const selector =
-    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-
-  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter((element) => {
-    if (element.getAttribute('aria-hidden') === 'true') return false;
-    if (element.hasAttribute('disabled')) return false;
-    return true;
-  });
-}
 
 export function SearchSheet({
   open,
@@ -77,28 +65,7 @@ export function SearchSheet({
       }
 
       if (event.key !== 'Tab') return;
-
-      const focusable = getFocusableElements(dialogRef.current);
-      if (focusable.length === 0) {
-        event.preventDefault();
-        dialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-
-      if (event.shiftKey && active === first) {
-        event.preventDefault();
-        last.focus();
-        return;
-      }
-
-      if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      trapFocusInContainer(event, dialogRef.current);
     };
 
     window.addEventListener('keydown', onKeyDown);

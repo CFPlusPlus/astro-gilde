@@ -1,43 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react';
 
+import { getFocusableElements, trapFocusInContainer } from '../../../../scripts/app/dialog';
 import { lockPageScroll, unlockPageScroll } from '../../../../scripts/app/scroll-lock';
-
-function getFocusableElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return [];
-
-  const selector =
-    'a[href],button:not([disabled]),textarea:not([disabled]),input:not([disabled]),select:not([disabled]),[tabindex]:not([tabindex="-1"])';
-
-  return Array.from(root.querySelectorAll<HTMLElement>(selector)).filter((element) => {
-    if (element.getAttribute('aria-hidden') === 'true') return false;
-    if (element.hasAttribute('disabled')) return false;
-    return true;
-  });
-}
-
-function trapFocus(event: KeyboardEvent, dialogRef: RefObject<HTMLElement | null>): void {
-  const focusable = getFocusableElements(dialogRef.current);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    dialogRef.current?.focus();
-    return;
-  }
-
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-
-  if (event.shiftKey && active === first) {
-    event.preventDefault();
-    last.focus();
-    return;
-  }
-
-  if (!event.shiftKey && active === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
 
 export function useSheetDialog({
   open,
@@ -79,7 +43,7 @@ export function useSheetDialog({
       }
 
       if (event.key !== 'Tab') return;
-      trapFocus(event, dialogRef);
+      trapFocusInContainer(event, dialogRef.current);
     };
 
     const onResize = () => {

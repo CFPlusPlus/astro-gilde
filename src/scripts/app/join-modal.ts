@@ -1,4 +1,5 @@
 import type { Qs, Qsa } from './dom';
+import { getFocusableElements, trapFocusInContainer } from './dialog';
 import { lockPageScroll, unlockPageScroll } from './scroll-lock';
 import type { ShowToast } from './toast';
 
@@ -83,15 +84,6 @@ export const initJoinModal = ({
   const isJoinModalOpen = (): boolean =>
     Boolean(joinModalRoot && !joinModalRoot.classList.contains('hidden'));
 
-  const getJoinModalFocusable = (): HTMLElement[] => {
-    if (!joinModalDialog) return [];
-
-    return qsa<HTMLElement>(
-      'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
-      joinModalDialog,
-    ).filter((el) => !el.hasAttribute('disabled') && el.getAttribute('aria-hidden') !== 'true');
-  };
-
   const closeJoinModal = (): void => {
     if (!joinModalRoot || !isJoinModalOpen()) return;
 
@@ -116,7 +108,7 @@ export const initJoinModal = ({
 
     const timer = window.setTimeout(() => {
       pendingTimers.delete(timer);
-      const focusTarget = getJoinModalFocusable()[0] ?? joinModalDialog;
+      const focusTarget = getFocusableElements(joinModalDialog)[0] ?? joinModalDialog;
       focusTarget.focus();
     }, 0);
     pendingTimers.add(timer);
@@ -124,28 +116,7 @@ export const initJoinModal = ({
 
   const trapJoinModalFocus = (e: KeyboardEvent): void => {
     if (!joinModalDialog || !isJoinModalOpen() || e.key !== 'Tab') return;
-
-    const focusable = getJoinModalFocusable();
-    if (!focusable.length) {
-      e.preventDefault();
-      joinModalDialog.focus();
-      return;
-    }
-
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
-    const active = document.activeElement;
-
-    if (e.shiftKey && active === first) {
-      e.preventDefault();
-      last.focus();
-      return;
-    }
-
-    if (!e.shiftKey && active === last) {
-      e.preventDefault();
-      first.focus();
-    }
+    trapFocusInContainer(e, joinModalDialog);
   };
 
   if (!joinModalRoot && joinTriggerButtons.length === 0 && inlineCopyButtons.length === 0) {
