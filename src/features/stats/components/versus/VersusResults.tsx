@@ -36,7 +36,7 @@ function resolveInitialHint({
 >): HintConfig | null {
   if (!versusPlayerA || !versusPlayerB) {
     return {
-      title: 'Waehle zwei Spieler fuer den Vergleich',
+      title: 'Wähle zwei Spieler für den Vergleich',
       text: 'Lege Spieler A und B fest, um den Vergleich zu starten.',
       icon: 'players',
     };

@@ -321,13 +321,30 @@
   }
 
   .mg-notice {
+    --mg-notice-tone: var(--info);
     @apply mt-4 flex items-start gap-3 rounded-[var(--radius)] px-4 py-3 text-sm;
-    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
+    background: color-mix(in oklab, var(--mg-notice-tone) 10%, var(--surface-solid) 90%);
+    border: 1px solid color-mix(in oklab, var(--mg-notice-tone) 40%, var(--border) 60%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-notice-tone) 62%, transparent);
+  }
+
+  .mg-notice[data-variant='warning'] {
+    --mg-notice-tone: var(--warning);
+  }
+
+  .mg-notice:not([data-variant='neutral']) > :where(span:first-child) {
+    background: color-mix(in oklab, var(--mg-notice-tone) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
+  }
+
+  .mg-notice:not([data-variant='neutral']) :where(.text-accent) {
+    color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
   }
 
   .mg-notice[data-variant='neutral'] {
     background: color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
     border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
+    box-shadow: none;
   }
 
   .mg-section {
@@ -704,25 +721,26 @@
 
   /* Einfaches Callout */
   .mg-callout {
+    --mg-callout-tone: var(--info);
     @apply p-4;
-    background: color-mix(in oklab, var(--surface) 34%, transparent);
+    background: color-mix(in oklab, var(--mg-callout-tone) 8%, var(--surface-solid) 92%);
     border-radius: var(--radius);
+    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 38%, var(--border) 62%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 62%, transparent);
   }
 
   .mg-callout__icon {
-    @apply bg-accent/15 text-accent mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
-  }
-
-  .mg-callout[data-variant='warning'] .mg-callout__icon {
-    @apply bg-accent/20;
+    @apply mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+    background: color-mix(in oklab, var(--mg-callout-tone) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--mg-callout-tone) 78%, var(--fg) 22%);
   }
 
   .mg-callout[data-variant='warning'] {
-    background: color-mix(in oklab, var(--accent) 10%, var(--surface-solid) 90%);
+    --mg-callout-tone: var(--warning);
   }
 
   .mg-callout[data-variant='info'] {
-    background: color-mix(in oklab, var(--accent) 6%, var(--surface-solid) 94%);
+    --mg-callout-tone: var(--info);
   }
 
   /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */
