@@ -647,6 +647,22 @@
       background 220ms ease;
   }
 
+  .mg-prose .tutorial-role[data-role='admin'] {
+    --tutorial-role-color: #e74c3c;
+  }
+
+  .mg-prose .tutorial-role[data-role='moderator'] {
+    --tutorial-role-color: #e67e22;
+  }
+
+  .mg-prose .tutorial-role[data-role='streamer'] {
+    --tutorial-role-color: #9b59b6;
+  }
+
+  .mg-prose .tutorial-role[data-role='spieler'] {
+    --tutorial-role-color: #3498db;
+  }
+
   .mg-prose .tutorial-role:hover {
     border-color: color-mix(in oklab, var(--tutorial-role-color) 28%, var(--border) 72%);
     background: linear-gradient(
