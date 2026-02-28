@@ -30,9 +30,9 @@ export function KpiStrip({
         Ziel: kein "4x einzelne Cards", sondern ein hochwertiger KPI-Strip mit Dividern.
         Passt optisch besser in den neuen Layout-Rhythmus.
       */}
-      <div className="divide-border grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+      <div className="divide-border sm:[&>*:nth-child(even)]:border-border lg:[&>*:not(:first-child)]:border-border grid w-full min-w-0 grid-cols-1 divide-y sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:[&>*:not(:first-child)]:border-l sm:[&>*:nth-child(even)]:border-l">
         {items.map((it) => (
-          <div key={it.id} className="p-4 sm:p-5">
+          <div key={it.id} className="min-w-0 p-4 sm:p-5">
             <div className="flex items-center gap-2">
               {it.icon ? (
                 <span
@@ -55,7 +55,7 @@ export function KpiStrip({
               onRetry={it.onRetry}
               className="mt-2"
             />
-            {it.meta ? <p className="text-muted mt-2 text-xs">{it.meta}</p> : null}
+            {it.meta ? <p className="text-muted mt-2 text-xs break-all">{it.meta}</p> : null}
           </div>
         ))}
       </div>
@@ -66,5 +66,5 @@ export function KpiStrip({
     return <div className="border-border/70 overflow-hidden border-y">{content}</div>;
   }
 
-  return <Card className="overflow-hidden">{content}</Card>;
+  return <Card className="w-full min-w-0 overflow-hidden">{content}</Card>;
 }

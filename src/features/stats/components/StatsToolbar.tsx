@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type RefObject } from 'react';
-import { Check, ChevronDown, RefreshCw } from 'lucide-react';
+import { Check, ChevronDown, ListFilter, RefreshCw } from 'lucide-react';
 
 import { LastUpdated } from '../../../components/live/LastUpdated';
 import { STATS_PAGE_SIZES } from '../constants';
@@ -37,6 +37,7 @@ type StatsToolbarProps = {
   onPageSizeChange: (next: number) => void;
   liveVariant: LiveBadgeVariant;
   updatedAt: number | null;
+  generatedIso: string | null;
   apiError: string | null;
   onReload?: () => void;
   reloadDisabled?: boolean;
@@ -224,6 +225,7 @@ export function StatsToolbar({
   onPageSizeChange,
   liveVariant,
   updatedAt,
+  generatedIso,
   apiError,
   onReload,
   reloadDisabled = false,
@@ -258,14 +260,10 @@ export function StatsToolbar({
         <>
           <div className="mg-surface-2 p-3 sm:p-4">
             <div className="space-y-3">
-              <section className="border-border/75 bg-surface-solid/25 rounded-[var(--radius)] border p-2 sm:p-3">
-                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
-                    Kategorie
-                  </p>
-                  <p className="text-muted text-xs">
-                    {'W\u00e4hle einen Bereich der Statistiken.'}
-                  </p>
+              <section className="border-border/75 bg-surface-solid/35 rounded-[var(--radius)] border p-2 sm:p-2.5">
+                <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
+                  <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
+                  Kategorien
                 </div>
                 <StatsNavPills
                   active={activeTab}
@@ -300,7 +298,12 @@ export function StatsToolbar({
                 />
 
                 <div className="flex min-w-0 items-center justify-end gap-2">
-                  <LiveBadgeSlot variant={liveVariant} className="shrink-0" />
+                  <LiveBadgeSlot
+                    variant={liveVariant}
+                    updatedAt={updatedAt}
+                    generatedIso={generatedIso}
+                    className="shrink-0"
+                  />
                   <LastUpdated
                     updatedAt={updatedAt}
                     className="text-muted max-w-[15rem] truncate text-xs"
@@ -345,6 +348,7 @@ export function StatsToolbar({
           onPageSizeChange={onPageSizeChange}
           topNHint={topNHint}
           updatedAt={updatedAt}
+          generatedIso={generatedIso}
           apiError={apiError}
           onReload={onReload}
           reloadDisabled={reloadDisabled}

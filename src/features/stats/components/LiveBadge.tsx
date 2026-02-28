@@ -1,5 +1,7 @@
 import { Clock3 } from 'lucide-react';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
+import { formatLastUpdatedAbsolute } from '../../../lib/live/lastUpdated';
+import { formatBerlinDateTime } from '../../stats-core/format';
 
 export type LiveBadgeVariant = 'ok' | 'stale' | 'rate_limit' | 'error';
 
@@ -27,12 +29,24 @@ const TONE_BY_VARIANT: Record<LiveBadgeVariant, string> = {
 export function LiveBadge({
   variant,
   showStaleIcon = true,
+  updatedAt = null,
+  generatedIso = null,
 }: {
   variant: LiveBadgeVariant;
   showStaleIcon?: boolean;
+  updatedAt?: number | null;
+  generatedIso?: string | null;
 }) {
   const label = LABEL_BY_VARIANT[variant];
   const tone = TONE_BY_VARIANT[variant];
+  const statusTitle =
+    variant === 'ok'
+      ? typeof generatedIso === 'string' && generatedIso
+        ? `Stand: ${formatBerlinDateTime(generatedIso)}`
+        : typeof updatedAt === 'number'
+          ? `Stand: ${formatLastUpdatedAbsolute(updatedAt)}`
+          : undefined
+      : undefined;
 
   return (
     <span
@@ -41,6 +55,7 @@ export function LiveBadge({
         tone,
       ].join(' ')}
       aria-hidden="true"
+      title={statusTitle}
     >
       {variant === 'stale' && showStaleIcon ? <Clock3 size={12} aria-hidden="true" /> : null}
       <span>{label}</span>
@@ -52,10 +67,14 @@ export function LiveBadgeSlot({
   variant,
   className,
   showStaleIcon = true,
+  updatedAt = null,
+  generatedIso = null,
 }: {
   variant: LiveBadgeVariant | null;
   className?: string;
   showStaleIcon?: boolean;
+  updatedAt?: number | null;
+  generatedIso?: string | null;
 }) {
   return (
     <div
@@ -66,7 +85,12 @@ export function LiveBadgeSlot({
     >
       {variant ? (
         <>
-          <LiveBadge variant={variant} showStaleIcon={showStaleIcon} />
+          <LiveBadge
+            variant={variant}
+            showStaleIcon={showStaleIcon}
+            updatedAt={updatedAt}
+            generatedIso={generatedIso}
+          />
           <span className="sr-only">{A11Y_TEXT_BY_VARIANT[variant]}</span>
         </>
       ) : (

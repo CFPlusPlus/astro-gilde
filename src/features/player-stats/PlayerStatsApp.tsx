@@ -147,7 +147,7 @@ export default function PlayerStatsApp() {
         <StatsLayoutGrid className="[overflow-anchor:none]">
           <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
             {hasData ? (
-              <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(22rem,34rem)] xl:items-start">
+              <div className="grid min-w-0 grid-cols-1 gap-4">
                 <KpiStrip items={kpiItems} variant="card" />
                 <PlayerStatsToolbar
                   activeTab={activeTab}
