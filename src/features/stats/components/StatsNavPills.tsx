@@ -39,6 +39,7 @@ export function StatsNavPills({
   const orderedItems = STATS_TAB_ORDER.map((key) => items.find((item) => item.key === key)).filter(
     (item): item is (typeof items)[number] => Boolean(item),
   );
+  const isOneRow = layout === 'one-row';
 
   const focusTabAtIndex = (index: number): void => {
     const nextTab = orderedItems[index];
@@ -75,16 +76,22 @@ export function StatsNavPills({
   };
 
   return (
-    <nav aria-label="Statistik Navigation">
+    <nav aria-label="Statistik Navigation" className={isOneRow ? 'min-w-0' : undefined}>
       <div
         className={[
-          layout === 'one-row' ? 'px-1 py-1' : 'overflow-x-auto px-3 py-2',
-          surface ? 'mg-surface-2' : 'bg-surface-solid/35 rounded-[var(--radius)]',
+          isOneRow
+            ? surface
+              ? 'mg-surface-2 rounded-[var(--radius)] p-1'
+              : 'min-w-0'
+            : 'overflow-x-auto px-3 py-2',
+          isOneRow ? '' : surface ? 'mg-surface-2' : 'bg-surface-solid/35 rounded-[var(--radius)]',
         ].join(' ')}
       >
         <ul
           className={
-            layout === 'one-row' ? 'grid grid-cols-4 gap-2' : 'flex w-max items-center gap-1'
+            isOneRow
+              ? 'sm:border-border/70 grid grid-cols-2 gap-1 sm:grid-cols-4 sm:items-center sm:border-b'
+              : 'flex w-max items-center gap-1'
           }
           role="tablist"
           aria-orientation="horizontal"
@@ -108,15 +115,15 @@ export function StatsNavPills({
                   onKeyDown={(event) => handleTabKeyDown(event, index)}
                   disabled={disabled}
                   className={[
-                    layout === 'one-row'
-                      ? 'focus-visible:ring-offset-bg inline-flex min-h-11 w-full items-center gap-2 rounded-[0.8rem] border px-2.5 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:px-3 sm:text-sm'
+                    isOneRow
+                      ? 'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:justify-center sm:rounded-t-[0.7rem] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block'
                       : 'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                     isActive
-                      ? layout === 'one-row'
-                        ? 'bg-accent/14 border-accent/45 text-fg shadow-sm'
+                      ? isOneRow
+                        ? 'border-border/75 bg-surface-solid/52 text-fg sm:bg-surface-solid/48 sm:after:bg-accent'
                         : 'bg-accent/15 border-accent/40 text-fg shadow-sm'
-                      : layout === 'one-row'
-                        ? 'bg-surface-solid/20 text-fg/88 border-border/80 hover:text-fg hover:border-accent/40 hover:bg-surface-solid/35'
+                      : isOneRow
+                        ? 'text-fg/75 hover:bg-surface-solid/28 hover:text-fg/95 sm:after:bg-transparent'
                         : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
                   ].join(' ')}
                 >
@@ -124,7 +131,7 @@ export function StatsNavPills({
                     size={16}
                     className={['shrink-0', isActive ? 'text-accent' : 'text-muted'].join(' ')}
                   />
-                  <span className={layout === 'one-row' ? 'truncate leading-tight' : undefined}>
+                  <span className={isOneRow ? 'min-w-0 text-left sm:text-center' : undefined}>
                     {it.label}
                   </span>
                 </button>
