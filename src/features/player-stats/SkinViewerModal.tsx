@@ -95,7 +95,7 @@ export default function SkinViewerModal({
 
   return (
     <div
-      className="mg-glass-overlay fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4"
+      className="mg-glass-overlay fixed inset-0 z-[70] flex items-start justify-center overflow-hidden p-2 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={dialogTitle}
@@ -106,7 +106,7 @@ export default function SkinViewerModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="mg-modal-panel my-3 max-h-[calc(100dvh-1.5rem)] max-w-5xl sm:my-4 sm:max-h-[calc(100dvh-2rem)]"
+        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl sm:max-h-[calc(100dvh-2rem)]"
       >
         <header className="mg-modal-header">
           <h3 className="mg-modal-title">{dialogTitle}</h3>
