@@ -5,6 +5,7 @@ import { LastUpdated } from '../../../../components/live/LastUpdated';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../../components/LiveBadge';
 import { STATS_PAGE_SIZES } from '../../constants';
+import { fmtDateBerlin } from '../../format';
 import type { TabKey } from '../../types-ui';
 import { useSheetDialog } from './useSheetDialog';
 
@@ -58,6 +59,7 @@ export function OptionsSheet({
   onPageSizeChange,
   topNHint,
   updatedAt,
+  generatedIso,
   apiError,
   onReload,
   reloadDisabled,
@@ -75,6 +77,7 @@ export function OptionsSheet({
   onPageSizeChange: (next: number) => void;
   topNHint: string | null;
   updatedAt: number | null;
+  generatedIso: string | null;
   apiError: string | null;
   onReload?: () => void;
   reloadDisabled: boolean;
@@ -212,8 +215,19 @@ export function OptionsSheet({
                 <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
                   Status
                 </p>
-                <LiveBadgeSlot variant={liveVariant} showStaleIcon={false} className="shrink-0" />
+                <LiveBadgeSlot
+                  variant={liveVariant}
+                  updatedAt={updatedAt}
+                  generatedIso={generatedIso}
+                  showStaleIcon={false}
+                  className="shrink-0"
+                />
               </div>
+              {generatedIso ? (
+                <p className="text-muted min-w-0 text-xs leading-relaxed break-words">
+                  Stand: {fmtDateBerlin(generatedIso)}
+                </p>
+              ) : null}
               <LastUpdated updatedAt={updatedAt} className="text-muted text-xs" showWhenMissing />
               {statusDetails ? (
                 <p className="text-muted text-xs leading-relaxed">Statusdetails: {statusDetails}</p>

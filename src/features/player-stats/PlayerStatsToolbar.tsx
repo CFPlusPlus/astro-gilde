@@ -1,5 +1,5 @@
 import { useRef, type KeyboardEvent, type RefObject } from 'react';
-import { Package, Search, Slash, Skull, Sparkles, X } from 'lucide-react';
+import { BarChart3, ListFilter, Package, Search, Slash, Skull, X } from 'lucide-react';
 
 import { nf } from './format';
 import type { TabKey } from './table-model';
@@ -33,7 +33,7 @@ export function PlayerStatsToolbar({
 }) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabItems = [
-    { key: 'allgemein', label: 'Allgemein', Icon: Sparkles },
+    { key: 'allgemein', label: 'Allgemein', Icon: BarChart3 },
     { key: 'items', label: 'Gegenst\u00e4nde', Icon: Package },
     { key: 'mobs', label: 'Kreaturen', Icon: Skull },
   ] as const;
@@ -72,44 +72,51 @@ export function PlayerStatsToolbar({
 
   return (
     <section className="mg-surface-2 p-3 sm:p-4">
-      <nav aria-label="Spielerstatistik Navigation" className="min-w-0">
-        <ul
-          className="grid grid-cols-1 gap-1.5 sm:grid-cols-3"
-          role="tablist"
-          aria-orientation="horizontal"
-        >
-          {tabItems.map((it, index) => {
-            const isActive = it.key === activeTab;
-            const Icon = it.Icon;
-            return (
-              <li key={it.key}>
-                <button
-                  id={getPlayerStatsTabId(it.key)}
-                  ref={(element) => {
-                    tabRefs.current[index] = element;
-                  }}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  aria-controls={getPlayerStatsPanelId(it.key)}
-                  tabIndex={isActive ? 0 : -1}
-                  onClick={() => setActiveTab(it.key)}
-                  onKeyDown={(event) => handleTabKeyDown(event, index)}
-                  className={[
-                    'focus-visible:ring-offset-bg inline-flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
-                    isActive
-                      ? 'border-accent/45 bg-accent/10 text-accent'
-                      : 'text-fg/85 hover:bg-surface-solid/35 hover:text-fg border-transparent',
-                  ].join(' ')}
-                >
-                  <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
-                  {it.label}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+      <div className="bg-surface-solid/35 border-border/75 rounded-[var(--radius)] border p-2 sm:p-2.5">
+        <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
+          <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
+          Kategorien
+        </div>
+
+        <nav aria-label="Spielerstatistik Kategorien" className="min-w-0">
+          <ul
+            className="sm:border-border/70 grid grid-cols-1 gap-1 sm:grid-cols-3 sm:items-center sm:border-b"
+            role="tablist"
+            aria-orientation="horizontal"
+          >
+            {tabItems.map((it, index) => {
+              const isActive = it.key === activeTab;
+              const Icon = it.Icon;
+              return (
+                <li key={it.key} className="min-w-0">
+                  <button
+                    id={getPlayerStatsTabId(it.key)}
+                    ref={(element) => {
+                      tabRefs.current[index] = element;
+                    }}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls={getPlayerStatsPanelId(it.key)}
+                    tabIndex={isActive ? 0 : -1}
+                    onClick={() => setActiveTab(it.key)}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
+                    className={[
+                      'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none sm:justify-center sm:rounded-t-[0.7rem] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block',
+                      isActive
+                        ? 'border-border/75 bg-surface-solid/52 text-fg sm:bg-surface-solid/48 sm:after:bg-accent'
+                        : 'text-fg/75 hover:bg-surface-solid/28 hover:text-fg/95 sm:after:bg-transparent',
+                    ].join(' ')}
+                  >
+                    <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
+                    <span className="min-w-0 text-left sm:text-center">{it.label}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
 
       <div className="mt-3 space-y-2.5">
         <label className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors">

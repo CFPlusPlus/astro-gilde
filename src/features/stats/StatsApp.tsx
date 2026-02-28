@@ -123,6 +123,7 @@ export default function StatsApp() {
   });
 
   const {
+    generatedIso,
     setGeneratedIso,
     totals,
     summaryLoaded,
@@ -387,6 +388,7 @@ export default function StatsApp() {
           onPageSizeChange={setPageSize}
           liveVariant={toolbarLiveVariant}
           updatedAt={summaryLastUpdatedAt}
+          generatedIso={generatedIso}
           apiError={apiError}
           onReload={handleReload}
           reloadDisabled={summaryRetryDisabled}

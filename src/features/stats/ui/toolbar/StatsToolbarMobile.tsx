@@ -38,6 +38,7 @@ export function StatsToolbarMobile({
   onPageSizeChange,
   topNHint,
   updatedAt,
+  generatedIso,
   apiError,
   onReload,
   reloadDisabled,
@@ -56,6 +57,7 @@ export function StatsToolbarMobile({
   onPageSizeChange: (next: number) => void;
   topNHint: string | null;
   updatedAt: number | null;
+  generatedIso: string | null;
   apiError: string | null;
   onReload?: () => void;
   reloadDisabled: boolean;
@@ -171,6 +173,7 @@ export function StatsToolbarMobile({
         onPageSizeChange={onPageSizeChange}
         topNHint={topNHint}
         updatedAt={updatedAt}
+        generatedIso={generatedIso}
         apiError={apiError}
         onReload={onReload}
         reloadDisabled={reloadDisabled}

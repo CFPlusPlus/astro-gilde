@@ -37,6 +37,7 @@ type StatsToolbarProps = {
   onPageSizeChange: (next: number) => void;
   liveVariant: LiveBadgeVariant;
   updatedAt: number | null;
+  generatedIso: string | null;
   apiError: string | null;
   onReload?: () => void;
   reloadDisabled?: boolean;
@@ -224,6 +225,7 @@ export function StatsToolbar({
   onPageSizeChange,
   liveVariant,
   updatedAt,
+  generatedIso,
   apiError,
   onReload,
   reloadDisabled = false,
@@ -300,7 +302,12 @@ export function StatsToolbar({
                 />
 
                 <div className="flex min-w-0 items-center justify-end gap-2">
-                  <LiveBadgeSlot variant={liveVariant} className="shrink-0" />
+                  <LiveBadgeSlot
+                    variant={liveVariant}
+                    updatedAt={updatedAt}
+                    generatedIso={generatedIso}
+                    className="shrink-0"
+                  />
                   <LastUpdated
                     updatedAt={updatedAt}
                     className="text-muted max-w-[15rem] truncate text-xs"
@@ -345,6 +352,7 @@ export function StatsToolbar({
           onPageSizeChange={onPageSizeChange}
           topNHint={topNHint}
           updatedAt={updatedAt}
+          generatedIso={generatedIso}
           apiError={apiError}
           onReload={onReload}
           reloadDisabled={reloadDisabled}
