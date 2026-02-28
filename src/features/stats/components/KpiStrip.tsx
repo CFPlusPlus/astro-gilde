@@ -30,7 +30,7 @@ export function KpiStrip({
         Ziel: kein "4x einzelne Cards", sondern ein hochwertiger KPI-Strip mit Dividern.
         Passt optisch besser in den neuen Layout-Rhythmus.
       */}
-      <div className="divide-border grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0 lg:grid-cols-4">
+      <div className="divide-border grid grid-cols-1 divide-y sm:grid-cols-2 sm:divide-y-0 sm:[&>*:nth-child(even)]:border-l sm:[&>*:nth-child(even)]:border-border lg:grid-cols-4 lg:[&>*:not(:first-child)]:border-l lg:[&>*:not(:first-child)]:border-border">
         {items.map((it) => (
           <div key={it.id} className="p-4 sm:p-5">
             <div className="flex items-center gap-2">
