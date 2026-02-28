@@ -28,6 +28,7 @@ export default function SkinViewerModal({
   const SKIN_VIEWER_SCROLL_LOCK_ID = 'skin-viewer-modal';
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const dialogTitle = title || (playerName ? `Skin von ${playerName}` : 'Skin von Spieler');
   const {
     canvasRef,
@@ -51,6 +52,10 @@ export default function SkinViewerModal({
   });
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
     if (!open) return;
 
     lastFocusedElementRef.current =
@@ -65,7 +70,7 @@ export default function SkinViewerModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -84,7 +89,7 @@ export default function SkinViewerModal({
         lastFocusedElement.focus();
       }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
