@@ -28,6 +28,7 @@ export default function SkinViewerModal({
   const SKIN_VIEWER_SCROLL_LOCK_ID = 'skin-viewer-modal';
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+  const onCloseRef = useRef(onClose);
   const dialogTitle = title || (playerName ? `Skin von ${playerName}` : 'Skin von Spieler');
   const {
     canvasRef,
@@ -51,6 +52,10 @@ export default function SkinViewerModal({
   });
 
   useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
     if (!open) return;
 
     lastFocusedElementRef.current =
@@ -65,7 +70,7 @@ export default function SkinViewerModal({
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -84,13 +89,13 @@ export default function SkinViewerModal({
         lastFocusedElement.focus();
       }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
   return (
     <div
-      className="mg-glass-overlay fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto p-3 sm:items-center sm:p-4"
+      className="mg-glass-overlay fixed inset-0 z-[70] flex items-start justify-center overflow-hidden p-2 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={dialogTitle}
@@ -101,7 +106,7 @@ export default function SkinViewerModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="mg-modal-panel my-3 max-h-[calc(100dvh-1.5rem)] max-w-5xl sm:my-4 sm:max-h-[calc(100dvh-2rem)]"
+        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl !overflow-y-auto sm:max-h-[calc(100dvh-2rem)]"
       >
         <header className="mg-modal-header">
           <h3 className="mg-modal-title">{dialogTitle}</h3>
@@ -110,7 +115,7 @@ export default function SkinViewerModal({
           </button>
         </header>
 
-        <div className="mg-modal-body grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="grid gap-3 p-3 sm:gap-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_280px]">
           <SkinViewerStage stageRef={stageRef} canvasRef={canvasRef} />
           <SkinViewerControls
             animationMode={animationMode}

@@ -102,6 +102,10 @@
     --mg-glass-bg-fallback: var(--glass-nav-bg-fallback);
     --mg-glass-border: var(--glass-nav-border);
     --mg-glass-shadow: var(--glass-nav-shadow);
+    isolation: isolate;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    backface-visibility: hidden;
     -webkit-backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
     backdrop-filter: saturate(150%) blur(var(--mg-glass-blur));
     border-top: 0;
@@ -119,7 +123,7 @@
   }
 
   .mg-modal-panel {
-    @apply w-full overflow-x-hidden overflow-y-auto rounded-[var(--radius)] shadow-2xl outline-none;
+    @apply flex min-h-0 w-full flex-col overflow-hidden rounded-[var(--radius)] shadow-2xl outline-none;
   }
 
   .mg-modal-header {
@@ -137,7 +141,7 @@
   }
 
   .mg-modal-body {
-    @apply p-3 sm:p-5;
+    @apply min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5;
   }
 
   .mg-modal-footer {
