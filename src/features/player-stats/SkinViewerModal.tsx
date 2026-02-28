@@ -106,7 +106,7 @@ export default function SkinViewerModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl sm:max-h-[calc(100dvh-2rem)]"
+        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl !overflow-y-auto sm:max-h-[calc(100dvh-2rem)]"
       >
         <header className="mg-modal-header">
           <h3 className="mg-modal-title">{dialogTitle}</h3>
@@ -115,7 +115,7 @@ export default function SkinViewerModal({
           </button>
         </header>
 
-        <div className="mg-modal-body grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="grid gap-3 p-3 sm:gap-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_280px]">
           <SkinViewerStage stageRef={stageRef} canvasRef={canvasRef} />
           <SkinViewerControls
             animationMode={animationMode}
