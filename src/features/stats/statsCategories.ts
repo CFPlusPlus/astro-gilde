@@ -1,7 +1,7 @@
 import { normalizeUmlauts } from './normalizeUmlauts';
 import type { MetricDef } from './types';
 
-export type StatsCategoryGroup = 'Aktivität' | 'Erkundung' | 'Kampf' | 'Ressourcen' | 'Sonstiges';
+export type StatsCategoryGroup = string;
 
 export type StatsCategoryIcon = 'activity' | 'explore' | 'combat' | 'resource' | 'misc';
 
@@ -155,6 +155,14 @@ function joinSearchText(parts: Array<string | null | undefined>): string {
   );
 }
 
+function resolveGroupFromMetricCategory(metricDef?: MetricDef): string | null {
+  const value = metricDef?.category;
+  if (typeof value !== 'string') return null;
+
+  const normalized = normalizeUmlauts(value).trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
 function resolveCategoryGroupFromText(searchText: string): StatsCategoryGroup {
   for (const { group, keywords } of GROUP_MATCHERS) {
     if (keywords.some((keyword) => searchText.includes(keyword))) {
@@ -180,7 +188,10 @@ export function resolveStatsCategoryDef(metricId: string, metricDef?: MetricDef)
     metricDef?.unit || null,
   ]);
 
-  const group = override?.group || resolveCategoryGroupFromText(searchText);
+  const group =
+    resolveGroupFromMetricCategory(metricDef) ||
+    override?.group ||
+    resolveCategoryGroupFromText(searchText);
 
   return {
     key: safeId,

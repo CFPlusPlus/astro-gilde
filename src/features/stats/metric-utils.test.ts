@@ -13,8 +13,8 @@ describe('metric-utils', () => {
   it('filters out king metric and applies query text', () => {
     expect(filterMetricIds(metrics, '')).toEqual(['hours', 'diamond']);
     expect(filterMetricIds(metrics, 'dia')).toEqual(['diamond']);
-    expect(filterMetricIds(metrics, 'ressourcen')).toEqual(['diamond']);
-    expect(filterMetricIds(metrics, 'Aktivität')).toEqual(['hours']);
+    expect(filterMetricIds(metrics, 'items')).toEqual(['diamond']);
+    expect(filterMetricIds(metrics, 'allgemein')).toEqual(['hours']);
   });
 
   it('picks preferred default metric id', () => {
@@ -26,8 +26,8 @@ describe('metric-utils', () => {
   it('groups metric ids by category with sorted ids', () => {
     const grouped = groupMetricIds(metrics, ['diamond', 'hours']);
     expect(grouped).toEqual([
-      { cat: 'Aktivität', ids: ['hours'] },
-      { cat: 'Ressourcen', ids: ['diamond'] },
+      { cat: 'Allgemein', ids: ['hours'] },
+      { cat: 'Items', ids: ['diamond'] },
     ]);
   });
 });
