@@ -95,7 +95,9 @@ export function PlayerStatsTables({
   };
 
   const handleItemsSort = (key: keyof ItemsRow) => {
-    setItemsMotionStartIndex(resolveTableMotionStartIndex(itemsTableWrapRef.current, motionMaxRows));
+    setItemsMotionStartIndex(
+      resolveTableMotionStartIndex(itemsTableWrapRef.current, motionMaxRows),
+    );
     setSortItems((s) => ({
       key,
       dir: s.key === key ? nextSort(s.dir) : 'asc',
