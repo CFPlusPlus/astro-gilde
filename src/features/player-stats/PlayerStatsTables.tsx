@@ -1,4 +1,4 @@
-import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import { useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 
 import { nf } from './format';
 import { getPlayerStatsPanelId, getPlayerStatsTabId } from './PlayerStatsToolbar';
@@ -12,7 +12,7 @@ import {
   type TabKey,
 } from './table-model';
 import { DataSurface, NoResults, SortIcon } from './ui';
-import { createTableRowMotion } from '../ui/tableRowMotion';
+import { createTableRowMotion, resolveTableMotionStartIndex } from '../ui/tableRowMotion';
 
 function resolveAriaSort(
   activeKey: string,
@@ -76,23 +76,60 @@ export function PlayerStatsTables({
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
     'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none';
+  const motionMaxRows = 12;
+  const generalTableWrapRef = useRef<HTMLDivElement | null>(null);
+  const itemsTableWrapRef = useRef<HTMLDivElement | null>(null);
+  const mobsTableWrapRef = useRef<HTMLDivElement | null>(null);
+  const [generalMotionStartIndex, setGeneralMotionStartIndex] = useState(0);
+  const [itemsMotionStartIndex, setItemsMotionStartIndex] = useState(0);
+  const [mobsMotionStartIndex, setMobsMotionStartIndex] = useState(0);
+
+  const handleGeneralSort = (key: 'label' | 'value' | 'raw') => {
+    setGeneralMotionStartIndex(
+      resolveTableMotionStartIndex(generalTableWrapRef.current, motionMaxRows),
+    );
+    setSortGeneral((s) => ({
+      key,
+      dir: s.key === key ? nextSort(s.dir) : 'asc',
+    }));
+  };
+
+  const handleItemsSort = (key: keyof ItemsRow) => {
+    setItemsMotionStartIndex(resolveTableMotionStartIndex(itemsTableWrapRef.current, motionMaxRows));
+    setSortItems((s) => ({
+      key,
+      dir: s.key === key ? nextSort(s.dir) : 'asc',
+    }));
+  };
+
+  const handleMobsSort = (key: keyof MobsRow) => {
+    setMobsMotionStartIndex(resolveTableMotionStartIndex(mobsTableWrapRef.current, motionMaxRows));
+    setSortMobs((s) => ({
+      key,
+      dir: s.key === key ? nextSort(s.dir) : 'asc',
+    }));
+  };
+
   const generalMotion = createTableRowMotion({
     triggerKey: `player-general-${sortGeneral.key}-${sortGeneral.dir}`,
     enabled: activeTab === 'allgemein' && filtered.general.length > 0,
-    maxRows: 12,
+    maxRows: motionMaxRows,
     stepMs: 30,
+    startIndex: generalMotionStartIndex,
   });
   const itemsMotion = createTableRowMotion({
     triggerKey: `player-items-${sortItems.key}-${sortItems.dir}`,
     enabled: activeTab === 'items' && filtered.items.length > 0,
-    maxRows: 12,
+    maxRows: motionMaxRows,
     stepMs: 30,
+    startIndex: itemsMotionStartIndex,
   });
   const mobsMotion = createTableRowMotion({
     triggerKey: `player-mobs-${sortMobs.key}-${sortMobs.dir}`,
     enabled: activeTab === 'mobs' && filtered.mobs.length > 0,
-    maxRows: 12,
+    maxRows: motionMaxRows,
     stepMs: 30,
+    startIndex: mobsMotionStartIndex,
   });
   const renderSurfaceContent = (table: ReactNode, isEmpty: boolean) => (
     <div className="divide-border/70 flex flex-col divide-y">
@@ -121,7 +158,7 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div className={tableWrapClassLg}>
+              <div ref={generalTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[860px] text-sm">
                   <caption className="sr-only">Tabelle mit allgemeinen Spielerstatistiken.</caption>
                   <thead className={tableHeadClassLg}>
@@ -135,12 +172,7 @@ export function PlayerStatsTables({
                         <button
                           type="button"
                           className={sortButtonClass}
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
+                          onClick={() => handleGeneralSort('label')}
                           aria-label="Eintrag sortieren"
                         >
                           Eintrag
@@ -159,12 +191,7 @@ export function PlayerStatsTables({
                         <button
                           type="button"
                           className={sortButtonClass}
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'value',
-                              dir: s.key === 'value' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
+                          onClick={() => handleGeneralSort('value')}
                           aria-label="Wert sortieren"
                         >
                           Wert
@@ -183,12 +210,7 @@ export function PlayerStatsTables({
                         <button
                           type="button"
                           className={sortButtonClass}
-                          onClick={() =>
-                            setSortGeneral((s) => ({
-                              key: 'raw',
-                              dir: s.key === 'raw' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
+                          onClick={() => handleGeneralSort('raw')}
                           aria-label={'Technischen Schl\u00fcssel sortieren'}
                         >
                           {'Technischer Schl\u00fcssel'}
@@ -260,7 +282,7 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div className={tableWrapClassXl}>
+              <div ref={itemsTableWrapRef} className={tableWrapClassXl}>
                 <table className="w-full min-w-[1080px] text-sm">
                   <caption className="sr-only">Tabelle mit Gegenstandsstatistiken.</caption>
                   <thead className={tableHeadClassXl}>
@@ -274,12 +296,7 @@ export function PlayerStatsTables({
                         <button
                           type="button"
                           className={sortButtonClass}
-                          onClick={() =>
-                            setSortItems((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
+                          onClick={() => handleItemsSort('label')}
                           aria-label="Item sortieren"
                         >
                           Item
@@ -309,12 +326,7 @@ export function PlayerStatsTables({
                           <button
                             type="button"
                             className={sortButtonClass}
-                            onClick={() =>
-                              setSortItems((s) => ({
-                                key,
-                                dir: s.key === key ? nextSort(s.dir) : 'asc',
-                              }))
-                            }
+                            onClick={() => handleItemsSort(key)}
                             aria-label={`${label} sortieren`}
                           >
                             {label}
@@ -402,7 +414,7 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div className={tableWrapClassLg}>
+              <div ref={mobsTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[760px] text-sm">
                   <caption className="sr-only">Tabelle mit Kreaturenstatistiken.</caption>
                   <thead className={tableHeadClassLg}>
@@ -416,12 +428,7 @@ export function PlayerStatsTables({
                         <button
                           type="button"
                           className={sortButtonClass}
-                          onClick={() =>
-                            setSortMobs((s) => ({
-                              key: 'label',
-                              dir: s.key === 'label' ? nextSort(s.dir) : 'asc',
-                            }))
-                          }
+                          onClick={() => handleMobsSort('label')}
                           aria-label="Kreatur sortieren"
                         >
                           Kreatur
@@ -447,12 +454,7 @@ export function PlayerStatsTables({
                           <button
                             type="button"
                             className={sortButtonClass}
-                            onClick={() =>
-                              setSortMobs((s) => ({
-                                key,
-                                dir: s.key === key ? nextSort(s.dir) : 'asc',
-                              }))
-                            }
+                            onClick={() => handleMobsSort(key)}
                             aria-label={`${label} sortieren`}
                           >
                             {label}

@@ -5,7 +5,7 @@ import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
 import { LeaderboardCards } from '../tabs/leaderboards/LeaderboardCards';
-import { createTableRowMotion } from '../../ui/tableRowMotion';
+import { createTableRowMotion, resolveTableMotionStartIndex } from '../../ui/tableRowMotion';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 
 function isInteractiveTarget(target: EventTarget | null): boolean {
@@ -157,7 +157,10 @@ export function LeaderboardTable({
   showDesktopCopyAction?: boolean;
 }) {
   const [copiedUuid, setCopiedUuid] = useState<string | null>(null);
+  const [motionStartIndex, setMotionStartIndex] = useState(0);
+  const motionMaxRows = 16;
   const copyFeedbackTimeoutRef = useRef<number | null>(null);
+  const desktopTableWrapRef = useRef<HTMLDivElement | null>(null);
 
   const page = useMemo(
     () => state.pages[state.currentPage] || [],
@@ -211,15 +214,29 @@ export function LeaderboardTable({
     [markCopied],
   );
 
+  const handleGoPage = useCallback(
+    (nextPage: number) => {
+      setMotionStartIndex(resolveTableMotionStartIndex(desktopTableWrapRef.current, motionMaxRows));
+      onGoPage(nextPage);
+    },
+    [motionMaxRows, onGoPage],
+  );
+
+  const handleLoadMore = useCallback(() => {
+    setMotionStartIndex(resolveTableMotionStartIndex(desktopTableWrapRef.current, motionMaxRows));
+    onLoadMore();
+  }, [motionMaxRows, onLoadMore]);
+
   const tableMotion = useMemo(
     () =>
       createTableRowMotion({
         triggerKey: `${metricKey}-${state.currentPage}`,
         enabled: state.loaded && page.length > 0,
-        maxRows: 10,
+        maxRows: motionMaxRows,
         stepMs: 30,
+        startIndex: motionStartIndex,
       }),
-    [metricKey, page.length, state.currentPage, state.loaded],
+    [metricKey, motionStartIndex, page.length, state.currentPage, state.loaded],
   );
 
   const renderedRows = useMemo<LeaderboardRenderRow[]>(
@@ -269,7 +286,10 @@ export function LeaderboardTable({
       </div>
 
       <div className="hidden md:block">
-        <div className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible">
+        <div
+          ref={desktopTableWrapRef}
+          className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible"
+        >
           <table className="w-full min-w-[390px] border-collapse text-sm sm:min-w-[520px]">
             <caption className="sr-only">
               Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
@@ -351,7 +371,7 @@ export function LeaderboardTable({
       ) : null}
 
       <div className="border-border/75 flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
-        <Pagination state={state} onGo={onGoPage} onLoadMore={onLoadMore} />
+        <Pagination state={state} onGo={handleGoPage} onLoadMore={handleLoadMore} />
       </div>
     </section>
   );

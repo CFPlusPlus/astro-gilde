@@ -1425,54 +1425,70 @@
     }
   }
 
-  .mg-table-row-enter > td {
+  .mg-table-row-enter > :is(td, th) {
     opacity: 0;
     transform: translate3d(0, -6px, 0);
     animation: mg-table-row-enter 210ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
 
-  .mg-table-row-enter:nth-child(2) > td {
+  .mg-table-row-enter:nth-child(2) > :is(td, th) {
     animation-delay: 30ms;
   }
 
-  .mg-table-row-enter:nth-child(3) > td {
+  .mg-table-row-enter:nth-child(3) > :is(td, th) {
     animation-delay: 60ms;
   }
 
-  .mg-table-row-enter:nth-child(4) > td {
+  .mg-table-row-enter:nth-child(4) > :is(td, th) {
     animation-delay: 90ms;
   }
 
-  .mg-table-row-enter:nth-child(5) > td {
+  .mg-table-row-enter:nth-child(5) > :is(td, th) {
     animation-delay: 120ms;
   }
 
-  .mg-table-row-enter:nth-child(6) > td {
+  .mg-table-row-enter:nth-child(6) > :is(td, th) {
     animation-delay: 150ms;
   }
 
-  .mg-table-row-enter:nth-child(7) > td {
+  .mg-table-row-enter:nth-child(7) > :is(td, th) {
     animation-delay: 180ms;
   }
 
-  .mg-table-row-enter:nth-child(8) > td {
+  .mg-table-row-enter:nth-child(8) > :is(td, th) {
     animation-delay: 210ms;
   }
 
-  .mg-table-row-enter:nth-child(9) > td {
+  .mg-table-row-enter:nth-child(9) > :is(td, th) {
     animation-delay: 240ms;
   }
 
-  .mg-table-row-enter:nth-child(10) > td {
+  .mg-table-row-enter:nth-child(10) > :is(td, th) {
     animation-delay: 270ms;
   }
 
-  .mg-table-row-enter:nth-child(11) > td {
+  .mg-table-row-enter:nth-child(11) > :is(td, th) {
     animation-delay: 300ms;
   }
 
-  .mg-table-row-enter:nth-child(12) > td {
+  .mg-table-row-enter:nth-child(12) > :is(td, th) {
     animation-delay: 330ms;
+  }
+
+  .mg-table-row-enter:nth-child(13) > :is(td, th) {
+    animation-delay: 360ms;
+  }
+
+  .mg-table-row-enter:nth-child(14) > :is(td, th) {
+    animation-delay: 390ms;
+  }
+
+  .mg-table-row-enter:nth-child(15) > :is(td, th) {
+    animation-delay: 420ms;
+  }
+
+  .mg-table-row-enter:nth-child(16) > :is(td, th) {
+    animation-delay: 450ms;
   }
 
   .mg-filter-transition {
@@ -1508,7 +1524,7 @@
       transform: none;
     }
 
-    .mg-table-row-enter > td {
+    .mg-table-row-enter > :is(td, th) {
       opacity: 1;
       transform: none;
       animation: none;
