@@ -724,7 +724,7 @@
   .mg-prose .tutorial-role::before {
     content: '';
     position: absolute;
-    inset: 0 0 auto 0;
+    inset: 0 0 auto;
     z-index: 0;
     height: 3px;
     border-radius: 1rem 1rem 0 0;
