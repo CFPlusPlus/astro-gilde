@@ -127,7 +127,7 @@
   }
 
   .mg-modal-header {
-    @apply border-border/80 bg-surface-solid sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
+    @apply border-border/80 bg-surface-solid z-20 flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
