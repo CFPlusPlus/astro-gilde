@@ -132,7 +132,7 @@ export function CategoriesSheet({
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="mg-scrollbar min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="border-border/80 bg-surface-solid/98 sticky top-0 z-10 -mx-4 border-b px-4 py-3">
             <div className="bg-surface-solid/55 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
               <Filter size={16} className="text-muted" />

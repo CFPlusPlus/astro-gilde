@@ -47,7 +47,7 @@ export function PlayerStatsHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <a href="/statistiken" className="mg-btn mg-btn--sm mg-btn--primary">
+        <a href="/statistiken/" className="mg-btn mg-btn--sm mg-btn--primary">
           <ArrowLeft size={16} /> Zurück zur Statistik
         </a>
 

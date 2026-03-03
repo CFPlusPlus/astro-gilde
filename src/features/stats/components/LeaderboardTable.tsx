@@ -288,7 +288,7 @@ export function LeaderboardTable({
       <div className="hidden md:block">
         <div
           ref={desktopTableWrapRef}
-          className="max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible"
+          className="mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible"
         >
           <table className="w-full min-w-[390px] border-collapse text-sm sm:min-w-[520px]">
             <caption className="sr-only">
