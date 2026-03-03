@@ -79,7 +79,7 @@ function MetricPickerImpl({
       <div
         className={[
           'mt-4 [overflow-anchor:none]',
-          scrollClassName || 'max-h-[520px] overflow-auto pr-1',
+          scrollClassName || 'mg-scrollbar max-h-[520px] overflow-auto pr-1',
         ].join(' ')}
       >
         <div className="space-y-5">

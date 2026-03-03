@@ -83,7 +83,7 @@ export function StatsNavPills({
             ? surface
               ? 'mg-surface-2 rounded-[var(--radius)] p-1'
               : 'min-w-0'
-            : 'overflow-x-auto px-3 py-2',
+            : 'mg-scrollbar overflow-x-auto px-3 py-2',
           isOneRow ? '' : surface ? 'mg-surface-2' : 'bg-surface-solid/35 rounded-[var(--radius)]',
         ].join(' ')}
       >

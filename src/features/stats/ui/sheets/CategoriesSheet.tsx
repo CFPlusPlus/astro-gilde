@@ -132,34 +132,34 @@ export function CategoriesSheet({
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <div className="border-border/80 bg-surface-solid/98 sticky top-0 z-10 -mx-4 border-b px-4 py-3">
-            <div className="bg-surface-solid/55 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
-              <Filter size={16} className="text-muted" />
-              <input
-                value={filter}
-                onChange={(event) => onFilterChange(event.target.value)}
-                type="search"
-                placeholder="Kategorie suchen..."
-                className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
-                aria-label="Ranglisten Kategorie suchen"
-              />
-              <button
-                type="button"
-                onClick={() => onFilterChange('')}
-                className={[
-                  'mg-search-clear',
-                  filter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
-                ].join(' ')}
-                aria-label="Ranglisten-Filter zur\u00fccksetzen"
-                title="Filter zur\u00fccksetzen"
-                tabIndex={filter.trim().length > 0 ? 0 : -1}
-              >
-                <X size={14} />
-              </button>
-            </div>
+        <div className="border-border/80 bg-surface-solid/98 shrink-0 border-b px-4 py-3">
+          <div className="bg-surface-solid/55 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+            <Filter size={16} className="text-muted" />
+            <input
+              value={filter}
+              onChange={(event) => onFilterChange(event.target.value)}
+              type="search"
+              placeholder="Kategorie suchen..."
+              className="placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
+              aria-label="Ranglisten Kategorie suchen"
+            />
+            <button
+              type="button"
+              onClick={() => onFilterChange('')}
+              className={[
+                'mg-search-clear',
+                filter.trim().length > 0 ? '' : 'mg-search-clear--hidden',
+              ].join(' ')}
+              aria-label="Ranglisten-Filter zur\u00fccksetzen"
+              title="Filter zur\u00fccksetzen"
+              tabIndex={filter.trim().length > 0 ? 0 : -1}
+            >
+              <X size={14} />
+            </button>
           </div>
+        </div>
 
+        <div className="mg-scrollbar min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
           <div className="space-y-3 pt-3">
             {grouped.length === 0 ? (
               <div className="mg-notice text-sm" data-variant="warning" role="status">

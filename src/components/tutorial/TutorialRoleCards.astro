@@ -16,12 +16,7 @@ const ROLE_ICONS = {
       const Icon = ROLE_ICONS[role.icon];
 
       return (
-        <article
-          class="tutorial-role"
-          data-role={role.key}
-          role="listitem"
-          style={`--tutorial-role-color: ${role.color};`}
-        >
+        <article class="tutorial-role" data-role={role.key} role="listitem">
           <div class="tutorial-role__head">
             <span class="tutorial-role__icon" aria-hidden="true">
               <Icon size={14} />

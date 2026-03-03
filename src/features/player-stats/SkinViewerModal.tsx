@@ -106,7 +106,7 @@ export default function SkinViewerModal({
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl !overflow-y-auto sm:max-h-[calc(100dvh-2rem)]"
+        className="mg-modal-panel max-h-[calc(100dvh-1rem)] max-w-5xl sm:max-h-[calc(100dvh-2rem)]"
       >
         <header className="mg-modal-header">
           <h3 className="mg-modal-title">{dialogTitle}</h3>
@@ -115,30 +115,32 @@ export default function SkinViewerModal({
           </button>
         </header>
 
-        <div className="grid gap-3 p-3 sm:gap-4 sm:p-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <SkinViewerStage stageRef={stageRef} canvasRef={canvasRef} />
-          <SkinViewerControls
-            animationMode={animationMode}
-            animationSpeed={animationSpeed}
-            backMode={backMode}
-            capeState={capeState}
-            capeUrl={capeUrl}
-            fallbackElytraActive={fallbackElytraActive}
-            onAnimationModeChange={onAnimationModeChange}
-            onAnimationSpeedChange={onAnimationSpeedChange}
-            onBackModeChange={onBackModeChange}
-          />
-        </div>
-
-        {loadError ? (
-          <div
-            className="bg-accent/10 border-accent/40 mx-4 mb-4 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-            role="status"
-          >
-            <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
-            <span className="text-fg/90">{loadError}</span>
+        <div className="mg-modal-body space-y-3 sm:space-y-4">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
+            <SkinViewerStage stageRef={stageRef} canvasRef={canvasRef} />
+            <SkinViewerControls
+              animationMode={animationMode}
+              animationSpeed={animationSpeed}
+              backMode={backMode}
+              capeState={capeState}
+              capeUrl={capeUrl}
+              fallbackElytraActive={fallbackElytraActive}
+              onAnimationModeChange={onAnimationModeChange}
+              onAnimationSpeedChange={onAnimationSpeedChange}
+              onBackModeChange={onBackModeChange}
+            />
           </div>
-        ) : null}
+
+          {loadError ? (
+            <div
+              className="bg-accent/10 border-accent/40 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
+              role="status"
+            >
+              <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
+              <span className="text-fg/90">{loadError}</span>
+            </div>
+          ) : null}
+        </div>
 
         <footer className="mg-modal-footer flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <span className="text-muted text-xs">

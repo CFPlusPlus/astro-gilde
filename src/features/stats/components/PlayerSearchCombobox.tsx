@@ -243,7 +243,7 @@ function ResultsList({
       id={listboxId}
       role="listbox"
       aria-labelledby={srLabelId}
-      className="max-h-[min(18rem,45dvh)] overflow-auto py-1"
+      className="mg-scrollbar max-h-[min(18rem,45dvh)] overflow-auto py-1"
     >
       {isLoading ? (
         <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">

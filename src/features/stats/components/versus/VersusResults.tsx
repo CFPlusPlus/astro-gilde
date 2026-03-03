@@ -213,7 +213,7 @@ function VersusTable({
 
   return (
     <div className="bg-surface-solid/40 border-border/80 relative mt-3 min-w-0 overflow-hidden rounded-[var(--radius)] border">
-      <div className="max-w-full overflow-x-auto overscroll-x-contain">
+      <div className="mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain">
         <table className="w-full min-w-[560px] text-sm sm:min-w-[720px]">
           <caption className="sr-only">
             Vergleichstabelle fuer {playerALabel} und {playerBLabel}.

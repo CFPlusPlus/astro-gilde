@@ -127,7 +127,7 @@
   }
 
   .mg-modal-header {
-    @apply border-border/80 bg-surface-solid sticky top-0 z-20 flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
+    @apply border-border/80 bg-surface-solid z-20 flex shrink-0 items-center justify-between gap-3 border-b px-4 py-3 sm:px-6 sm:py-4;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
@@ -142,6 +142,74 @@
 
   .mg-modal-body {
     @apply min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 sm:p-5;
+  }
+
+  .mg-scrollbar,
+  .mg-modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--fg) 42%, var(--surface-solid) 58%)
+      color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+  }
+
+  .mg-scrollbar::-webkit-scrollbar,
+  .mg-modal-body::-webkit-scrollbar {
+    width: 0.72rem;
+    height: 0.72rem;
+  }
+
+  .mg-scrollbar::-webkit-scrollbar-track,
+  .mg-modal-body::-webkit-scrollbar-track {
+    background: color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+    border-radius: 999px;
+  }
+
+  .mg-scrollbar::-webkit-scrollbar-thumb,
+  .mg-modal-body::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--fg) 42%, var(--surface-solid) 58%);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+
+  .mg-scrollbar:hover::-webkit-scrollbar-thumb,
+  .mg-modal-body:hover::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--fg) 55%, var(--surface-solid) 45%);
+  }
+
+  .mg-scrollbar::-webkit-scrollbar-button,
+  .mg-modal-body::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+
+  .mg-scrollbar::-webkit-scrollbar-corner,
+  .mg-modal-body::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  .mg-ios-scroll-gutter {
+    scrollbar-gutter: stable;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    @media (hover: none) and (pointer: coarse) {
+      .mg-ios-scroll-gutter {
+        padding-inline-end: calc(0.55rem + env(safe-area-inset-right));
+      }
+    }
+  }
+
+  @media (max-width: 47.99rem) {
+    .mg-scrollbar-mobile-hidden {
+      scrollbar-width: none;
+    }
+
+    .mg-scrollbar-mobile-hidden::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
   }
 
   .mg-modal-footer {
@@ -635,20 +703,66 @@
   .mg-prose .tutorial-role {
     --tutorial-role-color: var(--accent);
     display: flex;
+    position: relative;
+    isolation: isolate;
     flex-direction: column;
-    min-height: 7.4rem;
-    border: 1px solid color-mix(in oklab, var(--border) 88%, transparent);
-    border-left: 4px solid var(--tutorial-role-color);
-    border-radius: 0.8rem;
-    padding: 0.58rem 0.8rem 0.56rem;
-    background: color-mix(in oklab, var(--surface-solid) 96%, var(--fg) 4%);
+    overflow: hidden;
+    min-height: 7.8rem;
+    border: 1px solid color-mix(in oklab, var(--border) 86%, transparent);
+    border-radius: 1rem;
+    padding: 0.82rem 0.92rem 0.74rem;
+    background:
+      radial-gradient(
+        140% 120% at 100% 0%,
+        color-mix(in oklab, var(--tutorial-role-color) 12%, transparent) 0%,
+        transparent 70%
+      ),
+      linear-gradient(
+        165deg,
+        color-mix(in oklab, var(--tutorial-role-color) 6%, var(--surface-solid) 94%) 0%,
+        color-mix(in oklab, var(--surface-solid) 98%, var(--fg) 2%) 58%,
+        color-mix(in oklab, var(--surface-solid) 96%, var(--fg) 4%) 100%
+      );
     box-shadow:
-      inset 0 1px 0 color-mix(in oklab, #ffffff 6%, transparent),
-      0 1px 2px color-mix(in oklab, #000000 7%, transparent);
+      inset 0 1px 0 color-mix(in oklab, #ffffff 7%, transparent),
+      0 8px 22px color-mix(in oklab, #000000 15%, transparent);
     transition:
       border-color 180ms ease,
       box-shadow 180ms ease,
-      background 220ms ease;
+      background 220ms ease,
+      transform 180ms ease;
+  }
+
+  .mg-prose .tutorial-role::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 0;
+    height: 3px;
+    border-radius: 1rem 1rem 0 0;
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--tutorial-role-color) 82%, #ffffff 18%) 0%,
+      color-mix(in oklab, var(--tutorial-role-color) 24%, transparent) 100%
+    );
+    opacity: 0.88;
+  }
+
+  .mg-prose .tutorial-role::after {
+    content: '';
+    position: absolute;
+    top: -4.2rem;
+    right: -3.4rem;
+    z-index: 0;
+    width: 12.4rem;
+    height: 12.4rem;
+    border-radius: 999px;
+    pointer-events: none;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklab, var(--tutorial-role-color) 14%, transparent) 0%,
+      transparent 78%
+    );
   }
 
   .mg-prose .tutorial-role[data-role='admin'] {
@@ -669,40 +783,54 @@
 
   .mg-prose .tutorial-role:hover {
     border-color: color-mix(in oklab, var(--tutorial-role-color) 28%, var(--border) 72%);
-    background: linear-gradient(
-      145deg,
-      color-mix(in oklab, var(--tutorial-role-color) 12%, var(--surface-solid) 88%) 0%,
-      color-mix(in oklab, var(--tutorial-role-color) 4%, var(--surface-solid) 96%) 52%,
-      color-mix(in oklab, var(--surface-solid) 98%, var(--fg) 2%) 100%
-    );
+    background:
+      radial-gradient(
+        140% 120% at 100% 0%,
+        color-mix(in oklab, var(--tutorial-role-color) 16%, transparent) 0%,
+        transparent 70%
+      ),
+      linear-gradient(
+        165deg,
+        color-mix(in oklab, var(--tutorial-role-color) 10%, var(--surface-solid) 90%) 0%,
+        color-mix(in oklab, var(--tutorial-role-color) 4%, var(--surface-solid) 96%) 52%,
+        color-mix(in oklab, var(--surface-solid) 98%, var(--fg) 2%) 100%
+      );
     box-shadow:
-      inset 0 1px 0 color-mix(in oklab, #ffffff 8%, transparent),
-      0 6px 14px color-mix(in oklab, #000000 9%, transparent);
+      inset 0 1px 0 color-mix(in oklab, #ffffff 10%, transparent),
+      0 12px 28px color-mix(in oklab, #000000 18%, transparent);
+    transform: translateY(-2px);
   }
 
   .mg-prose .tutorial-role__head {
     display: flex;
     align-items: center;
-    gap: 0.48rem;
+    position: relative;
+    z-index: 1;
+    gap: 0.58rem;
     margin: 0;
-    min-height: 1.6rem;
+    min-height: 1.85rem;
   }
 
   .mg-prose .tutorial-role__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.6rem;
-    height: 1.6rem;
-    border-radius: 0.5rem;
-    border: 1px solid color-mix(in oklab, var(--tutorial-role-color) 48%, transparent);
-    background: color-mix(in oklab, var(--tutorial-role-color) 14%, transparent);
+    width: 1.82rem;
+    height: 1.82rem;
+    border-radius: 0.6rem;
+    border: 1px solid color-mix(in oklab, var(--tutorial-role-color) 56%, transparent);
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--tutorial-role-color) 24%, transparent) 0%,
+      color-mix(in oklab, var(--tutorial-role-color) 12%, transparent) 100%
+    );
     color: var(--tutorial-role-color);
+    box-shadow: 0 3px 10px color-mix(in oklab, var(--tutorial-role-color) 26%, transparent);
   }
 
   .mg-prose .tutorial-role__icon svg {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.94rem;
+    height: 0.94rem;
   }
 
   .mg-prose .tutorial-role__icon svg * {
@@ -715,18 +843,20 @@
 
   .mg-prose .tutorial-role__name {
     margin: 0;
-    font-size: 1.02rem;
+    font-size: 1.08rem;
     font-weight: 700;
-    letter-spacing: -0.01em;
-    line-height: 1.25;
+    letter-spacing: -0.012em;
+    line-height: 1.2;
     color: var(--tutorial-role-color);
   }
 
   .mg-prose .tutorial-role__text {
-    margin: 0.28rem 0 0;
+    margin: 0.46rem 0 0;
+    position: relative;
+    z-index: 1;
     font-size: 0.95rem;
-    line-height: 1.5;
-    color: color-mix(in oklab, var(--fg) 90%, transparent);
+    line-height: 1.52;
+    color: color-mix(in oklab, var(--fg) 92%, transparent);
   }
 
   .mg-prose a,
