@@ -195,7 +195,7 @@
   @supports (-webkit-touch-callout: none) {
     @media (hover: none) and (pointer: coarse) {
       .mg-ios-scroll-gutter {
-        padding-inline-end: calc(0.4rem + env(safe-area-inset-right));
+        padding-inline-end: calc(0.55rem + env(safe-area-inset-right));
       }
     }
   }
