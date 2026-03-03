@@ -188,6 +188,18 @@
     background: transparent;
   }
 
+  .mg-ios-scroll-gutter {
+    scrollbar-gutter: stable;
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    @media (hover: none) and (pointer: coarse) {
+      .mg-ios-scroll-gutter {
+        padding-inline-end: calc(0.4rem + env(safe-area-inset-right));
+      }
+    }
+  }
+
   @media (max-width: 47.99rem) {
     .mg-scrollbar-mobile-hidden {
       scrollbar-width: none;
