@@ -1337,7 +1337,9 @@
 
   .mg-metric-option--active,
   .mg-metric-option--inactive {
-    transition: background-color 140ms ease, color 140ms ease;
+    transition:
+      background-color 140ms ease,
+      color 140ms ease;
   }
 
   .mg-metric-option--inactive:hover,

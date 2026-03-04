@@ -171,10 +171,7 @@ export function CategoriesSheet({
                 const isGroupActive = !!activeMetricId && ids.includes(activeMetricId);
 
                 return (
-                  <section
-                    key={cat}
-                    className="mg-app-panel mg-app-panel--soft overflow-hidden"
-                  >
+                  <section key={cat} className="mg-app-panel mg-app-panel--soft overflow-hidden">
                     <button
                       type="button"
                       className="focus-visible:ring-offset-bg hover:bg-surface-solid/36 flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
