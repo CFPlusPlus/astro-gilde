@@ -116,7 +116,7 @@ export function StatsNavPills({
                   disabled={disabled}
                   className={[
                     isOneRow
-                      ? 'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:justify-center sm:rounded-[0.7rem] sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block'
+                      ? 'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[calc(var(--radius)-3px)] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:justify-center sm:rounded-[calc(var(--radius)-3px)] sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block'
                       : 'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                     isActive
                       ? isOneRow

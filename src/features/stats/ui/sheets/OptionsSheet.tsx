@@ -128,7 +128,7 @@ export function OptionsSheet({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/45"
+        className="mg-overlay-scrim absolute inset-0"
         aria-label={'Optionen schlie\u00dfen'}
         onClick={onClose}
       />

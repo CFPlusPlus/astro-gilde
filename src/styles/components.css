@@ -122,6 +122,10 @@
     --mg-glass-shadow: var(--glass-overlay-shadow);
   }
 
+  .mg-overlay-scrim {
+    background: color-mix(in oklab, var(--bg) 52%, black 48%);
+  }
+
   .mg-modal-panel {
     @apply flex min-h-0 w-full flex-col overflow-hidden rounded-[var(--radius)] shadow-2xl outline-none;
   }
@@ -462,6 +466,28 @@
     box-shadow: none;
   }
 
+  .mg-error-message {
+    @apply flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm;
+    background: color-mix(in oklab, var(--warning) 11%, var(--surface-solid) 89%);
+    border-color: color-mix(in oklab, var(--warning) 44%, var(--border) 56%);
+    color: color-mix(in oklab, var(--fg) 94%, transparent);
+  }
+
+  .mg-error-message--compact {
+    @apply gap-2 px-3 py-2 text-xs;
+  }
+
+  .mg-error-message__icon {
+    @apply inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg;
+    background: color-mix(in oklab, var(--warning) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--warning) 82%, var(--fg) 18%);
+  }
+
+  .mg-error-message__dot {
+    @apply mt-0.5 h-2 w-2 flex-none rounded-full;
+    background: color-mix(in oklab, var(--warning) 76%, var(--surface-solid) 24%);
+  }
+
   .mg-section {
     @apply py-10;
   }
@@ -518,7 +544,7 @@
   }
 
   .mg-app-field:hover {
-    border-color: color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
   }
 
   .mg-app-field:focus-within {
@@ -1099,9 +1125,9 @@
   }
 
   .mg-rank-medal--3 {
-    background: color-mix(in oklab, #d99a6c 18%, var(--surface-solid) 82%);
-    border-color: color-mix(in oklab, #d99a6c 50%, var(--border) 50%);
-    color: color-mix(in oklab, #9a5d3a 80%, var(--fg) 20%);
+    background: color-mix(in oklab, var(--warning) 18%, var(--surface-solid) 82%);
+    border-color: color-mix(in oklab, var(--warning) 50%, var(--border) 50%);
+    color: color-mix(in oklab, var(--warning) 72%, var(--fg) 28%);
   }
 
   /* Einheitlicher, schmaler Range-Slider im Projekt-Stil */

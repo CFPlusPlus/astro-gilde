@@ -568,7 +568,7 @@ export function KingSection({
                       ? 'border-accent/55 bg-[linear-gradient(145deg,color-mix(in_oklab,var(--accent)_12%,transparent)_0%,color-mix(in_oklab,var(--surface-solid)_88%,transparent)_100%)] shadow-[0_12px_30px_-24px_var(--glass-shadow-color)]'
                       : rank === 2
                         ? 'border-border/70 bg-surface-solid/46 shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]'
-                        : 'border-border/70 bg-[color-mix(in_oklab,#d99a6c_8%,var(--surface-solid)_92%)] shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]',
+                        : 'border-border/70 bg-[color-mix(in_oklab,var(--warning)_8%,var(--surface-solid)_92%)] shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]',
                   ].join(' ');
 
                   const cardContent = (

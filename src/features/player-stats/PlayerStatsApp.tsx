@@ -191,14 +191,11 @@ export default function PlayerStatsApp() {
               ) : null}
 
               {apiError ? (
-                <div className="mg-notice text-sm" data-variant="warning" role="alert">
-                  <span
-                    className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
-                    aria-hidden="true"
-                  >
+                <div className="mg-error-message" role="alert">
+                  <span className="mg-error-message__icon" aria-hidden="true">
                     <SearchX size={14} />
                   </span>
-                  <span className="text-fg/90">{apiError}</span>
+                  <span>{apiError}</span>
                 </div>
               ) : null}
 

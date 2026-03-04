@@ -103,7 +103,7 @@ export function CategoriesSheet({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/45"
+        className="mg-overlay-scrim absolute inset-0"
         aria-label={'Kategorien schlie\u00dfen'}
         onClick={onClose}
       />

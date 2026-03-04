@@ -32,7 +32,7 @@ export function MetricPills({
               type="button"
               onClick={() => onSelectMetric(id)}
               className={[
-                'mg-app-chip inline-flex h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap transition-colors',
+                'mg-app-chip inline-flex h-8 items-center px-3 text-xs leading-none font-semibold whitespace-nowrap transition-colors',
                 isActive
                   ? 'mg-app-chip--accent hover:bg-accent/30'
                   : 'hover:border-accent/45 hover:bg-accent/14 hover:text-fg',

@@ -102,7 +102,7 @@ export function PlayerStatsToolbar({
                     onClick={() => setActiveTab(it.key)}
                     onKeyDown={(event) => handleTabKeyDown(event, index)}
                     className={[
-                      'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none sm:justify-center sm:rounded-t-[0.7rem] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block',
+                      'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[calc(var(--radius)-3px)] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none sm:justify-center sm:rounded-t-[calc(var(--radius)-3px)] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block',
                       isActive
                         ? 'text-fg border-border/75 bg-surface-solid/32 sm:after:bg-accent'
                         : 'text-fg/75 hover:text-fg hover:bg-surface-solid/22 sm:after:bg-transparent',
