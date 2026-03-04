@@ -31,7 +31,7 @@ function MetricPickerImpl({
     : null;
 
   return (
-    <section className={surface ? 'mg-surface-2 p-4' : undefined}>
+    <section className={surface ? 'mg-app-panel p-4' : undefined}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
         <span className="text-muted text-xs">{visibleCount} Treffer</span>
@@ -40,7 +40,7 @@ function MetricPickerImpl({
       {activeMetricId ? (
         <div className="mt-3 flex min-w-0 flex-wrap items-center gap-2">
           <span className="text-muted text-xs">Ausgewählt:</span>
-          <span className="border-border/80 bg-accent/14 text-fg inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold">
+          <span className="mg-app-chip mg-app-chip--accent inline-flex max-w-full items-center gap-2 px-3 py-1 text-xs font-semibold">
             <span className="truncate">{activeCategory?.label || activeMetricId}</span>
             {activeCategory?.group ? (
               <span className="text-muted border-border/70 border-l pl-2">
@@ -51,7 +51,7 @@ function MetricPickerImpl({
         </div>
       ) : null}
 
-      <div className="bg-surface-solid/55 border-border/80 mt-3 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+      <div className="mg-app-field mt-3 flex items-center gap-2 px-3 py-2">
         <Filter size={16} className="text-muted" />
         <input
           value={filter}
@@ -120,8 +120,8 @@ function MetricPickerImpl({
                           unit={categoryDef.unit}
                           isActive={isActive}
                           onSelect={() => onSelectMetric(id)}
-                          activeClassName="bg-surface-solid/45 text-fg"
-                          inactiveClassName="text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35"
+                          activeClassName="mg-metric-option--active"
+                          inactiveClassName="mg-metric-option--inactive"
                         />
                       </li>
                     );

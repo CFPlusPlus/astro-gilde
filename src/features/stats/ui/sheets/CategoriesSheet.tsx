@@ -111,7 +111,7 @@ export function CategoriesSheet({
       <section
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-surface-solid/98 border-border absolute inset-0 flex flex-col overflow-hidden border-t shadow-2xl"
+        className="mg-app-sheet absolute inset-0 flex flex-col overflow-hidden border-t shadow-2xl"
       >
         <header className="border-border/80 flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">
@@ -132,8 +132,8 @@ export function CategoriesSheet({
           </button>
         </header>
 
-        <div className="border-border/80 bg-surface-solid/98 shrink-0 border-b px-4 py-3">
-          <div className="bg-surface-solid/55 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+        <div className="border-border/78 shrink-0 border-b px-4 py-3">
+          <div className="mg-app-field flex items-center gap-2 px-3 py-2">
             <Filter size={16} className="text-muted" />
             <input
               value={filter}
@@ -173,11 +173,11 @@ export function CategoriesSheet({
                 return (
                   <section
                     key={cat}
-                    className="border-border/75 bg-surface-solid/25 overflow-hidden rounded-[var(--radius)] border"
+                    className="mg-app-panel mg-app-panel--soft overflow-hidden"
                   >
                     <button
                       type="button"
-                      className="focus-visible:ring-offset-bg hover:bg-surface-solid/45 flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+                      className="focus-visible:ring-offset-bg hover:bg-surface-solid/36 flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
                       aria-expanded={isExpanded ? 'true' : 'false'}
                       onClick={() => {
                         setExpandedGroups((previous) =>
@@ -230,8 +230,8 @@ export function CategoriesSheet({
                                   onSelectMetric(id);
                                   onClose();
                                 }}
-                                activeClassName="bg-surface-solid/55 text-fg"
-                                inactiveClassName="text-fg/90 hover:bg-surface-solid/35 focus-visible:bg-surface-solid/35"
+                                activeClassName="mg-metric-option--active"
+                                inactiveClassName="mg-metric-option--inactive"
                               />
                             </li>
                           );

@@ -132,10 +132,10 @@ function TopNSelector({
         aria-label={`Top-N: ${pageSize}`}
         disabled={disabled}
         className={[
-          'focus-visible:ring-offset-bg bg-surface-solid/45 border-border/85 text-fg inline-flex h-10 items-center gap-2 rounded-[var(--radius)] border px-3 text-xs font-semibold shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
+          'focus-visible:ring-offset-bg mg-app-chip inline-flex h-10 items-center gap-2 rounded-[var(--radius)] px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
           disabled
-            ? 'bg-surface-solid/20 border-border/60 text-muted/70 cursor-not-allowed opacity-65 grayscale'
-            : 'hover:bg-surface-solid/62 hover:border-accent/35',
+            ? 'bg-surface-solid/20 text-muted/70 cursor-not-allowed opacity-65 grayscale'
+            : 'hover:bg-surface-solid/48 hover:border-accent/35',
         ].join(' ')}
       >
         <span className="text-muted whitespace-nowrap">Top-N</span>
@@ -258,78 +258,74 @@ export function StatsToolbar({
     <header aria-label="Statistik Steuerung">
       {isDesktop ? (
         <>
-          <div className="mg-surface-2 p-3 sm:p-4">
-            <div className="space-y-3">
-              <section className="border-border/75 bg-surface-solid/35 rounded-[var(--radius)] border p-2 sm:p-2.5">
-                <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
-                  <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
-                  Kategorien
-                </div>
-                <StatsNavPills
-                  active={activeTab}
-                  onChange={onTabChange}
-                  disabled={tabsDisabled}
-                  surface={false}
-                  layout="one-row"
-                />
-              </section>
-
-              <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-3">
-                <PlayerAutocomplete
-                  value={search.value}
-                  onChange={search.setValue}
-                  items={search.items}
-                  open={search.open}
-                  onOpenChange={search.setOpen}
-                  selectedIndex={search.selectedIndex}
-                  onSelectedIndexChange={search.setSelectedIndex}
-                  onChoose={onChoosePlayer}
-                  wrapRef={search.wrapRef}
-                  isLoading={search.isLoading}
-                  errorMessage={search.errorMessage}
-                  className="w-full"
-                />
-
-                <TopNSelector
-                  pageSize={pageSize}
-                  onPageSizeChange={onPageSizeChange}
-                  disabled={!showPageSize}
-                  className="justify-self-end"
-                />
-
-                <div className="flex min-w-0 items-center justify-end gap-2">
-                  <LiveBadgeSlot
-                    variant={liveVariant}
-                    updatedAt={updatedAt}
-                    generatedIso={generatedIso}
-                    className="shrink-0"
-                  />
-                  <LastUpdated
-                    updatedAt={updatedAt}
-                    className="text-muted max-w-[15rem] truncate text-xs"
-                    showWhenMissing
-                  />
-                </div>
-
-                {showReload ? (
-                  <button
-                    type="button"
-                    onClick={onReload}
-                    className="mg-btn mg-btn--sm mg-btn--surface justify-self-end"
-                    disabled={reloadDisabled}
-                    title={
-                      reloadDisabled && reloadInSeconds > 0
-                        ? 'Bitte kurz warten.'
-                        : 'Daten neu laden'
-                    }
-                  >
-                    <RefreshCw size={15} />
-                    {reloadLabel}
-                  </button>
-                ) : (
-                  <span aria-hidden="true" />
-                )}
+          <div className="space-y-3 rounded-[var(--radius)] border border-transparent px-1 py-2 sm:px-2">
+            <section className="border-border/70 border-b pb-3">
+              <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
+                <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
+                Kategorien
               </div>
+              <StatsNavPills
+                active={activeTab}
+                onChange={onTabChange}
+                disabled={tabsDisabled}
+                surface={false}
+                layout="one-row"
+              />
+            </section>
+
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_auto_auto] items-center gap-3">
+              <PlayerAutocomplete
+                value={search.value}
+                onChange={search.setValue}
+                items={search.items}
+                open={search.open}
+                onOpenChange={search.setOpen}
+                selectedIndex={search.selectedIndex}
+                onSelectedIndexChange={search.setSelectedIndex}
+                onChoose={onChoosePlayer}
+                wrapRef={search.wrapRef}
+                isLoading={search.isLoading}
+                errorMessage={search.errorMessage}
+                className="w-full"
+              />
+
+              <TopNSelector
+                pageSize={pageSize}
+                onPageSizeChange={onPageSizeChange}
+                disabled={!showPageSize}
+                className="justify-self-end"
+              />
+
+              <div className="flex min-w-0 items-center justify-end gap-2">
+                <LiveBadgeSlot
+                  variant={liveVariant}
+                  updatedAt={updatedAt}
+                  generatedIso={generatedIso}
+                  className="shrink-0"
+                />
+                <LastUpdated
+                  updatedAt={updatedAt}
+                  className="text-muted max-w-[15rem] truncate text-xs"
+                  showWhenMissing
+                />
+              </div>
+
+              {showReload ? (
+                <button
+                  type="button"
+                  onClick={onReload}
+                  className="mg-btn mg-btn--sm mg-btn--surface justify-self-end"
+                  disabled={reloadDisabled}
+                  title={
+                    reloadDisabled && reloadInSeconds > 0 ? 'Bitte kurz warten.' : 'Daten neu laden'
+                  }
+                >
+                  <RefreshCw size={15} />
+                  {reloadLabel}
+                </button>
+              ) : (
+                <span aria-hidden="true" />
+              )}
             </div>
           </div>
 

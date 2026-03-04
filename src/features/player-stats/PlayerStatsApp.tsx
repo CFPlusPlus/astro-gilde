@@ -148,7 +148,7 @@ export default function PlayerStatsApp() {
           <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
             {hasData ? (
               <div className="grid min-w-0 grid-cols-1 gap-4">
-                <KpiStrip items={kpiItems} variant="card" />
+                <KpiStrip items={kpiItems} variant="inline" />
                 <PlayerStatsToolbar
                   activeTab={activeTab}
                   setActiveTab={setActiveTab}
@@ -204,7 +204,7 @@ export default function PlayerStatsApp() {
 
               {hasData ? (
                 <>
-                  <section className="mg-surface-2 p-3 sm:p-4">
+                  <section className="mg-app-panel mg-app-panel--soft p-3 sm:p-4">
                     <button
                       type="button"
                       className="group hover:bg-surface-solid/45 focus-visible:ring-offset-bg flex min-h-[5.75rem] w-full items-center gap-4 rounded-[var(--radius)] p-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"

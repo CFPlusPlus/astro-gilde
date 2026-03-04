@@ -278,6 +278,16 @@
     color: var(--accent);
   }
 
+  html[data-theme='light'] .site-nav-link.is-active {
+    color: color-mix(in oklab, var(--accent) 42%, var(--fg) 58%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .site-nav-link.is-active {
+      color: color-mix(in oklab, var(--accent) 42%, var(--fg) 58%);
+    }
+  }
+
   .site-nav-link.is-active::after {
     opacity: 1;
     transform: translateX(-50%) scaleX(1);
@@ -314,7 +324,11 @@
   }
 
   .site-nav-solid-card.mg-card {
-    background: var(--surface-solid);
+    background: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
+    border-color: color-mix(in oklab, var(--border) 96%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 50%, transparent),
+      0 14px 30px -24px color-mix(in oklab, var(--fg) 36%, transparent);
   }
 
   .site-discord-link {
@@ -398,10 +412,10 @@
     background:
       radial-gradient(
         120% 120% at 0% 0%,
-        color-mix(in oklab, var(--accent) 8%, transparent) 0%,
+        color-mix(in oklab, var(--accent) 12%, transparent) 0%,
         transparent 55%
       ),
-      color-mix(in oklab, var(--surface-solid) 74%, var(--bg) 26%);
+      color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
   }
 
   .mg-surface-1--padded {
@@ -409,11 +423,11 @@
   }
 
   .mg-surface-2 {
-    background: color-mix(in oklab, var(--surface-solid) 82%, transparent);
-    border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
+    border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
     box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 52%, transparent),
-      0 12px 24px -24px var(--glass-shadow-color);
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 56%, transparent),
+      0 16px 28px -24px var(--glass-shadow-color);
     border-radius: var(--radius);
   }
 
@@ -454,7 +468,8 @@
 
   .mg-section-panel {
     @apply p-5 sm:p-6 lg:p-7;
-    background: color-mix(in oklab, var(--surface) 42%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 72%, var(--bg) 28%);
+    border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
     border-radius: var(--radius);
   }
 
@@ -463,8 +478,80 @@
   }
 
   .mg-card {
-    background: color-mix(in oklab, var(--surface) 42%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 76%, var(--bg) 24%);
     border-radius: var(--radius);
+  }
+
+  /*
+    App-Layout-Helfer fuer Statistik/Sheets:
+    - flachere, einheitliche Flaechen statt mehrfach verschachtelter "Cards"
+    - zentrale Nutzung in Tabellen, Filtern, mobilen Sheets
+  */
+  .mg-app-panel {
+    border: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 24%, transparent);
+  }
+
+  .mg-app-panel--soft {
+    background: color-mix(in oklab, var(--surface-solid) 18%, transparent);
+  }
+
+  .mg-app-panel--strong {
+    background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
+    border-color: color-mix(in oklab, var(--border) 84%, transparent);
+  }
+
+  .mg-app-divider {
+    border-color: color-mix(in oklab, var(--border) 76%, transparent);
+    border-top-width: 1px;
+  }
+
+  .mg-app-field {
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 56%, transparent);
+    transition:
+      border-color 150ms ease,
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .mg-app-field:hover {
+    border-color: color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
+  }
+
+  .mg-app-field:focus-within {
+    border-color: color-mix(in oklab, var(--accent) 52%, var(--border) 48%);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 42%, transparent);
+  }
+
+  .mg-app-chip {
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
+    color: color-mix(in oklab, var(--fg) 92%, transparent);
+  }
+
+  .mg-app-chip--accent {
+    border-color: color-mix(in oklab, var(--accent) 48%, var(--border) 52%);
+    background: color-mix(in oklab, var(--accent) 16%, var(--surface-solid) 84%);
+    color: var(--fg);
+  }
+
+  .mg-app-sheet {
+    border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 95%, var(--bg) 5%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 40%, transparent),
+      0 24px 46px -30px var(--glass-shadow-color);
+  }
+
+  .mg-app-table {
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 28%, transparent);
+    overflow: visible;
   }
 
   .mg-card--outlined {
@@ -660,6 +747,20 @@
     color: var(--muted);
   }
 
+  .mg-text-accent-strong {
+    color: var(--accent);
+  }
+
+  html[data-theme='light'] .mg-text-accent-strong {
+    color: color-mix(in oklab, var(--accent) 46%, var(--fg) 54%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .mg-text-accent-strong {
+      color: color-mix(in oklab, var(--accent) 46%, var(--fg) 54%);
+    }
+  }
+
   .mg-prose {
     line-height: 1.75;
   }
@@ -850,6 +951,16 @@
     color: var(--tutorial-role-color);
   }
 
+  html[data-theme='light'] .mg-prose .tutorial-role__name {
+    color: color-mix(in oklab, var(--tutorial-role-color) 56%, var(--fg) 44%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .mg-prose .tutorial-role__name {
+      color: color-mix(in oklab, var(--tutorial-role-color) 56%, var(--fg) 44%);
+    }
+  }
+
   .mg-prose .tutorial-role__text {
     margin: 0.46rem 0 0;
     position: relative;
@@ -909,16 +1020,24 @@
   .mg-callout {
     --mg-callout-tone: var(--info);
     @apply p-4;
-    background: color-mix(in oklab, var(--mg-callout-tone) 8%, var(--surface-solid) 92%);
+    background: color-mix(in oklab, var(--mg-callout-tone) 12%, var(--surface-solid) 88%);
     border-radius: var(--radius);
-    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 38%, var(--border) 62%);
-    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 62%, transparent);
+    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 46%, var(--border) 54%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 70%, transparent);
   }
 
   .mg-callout__icon {
     @apply mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
-    background: color-mix(in oklab, var(--mg-callout-tone) 24%, var(--surface-solid) 76%);
+    background: color-mix(in oklab, var(--mg-callout-tone) 30%, var(--surface-solid) 70%);
     color: color-mix(in oklab, var(--mg-callout-tone) 78%, var(--fg) 22%);
+  }
+
+  .mg-callout__title {
+    color: var(--fg);
+  }
+
+  .mg-callout__content {
+    color: color-mix(in oklab, var(--fg) 94%, transparent);
   }
 
   .mg-callout[data-variant='warning'] {
@@ -927,6 +1046,27 @@
 
   .mg-callout[data-variant='info'] {
     --mg-callout-tone: var(--info);
+  }
+
+  /* Tutorial: Schnellstart als klarer, kontrastreicher Einstiegspanel. */
+  .mg-tutorial-quickstart {
+    @apply rounded-[var(--radius)] p-6;
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    background:
+      radial-gradient(
+        130% 120% at 0% 0%,
+        color-mix(in oklab, var(--accent) 10%, transparent) 0%,
+        transparent 62%
+      ),
+      color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+  }
+
+  .mg-tutorial-quickstart__steps {
+    color: color-mix(in oklab, var(--fg) 80%, var(--muted) 20%);
+  }
+
+  .mg-tutorial-quickstart__steps :where(strong, b) {
+    color: var(--fg);
   }
 
   /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */
@@ -1183,6 +1323,27 @@
   .mg-metric-option:focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  .mg-metric-option--active {
+    color: var(--fg);
+    background: color-mix(in oklab, var(--surface-solid) 64%, var(--accent) 36%);
+  }
+
+  .mg-metric-option--inactive {
+    color: color-mix(in oklab, var(--fg) 90%, transparent);
+    background: transparent;
+  }
+
+  .mg-metric-option--active,
+  .mg-metric-option--inactive {
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+
+  .mg-metric-option--inactive:hover,
+  .mg-metric-option--inactive:focus-visible {
+    background: color-mix(in oklab, var(--surface-solid) 40%, transparent);
+    color: var(--fg);
   }
 
   .mg-live-counter {

@@ -104,7 +104,7 @@ export function StatsToolbarMobile({
 
   return (
     <div className="relative">
-      <div className="mg-surface-2 flex h-14 items-center gap-2 overflow-hidden px-2">
+      <div className="mg-app-panel mg-app-panel--soft flex h-14 items-center gap-2 overflow-hidden px-2">
         <StatsTabsScroller
           activeTab={activeTab}
           onTabChange={onTabChange}

@@ -100,10 +100,10 @@ function resolveStatusMessage({
 
 function resolvePopupClassName(placement: 'bottom' | 'top'): string {
   if (placement === 'top') {
-    return 'border-border bg-surface-solid/95 absolute right-0 left-0 bottom-[calc(100%+0.5rem)] z-[140] overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
+    return 'mg-app-panel mg-app-panel--strong absolute right-0 left-0 bottom-[calc(100%+0.5rem)] z-[140] overflow-hidden shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
   }
 
-  return 'border-border bg-surface-solid/95 absolute right-0 left-0 z-[140] mt-2 overflow-hidden rounded-[var(--radius)] border shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
+  return 'mg-app-panel mg-app-panel--strong absolute right-0 left-0 z-[140] mt-2 overflow-hidden shadow-2xl backdrop-blur-2xl backdrop-saturate-150';
 }
 
 function resolveAutoPopupPlacement(wrap: HTMLDivElement | null): 'bottom' | 'top' {
@@ -387,7 +387,7 @@ export function PlayerSearchCombobox({
         {label}
       </label>
 
-      <div className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+      <div className="mg-app-field flex items-center gap-2 px-3 py-2">
         <Search size={18} className="text-muted" aria-hidden="true" />
         <input
           id={inputId}

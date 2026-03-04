@@ -8,7 +8,7 @@ import { Info } from 'lucide-react';
 
 export function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="bg-surface border-border text-muted inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium backdrop-blur-md">
+    <span className="mg-app-chip text-muted inline-flex items-center px-3 py-1 text-xs font-medium backdrop-blur-md">
       {children}
     </span>
   );

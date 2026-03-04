@@ -1,4 +1,4 @@
----
+﻿---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import StatsApp from '../features/stats/StatsApp';
@@ -22,28 +22,7 @@ const statsCanonicalUrl = canonicalFor('/statistiken/');
     subtitleClass="text-muted mt-2 max-w-3xl"
   />
 
-  <div
-    id="stats-overview-placeholder"
-    aria-hidden="true"
-    class="space-y-6 transition-opacity duration-200"
-  >
-    <section class="mg-surface-1">
-      <div class="mg-container py-8">
-        <div class="space-y-3">
-          <div class="bg-surface-solid/70 h-9 w-full max-w-xl rounded-lg"></div>
-          <div class="bg-surface-solid/55 h-4 w-full max-w-md rounded-lg"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="mg-container py-8">
-      <div class="grid gap-6 lg:grid-cols-12 lg:items-start">
-        <div class="mg-surface-2 min-h-[12rem] lg:col-span-4"></div>
-        <div class="mg-surface-2 min-h-[22rem] lg:col-span-8"></div>
-      </div>
-    </section>
-  </div>
-
   <!-- React-Island: lädt die interaktive Statistik-App -->
   <StatsApp client:idle />
 </BaseLayout>
+

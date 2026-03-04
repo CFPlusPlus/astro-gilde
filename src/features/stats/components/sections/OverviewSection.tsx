@@ -257,7 +257,7 @@ export function OverviewSection({
           {highlightItem ? (
             <section
               className={[
-                'border-border/75 bg-surface-solid/35 relative overflow-hidden rounded-[var(--radius)] border px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5',
+                'mg-app-panel mg-app-panel--strong relative overflow-hidden px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5',
                 navigationDisabled
                   ? ''
                   : 'hover:border-accent/45 hover:bg-surface-solid/45 cursor-pointer transition-colors',
@@ -296,7 +296,7 @@ export function OverviewSection({
             </section>
           ) : null}
 
-          <div className="border-border/75 bg-surface-solid/20 overflow-hidden rounded-[var(--radius)] border">
+          <div className="mg-app-panel mg-app-panel--soft overflow-hidden">
             <ul className="mg-list divide-border/75 divide-y text-sm">
               {rows.map((item) => (
                 <li

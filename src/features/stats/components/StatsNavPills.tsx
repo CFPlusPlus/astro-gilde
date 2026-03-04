@@ -81,7 +81,7 @@ export function StatsNavPills({
         className={[
           isOneRow
             ? surface
-              ? 'mg-surface-2 rounded-[var(--radius)] p-1'
+              ? 'border-border/70 rounded-[var(--radius)] border px-1 py-1'
               : 'min-w-0'
             : 'mg-scrollbar overflow-x-auto px-3 py-2',
           isOneRow ? '' : surface ? 'mg-surface-2' : 'bg-surface-solid/35 rounded-[var(--radius)]',
@@ -90,7 +90,7 @@ export function StatsNavPills({
         <ul
           className={
             isOneRow
-              ? 'sm:border-border/70 grid grid-cols-2 gap-1 sm:grid-cols-4 sm:items-center sm:border-b'
+              ? 'grid grid-cols-2 gap-1 sm:grid-cols-4 sm:items-center'
               : 'flex w-max items-center gap-1'
           }
           role="tablist"
@@ -116,14 +116,14 @@ export function StatsNavPills({
                   disabled={disabled}
                   className={[
                     isOneRow
-                      ? 'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:justify-center sm:rounded-t-[0.7rem] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block'
+                      ? 'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 sm:justify-center sm:rounded-[0.7rem] sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block'
                       : 'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
                     isActive
                       ? isOneRow
-                        ? 'border-border/75 bg-surface-solid/52 text-fg sm:bg-surface-solid/48 sm:after:bg-accent'
+                        ? 'text-fg border-border/75 bg-surface-solid/32 sm:after:bg-accent'
                         : 'bg-accent/15 border-accent/40 text-fg shadow-sm'
                       : isOneRow
-                        ? 'text-fg/75 hover:bg-surface-solid/28 hover:text-fg/95 sm:after:bg-transparent'
+                        ? 'text-fg/75 hover:text-fg hover:bg-surface-solid/22 sm:after:bg-transparent'
                         : 'text-fg/85 hover:text-fg hover:bg-surface/50 border-transparent',
                   ].join(' ')}
                 >

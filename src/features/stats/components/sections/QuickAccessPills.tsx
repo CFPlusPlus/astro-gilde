@@ -26,10 +26,7 @@ export function QuickAccessPills({
             ariaLabel="Schnellzugriff Kategorien"
           />
         ) : (
-          <div
-            className="bg-surface-solid/35 border-border/70 h-10 rounded-full border"
-            aria-hidden="true"
-          />
+          <div className="mg-app-chip block h-10 w-full" aria-hidden="true" />
         )}
       </div>
     </section>

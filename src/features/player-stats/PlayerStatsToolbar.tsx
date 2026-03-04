@@ -71,8 +71,8 @@ export function PlayerStatsToolbar({
   };
 
   return (
-    <section className="mg-surface-2 p-3 sm:p-4">
-      <div className="bg-surface-solid/35 border-border/75 rounded-[var(--radius)] border p-2 sm:p-2.5">
+    <section className="mg-app-panel mg-app-panel--soft p-3 sm:p-4">
+      <div className="border-border/70 border-b pb-3">
         <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
           <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
           Kategorien
@@ -104,8 +104,8 @@ export function PlayerStatsToolbar({
                     className={[
                       'focus-visible:ring-offset-bg relative flex w-full min-w-0 items-center gap-2 rounded-[0.7rem] border border-transparent px-3 py-2.5 text-sm leading-tight font-semibold transition-colors after:pointer-events-none after:absolute after:bottom-0 after:hidden after:h-0.5 after:rounded-full focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none sm:justify-center sm:rounded-t-[0.7rem] sm:rounded-b-none sm:border-transparent sm:px-2.5 sm:text-sm sm:after:inset-x-3 sm:after:block',
                       isActive
-                        ? 'border-border/75 bg-surface-solid/52 text-fg sm:bg-surface-solid/48 sm:after:bg-accent'
-                        : 'text-fg/75 hover:bg-surface-solid/28 hover:text-fg/95 sm:after:bg-transparent',
+                        ? 'text-fg border-border/75 bg-surface-solid/32 sm:after:bg-accent'
+                        : 'text-fg/75 hover:text-fg hover:bg-surface-solid/22 sm:after:bg-transparent',
                     ].join(' ')}
                   >
                     <Icon size={16} className={isActive ? 'text-accent' : 'text-muted'} />
@@ -119,7 +119,7 @@ export function PlayerStatsToolbar({
       </div>
 
       <div className="mt-3 space-y-2.5">
-        <label className="bg-surface-solid/60 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2 transition-colors">
+        <label className="mg-app-field flex items-center gap-2 px-3 py-2 transition-colors">
           <Search size={18} className="text-muted" />
           <input
             ref={filterInputRef}

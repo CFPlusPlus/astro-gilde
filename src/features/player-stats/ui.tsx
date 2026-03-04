@@ -18,7 +18,7 @@ export function DataSurface({
   footer?: React.ReactNode;
 }) {
   return (
-    <section className="mg-surface-2">
+    <section className="mg-app-table">
       <div className="divide-border/70 flex flex-col divide-y">
         {header ? (
           <header className="flex items-center justify-between gap-2 px-4 py-3">{header}</header>

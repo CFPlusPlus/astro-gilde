@@ -242,7 +242,7 @@ function ActiveCategoryInfo({
   activeCategory: ReturnType<typeof resolveStatsCategoryDef> | null;
 }) {
   return (
-    <div>
+    <div className="mg-app-panel mg-app-panel--soft p-3">
       <p className="text-muted text-xs font-semibold">Aktive Kategorie</p>
       <ul className="mg-list divide-border/75 mt-2 divide-y text-sm">
         <li className="flex items-center justify-between gap-3 px-1 py-2">

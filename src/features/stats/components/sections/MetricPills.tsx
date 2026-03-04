@@ -32,10 +32,10 @@ export function MetricPills({
               type="button"
               onClick={() => onSelectMetric(id)}
               className={[
-                'mg-pill h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap',
+                'mg-app-chip inline-flex h-8 px-3 text-xs leading-none font-semibold whitespace-nowrap transition-colors',
                 isActive
-                  ? 'border-accent/55 bg-accent/18 text-fg hover:bg-accent/30'
-                  : 'border-border/80 bg-surface-solid/35 hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
+                  ? 'mg-app-chip--accent hover:bg-accent/30'
+                  : 'hover:border-accent/45 hover:bg-accent/14 hover:text-fg',
               ].join(' ')}
               aria-pressed={isActive}
             >
