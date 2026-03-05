@@ -227,9 +227,7 @@ function NoActiveMetricNotice() {
   return (
     <div className="mg-notice text-sm" data-variant="neutral" role="status">
       <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-      <span className="text-fg/90">
-        {'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}
-      </span>
+      <span className="text-fg/90">{'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}</span>
     </div>
   );
 }

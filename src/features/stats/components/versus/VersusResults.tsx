@@ -304,8 +304,8 @@ export function VersusResults({
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
           <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
           <span className="text-fg/90">
-            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto länger dauert
-            der Vergleich.
+            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto länger dauert der
+            Vergleich.
           </span>
         </div>
       ) : null}
