@@ -47,7 +47,7 @@ export const initJoinModal = ({
     const { silentSuccess = false } = opts ?? {};
     const ip = config.serverIp;
     if (!ip) {
-      showToast('Server-IP nicht verfuegbar.', 'error');
+      showToast('Server-IP nicht verfügbar.', 'error');
       return false;
     }
     try {
@@ -55,13 +55,13 @@ export const initJoinModal = ({
         await navigator.clipboard.writeText(ip);
       } else {
         const ok = fallbackCopy(ip);
-        if (!ok) throw new Error('Clipboard API nicht verfuegbar');
+        if (!ok) throw new Error('Clipboard API nicht verfügbar');
       }
       if (!silentSuccess) showToast('IP kopiert!');
       return true;
     } catch (e) {
       console.warn('Copy-IP Fehler:', e);
-      showToast('Kopieren nicht moeglich.', 'error');
+      showToast('Kopieren nicht möglich.', 'error');
       return false;
     }
   };

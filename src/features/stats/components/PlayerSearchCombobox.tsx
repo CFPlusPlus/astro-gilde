@@ -90,11 +90,11 @@ function resolveStatusMessage({
   hasQuery: boolean;
   itemCount: number;
 }): string {
-  if (isLoading) return 'Suche laeuft.';
+  if (isLoading) return 'Suche läuft.';
   if (hasError) return 'Fehler beim Laden der Spieler.';
   if (isEmpty) return 'Kein Treffer.';
-  if (hasItems) return `${itemCount} Treffer verfuegbar.`;
-  if (hasQuery) return 'Keine Treffer verfuegbar.';
+  if (hasItems) return `${itemCount} Treffer verfügbar.`;
+  if (hasQuery) return 'Keine Treffer verfügbar.';
   return '';
 }
 
@@ -247,7 +247,7 @@ function ResultsList({
     >
       {isLoading ? (
         <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
-          Suche laeuft...
+          Suche läuft...
         </li>
       ) : null}
 
@@ -261,7 +261,7 @@ function ResultsList({
 
       {!isLoading && !hasError && isEmpty ? (
         <li className="text-muted px-3 py-2 text-sm" role="status" aria-live="polite">
-          Kein Treffer. Pruefe die Schreibweise oder gib mehr Zeichen ein.
+          Kein Treffer. Prüfe die Schreibweise oder gib mehr Zeichen ein.
         </li>
       ) : null}
 
@@ -431,8 +431,8 @@ export function PlayerSearchCombobox({
             'mg-search-clear',
             value.trim().length > 0 ? '' : 'mg-search-clear--hidden',
           ].join(' ')}
-          aria-label="Spielersuche zuruecksetzen"
-          title="Suche zuruecksetzen"
+          aria-label="Spielersuche zurücksetzen"
+          title="Suche zurücksetzen"
           tabIndex={value.trim().length > 0 ? 0 : -1}
         >
           <X size={14} />

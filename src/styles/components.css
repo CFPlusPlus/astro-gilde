@@ -556,6 +556,7 @@
     border-color: color-mix(in oklab, var(--border) 82%, transparent);
   }
 
+  .mg-app-field:focus-within:has(input[type='search']),
   .mg-app-field:focus-within:has(input[type='search']:focus),
   .mg-app-field:focus-within:has(input[type='search']:focus-visible) {
     border-color: color-mix(in oklab, var(--border) 82%, transparent);

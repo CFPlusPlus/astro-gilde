@@ -18,7 +18,7 @@ export function VersusSection(props: VersusSectionProps) {
             <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
               <h3 className="text-fg text-sm font-semibold">Spielerauswahl</h3>
               <span className="text-muted text-xs">
-                Definiere Spieler A und B fuer den Vergleich.
+                Definiere Spieler A und B für den Vergleich.
               </span>
             </div>
             <VersusPlayerPicker {...props} surface={false} />
@@ -29,7 +29,7 @@ export function VersusSection(props: VersusSectionProps) {
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                 <h3 className="text-fg text-sm font-semibold">Kategorien</h3>
                 <span className="text-muted text-xs">
-                  Waehle aus, was im Vergleich gezeigt wird.
+                  Wähle aus, was im Vergleich gezeigt wird.
                 </span>
               </div>
               <VersusMetricPicker {...props} surface={false} />

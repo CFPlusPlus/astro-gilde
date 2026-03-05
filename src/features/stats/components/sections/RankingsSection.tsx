@@ -228,7 +228,7 @@ function NoActiveMetricNotice() {
     <div className="mg-notice text-sm" data-variant="neutral" role="status">
       <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
       <span className="text-fg/90">
-        {'Keine Rangliste ausgewaehlt. Waehle eine Kategorie aus.'}
+        {'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}
       </span>
     </div>
   );
@@ -479,7 +479,7 @@ export function RankingsSection({
             <div className="min-w-0 flex-1">
               <SectionTitle
                 title="Ranglisten"
-                subtitle={'Kategorie finden, auswaehlen und sofort die Top-N sehen.'}
+                subtitle={'Kategorie finden, auswählen und sofort die Top-N sehen.'}
               />
             </div>
 

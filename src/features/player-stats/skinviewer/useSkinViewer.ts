@@ -74,7 +74,7 @@ function resolveViewerLoadErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     const message = error.message.toLowerCase();
     if (message.includes('webgl') || message.includes('context')) {
-      return 'Der 3D Skin-Viewer wird von diesem Browser oder Geraet nicht unterstuetzt.';
+      return 'Der 3D Skin-Viewer wird von diesem Browser oder Gerät nicht unterstützt.';
     }
   }
   return 'Der 3D Skin-Viewer konnte nicht geladen werden.';

@@ -121,7 +121,7 @@ export function initHomePlayers(): () => void {
     isFetchInFlight = true;
     const ip = config.serverIp;
     if (!ip) {
-      setMountMessage(mount, 'Server-IP aktuell nicht verfuegbar.');
+      setMountMessage(mount, 'Server-IP aktuell nicht verfügbar.');
       isFetchInFlight = false;
       return;
     }
@@ -139,7 +139,7 @@ export function initHomePlayers(): () => void {
     } catch (err) {
       const isAbort = err instanceof DOMException && err.name === 'AbortError';
       if (!isAbort) console.warn('fetchPlayers Fehler:', err);
-      if (!destroyed) setMountMessage(mount, 'Spieleranzeige aktuell nicht verfuegbar.');
+      if (!destroyed) setMountMessage(mount, 'Spieleranzeige aktuell nicht verfügbar.');
     } finally {
       window.clearTimeout(timeoutId);
       if (fetchController === controller) {
