@@ -233,7 +233,7 @@ export function StatsToolbar({
   activeLeaderboardCategoryLabel = null,
   onOpenLeaderboardCategories,
 }: StatsToolbarProps) {
-  const isDesktop = useMediaQuery('(min-width: 768px)');
+  const isDesktop = useMediaQuery('(min-width: 768px)', true);
   const showReload = typeof onReload === 'function';
   const reloadLabel = useMemo(() => {
     if (!reloadDisabled || reloadInSeconds <= 0) return 'Neu laden';

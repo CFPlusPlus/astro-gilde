@@ -552,6 +552,15 @@
     box-shadow: inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 42%, transparent);
   }
 
+  .mg-app-field--muted-focus:focus-within {
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
+  }
+
+  .mg-app-field:focus-within:has(input[type='search']:focus),
+  .mg-app-field:focus-within:has(input[type='search']:focus-visible) {
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
+  }
+
   .mg-app-chip {
     border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
     border-radius: 999px;
