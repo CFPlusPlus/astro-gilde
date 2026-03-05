@@ -427,11 +427,11 @@
   }
 
   .mg-surface-2 {
-    background: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
-    border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+    border: 1px solid color-mix(in oklab, var(--border) 92%, transparent);
     box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 56%, transparent),
-      0 16px 28px -24px var(--glass-shadow-color);
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 60%, transparent),
+      0 20px 34px -26px var(--glass-shadow-color);
     border-radius: var(--radius);
   }
 
@@ -494,9 +494,12 @@
 
   .mg-section-panel {
     @apply p-5 sm:p-6 lg:p-7;
-    background: color-mix(in oklab, var(--surface-solid) 72%, var(--bg) 28%);
+    background: color-mix(in oklab, var(--surface-solid) 78%, var(--bg) 22%);
     border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
     border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 48%, transparent),
+      0 14px 28px -26px var(--glass-shadow-color);
   }
 
   .mg-section-panel--outlined {
@@ -504,8 +507,17 @@
   }
 
   .mg-card {
-    background: color-mix(in oklab, var(--surface-solid) 76%, var(--bg) 24%);
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in oklab, var(--accent) 7%, transparent) 0%,
+        transparent 62%
+      ),
+      color-mix(in oklab, var(--surface-solid) 94%, var(--bg) 6%);
     border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 62%, transparent),
+      0 18px 34px -28px var(--glass-shadow-color);
   }
 
   /*
@@ -516,16 +528,16 @@
   .mg-app-panel {
     border: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
     border-radius: var(--radius);
-    background: color-mix(in oklab, var(--surface-solid) 24%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 74%, var(--bg) 26%);
   }
 
   .mg-app-panel--soft {
-    background: color-mix(in oklab, var(--surface-solid) 18%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 68%, var(--bg) 32%);
   }
 
   .mg-app-panel--strong {
-    background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
-    border-color: color-mix(in oklab, var(--border) 84%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 80%, var(--bg) 20%);
+    border-color: color-mix(in oklab, var(--border) 88%, transparent);
   }
 
   .mg-app-divider {
