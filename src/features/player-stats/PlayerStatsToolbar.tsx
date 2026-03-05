@@ -22,6 +22,8 @@ export function PlayerStatsToolbar({
   filterInputRef,
   activeResultCount,
   activeTabLabel,
+  surface = 'panel',
+  className,
 }: {
   activeTab: TabKey;
   setActiveTab: (next: TabKey) => void;
@@ -30,7 +32,15 @@ export function PlayerStatsToolbar({
   filterInputRef: RefObject<HTMLInputElement | null>;
   activeResultCount: number;
   activeTabLabel: string;
+  surface?: 'panel' | 'flat';
+  className?: string;
 }) {
+  const rootClassName =
+    surface === 'flat' ? ['min-w-0', className].filter(Boolean).join(' ') : undefined;
+  const panelClassName =
+    surface === 'panel'
+      ? ['mg-app-panel mg-app-panel--soft p-3 sm:p-4', className].filter(Boolean).join(' ')
+      : undefined;
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const tabItems = [
     { key: 'allgemein', label: 'Allgemein', Icon: BarChart3 },
@@ -71,7 +81,7 @@ export function PlayerStatsToolbar({
   };
 
   return (
-    <section className="mg-app-panel mg-app-panel--soft p-3 sm:p-4">
+    <section className={panelClassName || rootClassName}>
       <div className="border-border/70 border-b pb-3">
         <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
           <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
