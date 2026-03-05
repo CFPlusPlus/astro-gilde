@@ -6,7 +6,7 @@ import {
   type LiveDataStatus,
   type LiveDataThresholds,
 } from '../../lib/live/types';
-import { fetchJson, type FetchJsonError } from '../../lib/live/fetchJson';
+import { fetchLiveJson, type FetchJsonError } from '../../lib/live/fetchJson';
 import { getLiveResource } from '../../lib/live/cache';
 import {
   formatLastUpdatedAbsolute,
@@ -217,7 +217,7 @@ export const initLiveCounters = ({
     }
 
     const apiWidgetUrl = `https://discord.com/api/guilds/${guildId}/widget.json`;
-    const result = await fetchJson<DiscordWidgetResponse>(apiWidgetUrl, {
+    const result = await fetchLiveJson<DiscordWidgetResponse>(apiWidgetUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       requiredKeys: ['presence_count'],
@@ -263,7 +263,7 @@ export const initLiveCounters = ({
     }
 
     const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
-    const result = await fetchJson<DiscordInviteResponse>(apiUrl, {
+    const result = await fetchLiveJson<DiscordInviteResponse>(apiUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       validate: isDiscordInviteResponse,
@@ -310,7 +310,7 @@ export const initLiveCounters = ({
     }
 
     const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
-    const result = await fetchJson<MinecraftStatusResponse>(apiUrl, {
+    const result = await fetchLiveJson<MinecraftStatusResponse>(apiUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       requiredKeys: ['online'],

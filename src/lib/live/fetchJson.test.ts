@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { fetchJson } from './fetchJson';
+import { fetchLiveJson } from './fetchJson';
 
 const jsonResponse = (body: unknown, init: ResponseInit = {}): Response =>
   new Response(JSON.stringify(body), {
@@ -21,7 +21,7 @@ describe('live/fetchJson', () => {
     const fetchMock = vi.fn(async () => jsonResponse({ presence_count: 7 }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await fetchJson<{ presence_count: number }>('https://example.test/widget', {
+    const result = await fetchLiveJson<{ presence_count: number }>('https://example.test/widget', {
       requiredKeys: ['presence_count'],
       validate: (value): value is { presence_count: number } =>
         typeof value === 'object' &&
@@ -42,7 +42,7 @@ describe('live/fetchJson', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await fetchJson('https://example.test/rate-limited');
+    const result = await fetchLiveJson('https://example.test/rate-limited');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -55,7 +55,7 @@ describe('live/fetchJson', () => {
     const fetchMock = vi.fn(async () => jsonResponse({ something_else: 1 }));
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await fetchJson<{ presence_count: number }>('https://example.test/widget', {
+    const result = await fetchLiveJson<{ presence_count: number }>('https://example.test/widget', {
       requiredKeys: ['presence_count'],
     });
 
@@ -80,7 +80,7 @@ describe('live/fetchJson', () => {
     );
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await fetchJson('https://example.test/slow', { timeoutMs: 5 });
+    const result = await fetchLiveJson('https://example.test/slow', { timeoutMs: 5 });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
@@ -94,7 +94,7 @@ describe('live/fetchJson', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const result = await fetchJson('https://example.test/offline');
+    const result = await fetchLiveJson('https://example.test/offline');
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
