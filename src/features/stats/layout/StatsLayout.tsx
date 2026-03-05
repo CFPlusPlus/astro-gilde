@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 type StatsLayoutProps = {
   topBar: ReactNode;
@@ -24,13 +24,10 @@ function joinClassNames(...classes: Array<string | undefined>) {
   return classes.filter(Boolean).join(' ');
 }
 
-const STICKY_OFFSET_STEP_PX = 8;
 const STICKY_OFFSET_MAX_PX = 400;
 
-function resolveStickyOffsetClass(offsetPx: number): string {
-  const clamped = Math.max(0, Math.min(STICKY_OFFSET_MAX_PX, Math.round(offsetPx)));
-  const snapped = Math.round(clamped / STICKY_OFFSET_STEP_PX) * STICKY_OFFSET_STEP_PX;
-  return `mg-stats-sticky-offset-${snapped}`;
+function resolveStickyOffsetPx(offsetPx: number): number {
+  return Math.max(0, Math.min(STICKY_OFFSET_MAX_PX, Math.round(offsetPx)));
 }
 
 export function StatsLayout({
@@ -41,11 +38,11 @@ export function StatsLayout({
   stickyTopBar = false,
 }: StatsLayoutProps) {
   const stickyTopBarRef = useRef<HTMLElement | null>(null);
-  const [stickyContentTopClass, setStickyContentTopClass] = useState('mg-stats-sticky-offset-0');
+  const [stickyContentTopPx, setStickyContentTopPx] = useState(0);
 
   useEffect(() => {
     if (!stickyTopBar) {
-      setStickyContentTopClass('mg-stats-sticky-offset-0');
+      setStickyContentTopPx(0);
       return;
     }
 
@@ -56,7 +53,7 @@ export function StatsLayout({
       const top = Number.parseFloat(window.getComputedStyle(element).top || '0') || 0;
       const height = element.getBoundingClientRect().height;
       const offset = Math.max(0, top + height);
-      setStickyContentTopClass(resolveStickyOffsetClass(offset));
+      setStickyContentTopPx(resolveStickyOffsetPx(offset));
     };
 
     updateOffset();
@@ -73,8 +70,12 @@ export function StatsLayout({
     };
   }, [stickyTopBar]);
 
+  const stickyContentStyle = {
+    '--stats-sticky-content-top': `${stickyContentTopPx}px`,
+  } as CSSProperties;
+
   return (
-    <div className={joinClassNames('pb-12', stickyContentTopClass)}>
+    <div className="pb-12" style={stickyContentStyle}>
       <section
         ref={stickyTopBarRef}
         className={joinClassNames(

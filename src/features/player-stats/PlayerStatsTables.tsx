@@ -68,12 +68,8 @@ export function PlayerStatsTables({
     [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
   const tableHeadClassLg =
     'mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top))] lg:z-10';
-  const tableHeadClassXl =
-    'mg-table-sticky-head text-muted text-xs xl:sticky xl:top-[calc(4rem+env(safe-area-inset-top))] xl:z-10';
   const tableWrapClassLg =
     'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain lg:overflow-x-visible';
-  const tableWrapClassXl =
-    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain xl:overflow-x-visible';
   const tableBodyClass =
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
@@ -286,10 +282,10 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div ref={itemsTableWrapRef} className={tableWrapClassXl}>
+              <div ref={itemsTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[1080px] text-sm">
                   <caption className="sr-only">Tabelle mit Gegenstandsstatistiken.</caption>
-                  <thead className={tableHeadClassXl}>
+                  <thead className={tableHeadClassLg}>
                     <tr>
                       <th
                         id="player-items-col-label"

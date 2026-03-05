@@ -292,7 +292,7 @@ export function LeaderboardTable({
             <caption className="sr-only">
               Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
             </caption>
-            <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top))] lg:z-10">
+            <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top,_0px))] lg:z-10">
               <tr>
                 <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
                   Platz
