@@ -509,7 +509,7 @@ export function KingSection({
             </div>
           ) : null}
 
-          <section className="mg-app-panel mg-app-panel--soft p-4 sm:p-5">
+          <section className="border-border/70 border-y py-4 sm:py-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-fg text-sm font-semibold">Top 3 Scoreboard</p>

@@ -41,73 +41,80 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
         Alles fuer den schnellen Einstieg: Serverdaten, Karte und deine ersten Statistiken.
       </p>
 
-      <div class="mt-4 grid gap-2">
-        <a
-          href="/serverinfos/"
-          class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-start justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-        >
-          <span class="flex items-start gap-3">
-            <span
-              class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
-            >
-              <Server size={15} />
-            </span>
-            <span>
-              <span class="block text-sm font-semibold">Serverinfos</span>
-              <span class="text-muted block text-xs">Version, Technik und wichtige Hinweise.</span>
-            </span>
-          </span>
-          <ArrowRight
-            class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
-          />
-        </a>
-
-        <a
-          href={DYNMAP_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-start justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-        >
-          <span class="flex items-start gap-3">
-            <span
-              class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
-            >
-              <Map size={15} />
-            </span>
-            <span>
-              <span class="block text-sm font-semibold">Karte</span>
-              <span class="text-muted block text-xs"
-                >Live auf die Welt schauen und Orte finden.</span
+      <ul class="mg-list divide-border/75 mt-4 divide-y">
+        <li>
+          <a
+            href="/serverinfos/"
+            class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-start justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+          >
+            <span class="flex items-start gap-3">
+              <span
+                class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
               >
+                <Server size={15} />
+              </span>
+              <span>
+                <span class="block text-sm font-semibold">Serverinfos</span>
+                <span class="text-muted block text-xs">Version, Technik und wichtige Hinweise.</span
+                >
+              </span>
             </span>
-          </span>
-          <ArrowRight
-            class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
-          />
-        </a>
+            <ArrowRight
+              class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
+            />
+          </a>
+        </li>
 
-        <a
-          href="/statistiken/"
-          class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-start justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-        >
-          <span class="flex items-start gap-3">
-            <span
-              class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
-            >
-              <ChartColumn size={15} />
-            </span>
-            <span>
-              <span class="block text-sm font-semibold">Statistiken</span>
-              <span class="text-muted block text-xs"
-                >Rankings, Metriken und Spielerwerte im Blick.</span
+        <li>
+          <a
+            href={DYNMAP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-start justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+          >
+            <span class="flex items-start gap-3">
+              <span
+                class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
               >
+                <Map size={15} />
+              </span>
+              <span>
+                <span class="block text-sm font-semibold">Karte</span>
+                <span class="text-muted block text-xs"
+                  >Live auf die Welt schauen und Orte finden.</span
+                >
+              </span>
             </span>
-          </span>
-          <ArrowRight
-            class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
-          />
-        </a>
-      </div>
+            <ArrowRight
+              class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
+            />
+          </a>
+        </li>
+
+        <li>
+          <a
+            href="/statistiken/"
+            class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-start justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+          >
+            <span class="flex items-start gap-3">
+              <span
+                class="bg-accent/15 border-accent/25 text-accent mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-lg border"
+              >
+                <ChartColumn size={15} />
+              </span>
+              <span>
+                <span class="block text-sm font-semibold">Statistiken</span>
+                <span class="text-muted block text-xs"
+                  >Rankings, Metriken und Spielerwerte im Blick.</span
+                >
+              </span>
+            </span>
+            <ArrowRight
+              class="text-muted group-hover:text-fg mt-0.5 h-4 w-4 shrink-0 transition-colors"
+            />
+          </a>
+        </li>
+      </ul>
     </article>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:col-span-7">
@@ -117,70 +124,94 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
           Schnell Antworten finden und die wichtigsten Abläufe verstehen.
         </p>
 
-        <div class="mt-4 grid gap-2">
-          <a
-            href="/regeln/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <Book size={15} /> Regeln
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-          <a
-            href="/befehle/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <SquareTerminal size={15} /> Befehle
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-          <a
-            href="/faq/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <CircleQuestionMark size={15} /> FAQ
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-        </div>
+        <ul class="mg-list divide-border/75 mt-4 divide-y">
+          <li>
+            <a
+              href="/regeln/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <Book size={15} /> Regeln
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+          <li>
+            <a
+              href="/befehle/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <SquareTerminal size={15} /> Befehle
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+          <li>
+            <a
+              href="/faq/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <CircleQuestionMark size={15} /> FAQ
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+        </ul>
       </article>
 
       <article class="mg-card p-5" data-motion="reveal" data-motion-delay="160">
         <h3 class="text-base font-semibold">Community</h3>
         <p class="text-muted mt-2 text-sm">Team, Votes und Partner auf einen Blick.</p>
 
-        <div class="mt-4 grid gap-2">
-          <a
-            href="/voten/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <BadgeCheck size={15} /> Voten
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-          <a
-            href="/team/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <Users size={15} /> Team
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-          <a
-            href="/partner/"
-            class="border-border/75 hover:border-accent/40 hover:bg-surface group flex items-center justify-between gap-3 rounded-xl border px-3.5 py-3 transition-colors"
-          >
-            <span class="inline-flex items-center gap-2 text-sm font-medium">
-              <Handshake size={15} /> Partner
-            </span>
-            <ArrowRight class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors" />
-          </a>
-        </div>
+        <ul class="mg-list divide-border/75 mt-4 divide-y">
+          <li>
+            <a
+              href="/voten/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <BadgeCheck size={15} /> Voten
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+          <li>
+            <a
+              href="/team/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <Users size={15} /> Team
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+          <li>
+            <a
+              href="/partner/"
+              class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
+            >
+              <span class="inline-flex items-center gap-2 text-sm font-medium">
+                <Handshake size={15} /> Partner
+              </span>
+              <ArrowRight
+                class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
+              />
+            </a>
+          </li>
+        </ul>
       </article>
     </div>
   </div>
