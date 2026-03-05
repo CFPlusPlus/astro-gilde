@@ -693,8 +693,8 @@
     color: rgb(110 231 183);
   }
 
-  [data-copy-ip-inline][data-copied='true'],
-  [data-copy-ip-inline][data-copied='true']:hover {
+  button[data-copy-ip-inline][data-copied='true'],
+  button[data-copy-ip-inline][data-copied='true']:hover {
     border-color: rgb(74 222 128 / 0.7);
     background: rgb(16 185 129 / 0.1);
     color: rgb(110 231 183);
@@ -1388,7 +1388,7 @@
     color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
   }
 
-  [data-live-tile][data-live-state='error'] {
+  .mg-live-tile[data-live-state='error'] {
     border-color: color-mix(in oklab, var(--border) 76%, var(--muted) 24%);
   }
 
