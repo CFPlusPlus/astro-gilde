@@ -103,21 +103,11 @@ describe('OverviewSection', () => {
     });
 
     const buttons = Array.from(view.container.querySelectorAll('button'));
-    const normalizeButtonText = (button: HTMLButtonElement): string =>
-      (button.textContent || '')
-        .replace('\u2192', '')
-        .replace('â†’', '')
-        .replace(/\s+/g, ' ')
-        .trim();
-    const diamondButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Diamanterz abgebaut',
-    );
-    const openChestButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Truhen ge\u00f6ffnet',
-    );
-    const sleepInBedButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Im Bett geschlafen',
-    );
+    const findQuicklinkButton = (label: string): HTMLButtonElement | undefined =>
+      buttons.find((button) => (button.textContent || '').includes(label));
+    const diamondButton = findQuicklinkButton('Diamanterz abgebaut');
+    const openChestButton = findQuicklinkButton('Truhen ge\u00f6ffnet');
+    const sleepInBedButton = findQuicklinkButton('Im Bett geschlafen');
 
     expect(diamondButton?.textContent).toContain('Diamanterz abgebaut');
     expect(openChestButton?.textContent).toContain('Truhen ge\u00f6ffnet');
