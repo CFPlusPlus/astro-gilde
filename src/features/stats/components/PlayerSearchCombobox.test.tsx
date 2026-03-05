@@ -164,13 +164,13 @@ describe('PlayerSearchCombobox', () => {
 
   it('zeigt Empty-, Loading- und Error-Status', async () => {
     const empty = await mount({ items: [], onChoose: vi.fn() });
-    expect(empty.container.textContent).toContain(
-      'Kein Treffer. Pruefe die Schreibweise oder gib mehr Zeichen ein.',
+    expect(empty.container.textContent).toMatch(
+      /Kein Treffer\.\s*Pr(?:ue|\u00FC)fe die Schreibweise oder gib mehr Zeichen ein\./,
     );
     await empty.cleanup();
 
     const loading = await mount({ items: [], onChoose: vi.fn(), isLoading: true });
-    expect(loading.container.textContent).toContain('Suche laeuft...');
+    expect(loading.container.textContent).toMatch(/Suche l(?:ae|\u00E4)uft\.\.\./);
     await loading.cleanup();
 
     const error = await mount({
