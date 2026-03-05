@@ -79,17 +79,22 @@ const mountHook = async (props: HookProps) => {
   const root: Root = createRoot(container);
 
   let latest: HookResult | null = null;
+  let currentProps: HookProps = props;
 
-  await act(async () => {
-    root.render(
-      createElement(HookHarness, {
-        ...props,
-        onRender: (value: HookResult) => {
-          latest = value;
-        },
-      }),
-    );
-  });
+  const renderWithProps = async (nextProps: HookProps): Promise<void> => {
+    await act(async () => {
+      root.render(
+        createElement(HookHarness, {
+          ...nextProps,
+          onRender: (value: HookResult) => {
+            latest = value;
+          },
+        }),
+      );
+    });
+  };
+
+  await renderWithProps(currentProps);
 
   const getLatest = (): HookResult => {
     if (!latest) throw new Error('Hook hat noch keinen Zustand geliefert.');
@@ -103,8 +108,17 @@ const mountHook = async (props: HookProps) => {
     container.remove();
   };
 
+  const update = async (next: Partial<HookProps>): Promise<void> => {
+    currentProps = {
+      ...currentProps,
+      ...next,
+    };
+    await renderWithProps(currentProps);
+  };
+
   return {
     getLatest,
+    update,
     unmount,
   };
 };
@@ -224,6 +238,58 @@ describe('useStatsData rate limit', () => {
 
     expect(getMetrics).toHaveBeenCalledTimes(1);
     expect(getLeaderboard).toHaveBeenCalledTimes(1);
+
+    await hook.unmount();
+  });
+
+  it('keeps the requested page size on stale responses and revalidates with the latest size', async () => {
+    type LeaderboardResponse = {
+      boards?: Record<string, Array<{ uuid: string; value: number }>>;
+      cursors?: Record<string, string | null>;
+    };
+    const pending: Array<{
+      limit: number;
+      resolve: (value: LeaderboardResponse) => void;
+    }> = [];
+
+    vi.mocked(getLeaderboard).mockImplementation((_metricId, limit) => {
+      return new Promise<LeaderboardResponse>((resolve) => {
+        pending.push({ limit, resolve });
+      });
+    });
+
+    const hook = await mountHook({
+      activeTab: 'king',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: null,
+    });
+
+    await flushEffects(2);
+    expect(pending).toHaveLength(1);
+    expect(pending[0].limit).toBe(10);
+
+    await hook.update({ pageSize: 30 });
+    await flushEffects(1);
+    expect(getLeaderboard).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      pending[0].resolve({
+        boards: {
+          king: [{ uuid: 'uuid-1', value: 42 }],
+        },
+        cursors: {
+          king: null,
+        },
+      });
+      await Promise.resolve();
+    });
+
+    await flushEffects(2);
+    expect(hook.getLatest().king.pageSize).toBe(10);
+    expect(getLeaderboard).toHaveBeenCalledTimes(2);
+    expect(pending).toHaveLength(2);
+    expect(pending[1].limit).toBe(30);
 
     await hook.unmount();
   });

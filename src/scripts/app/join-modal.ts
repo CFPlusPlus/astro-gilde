@@ -131,35 +131,53 @@ export const initJoinModal = ({
     addListener(btn, 'click', onCloseClick);
   });
 
-  const setModalCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
-    const stateDefault = qs<HTMLElement>('[data-copy-ip-modal-state-default]', btn);
-    const stateSuccess = qs<HTMLElement>('[data-copy-ip-modal-state-success]', btn);
+  const setCopyButtonState = ({
+    btn,
+    copied,
+    defaultSelector,
+    successSelector,
+  }: {
+    btn: HTMLElement;
+    copied: boolean;
+    defaultSelector: string;
+    successSelector: string;
+  }): void => {
+    const defaultState = qs<HTMLElement>(defaultSelector, btn);
+    const successState = qs<HTMLElement>(successSelector, btn);
 
     if (copied) btn.dataset.copied = 'true';
     else delete btn.dataset.copied;
 
-    if (stateDefault) stateDefault.classList.toggle('opacity-0', copied);
-    if (stateSuccess) stateSuccess.classList.toggle('opacity-0', !copied);
+    if (defaultState) defaultState.classList.toggle('opacity-0', copied);
+    if (successState) successState.classList.toggle('opacity-0', !copied);
 
     btn.setAttribute('aria-label', copied ? 'Server-IP wurde kopiert' : 'Server-IP kopieren');
   };
 
-  const flashModalCopyButton = (btn: HTMLElement): void => {
-    const runningTimer = joinModalCopyFeedbackTimers.get(btn);
+  const flashCopyButton = ({
+    btn,
+    timers,
+    updateState,
+  }: {
+    btn: HTMLElement;
+    timers: WeakMap<HTMLElement, number>;
+    updateState: (button: HTMLElement, copied: boolean) => void;
+  }): void => {
+    const runningTimer = timers.get(btn);
     if (runningTimer != null) {
       window.clearTimeout(runningTimer);
       pendingTimers.delete(runningTimer);
     }
 
-    setModalCopyButtonState(btn, true);
+    updateState(btn, true);
 
     const timer = window.setTimeout(() => {
       pendingTimers.delete(timer);
-      setModalCopyButtonState(btn, false);
-      joinModalCopyFeedbackTimers.delete(btn);
+      updateState(btn, false);
+      timers.delete(btn);
     }, 1600);
     pendingTimers.add(timer);
-    joinModalCopyFeedbackTimers.set(btn, timer);
+    timers.set(btn, timer);
   };
 
   joinModalCopyButtons.forEach((btn) => {
@@ -168,42 +186,24 @@ export const initJoinModal = ({
       e.preventDefault();
       void (async () => {
         const ok = await copyIp({ silentSuccess: true });
-        if (ok) flashModalCopyButton(btn);
+        if (ok) {
+          flashCopyButton({
+            btn,
+            timers: joinModalCopyFeedbackTimers,
+            updateState: (button, copied) => {
+              setCopyButtonState({
+                btn: button,
+                copied,
+                defaultSelector: '[data-copy-ip-modal-state-default]',
+                successSelector: '[data-copy-ip-modal-state-success]',
+              });
+            },
+          });
+        }
       })();
     };
     addListener(btn, 'click', onModalCopyClick);
   });
-
-  const setInlineCopyButtonState = (btn: HTMLElement, copied: boolean): void => {
-    const labelDefault = qs<HTMLElement>('[data-copy-ip-inline-label-default]', btn);
-    const labelSuccess = qs<HTMLElement>('[data-copy-ip-inline-label-success]', btn);
-
-    if (copied) btn.dataset.copied = 'true';
-    else delete btn.dataset.copied;
-
-    if (labelDefault) labelDefault.classList.toggle('opacity-0', copied);
-    if (labelSuccess) labelSuccess.classList.toggle('opacity-0', !copied);
-
-    btn.setAttribute('aria-label', copied ? 'Server-IP wurde kopiert' : 'Server-IP kopieren');
-  };
-
-  const flashInlineCopyButton = (btn: HTMLElement): void => {
-    const runningTimer = inlineCopyFeedbackTimers.get(btn);
-    if (runningTimer != null) {
-      window.clearTimeout(runningTimer);
-      pendingTimers.delete(runningTimer);
-    }
-
-    setInlineCopyButtonState(btn, true);
-
-    const timer = window.setTimeout(() => {
-      pendingTimers.delete(timer);
-      setInlineCopyButtonState(btn, false);
-      inlineCopyFeedbackTimers.delete(btn);
-    }, 1600);
-    pendingTimers.add(timer);
-    inlineCopyFeedbackTimers.set(btn, timer);
-  };
 
   inlineCopyButtons.forEach((btn) => {
     const onInlineCopyClick: EventListener = (event): void => {
@@ -211,7 +211,20 @@ export const initJoinModal = ({
       e.preventDefault();
       void (async () => {
         const ok = await copyIp({ silentSuccess: true });
-        if (ok) flashInlineCopyButton(btn);
+        if (ok) {
+          flashCopyButton({
+            btn,
+            timers: inlineCopyFeedbackTimers,
+            updateState: (button, copied) => {
+              setCopyButtonState({
+                btn: button,
+                copied,
+                defaultSelector: '[data-copy-ip-inline-label-default]',
+                successSelector: '[data-copy-ip-inline-label-success]',
+              });
+            },
+          });
+        }
       })();
     };
     addListener(btn, 'click', onInlineCopyClick);

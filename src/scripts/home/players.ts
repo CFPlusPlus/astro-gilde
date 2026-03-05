@@ -66,11 +66,17 @@ function renderPlayers(data: ServerStatus): void {
     const uuid = player.uuid ?? '';
     const name = player.name ?? 'Unbekannt';
 
-    const btn = document.createElement('a');
-    btn.href = uuid
-      ? `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`
-      : `/statistiken/spieler/?name=${encodeURIComponent(name)}`;
-    btn.className = 'mg-pill';
+    const chip: HTMLAnchorElement | HTMLSpanElement = uuid
+      ? document.createElement('a')
+      : document.createElement('span');
+    chip.className = uuid ? 'mg-pill' : 'mg-pill cursor-default opacity-85';
+
+    if (chip instanceof HTMLAnchorElement) {
+      chip.href = `/statistiken/spieler/?uuid=${encodeURIComponent(uuid)}`;
+    } else {
+      chip.setAttribute('aria-disabled', 'true');
+      chip.title = 'Spielerprofil derzeit nicht verfuegbar';
+    }
 
     const img = document.createElement('img');
     img.className = 'h-6 w-6 rounded-full';
@@ -96,9 +102,9 @@ function renderPlayers(data: ServerStatus): void {
     const span = document.createElement('span');
     span.textContent = name;
 
-    btn.appendChild(img);
-    btn.appendChild(span);
-    container.appendChild(btn);
+    chip.appendChild(img);
+    chip.appendChild(span);
+    container.appendChild(chip);
   });
 
   mount.replaceChildren(container);

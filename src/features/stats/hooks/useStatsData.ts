@@ -412,10 +412,11 @@ export function useStatsData({
       setBoardState(stateKey, (state) => ({ ...state, loading: true }));
 
       try {
-        const isSamePageSize = currentState.pageSize === pageSizeRef.current;
+        const requestedPageSize = pageSizeRef.current;
+        const isSamePageSize = currentState.pageSize === requestedPageSize;
         const cursor =
           !forceRefresh && currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
-        const data = await getLeaderboard(metricId, pageSizeRef.current, cursor);
+        const data = await getLeaderboard(metricId, requestedPageSize, cursor);
 
         if (typeof data.__generated === 'string') {
           setGeneratedIso(data.__generated);
@@ -444,7 +445,7 @@ export function useStatsData({
             currentPage: nextCurrentPage,
             nextCursor,
             hasMore: !!nextCursor,
-            pageSize: pageSizeRef.current,
+            pageSize: requestedPageSize,
           };
         });
       } catch (error) {

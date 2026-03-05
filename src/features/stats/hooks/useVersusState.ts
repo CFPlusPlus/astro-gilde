@@ -71,6 +71,7 @@ export function useVersusState({
   const [versusSwapFx, setVersusSwapFx] = useState(false);
 
   const versusAbortRef = useRef<AbortController | null>(null);
+  const versusRequestIdRef = useRef(0);
   const versusSwapFxTimeoutRef = useRef<number | null>(null);
   const initializedSearchRef = useRef(false);
   const shouldAutoCompareRef = useRef(Boolean(initialState?.autoCompare));
@@ -103,6 +104,7 @@ export function useVersusState({
 
   useEffect(() => {
     return () => {
+      versusRequestIdRef.current += 1;
       versusAbortRef.current?.abort();
       if (versusSwapFxTimeoutRef.current !== null) {
         window.clearTimeout(versusSwapFxTimeoutRef.current);
@@ -238,9 +240,16 @@ export function useVersusState({
     setVersusNotice(null);
     setVersusLoading(true);
 
+    const requestId = versusRequestIdRef.current + 1;
+    versusRequestIdRef.current = requestId;
+
     versusAbortRef.current?.abort();
     const ac = new AbortController();
     versusAbortRef.current = ac;
+    const isCurrentRequest = (): boolean =>
+      versusRequestIdRef.current === requestId &&
+      versusAbortRef.current === ac &&
+      !ac.signal.aborted;
 
     try {
       const [translations, playerDataA, playerDataB] = await Promise.all([
@@ -248,6 +257,7 @@ export function useVersusState({
         getPlayer(playerA.uuid, ac.signal),
         getPlayer(playerB.uuid, ac.signal),
       ]);
+      if (!isCurrentRequest()) return;
 
       const statsA =
         playerDataA.found === false || !playerDataA.player || typeof playerDataA.player !== 'object'
@@ -291,10 +301,13 @@ export function useVersusState({
       setVersusMetricIds((previous) => syncVersusMetricIdsWithCatalog(previous, catalog));
     } catch (error) {
       if ((error as Error)?.name === 'AbortError') return;
+      if (!isCurrentRequest()) return;
       console.warn('Versus Fehler', error);
       setVersusError('Versus konnte nicht geladen werden. Bitte versuche es sp\u00e4ter erneut.');
     } finally {
-      setVersusLoading(false);
+      if (versusRequestIdRef.current === requestId) {
+        setVersusLoading(false);
+      }
     }
   }, [onGeneratedIso, versusPlayerA, versusPlayerB]);
 

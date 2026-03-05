@@ -33,6 +33,8 @@ type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
 type LiveSource = 'cache' | 'network';
 
+const LIVE_TILE_KEYS: readonly LiveTileKey[] = ['mc-online', 'discord-online'];
+
 interface DiscordWidgetResponse {
   presence_count?: number;
 }
@@ -481,7 +483,7 @@ export const initLiveCounters = ({
     if (isDisposed) return;
     if (!liveDebugEnabled) return;
 
-    (['mc-online', 'discord-online'] as const).forEach((key) => {
+    LIVE_TILE_KEYS.forEach((key) => {
       liveTileRefs[key].roots.forEach((root) => {
         if (root.querySelector(`[data-live-debug="${key}"]`)) return;
 
@@ -824,7 +826,7 @@ export const initLiveCounters = ({
     });
   };
 
-  (['mc-online', 'discord-online'] as const).forEach((key) => {
+  LIVE_TILE_KEYS.forEach((key) => {
     liveTileRefs[key].retries.forEach((button) => {
       const onRetryClick = (): void => {
         revalidate(key, { force: true });
@@ -834,7 +836,7 @@ export const initLiveCounters = ({
   });
 
   const refreshLiveTileNotes = (): void => {
-    (['mc-online', 'discord-online'] as const).forEach((key) => {
+    LIVE_TILE_KEYS.forEach((key) => {
       const state = liveTileStateByKey.get(key);
       if (!state) return;
       setLiveTileState(key, state);
@@ -916,7 +918,7 @@ export const initLiveCounters = ({
   ensureLiveTileDebugElements();
   refreshLiveTileNotes();
 
-  const hasLiveTileTargets = (['mc-online', 'discord-online'] as const).some((key) => {
+  const hasLiveTileTargets = LIVE_TILE_KEYS.some((key) => {
     const refs = liveTileRefs[key];
     return refs.roots.length > 0 || refs.notes.length > 0 || refs.actions.length > 0;
   });
