@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import * as skinview3d from 'skinview3d';
 import steveImage from '../../../assets/images/minecraft/steve.png';
 import elytraImage from '../../../assets/images/minecraft/elytra.png';
 import {
@@ -29,7 +28,24 @@ import { loadImageProbe, uniqueNonEmpty } from '../skin-viewer-utils';
 
 const FALLBACK_SKIN_URL = steveImage.src;
 const FALLBACK_ELYTRA_URL = elytraImage.src;
-const SKINVIEW_MODULE = skinview3d as unknown as SkinviewModuleLike;
+let skinviewModulePromise: Promise<SkinviewModuleLike> | null = null;
+
+function loadSkinviewModule(): Promise<SkinviewModuleLike> {
+  if (skinviewModulePromise) return skinviewModulePromise;
+
+  skinviewModulePromise = import('skinview3d')
+    .then((module) => {
+      const resolved = module as unknown as SkinviewModuleLike;
+      if (!resolved?.SkinViewer) throw new Error('SkinViewer nicht gefunden');
+      return resolved;
+    })
+    .catch((error) => {
+      skinviewModulePromise = null;
+      throw error;
+    });
+
+  return skinviewModulePromise;
+}
 
 type UseSkinViewerArgs = {
   open: boolean;
@@ -197,44 +213,49 @@ export function useSkinViewer({
     cleanupViewer();
 
     let rafId: number | null = null;
+    let cancelled = false;
 
-    try {
-      if (!SKINVIEW_MODULE?.SkinViewer) throw new Error('SkinViewer nicht gefunden');
-      moduleRef.current = SKINVIEW_MODULE;
+    void loadSkinviewModule()
+      .then((skinviewModule) => {
+        if (cancelled) return;
+        moduleRef.current = skinviewModule;
 
-      const viewer = new SKINVIEW_MODULE.SkinViewer({
-        canvas,
-        width: 720,
-        height: 720,
-        skin: FALLBACK_SKIN_URL,
+        const viewer = new skinviewModule.SkinViewer({
+          canvas,
+          width: 720,
+          height: 720,
+          skin: FALLBACK_SKIN_URL,
+        });
+
+        viewerRef.current = viewer;
+
+        const controls = skinviewModule.createOrbitControls
+          ? skinviewModule.createOrbitControls(viewer)
+          : viewer.controls;
+
+        if (controls) {
+          controls.enableRotate = true;
+          controls.enableZoom = true;
+          controls.enablePan = false;
+          controlsRef.current = controls;
+        } else {
+          controlsRef.current = null;
+        }
+
+        rafId = requestAnimationFrame(() => {
+          resizeViewer();
+          setViewerVersion((v) => v + 1);
+        });
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        console.warn('skinview3d konnte nicht geladen werden:', e);
+        setLoadError(resolveViewerLoadErrorMessage(e));
+        cleanupViewer();
       });
-
-      viewerRef.current = viewer;
-
-      const controls = SKINVIEW_MODULE.createOrbitControls
-        ? SKINVIEW_MODULE.createOrbitControls(viewer)
-        : viewer.controls;
-
-      if (controls) {
-        controls.enableRotate = true;
-        controls.enableZoom = true;
-        controls.enablePan = false;
-        controlsRef.current = controls;
-      } else {
-        controlsRef.current = null;
-      }
-
-      rafId = requestAnimationFrame(() => {
-        resizeViewer();
-        setViewerVersion((v) => v + 1);
-      });
-    } catch (e) {
-      console.warn('skinview3d konnte nicht geladen werden:', e);
-      setLoadError(resolveViewerLoadErrorMessage(e));
-      cleanupViewer();
-    }
 
     return () => {
+      cancelled = true;
       if (rafId !== null) window.cancelAnimationFrame(rafId);
       cleanupViewer();
     };
