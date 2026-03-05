@@ -1,4 +1,5 @@
 import { LIVE_COPY_DE } from './copy.de';
+import { parseRetryAfterMs } from '../http/retryAfter';
 
 export type FetchJsonErrorKind = 'timeout' | 'network' | 'invalid' | 'rate_limit';
 
@@ -43,20 +44,6 @@ const hasRequiredKeys = (value: unknown, requiredKeys: string[]): boolean => {
   return requiredKeys.every((key) => key in value);
 };
 
-const toRetryAfterMs = (headerValue: string | null): number | undefined => {
-  if (!headerValue) return undefined;
-
-  const asSeconds = Number(headerValue);
-  if (Number.isFinite(asSeconds) && asSeconds >= 0) {
-    return Math.floor(asSeconds * 1_000);
-  }
-
-  const asDate = Date.parse(headerValue);
-  if (Number.isNaN(asDate)) return undefined;
-
-  return Math.max(0, asDate - Date.now());
-};
-
 const toNetworkMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.trim().length > 0) return error.message;
   return LIVE_COPY_DE.error_network;
@@ -83,7 +70,7 @@ const toHttpErrorResult = <T>(response: Response, fetchedAt: number): FetchJsonR
         kind: 'rate_limit',
         message: LIVE_COPY_DE.rate_limit,
         status: response.status,
-        retryAfterMs: toRetryAfterMs(response.headers.get('retry-after')),
+        retryAfterMs: parseRetryAfterMs(response.headers.get('retry-after')),
       },
       response.status,
     );
@@ -144,7 +131,7 @@ const validatePayload = <T>(
   };
 };
 
-export const fetchJson = async <T>(
+export const fetchLiveJson = async <T>(
   url: string,
   options: FetchJsonOptions<T> = {},
 ): Promise<FetchJsonResult<T>> => {

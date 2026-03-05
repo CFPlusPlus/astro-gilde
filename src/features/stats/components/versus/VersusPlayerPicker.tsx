@@ -61,7 +61,7 @@ function VersusPlayerRow({
   return (
     <div
       className={[
-        'border-border/75 bg-surface-solid/35 relative min-w-0 rounded-[var(--radius)] border p-3 transition-colors duration-300 sm:p-4',
+        'mg-app-panel mg-app-panel--strong relative min-w-0 p-3 transition-colors duration-300 sm:p-4',
         zClass,
         swapFxClass,
       ].join(' ')}
@@ -221,7 +221,7 @@ export function VersusPlayerPicker({
   return (
     <div
       className={[
-        surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0',
+        surface ? 'mg-app-panel p-4 sm:p-5' : 'min-w-0',
         'relative z-20 overflow-visible',
       ].join(' ')}
     >
@@ -239,7 +239,7 @@ export function VersusPlayerPicker({
           onGoToPlayer={onGoToPlayer}
         />
         <div className="flex items-center justify-center lg:min-h-[220px]">
-          <span className="border-border/80 bg-accent/15 text-fg inline-flex h-10 min-w-10 items-center justify-center rounded-full border px-3 text-xs font-semibold tracking-wide">
+          <span className="mg-app-chip mg-app-chip--accent inline-flex h-10 min-w-10 items-center justify-center px-3 text-xs font-semibold tracking-wide">
             VS
           </span>
         </div>

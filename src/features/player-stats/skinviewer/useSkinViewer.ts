@@ -28,6 +28,24 @@ import { loadImageProbe, uniqueNonEmpty } from '../skin-viewer-utils';
 
 const FALLBACK_SKIN_URL = steveImage.src;
 const FALLBACK_ELYTRA_URL = elytraImage.src;
+let skinviewModulePromise: Promise<SkinviewModuleLike> | null = null;
+
+function loadSkinviewModule(): Promise<SkinviewModuleLike> {
+  if (skinviewModulePromise) return skinviewModulePromise;
+
+  skinviewModulePromise = import('skinview3d')
+    .then((module) => {
+      const resolved = module as unknown as SkinviewModuleLike;
+      if (!resolved?.SkinViewer) throw new Error('SkinViewer nicht gefunden');
+      return resolved;
+    })
+    .catch((error) => {
+      skinviewModulePromise = null;
+      throw error;
+    });
+
+  return skinviewModulePromise;
+}
 
 type UseSkinViewerArgs = {
   open: boolean;
@@ -51,6 +69,16 @@ type UseSkinViewerResult = {
   onBackModeChange: (mode: BackMode) => void;
   onReset: () => void;
 };
+
+function resolveViewerLoadErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    if (message.includes('webgl') || message.includes('context')) {
+      return 'Der 3D Skin-Viewer wird von diesem Browser oder Gerät nicht unterstützt.';
+    }
+  }
+  return 'Der 3D Skin-Viewer konnte nicht geladen werden.';
+}
 
 export function useSkinViewer({
   open,
@@ -145,6 +173,32 @@ export function useSkinViewer({
     }
   }, []);
 
+  const cleanupViewer = useCallback(() => {
+    clearAnimation();
+
+    const controls = controlsRef.current;
+    controlsRef.current = null;
+    if (controls) {
+      try {
+        controls.dispose?.();
+      } catch {
+        // Unkritisch: Controls-Cleanup darf fehlschlagen.
+      }
+    }
+
+    const viewer = viewerRef.current;
+    viewerRef.current = null;
+    if (viewer) {
+      try {
+        viewer.dispose?.();
+      } catch {
+        // Unkritisch: Viewer-Cleanup darf fehlschlagen.
+      }
+    }
+
+    moduleRef.current = null;
+  }, [clearAnimation]);
+
   useEffect(() => {
     if (!open) return;
     setLoadError(null);
@@ -156,22 +210,17 @@ export function useSkinViewer({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    cleanupViewer();
+
+    let rafId: number | null = null;
     let cancelled = false;
 
-    (async () => {
-      try {
-        const mod = (await import('skinview3d')) as unknown as SkinviewModuleLike;
+    void loadSkinviewModule()
+      .then((skinviewModule) => {
         if (cancelled) return;
+        moduleRef.current = skinviewModule;
 
-        if (!mod?.SkinViewer) throw new Error('SkinViewer nicht gefunden');
-
-        moduleRef.current = mod;
-
-        viewerRef.current?.dispose?.();
-        controlsRef.current?.dispose?.();
-        clearAnimation();
-
-        const viewer = new mod.SkinViewer({
+        const viewer = new skinviewModule.SkinViewer({
           canvas,
           width: 720,
           height: 720,
@@ -180,47 +229,37 @@ export function useSkinViewer({
 
         viewerRef.current = viewer;
 
-        if (mod.createOrbitControls) {
-          const controls = mod.createOrbitControls(viewer);
+        const controls = skinviewModule.createOrbitControls
+          ? skinviewModule.createOrbitControls(viewer)
+          : viewer.controls;
+
+        if (controls) {
           controls.enableRotate = true;
           controls.enableZoom = true;
           controls.enablePan = false;
           controlsRef.current = controls;
-        } else if (viewer.controls) {
-          viewer.controls.enableRotate = true;
-          viewer.controls.enableZoom = true;
-          viewer.controls.enablePan = false;
-          controlsRef.current = viewer.controls;
         } else {
           controlsRef.current = null;
         }
 
-        requestAnimationFrame(() => {
+        rafId = requestAnimationFrame(() => {
           resizeViewer();
           setViewerVersion((v) => v + 1);
         });
-      } catch (e) {
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
         console.warn('skinview3d konnte nicht geladen werden:', e);
-        setLoadError('Der 3D Skin-Viewer konnte nicht geladen werden.');
-      }
-    })();
+        setLoadError(resolveViewerLoadErrorMessage(e));
+        cleanupViewer();
+      });
 
     return () => {
       cancelled = true;
-      clearAnimation();
-      controlsRef.current?.dispose?.();
-      controlsRef.current = null;
-      moduleRef.current = null;
-
-      const viewer = viewerRef.current;
-      viewerRef.current = null;
-      try {
-        viewer?.dispose?.();
-      } catch {
-        // Unkritisch: Dispose darf fehlschlagen.
-      }
+      if (rafId !== null) window.cancelAnimationFrame(rafId);
+      cleanupViewer();
     };
-  }, [open, clearAnimation, resizeViewer]);
+  }, [open, cleanupViewer, resizeViewer]);
 
   useEffect(() => {
     if (!open) return;
@@ -396,24 +435,30 @@ export function useSkinViewer({
       return;
     }
 
-    try {
-      void viewer.loadCape(backRequest.source, backRequest.options);
-    } catch {
+    void Promise.resolve(viewer.loadCape(backRequest.source, backRequest.options)).catch(() => {
       setLoadError('Cape/Elytra konnte nicht geladen werden.');
-    }
+    });
   }, [open, viewerVersion, resolveBackLoad]);
 
   const onReset = useCallback(() => {
     try {
       const viewer = viewerRef.current;
       resetViewerToFront(viewer, controlsRef.current);
-      void viewer?.loadSkin?.(resolvedSkinUrl);
+      void Promise.resolve(viewer?.loadSkin?.(resolvedSkinUrl)).catch(() => {
+        // Unkritisch: Skin-Reload darf fehlschlagen.
+      });
 
       const backRequest = resolveBackLoad();
       if (!backRequest.source) {
-        void viewer?.loadCape?.(null);
+        void Promise.resolve(viewer?.loadCape?.(null)).catch(() => {
+          // Unkritisch: Cape-Clear darf fehlschlagen.
+        });
       } else {
-        void viewer?.loadCape?.(backRequest.source, backRequest.options);
+        void Promise.resolve(viewer?.loadCape?.(backRequest.source, backRequest.options)).catch(
+          () => {
+            setLoadError('Cape/Elytra konnte nicht geladen werden.');
+          },
+        );
       }
     } catch {
       // Unkritisch: Reset darf fehlschlagen.

@@ -98,7 +98,7 @@ export function Pagination({
           onClick={() => onGo(state.currentPage + 1)}
           className="mg-btn mg-btn--xs mg-btn--surface"
           disabled={!canGoNext}
-          aria-label="Naechste Seite"
+          aria-label="Nächste Seite"
         >
           <ArrowRight size={14} />
         </button>

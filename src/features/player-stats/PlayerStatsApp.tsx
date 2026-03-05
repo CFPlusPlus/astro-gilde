@@ -148,28 +148,52 @@ export default function PlayerStatsApp() {
           <StatsLayoutRail ariaLabel="Spielerstatistik Steuerung" className="p-0 lg:col-span-12">
             {hasData ? (
               <div className="grid min-w-0 grid-cols-1 gap-4">
-                <KpiStrip items={kpiItems} variant="card" />
-                <PlayerStatsToolbar
-                  activeTab={activeTab}
-                  setActiveTab={setActiveTab}
-                  filterRaw={filterRaw}
-                  setFilterRaw={setFilterRaw}
-                  filterInputRef={filterInputRef}
-                  activeResultCount={activeResultCount}
-                  activeTabLabel={activeTabLabel}
-                />
+                <KpiStrip items={kpiItems} variant="inline" />
+
+                <section aria-label="Spielerprofil Schnellzugriff">
+                  <button
+                    type="button"
+                    className="group hover:bg-surface-solid/35 focus-visible:ring-offset-bg flex min-h-[5.75rem] w-full items-center gap-4 rounded-[calc(var(--radius)-3px)] px-2 py-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
+                    onClick={() => {
+                      if (!skinFullUrl) return;
+                      setSkinOpen(true);
+                    }}
+                    aria-label="3D Skin-Viewer öffnen"
+                  >
+                    <img
+                      src={skinHeadUrl}
+                      alt={playerName || uuidFull || ''}
+                      className="border-border/70 h-16 w-16 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
+                        const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+
+                        if (
+                          !fallbackAttempted &&
+                          skinHeadFallback &&
+                          img.src !== skinHeadFallback
+                        ) {
+                          img.dataset.fallbackAttempted = '1';
+                          img.src = skinHeadFallback;
+                          return;
+                        }
+
+                        img.onerror = null;
+                      }}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="text-fg block truncate text-base font-semibold">
+                        {playerName || 'Unbekannter Spieler'}
+                      </span>
+                      <span className="text-muted mt-1 inline-flex items-center gap-2 text-xs">
+                        <Info size={14} className="shrink-0" /> Skin-Viewer öffnen
+                      </span>
+                    </span>
+                  </button>
+                </section>
               </div>
-            ) : (
-              <PlayerStatsToolbar
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                filterRaw={filterRaw}
-                setFilterRaw={setFilterRaw}
-                filterInputRef={filterInputRef}
-                activeResultCount={activeResultCount}
-                activeTabLabel={activeTabLabel}
-              />
-            )}
+            ) : null}
           </StatsLayoutRail>
 
           <StatsLayoutMain ariaLabel="Spielerstatistik Ergebnisse" className="p-0 lg:col-span-12">
@@ -191,61 +215,27 @@ export default function PlayerStatsApp() {
               ) : null}
 
               {apiError ? (
-                <div className="mg-notice text-sm" data-variant="warning" role="alert">
-                  <span
-                    className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
-                    aria-hidden="true"
-                  >
+                <div className="mg-error-message" role="alert">
+                  <span className="mg-error-message__icon" aria-hidden="true">
                     <SearchX size={14} />
                   </span>
-                  <span className="text-fg/90">{apiError}</span>
+                  <span>{apiError}</span>
                 </div>
               ) : null}
 
               {hasData ? (
                 <>
-                  <section className="mg-surface-2 p-3 sm:p-4">
-                    <button
-                      type="button"
-                      className="group hover:bg-surface-solid/45 focus-visible:ring-offset-bg flex min-h-[5.75rem] w-full items-center gap-4 rounded-[var(--radius)] p-2 text-left transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2"
-                      onClick={() => {
-                        if (!skinFullUrl) return;
-                        setSkinOpen(true);
-                      }}
-                      aria-label="3D Skin-Viewer öffnen"
-                    >
-                      <img
-                        src={skinHeadUrl}
-                        alt={playerName || uuidFull || ''}
-                        className="border-border/70 h-16 w-16 rounded-xl border bg-black/20 object-cover transition-transform group-hover:scale-105"
-                        onError={(e) => {
-                          const img = e.currentTarget;
-                          // Nur einmal auf den Fallback wechseln, um Endlosschleifen zu vermeiden.
-                          const fallbackAttempted = img.dataset.fallbackAttempted === '1';
-
-                          if (
-                            !fallbackAttempted &&
-                            skinHeadFallback &&
-                            img.src !== skinHeadFallback
-                          ) {
-                            img.dataset.fallbackAttempted = '1';
-                            img.src = skinHeadFallback;
-                            return;
-                          }
-
-                          img.onerror = null;
-                        }}
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="text-fg block truncate text-base font-semibold">
-                          {playerName || 'Unbekannter Spieler'}
-                        </span>
-                        <span className="text-muted mt-1 inline-flex items-center gap-2 text-xs">
-                          <Info size={14} className="shrink-0" /> Skin-Viewer öffnen
-                        </span>
-                      </span>
-                    </button>
-                  </section>
+                  <PlayerStatsToolbar
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    filterRaw={filterRaw}
+                    setFilterRaw={setFilterRaw}
+                    filterInputRef={filterInputRef}
+                    activeResultCount={activeResultCount}
+                    activeTabLabel={activeTabLabel}
+                    surface="flat"
+                    className="border-border/70 border-b pb-4"
+                  />
 
                   <PlayerStatsTables
                     activeTab={activeTab}

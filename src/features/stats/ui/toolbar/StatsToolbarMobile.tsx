@@ -104,7 +104,7 @@ export function StatsToolbarMobile({
 
   return (
     <div className="relative">
-      <div className="mg-surface-2 flex h-14 items-center gap-2 overflow-hidden px-2">
+      <div className="mg-app-panel mg-app-panel--soft flex h-14 items-center gap-2 overflow-hidden px-2">
         <StatsTabsScroller
           activeTab={activeTab}
           onTabChange={onTabChange}
@@ -119,7 +119,7 @@ export function StatsToolbarMobile({
 
         <button
           type="button"
-          className="focus-visible:ring-offset-bg border-border/80 bg-surface-solid/35 text-fg hover:border-accent/40 hover:bg-surface-solid/55 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="focus-visible:ring-offset-bg border-border/80 bg-surface-solid/35 text-fg hover:border-accent/40 hover:bg-surface-solid/55 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[calc(var(--radius)-1px)] border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
           onClick={() => {
             setSearchOpen((open) => {
               const next = !open;
@@ -141,7 +141,7 @@ export function StatsToolbarMobile({
 
         <button
           type="button"
-          className="focus-visible:ring-offset-bg border-border/80 bg-surface-solid/35 text-fg hover:border-accent/40 hover:bg-surface-solid/55 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.8rem] border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="focus-visible:ring-offset-bg border-border/80 bg-surface-solid/35 text-fg hover:border-accent/40 hover:bg-surface-solid/55 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[calc(var(--radius)-1px)] border transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
           onClick={() => {
             setOptionsOpen((open) => !open);
             setSearchOpen(false);

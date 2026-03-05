@@ -63,8 +63,8 @@ function resolveDetailHint({
 >): HintConfig | null {
   if (hasVersusData && versusMetricIds.length === 0) {
     return {
-      title: 'Keine Kategorien ausgewaehlt',
-      text: 'Waehle Kategorien aus, um den Detailvergleich zu erweitern.',
+      title: 'Keine Kategorien ausgewählt',
+      text: 'Wähle Kategorien aus, um den Detailvergleich zu erweitern.',
       icon: 'compare',
     };
   }
@@ -72,7 +72,7 @@ function resolveDetailHint({
   if (hasVersusData && !hasVersusResults) {
     return {
       title: 'Vergleich bereit',
-      text: 'Waehle Kategorien aus, um die Werte zu sehen.',
+      text: 'Wähle Kategorien aus, um die Werte zu sehen.',
       icon: 'compare',
     };
   }
@@ -121,15 +121,15 @@ function VersusSummaryBlock({
       <div className="mg-row flex-col gap-2 px-1 sm:px-2">
         <p className="text-muted text-xs font-semibold">Zwischenstand</p>
         <div className="flex flex-wrap items-start gap-2 sm:items-center sm:gap-3">
-          <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
+          <span className="mg-app-chip inline-flex w-full max-w-full items-center gap-1 px-3 py-1 text-xs font-semibold sm:w-auto">
             <span className="min-w-0 truncate">{playerALabel}</span>
             <span className="shrink-0">: {winsA}</span>
           </span>
-          <span className="bg-surface border-border text-fg inline-flex w-full max-w-full items-center gap-1 rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
+          <span className="mg-app-chip inline-flex w-full max-w-full items-center gap-1 px-3 py-1 text-xs font-semibold sm:w-auto">
             <span className="min-w-0 truncate">{playerBLabel}</span>
             <span className="shrink-0">: {winsB}</span>
           </span>
-          <span className="bg-surface border-border text-muted inline-flex w-full items-center rounded-full border px-3 py-1 text-xs font-semibold sm:w-auto">
+          <span className="mg-app-chip text-muted inline-flex w-full items-center px-3 py-1 text-xs font-semibold sm:w-auto">
             Gleichstand: {ties}
           </span>
           <span className="text-muted w-full text-xs sm:w-auto">
@@ -212,11 +212,11 @@ function VersusTable({
   const missingHint = 'Keine Daten';
 
   return (
-    <div className="bg-surface-solid/40 border-border/80 relative mt-3 min-w-0 overflow-hidden rounded-[var(--radius)] border">
+    <div className="mg-app-table relative mt-3 min-w-0">
       <div className="mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain">
         <table className="w-full min-w-[560px] text-sm sm:min-w-[720px]">
           <caption className="sr-only">
-            Vergleichstabelle fuer {playerALabel} und {playerBLabel}.
+            Vergleichstabelle für {playerALabel} und {playerBLabel}.
           </caption>
           <thead className="bg-surface-solid/40 text-muted text-xs">
             <tr>
@@ -263,8 +263,8 @@ function VersusTable({
 
       {loading ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
-          <span className="bg-surface border-border text-fg inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold shadow-sm">
-            Laedt...
+          <span className="mg-app-chip inline-flex items-center px-4 py-2 text-sm font-semibold shadow-sm">
+            Lädt...
           </span>
         </div>
       ) : null}
@@ -299,13 +299,13 @@ export function VersusResults({
   });
 
   return (
-    <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
+    <div className={[surface ? 'mg-app-panel p-4 sm:p-5' : 'min-w-0'].join(' ')}>
       {versusLoading && !hasVersusData ? (
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
           <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
           <span className="text-fg/90">
-            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto laenger dauert
-            der Vergleich.
+            Spielerstatistiken werden geladen. Je mehr Daten vorhanden sind, desto länger dauert der
+            Vergleich.
           </span>
         </div>
       ) : null}

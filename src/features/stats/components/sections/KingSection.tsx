@@ -476,7 +476,7 @@ export function KingSection({
                   {featuredBreakdown.breakdown.topCategories.map((category) => (
                     <li
                       key={`${featuredBreakdown.rank}-${category.label}`}
-                      className="bg-surface-solid/35 border-border/70 flex items-center justify-between gap-3 rounded-md border px-2.5 py-1.5 text-xs"
+                      className="mg-app-panel mg-app-panel--strong flex items-center justify-between gap-3 rounded-md px-2.5 py-1.5 text-xs"
                     >
                       <span className="text-fg/90 truncate">{category.label}</span>
                       {category.value !== null ? (
@@ -509,7 +509,7 @@ export function KingSection({
             </div>
           ) : null}
 
-          <section className="border-border/75 bg-surface-solid/25 rounded-[var(--radius)] border p-4 sm:p-5">
+          <section className="border-border/70 border-y py-4 sm:py-5">
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="min-w-0">
                 <p className="text-fg text-sm font-semibold">Top 3 Scoreboard</p>
@@ -524,7 +524,7 @@ export function KingSection({
                 {Array.from({ length: 3 }, (_, index) => (
                   <div
                     key={`king-skeleton-${index}`}
-                    className="bg-surface-solid/35 border-border/65 rounded-xl border p-4"
+                    className="mg-app-panel mg-app-panel--strong rounded-xl p-4"
                     aria-hidden="true"
                   >
                     <div className="flex items-center justify-between gap-3">
@@ -551,7 +551,7 @@ export function KingSection({
                     return (
                       <li
                         key={`top-empty-${rank}`}
-                        className="border-border/65 bg-surface-solid/35 rounded-xl border p-4"
+                        className="mg-app-panel mg-app-panel--strong rounded-xl p-4"
                       >
                         <p className="text-muted text-xs font-semibold tracking-[0.14em] uppercase">
                           Platz {rank}
@@ -568,7 +568,7 @@ export function KingSection({
                       ? 'border-accent/55 bg-[linear-gradient(145deg,color-mix(in_oklab,var(--accent)_12%,transparent)_0%,color-mix(in_oklab,var(--surface-solid)_88%,transparent)_100%)] shadow-[0_12px_30px_-24px_var(--glass-shadow-color)]'
                       : rank === 2
                         ? 'border-border/70 bg-surface-solid/46 shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]'
-                        : 'border-border/70 bg-[color-mix(in_oklab,#d99a6c_8%,var(--surface-solid)_92%)] shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]',
+                        : 'border-border/70 bg-[color-mix(in_oklab,var(--warning)_8%,var(--surface-solid)_92%)] shadow-[0_10px_24px_-24px_var(--glass-shadow-color)]',
                   ].join(' ');
 
                   const cardContent = (
@@ -665,7 +665,7 @@ export function KingSection({
             ) : null}
 
             {king.loaded && !king.loading && !hasTopEntries ? (
-              <div className="border-border/70 bg-surface-solid/35 mt-4 rounded-lg border px-4 py-3">
+              <div className="mg-app-panel mg-app-panel--strong mt-4 rounded-lg px-4 py-3">
                 <p className="text-fg text-sm font-semibold">Noch kein Server-König vorhanden</p>
                 <p className="text-muted mt-1 text-sm leading-relaxed">
                   Aktuell wurden keine Punkte übermittelt. Sobald Daten vorliegen, erscheint hier

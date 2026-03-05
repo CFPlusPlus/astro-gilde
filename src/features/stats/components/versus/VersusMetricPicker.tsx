@@ -36,7 +36,7 @@ export function VersusMetricPicker({
 }: VersusMetricPickerProps) {
   if (!hasVersusData) {
     return (
-      <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
+      <div className={[surface ? 'mg-app-panel p-4 sm:p-5' : 'min-w-0'].join(' ')}>
         <div className="mg-notice mt-0 text-sm" data-variant="neutral" role="status">
           <span
             className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
@@ -58,7 +58,7 @@ export function VersusMetricPicker({
     .filter((entry): entry is (typeof versusCatalog)[number] => Boolean(entry));
 
   return (
-    <div className={[surface ? 'mg-surface-2 p-4 sm:p-5' : 'min-w-0'].join(' ')}>
+    <div className={[surface ? 'mg-app-panel p-4 sm:p-5' : 'min-w-0'].join(' ')}>
       <div className="mg-list divide-border/75 divide-y">
         <div className="mg-row flex-wrap items-center justify-between gap-2 px-1 py-2 sm:px-2">
           <p className="text-fg/90 text-sm font-semibold">Kategorien</p>
@@ -94,7 +94,7 @@ export function VersusMetricPicker({
         </div>
 
         <div className="px-1 py-3 sm:px-2">
-          <div className="bg-surface-solid/55 border-border/80 flex items-center gap-2 rounded-[var(--radius)] border px-3 py-2">
+          <div className="mg-app-field flex items-center gap-2 px-3 py-2">
             <Filter size={16} className="text-muted" />
             <input
               value={versusMetricFilter}
@@ -129,7 +129,7 @@ export function VersusMetricPicker({
                   key={`selected-${entry.id}`}
                   type="button"
                   onClick={() => onToggleVersusMetric(entry.id)}
-                  className="border-border/80 bg-accent/14 text-fg hover:bg-accent/20 inline-flex max-w-full items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors"
+                  className="mg-app-chip mg-app-chip--accent hover:bg-accent/20 inline-flex max-w-full items-center gap-2 px-3 py-1 text-xs font-semibold transition-colors"
                   title={`${entry.label} entfernen`}
                 >
                   <span className="max-w-[18rem] truncate">{entry.label}</span>

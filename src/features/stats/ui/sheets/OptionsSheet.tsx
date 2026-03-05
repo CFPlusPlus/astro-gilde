@@ -128,7 +128,7 @@ export function OptionsSheet({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/45"
+        className="mg-overlay-scrim absolute inset-0"
         aria-label={'Optionen schlie\u00dfen'}
         onClick={onClose}
       />
@@ -136,7 +136,7 @@ export function OptionsSheet({
       <section
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 flex h-[70dvh] max-h-[70dvh] min-h-[20rem] flex-col overflow-hidden rounded-t-[1rem] border-t shadow-2xl sm:h-[64dvh] sm:max-h-[64dvh]"
+        className="mg-app-sheet absolute inset-x-0 bottom-0 flex h-[70dvh] max-h-[70dvh] min-h-[20rem] flex-col overflow-hidden rounded-t-[1rem] border-t shadow-2xl sm:h-[64dvh] sm:max-h-[64dvh]"
       >
         <header className="border-border/80 flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">
@@ -175,10 +175,10 @@ export function OptionsSheet({
                       role="radio"
                       aria-checked={isActive ? 'true' : 'false'}
                       className={[
-                        'focus-visible:ring-offset-bg inline-flex h-9 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
+                        'focus-visible:ring-offset-bg mg-app-chip inline-flex h-9 items-center justify-center px-0 text-sm font-semibold tabular-nums transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none',
                         isActive
-                          ? 'border-accent/55 bg-accent/18 text-fg'
-                          : 'border-border/80 bg-surface-solid/35 text-fg/88 hover:border-accent/45 hover:bg-surface-solid/55',
+                          ? 'mg-app-chip--accent'
+                          : 'hover:border-accent/45 hover:bg-surface-solid/55',
                       ].join(' ')}
                       disabled={!showPageSize}
                       onClick={() => onPageSizeChange(value)}
@@ -210,7 +210,7 @@ export function OptionsSheet({
               </section>
             ) : null}
 
-            <section className="border-border/70 bg-surface-solid/25 space-y-2 rounded-[var(--radius)] border p-3">
+            <section className="mg-app-panel mg-app-panel--soft space-y-2 p-3">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
                   Status
@@ -235,7 +235,7 @@ export function OptionsSheet({
             </section>
 
             {showLeaderboardControls ? (
-              <section className="border-border/70 bg-surface-solid/25 space-y-3 rounded-[var(--radius)] border p-3">
+              <section className="mg-app-panel mg-app-panel--soft space-y-3 p-3">
                 <p className="text-fg/90 text-xs font-semibold tracking-[0.12em] uppercase">
                   Ranglisten
                 </p>

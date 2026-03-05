@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { RefreshCcw, X } from 'lucide-react';
+import { AlertCircle, RefreshCcw, X } from 'lucide-react';
 import { SkinViewerControls } from './skinviewer/SkinViewerControls';
 import { SkinViewerStage } from './skinviewer/SkinViewerStage';
 import { useSkinViewer } from './skinviewer/useSkinViewer';
@@ -132,12 +132,11 @@ export default function SkinViewerModal({
           </div>
 
           {loadError ? (
-            <div
-              className="bg-accent/10 border-accent/40 flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm"
-              role="status"
-            >
-              <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" aria-hidden="true" />
-              <span className="text-fg/90">{loadError}</span>
+            <div className="mg-error-message" role="alert">
+              <span className="mg-error-message__icon" aria-hidden="true">
+                <AlertCircle size={14} />
+              </span>
+              <span>{loadError}</span>
             </div>
           ) : null}
         </div>

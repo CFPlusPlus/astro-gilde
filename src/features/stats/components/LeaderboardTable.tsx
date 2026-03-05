@@ -267,9 +267,7 @@ export function LeaderboardTable({
     <section
       className={[
         'relative min-h-[360px] min-w-0 [overflow-anchor:none]',
-        surface
-          ? 'mg-surface-2'
-          : 'bg-surface-solid/40 border-border/80 rounded-[var(--radius)] border',
+        surface ? 'mg-surface-2' : 'mg-app-table',
       ].join(' ')}
       aria-busy={isLoading}
     >
@@ -294,7 +292,7 @@ export function LeaderboardTable({
             <caption className="sr-only">
               Rangliste f\u00fcr {def?.label || 'die ausgew\u00e4hlte Kategorie'}.
             </caption>
-            <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top))] lg:z-10">
+            <thead className="mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(var(--stats-sticky-content-top,_0px))] lg:z-10">
               <tr>
                 <th id="leaderboard-col-rank" className={headerCellClass} scope="col">
                   Platz
@@ -355,7 +353,7 @@ export function LeaderboardTable({
 
       {isLoading ? (
         <div className="pointer-events-none absolute top-3 right-3">
-          <span className="bg-surface-solid/75 text-muted inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+          <span className="mg-app-chip text-muted inline-flex items-center px-3 py-1 text-xs font-semibold backdrop-blur-sm">
             {LIVE_COPY_DE.table_updating}
           </span>
         </div>
@@ -363,14 +361,14 @@ export function LeaderboardTable({
 
       {shouldShowCenterLoader ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="bg-surface-solid/90 text-fg inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur">
+          <span className="mg-app-chip inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold backdrop-blur">
             <LoaderCircle size={14} className="text-muted animate-spin" />
             {centerLoaderLabel || LIVE_COPY_DE.table_loading}
           </span>
         </div>
       ) : null}
 
-      <div className="border-border/75 flex items-center justify-between gap-3 border-t px-2.5 py-3 sm:px-4">
+      <div className="mg-app-divider flex items-center justify-between gap-3 px-2.5 py-3 sm:px-4">
         <Pagination state={state} onGo={handleGoPage} onLoadMore={handleLoadMore} />
       </div>
     </section>

@@ -39,10 +39,66 @@ type UrlVersusSelection = {
   autoCompare?: boolean;
 };
 
+type ComparablePlayers = {
+  playerA: PlayersSearchItem;
+  playerB: PlayersSearchItem;
+};
+
 function cleanUuid(value: string | null): string | null {
   if (!value) return null;
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
+}
+
+function validateComparablePlayers(
+  playerA: PlayersSearchItem | null,
+  playerB: PlayersSearchItem | null,
+): { players: ComparablePlayers | null; error: string | null } {
+  if (!playerA || !playerB) {
+    return {
+      players: null,
+      error: 'Bitte w\u00e4hle zwei Spieler f\u00fcr den Vergleich aus.',
+    };
+  }
+
+  if (playerA.uuid === playerB.uuid) {
+    return {
+      players: null,
+      error: 'Bitte w\u00e4hle zwei unterschiedliche Spieler.',
+    };
+  }
+
+  return {
+    players: {
+      playerA,
+      playerB,
+    },
+    error: null,
+  };
+}
+
+function resolvePlayerStats(data: {
+  found?: boolean;
+  player?: unknown;
+}): Record<string, unknown> | null {
+  if (data.found === false || !data.player || typeof data.player !== 'object') return null;
+  return data.player as Record<string, unknown>;
+}
+
+function resolveMissingPlayerError({
+  playerAName,
+  playerBName,
+  statsA,
+  statsB,
+}: {
+  playerAName: string;
+  playerBName: string;
+  statsA: Record<string, unknown> | null;
+  statsB: Record<string, unknown> | null;
+}): string | null {
+  if (!statsA) return `Spieler A (${playerAName}) wurde nicht gefunden.`;
+  if (!statsB) return `Spieler B (${playerBName}) wurde nicht gefunden.`;
+  return null;
 }
 
 export function useVersusState({
@@ -71,6 +127,7 @@ export function useVersusState({
   const [versusSwapFx, setVersusSwapFx] = useState(false);
 
   const versusAbortRef = useRef<AbortController | null>(null);
+  const versusRequestIdRef = useRef(0);
   const versusSwapFxTimeoutRef = useRef<number | null>(null);
   const initializedSearchRef = useRef(false);
   const shouldAutoCompareRef = useRef(Boolean(initialState?.autoCompare));
@@ -103,6 +160,7 @@ export function useVersusState({
 
   useEffect(() => {
     return () => {
+      versusRequestIdRef.current += 1;
       versusAbortRef.current?.abort();
       if (versusSwapFxTimeoutRef.current !== null) {
         window.clearTimeout(versusSwapFxTimeoutRef.current);
@@ -220,58 +278,65 @@ export function useVersusState({
     [searchA, searchB, versusPlayerA, versusPlayerB],
   );
 
+  const clearVersusResults = useCallback(() => {
+    setVersusStatsA(null);
+    setVersusStatsB(null);
+    setVersusCatalog([]);
+  }, []);
+
+  const beginVersusRequest = useCallback(() => {
+    const requestId = versusRequestIdRef.current + 1;
+    versusRequestIdRef.current = requestId;
+
+    versusAbortRef.current?.abort();
+    const controller = new AbortController();
+    versusAbortRef.current = controller;
+
+    const isCurrentRequest = (): boolean =>
+      versusRequestIdRef.current === requestId &&
+      versusAbortRef.current === controller &&
+      !controller.signal.aborted;
+
+    return {
+      requestId,
+      controller,
+      isCurrentRequest,
+    };
+  }, []);
+
   const runVersusCompare = useCallback(async () => {
-    const playerA = versusPlayerA;
-    const playerB = versusPlayerB;
-
-    if (!playerA || !playerB) {
-      setVersusError('Bitte w\u00e4hle zwei Spieler f\u00fcr den Vergleich aus.');
+    const validation = validateComparablePlayers(versusPlayerA, versusPlayerB);
+    if (validation.error || !validation.players) {
+      setVersusError(validation.error);
       return;
     }
-
-    if (playerA.uuid === playerB.uuid) {
-      setVersusError('Bitte w\u00e4hle zwei unterschiedliche Spieler.');
-      return;
-    }
+    const { playerA, playerB } = validation.players;
 
     setVersusError(null);
     setVersusNotice(null);
     setVersusLoading(true);
 
-    versusAbortRef.current?.abort();
-    const ac = new AbortController();
-    versusAbortRef.current = ac;
+    const request = beginVersusRequest();
 
     try {
       const [translations, playerDataA, playerDataB] = await Promise.all([
-        getTranslations(ac.signal).catch(() => null),
-        getPlayer(playerA.uuid, ac.signal),
-        getPlayer(playerB.uuid, ac.signal),
+        getTranslations(request.controller.signal).catch(() => null),
+        getPlayer(playerA.uuid, request.controller.signal),
+        getPlayer(playerB.uuid, request.controller.signal),
       ]);
+      if (!request.isCurrentRequest()) return;
 
-      const statsA =
-        playerDataA.found === false || !playerDataA.player || typeof playerDataA.player !== 'object'
-          ? null
-          : (playerDataA.player as Record<string, unknown>);
-
-      const statsB =
-        playerDataB.found === false || !playerDataB.player || typeof playerDataB.player !== 'object'
-          ? null
-          : (playerDataB.player as Record<string, unknown>);
-
-      if (!statsA) {
-        setVersusError(`Spieler A (${playerA.name}) wurde nicht gefunden.`);
-        setVersusStatsA(null);
-        setVersusStatsB(null);
-        setVersusCatalog([]);
-        return;
-      }
-
-      if (!statsB) {
-        setVersusError(`Spieler B (${playerB.name}) wurde nicht gefunden.`);
-        setVersusStatsA(null);
-        setVersusStatsB(null);
-        setVersusCatalog([]);
+      const statsA = resolvePlayerStats(playerDataA);
+      const statsB = resolvePlayerStats(playerDataB);
+      const missingPlayerError = resolveMissingPlayerError({
+        playerAName: playerA.name,
+        playerBName: playerB.name,
+        statsA,
+        statsB,
+      });
+      if (missingPlayerError) {
+        setVersusError(missingPlayerError);
+        clearVersusResults();
         return;
       }
 
@@ -291,12 +356,15 @@ export function useVersusState({
       setVersusMetricIds((previous) => syncVersusMetricIdsWithCatalog(previous, catalog));
     } catch (error) {
       if ((error as Error)?.name === 'AbortError') return;
+      if (!request.isCurrentRequest()) return;
       console.warn('Versus Fehler', error);
       setVersusError('Versus konnte nicht geladen werden. Bitte versuche es sp\u00e4ter erneut.');
     } finally {
-      setVersusLoading(false);
+      if (versusRequestIdRef.current === request.requestId) {
+        setVersusLoading(false);
+      }
     }
-  }, [onGeneratedIso, versusPlayerA, versusPlayerB]);
+  }, [beginVersusRequest, clearVersusResults, onGeneratedIso, versusPlayerA, versusPlayerB]);
 
   useEffect(() => {
     if (!shouldAutoCompareRef.current) return;

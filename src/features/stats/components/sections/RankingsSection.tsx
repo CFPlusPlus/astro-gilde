@@ -227,9 +227,7 @@ function NoActiveMetricNotice() {
   return (
     <div className="mg-notice text-sm" data-variant="neutral" role="status">
       <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-      <span className="text-fg/90">
-        {'Keine Rangliste ausgewaehlt. Waehle eine Kategorie aus.'}
-      </span>
+      <span className="text-fg/90">{'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}</span>
     </div>
   );
 }
@@ -241,33 +239,32 @@ function ActiveCategoryInfo({
   activeMetricId: string;
   activeCategory: ReturnType<typeof resolveStatsCategoryDef> | null;
 }) {
+  const label = activeCategory?.label || activeMetricId;
+
   return (
-    <div>
-      <p className="text-muted text-xs font-semibold">Aktive Kategorie</p>
-      <ul className="mg-list divide-border/75 mt-2 divide-y text-sm">
-        <li className="flex items-center justify-between gap-3 px-1 py-2">
-          <span className="text-muted">Name</span>
-          <span
-            className="text-fg truncate text-right font-semibold"
-            title={activeCategory?.label || activeMetricId}
-          >
-            {activeCategory?.label || activeMetricId}
-          </span>
-        </li>
-        <li className="flex items-center justify-between gap-3 px-1 py-2">
-          <span className="text-muted">Gruppe</span>
-          <span className="text-fg/85 truncate text-right">{activeCategory?.group || '-'}</span>
-        </li>
-        <li className="flex items-center justify-between gap-3 px-1 py-2">
-          <span className="text-muted">ID</span>
-          <span className="text-fg/85 truncate text-right">{activeMetricId}</span>
-        </li>
-        <li className="flex items-center justify-between gap-3 px-1 py-2">
-          <span className="text-muted">Einheit</span>
-          <span className="text-fg/85 truncate text-right">{activeCategory?.unit || 'Anzahl'}</span>
-        </li>
-      </ul>
-    </div>
+    <section className="border-border/75 border-t pt-4" aria-label="Aktive Kategorie">
+      <div className="px-1">
+        <p className="text-muted text-[11px] font-semibold tracking-[0.12em] uppercase">
+          Aktive Kategorie
+        </p>
+        <p className="text-accent mt-1 text-base font-semibold break-words">{label}</p>
+      </div>
+
+      <dl className="divide-border/75 mt-3 divide-y text-sm">
+        <div className="flex items-center justify-between gap-3 px-1 py-2">
+          <dt className="text-muted">Gruppe</dt>
+          <dd className="text-fg/85 truncate text-right">{activeCategory?.group || '-'}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-3 px-1 py-2">
+          <dt className="text-muted">ID</dt>
+          <dd className="text-muted truncate text-right font-mono text-xs">{activeMetricId}</dd>
+        </div>
+        <div className="flex items-center justify-between gap-3 px-1 py-2">
+          <dt className="text-muted">Einheit</dt>
+          <dd className="text-fg/85 truncate text-right">{activeCategory?.unit || 'Anzahl'}</dd>
+        </div>
+      </dl>
+    </section>
   );
 }
 
@@ -480,7 +477,7 @@ export function RankingsSection({
             <div className="min-w-0 flex-1">
               <SectionTitle
                 title="Ranglisten"
-                subtitle={'Kategorie finden, auswaehlen und sofort die Top-N sehen.'}
+                subtitle={'Kategorie finden, auswählen und sofort die Top-N sehen.'}
               />
             </div>
 

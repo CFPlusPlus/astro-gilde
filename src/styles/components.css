@@ -122,6 +122,10 @@
     --mg-glass-shadow: var(--glass-overlay-shadow);
   }
 
+  .mg-overlay-scrim {
+    background: color-mix(in oklab, var(--bg) 52%, black 48%);
+  }
+
   .mg-modal-panel {
     @apply flex min-h-0 w-full flex-col overflow-hidden rounded-[var(--radius)] shadow-2xl outline-none;
   }
@@ -278,6 +282,16 @@
     color: var(--accent);
   }
 
+  html[data-theme='light'] .site-nav-link.is-active {
+    color: color-mix(in oklab, var(--accent) 42%, var(--fg) 58%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .site-nav-link.is-active {
+      color: color-mix(in oklab, var(--accent) 42%, var(--fg) 58%);
+    }
+  }
+
   .site-nav-link.is-active::after {
     opacity: 1;
     transform: translateX(-50%) scaleX(1);
@@ -314,7 +328,11 @@
   }
 
   .site-nav-solid-card.mg-card {
-    background: var(--surface-solid);
+    background: color-mix(in oklab, var(--surface-solid) 90%, var(--bg) 10%);
+    border-color: color-mix(in oklab, var(--border) 96%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 50%, transparent),
+      0 14px 30px -24px color-mix(in oklab, var(--fg) 36%, transparent);
   }
 
   .site-discord-link {
@@ -398,27 +416,19 @@
     background:
       radial-gradient(
         120% 120% at 0% 0%,
-        color-mix(in oklab, var(--accent) 8%, transparent) 0%,
+        color-mix(in oklab, var(--accent) 12%, transparent) 0%,
         transparent 55%
       ),
-      color-mix(in oklab, var(--surface-solid) 74%, var(--bg) 26%);
-  }
-
-  .mg-surface-1--padded {
-    @apply py-12 sm:py-14 lg:py-16;
+      color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
   }
 
   .mg-surface-2 {
-    background: color-mix(in oklab, var(--surface-solid) 82%, transparent);
-    border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+    border: 1px solid color-mix(in oklab, var(--border) 92%, transparent);
     box-shadow:
-      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 52%, transparent),
-      0 12px 24px -24px var(--glass-shadow-color);
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 60%, transparent),
+      0 20px 34px -26px var(--glass-shadow-color);
     border-radius: var(--radius);
-  }
-
-  .mg-surface-2--clip {
-    overflow: hidden;
   }
 
   .mg-notice {
@@ -448,14 +458,31 @@
     box-shadow: none;
   }
 
+  .mg-error-message {
+    @apply flex items-start gap-3 rounded-[var(--radius)] border px-4 py-3 text-sm;
+    background: color-mix(in oklab, var(--warning) 11%, var(--surface-solid) 89%);
+    border-color: color-mix(in oklab, var(--warning) 44%, var(--border) 56%);
+    color: color-mix(in oklab, var(--fg) 94%, transparent);
+  }
+
+  .mg-error-message__icon {
+    @apply inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg;
+    background: color-mix(in oklab, var(--warning) 24%, var(--surface-solid) 76%);
+    color: color-mix(in oklab, var(--warning) 82%, var(--fg) 18%);
+  }
+
   .mg-section {
     @apply py-10;
   }
 
   .mg-section-panel {
     @apply p-5 sm:p-6 lg:p-7;
-    background: color-mix(in oklab, var(--surface) 42%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 78%, var(--bg) 22%);
+    border: 1px solid color-mix(in oklab, var(--border) 76%, transparent);
     border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 48%, transparent),
+      0 14px 28px -26px var(--glass-shadow-color);
   }
 
   .mg-section-panel--outlined {
@@ -463,13 +490,99 @@
   }
 
   .mg-card {
-    background: color-mix(in oklab, var(--surface) 42%, transparent);
+    background:
+      linear-gradient(
+        160deg,
+        color-mix(in oklab, var(--accent) 7%, transparent) 0%,
+        transparent 62%
+      ),
+      color-mix(in oklab, var(--surface-solid) 94%, var(--bg) 6%);
     border-radius: var(--radius);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 62%, transparent),
+      0 18px 34px -28px var(--glass-shadow-color);
   }
 
-  .mg-card--outlined {
-    @apply border;
+  /*
+    App-Layout-Helfer fuer Statistik/Sheets:
+    - flachere, einheitliche Flaechen statt mehrfach verschachtelter "Cards"
+    - zentrale Nutzung in Tabellen, Filtern, mobilen Sheets
+  */
+  .mg-app-panel {
+    border: 1px solid color-mix(in oklab, var(--border) 78%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 74%, var(--bg) 26%);
+  }
+
+  .mg-app-panel--soft {
+    background: color-mix(in oklab, var(--surface-solid) 68%, var(--bg) 32%);
+  }
+
+  .mg-app-panel--strong {
+    background: color-mix(in oklab, var(--surface-solid) 80%, var(--bg) 20%);
     border-color: color-mix(in oklab, var(--border) 88%, transparent);
+  }
+
+  .mg-app-divider {
+    border-color: color-mix(in oklab, var(--border) 76%, transparent);
+    border-top-width: 1px;
+  }
+
+  .mg-app-field {
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 56%, transparent);
+    transition:
+      border-color 150ms ease,
+      background-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .mg-app-field:hover {
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
+  }
+
+  .mg-app-field:focus-within {
+    border-color: color-mix(in oklab, var(--accent) 52%, var(--border) 48%);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 42%, transparent);
+  }
+
+  .mg-app-field--muted-focus:focus-within {
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
+  }
+
+  .mg-app-field:focus-within:has(input[type='search']),
+  .mg-app-field:focus-within:has(input[type='search']:focus),
+  .mg-app-field:focus-within:has(input[type='search']:focus-visible) {
+    border-color: color-mix(in oklab, var(--border) 82%, transparent);
+  }
+
+  .mg-app-chip {
+    border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
+    color: color-mix(in oklab, var(--fg) 92%, transparent);
+  }
+
+  .mg-app-chip--accent {
+    border-color: color-mix(in oklab, var(--accent) 48%, var(--border) 52%);
+    background: color-mix(in oklab, var(--accent) 16%, var(--surface-solid) 84%);
+    color: var(--fg);
+  }
+
+  .mg-app-sheet {
+    border: 1px solid color-mix(in oklab, var(--border) 90%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 95%, var(--bg) 5%);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 40%, transparent),
+      0 24px 46px -30px var(--glass-shadow-color);
+  }
+
+  .mg-app-table {
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    border-radius: var(--radius);
+    background: color-mix(in oklab, var(--surface-solid) 28%, transparent);
+    overflow: visible;
   }
 
   .mg-card--raised {
@@ -478,22 +591,6 @@
     transition:
       border-color 160ms ease,
       box-shadow 160ms ease;
-  }
-
-  .mg-card--interactive {
-    @apply border;
-    border-color: color-mix(in oklab, var(--border) 86%, transparent);
-    cursor: pointer;
-    transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
-  }
-
-  .mg-card--interactive:hover,
-  .mg-card--interactive:focus-visible,
-  .mg-card--interactive:focus-within {
-    @apply shadow-sm;
-    border-color: color-mix(in oklab, var(--accent) 36%, var(--border) 64%);
   }
 
   .mg-list {
@@ -517,45 +614,8 @@
     border-radius: 0;
   }
 
-  .mg-list--straight > :where(.mg-list-item, .mg-row).mg-row--interactive {
-    border-radius: 0;
-  }
-
   .mg-row {
     @apply flex min-w-0 items-start justify-between gap-4 py-3 sm:py-4;
-  }
-
-  .mg-row--interactive {
-    border-radius: calc(var(--radius) - 2px);
-    color: inherit;
-    text-decoration: none;
-    transition:
-      background-color 160ms ease,
-      border-color 160ms ease,
-      box-shadow 160ms ease,
-      color 160ms ease;
-  }
-
-  .mg-row--interactive:hover {
-    background: color-mix(in oklab, var(--accent) 8%, var(--surface-solid) 92%);
-    border-color: color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
-  }
-
-  .mg-row--interactive:focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 3px;
-    background: color-mix(in oklab, var(--accent) 12%, var(--surface-solid) 88%);
-    border-color: color-mix(in oklab, var(--accent) 44%, var(--border) 56%);
-  }
-
-  .mg-row__meta {
-    color: color-mix(in oklab, var(--fg) 82%, transparent);
-    transition: color 160ms ease;
-  }
-
-  .mg-row--interactive:hover .mg-row__meta,
-  .mg-row--interactive:focus-visible .mg-row__meta {
-    color: var(--fg);
   }
 
   /* Globale Button-Basis fuer Astro-Seiten und React-Islands. */
@@ -633,15 +693,11 @@
     color: rgb(110 231 183);
   }
 
-  [data-copy-ip-inline][data-copied='true'],
-  [data-copy-ip-inline][data-copied='true']:hover {
+  button[data-copy-ip-inline][data-copied='true'],
+  button[data-copy-ip-inline][data-copied='true']:hover {
     border-color: rgb(74 222 128 / 0.7);
     background: rgb(16 185 129 / 0.1);
     color: rgb(110 231 183);
-  }
-
-  .mg-copy-ip-btn--inline {
-    @apply h-10 px-4 text-sm leading-none font-semibold;
   }
 
   .mg-copy-ip-btn--modal {
@@ -652,12 +708,18 @@
     @apply border-border bg-surface hover:bg-surface-solid/70 text-fg/90 hover:text-fg focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2;
   }
 
-  .mg-clip-rounded-top {
-    clip-path: inset(0 round var(--radius) var(--radius) 0 0);
+  .mg-text-accent-strong {
+    color: var(--accent);
   }
 
-  .mg-muted {
-    color: var(--muted);
+  html[data-theme='light'] .mg-text-accent-strong {
+    color: color-mix(in oklab, var(--accent) 46%, var(--fg) 54%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .mg-text-accent-strong {
+      color: color-mix(in oklab, var(--accent) 46%, var(--fg) 54%);
+    }
   }
 
   .mg-prose {
@@ -850,6 +912,16 @@
     color: var(--tutorial-role-color);
   }
 
+  html[data-theme='light'] .mg-prose .tutorial-role__name {
+    color: color-mix(in oklab, var(--tutorial-role-color) 56%, var(--fg) 44%);
+  }
+
+  @media (prefers-color-scheme: light) {
+    html:not([data-theme='dark']) .mg-prose .tutorial-role__name {
+      color: color-mix(in oklab, var(--tutorial-role-color) 56%, var(--fg) 44%);
+    }
+  }
+
   .mg-prose .tutorial-role__text {
     margin: 0.46rem 0 0;
     position: relative;
@@ -909,16 +981,24 @@
   .mg-callout {
     --mg-callout-tone: var(--info);
     @apply p-4;
-    background: color-mix(in oklab, var(--mg-callout-tone) 8%, var(--surface-solid) 92%);
+    background: color-mix(in oklab, var(--mg-callout-tone) 12%, var(--surface-solid) 88%);
     border-radius: var(--radius);
-    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 38%, var(--border) 62%);
-    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 62%, transparent);
+    border: 1px solid color-mix(in oklab, var(--mg-callout-tone) 46%, var(--border) 54%);
+    box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-callout-tone) 70%, transparent);
   }
 
   .mg-callout__icon {
     @apply mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
-    background: color-mix(in oklab, var(--mg-callout-tone) 24%, var(--surface-solid) 76%);
+    background: color-mix(in oklab, var(--mg-callout-tone) 30%, var(--surface-solid) 70%);
     color: color-mix(in oklab, var(--mg-callout-tone) 78%, var(--fg) 22%);
+  }
+
+  .mg-callout__title {
+    color: var(--fg);
+  }
+
+  .mg-callout__content {
+    color: color-mix(in oklab, var(--fg) 94%, transparent);
   }
 
   .mg-callout[data-variant='warning'] {
@@ -927,6 +1007,27 @@
 
   .mg-callout[data-variant='info'] {
     --mg-callout-tone: var(--info);
+  }
+
+  /* Tutorial: Schnellstart als klarer, kontrastreicher Einstiegspanel. */
+  .mg-tutorial-quickstart {
+    @apply rounded-[var(--radius)] p-6;
+    border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+    background:
+      radial-gradient(
+        130% 120% at 0% 0%,
+        color-mix(in oklab, var(--accent) 10%, transparent) 0%,
+        transparent 62%
+      ),
+      color-mix(in oklab, var(--surface-solid) 82%, var(--bg) 18%);
+  }
+
+  .mg-tutorial-quickstart__steps {
+    color: color-mix(in oklab, var(--fg) 80%, var(--muted) 20%);
+  }
+
+  .mg-tutorial-quickstart__steps :where(strong, b) {
+    color: var(--fg);
   }
 
   /* Ranglisten: Medaillen fuer Platz 1-3 (minimalistisch) */
@@ -959,9 +1060,9 @@
   }
 
   .mg-rank-medal--3 {
-    background: color-mix(in oklab, #d99a6c 18%, var(--surface-solid) 82%);
-    border-color: color-mix(in oklab, #d99a6c 50%, var(--border) 50%);
-    color: color-mix(in oklab, #9a5d3a 80%, var(--fg) 20%);
+    background: color-mix(in oklab, var(--warning) 18%, var(--surface-solid) 82%);
+    border-color: color-mix(in oklab, var(--warning) 50%, var(--border) 50%);
+    color: color-mix(in oklab, var(--warning) 72%, var(--fg) 28%);
   }
 
   /* Einheitlicher, schmaler Range-Slider im Projekt-Stil */
@@ -1185,6 +1286,29 @@
     outline-offset: 2px;
   }
 
+  .mg-metric-option--active {
+    color: var(--fg);
+    background: color-mix(in oklab, var(--surface-solid) 64%, var(--accent) 36%);
+  }
+
+  .mg-metric-option--inactive {
+    color: color-mix(in oklab, var(--fg) 90%, transparent);
+    background: transparent;
+  }
+
+  .mg-metric-option--active,
+  .mg-metric-option--inactive {
+    transition:
+      background-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .mg-metric-option--inactive:hover,
+  .mg-metric-option--inactive:focus-visible {
+    background: color-mix(in oklab, var(--surface-solid) 40%, transparent);
+    color: var(--fg);
+  }
+
   .mg-live-counter {
     display: inline-flex;
     align-items: center;
@@ -1264,7 +1388,7 @@
     color: color-mix(in oklab, var(--muted) 78%, var(--fg) 22%);
   }
 
-  [data-live-tile][data-live-state='error'] {
+  .mg-live-tile[data-live-state='error'] {
     border-color: color-mix(in oklab, var(--border) 76%, var(--muted) 24%);
   }
 
@@ -1313,19 +1437,6 @@
     }
   }
 
-  @keyframes mg-fade-in {
-    from {
-      opacity: 0.55;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  .mg-fade-in {
-    animation: mg-fade-in 170ms ease-out both;
-  }
-
   .mg-table-sticky-head {
     background: var(--glass-nav-bg);
     border-color: transparent;
@@ -1338,210 +1449,6 @@
     .mg-table-sticky-head {
       background: var(--glass-nav-bg-fallback);
     }
-  }
-
-  .mg-stats-sticky-offset-0 {
-    --stats-sticky-content-top: 0px;
-  }
-
-  .mg-stats-sticky-offset-8 {
-    --stats-sticky-content-top: 8px;
-  }
-
-  .mg-stats-sticky-offset-16 {
-    --stats-sticky-content-top: 16px;
-  }
-
-  .mg-stats-sticky-offset-24 {
-    --stats-sticky-content-top: 24px;
-  }
-
-  .mg-stats-sticky-offset-32 {
-    --stats-sticky-content-top: 32px;
-  }
-
-  .mg-stats-sticky-offset-40 {
-    --stats-sticky-content-top: 40px;
-  }
-
-  .mg-stats-sticky-offset-48 {
-    --stats-sticky-content-top: 48px;
-  }
-
-  .mg-stats-sticky-offset-56 {
-    --stats-sticky-content-top: 56px;
-  }
-
-  .mg-stats-sticky-offset-64 {
-    --stats-sticky-content-top: 64px;
-  }
-
-  .mg-stats-sticky-offset-72 {
-    --stats-sticky-content-top: 72px;
-  }
-
-  .mg-stats-sticky-offset-80 {
-    --stats-sticky-content-top: 80px;
-  }
-
-  .mg-stats-sticky-offset-88 {
-    --stats-sticky-content-top: 88px;
-  }
-
-  .mg-stats-sticky-offset-96 {
-    --stats-sticky-content-top: 96px;
-  }
-
-  .mg-stats-sticky-offset-104 {
-    --stats-sticky-content-top: 104px;
-  }
-
-  .mg-stats-sticky-offset-112 {
-    --stats-sticky-content-top: 112px;
-  }
-
-  .mg-stats-sticky-offset-120 {
-    --stats-sticky-content-top: 120px;
-  }
-
-  .mg-stats-sticky-offset-128 {
-    --stats-sticky-content-top: 128px;
-  }
-
-  .mg-stats-sticky-offset-136 {
-    --stats-sticky-content-top: 136px;
-  }
-
-  .mg-stats-sticky-offset-144 {
-    --stats-sticky-content-top: 144px;
-  }
-
-  .mg-stats-sticky-offset-152 {
-    --stats-sticky-content-top: 152px;
-  }
-
-  .mg-stats-sticky-offset-160 {
-    --stats-sticky-content-top: 160px;
-  }
-
-  .mg-stats-sticky-offset-168 {
-    --stats-sticky-content-top: 168px;
-  }
-
-  .mg-stats-sticky-offset-176 {
-    --stats-sticky-content-top: 176px;
-  }
-
-  .mg-stats-sticky-offset-184 {
-    --stats-sticky-content-top: 184px;
-  }
-
-  .mg-stats-sticky-offset-192 {
-    --stats-sticky-content-top: 192px;
-  }
-
-  .mg-stats-sticky-offset-200 {
-    --stats-sticky-content-top: 200px;
-  }
-
-  .mg-stats-sticky-offset-208 {
-    --stats-sticky-content-top: 208px;
-  }
-
-  .mg-stats-sticky-offset-216 {
-    --stats-sticky-content-top: 216px;
-  }
-
-  .mg-stats-sticky-offset-224 {
-    --stats-sticky-content-top: 224px;
-  }
-
-  .mg-stats-sticky-offset-232 {
-    --stats-sticky-content-top: 232px;
-  }
-
-  .mg-stats-sticky-offset-240 {
-    --stats-sticky-content-top: 240px;
-  }
-
-  .mg-stats-sticky-offset-248 {
-    --stats-sticky-content-top: 248px;
-  }
-
-  .mg-stats-sticky-offset-256 {
-    --stats-sticky-content-top: 256px;
-  }
-
-  .mg-stats-sticky-offset-264 {
-    --stats-sticky-content-top: 264px;
-  }
-
-  .mg-stats-sticky-offset-272 {
-    --stats-sticky-content-top: 272px;
-  }
-
-  .mg-stats-sticky-offset-280 {
-    --stats-sticky-content-top: 280px;
-  }
-
-  .mg-stats-sticky-offset-288 {
-    --stats-sticky-content-top: 288px;
-  }
-
-  .mg-stats-sticky-offset-296 {
-    --stats-sticky-content-top: 296px;
-  }
-
-  .mg-stats-sticky-offset-304 {
-    --stats-sticky-content-top: 304px;
-  }
-
-  .mg-stats-sticky-offset-312 {
-    --stats-sticky-content-top: 312px;
-  }
-
-  .mg-stats-sticky-offset-320 {
-    --stats-sticky-content-top: 320px;
-  }
-
-  .mg-stats-sticky-offset-328 {
-    --stats-sticky-content-top: 328px;
-  }
-
-  .mg-stats-sticky-offset-336 {
-    --stats-sticky-content-top: 336px;
-  }
-
-  .mg-stats-sticky-offset-344 {
-    --stats-sticky-content-top: 344px;
-  }
-
-  .mg-stats-sticky-offset-352 {
-    --stats-sticky-content-top: 352px;
-  }
-
-  .mg-stats-sticky-offset-360 {
-    --stats-sticky-content-top: 360px;
-  }
-
-  .mg-stats-sticky-offset-368 {
-    --stats-sticky-content-top: 368px;
-  }
-
-  .mg-stats-sticky-offset-376 {
-    --stats-sticky-content-top: 376px;
-  }
-
-  .mg-stats-sticky-offset-384 {
-    --stats-sticky-content-top: 384px;
-  }
-
-  .mg-stats-sticky-offset-392 {
-    --stats-sticky-content-top: 392px;
-  }
-
-  .mg-stats-sticky-offset-400 {
-    --stats-sticky-content-top: 400px;
   }
 
   @keyframes mg-table-row-enter {

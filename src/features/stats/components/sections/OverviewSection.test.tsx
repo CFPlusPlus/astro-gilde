@@ -81,7 +81,7 @@ describe('OverviewSection', () => {
     });
 
     const rowCard = view.container.querySelector(
-      '[aria-label="Distanz Rangliste \u00f6ffnen"]',
+      '[aria-label="Zur\u00fcckgelegte Strecke Rangliste \u00f6ffnen"]',
     ) as HTMLElement | null;
     expect(rowCard).not.toBeNull();
 
@@ -103,46 +103,37 @@ describe('OverviewSection', () => {
     });
 
     const buttons = Array.from(view.container.querySelectorAll('button'));
-    const normalizeButtonText = (button: HTMLButtonElement): string =>
-      (button.textContent || '').replace('→', '').replace(/\s+/g, ' ').trim();
-    const diamondButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Diamanten abgebaut',
-    );
-    const wardenDeathsButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Tode durch Warden',
-    );
-    const enchantedItemsButton = buttons.find(
-      (button) => normalizeButtonText(button) === 'Items verzaubert',
-    );
+    const findQuicklinkButton = (label: string): HTMLButtonElement | undefined =>
+      buttons.find((button) => (button.textContent || '').includes(label));
+    const diamondButton = findQuicklinkButton('Diamanterz abgebaut');
+    const openChestButton = findQuicklinkButton('Truhen ge\u00f6ffnet');
+    const sleepInBedButton = findQuicklinkButton('Im Bett geschlafen');
 
-    expect(diamondButton?.textContent).toContain('Diamanten abgebaut');
-    expect(wardenDeathsButton?.textContent).toContain('Tode durch Warden');
-    expect(enchantedItemsButton?.textContent).toContain('Items verzaubert');
+    expect(diamondButton?.textContent).toContain('Diamanterz abgebaut');
+    expect(openChestButton?.textContent).toContain('Truhen ge\u00f6ffnet');
+    expect(sleepInBedButton?.textContent).toContain('Im Bett geschlafen');
 
     await act(async () => {
       diamondButton?.click();
-      wardenDeathsButton?.click();
-      enchantedItemsButton?.click();
+      openChestButton?.click();
+      sleepInBedButton?.click();
     });
 
     expect(onOpenRankings).toHaveBeenCalledTimes(3);
     expect(onOpenRankings).toHaveBeenNthCalledWith(1, [
-      'diamond',
-      'minecraft:diamond_ore',
       'diamond_ore',
+      'minecraft:diamond_ore',
+      'diamond',
     ]);
     expect(onOpenRankings).toHaveBeenNthCalledWith(2, [
-      'warden',
-      'killed_by_warden',
-      'minecraft:killed_by_warden',
-      'mob:killed_by:minecraft:warden',
-      'mob:killed_by:warden',
-      'stat:minecraft:killed_by_warden',
+      'open_chest',
+      'minecraft:open_chest',
+      'stat:minecraft:open_chest',
     ]);
     expect(onOpenRankings).toHaveBeenNthCalledWith(3, [
-      'enchant_item',
-      'minecraft:enchant_item',
-      'stat:minecraft:enchant_item',
+      'sleep_in_bed',
+      'minecraft:sleep_in_bed',
+      'stat:minecraft:sleep_in_bed',
     ]);
 
     await view.cleanup();

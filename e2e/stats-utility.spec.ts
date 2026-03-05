@@ -223,6 +223,32 @@ test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
   await expect(page.getByText(/321[.,]50 h/)).toBeVisible();
 });
 
+test('Overview Suche behaelt bei Fokus eine neutrale Border', async ({ page }) => {
+  await installUtilityStatsMocks(page);
+  await page.goto('/statistiken/');
+
+  const searchField = page
+    .locator('.mg-app-field')
+    .filter({ has: page.locator('input[role="combobox"]') })
+    .first();
+  const searchInput = searchField.locator('input[role="combobox"]');
+
+  await expect(searchField).toBeVisible();
+  await expect(searchInput).toBeVisible();
+
+  const borderBeforeFocus = await searchField.evaluate(
+    (element) => window.getComputedStyle(element).borderColor,
+  );
+  await searchInput.click();
+  await expect(searchInput).toBeFocused();
+  await page.waitForTimeout(170);
+  const borderAfterFocus = await searchField.evaluate(
+    (element) => window.getComputedStyle(element).borderColor,
+  );
+
+  expect(borderAfterFocus).toBe(borderBeforeFocus);
+});
+
 test('Overview Mock: zeigt error ohne Cache', async ({ page }) => {
   await installUtilityStatsMocks(page, { summaryStatus: 500 });
   await page.goto('/statistiken/');

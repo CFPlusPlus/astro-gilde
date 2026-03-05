@@ -94,18 +94,6 @@ export default function StatsApp() {
   const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
   const initialUrlStateHydratedRef = useRef(false);
 
-  useEffect(() => {
-    const placeholder = document.getElementById('stats-overview-placeholder');
-    if (!placeholder) return;
-    placeholder.classList.add('opacity-0');
-    const timeoutId = window.setTimeout(() => {
-      placeholder.remove();
-    }, 220);
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, []);
-
   const {
     activeTab,
     setTab,
@@ -373,7 +361,7 @@ export default function StatsApp() {
   return (
     <StatsLayout
       stickyTopBar
-      topBarClassName="py-0 md:py-4"
+      topBarClassName="py-2 md:py-3"
       topBar={
         <StatsToolbar
           activeTab={activeTab}

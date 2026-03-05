@@ -81,14 +81,14 @@ export function PillScroller({
 
       {fadeEdges && scrollState.canScrollLeft ? (
         <div
-          className="from-bg pointer-events-none absolute inset-y-0 left-0 z-[1] w-7 bg-gradient-to-r to-transparent"
+          className="from-surface-solid pointer-events-none absolute inset-y-0 left-0 z-[1] w-5 bg-gradient-to-r to-transparent"
           aria-hidden="true"
         />
       ) : null}
 
       {fadeEdges && scrollState.canScrollRight ? (
         <div
-          className="from-bg pointer-events-none absolute inset-y-0 right-0 z-[1] w-7 bg-gradient-to-l to-transparent"
+          className="from-surface-solid pointer-events-none absolute inset-y-0 right-0 z-[1] w-5 bg-gradient-to-l to-transparent"
           aria-hidden="true"
         />
       ) : null}

@@ -95,7 +95,7 @@ export function SearchSheet({
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/45"
+        className="mg-overlay-scrim absolute inset-0"
         aria-label={'Spielersuche schlie\u00dfen'}
         onClick={onClose}
       />
@@ -103,7 +103,7 @@ export function SearchSheet({
       <section
         ref={dialogRef}
         tabIndex={-1}
-        className="bg-surface-solid/96 border-border absolute inset-x-0 bottom-0 flex h-[70dvh] max-h-[70dvh] min-h-[18rem] flex-col overflow-hidden rounded-t-[1rem] border-t shadow-2xl sm:h-[64dvh] sm:max-h-[64dvh]"
+        className="mg-app-sheet absolute inset-x-0 bottom-0 flex h-[70dvh] max-h-[70dvh] min-h-[18rem] flex-col overflow-hidden rounded-t-[1rem] border-t shadow-2xl sm:h-[64dvh] sm:max-h-[64dvh]"
       >
         <header className="border-border/80 flex items-start justify-between gap-3 border-b px-4 py-3">
           <div className="min-w-0">

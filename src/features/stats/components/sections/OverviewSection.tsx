@@ -162,23 +162,16 @@ export function OverviewSection({
   const rows = overviewItems.slice(1, 4);
   const rankingQuicklinks: Array<{ label: string; metricIds: string[] }> = [
     {
-      label: 'Diamanten abgebaut',
-      metricIds: ['diamond', 'minecraft:diamond_ore', 'diamond_ore'],
+      label: 'Diamanterz abgebaut',
+      metricIds: ['diamond_ore', 'minecraft:diamond_ore', 'diamond'],
     },
     {
-      label: 'Tode durch Warden',
-      metricIds: [
-        'warden',
-        'killed_by_warden',
-        'minecraft:killed_by_warden',
-        'mob:killed_by:minecraft:warden',
-        'mob:killed_by:warden',
-        'stat:minecraft:killed_by_warden',
-      ],
+      label: 'Truhen ge\u00f6ffnet',
+      metricIds: ['open_chest', 'minecraft:open_chest', 'stat:minecraft:open_chest'],
     },
     {
-      label: 'Items verzaubert',
-      metricIds: ['enchant_item', 'minecraft:enchant_item', 'stat:minecraft:enchant_item'],
+      label: 'Im Bett geschlafen',
+      metricIds: ['sleep_in_bed', 'minecraft:sleep_in_bed', 'stat:minecraft:sleep_in_bed'],
     },
   ];
 
@@ -257,7 +250,7 @@ export function OverviewSection({
           {highlightItem ? (
             <section
               className={[
-                'border-border/75 bg-surface-solid/35 relative overflow-hidden rounded-[var(--radius)] border px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5',
+                'mg-app-panel mg-app-panel--strong relative overflow-hidden px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5',
                 navigationDisabled
                   ? ''
                   : 'hover:border-accent/45 hover:bg-surface-solid/45 cursor-pointer transition-colors',
@@ -296,7 +289,7 @@ export function OverviewSection({
             </section>
           ) : null}
 
-          <div className="border-border/75 bg-surface-solid/20 overflow-hidden rounded-[var(--radius)] border">
+          <div className="mg-app-panel mg-app-panel--soft overflow-hidden">
             <ul className="mg-list divide-border/75 divide-y text-sm">
               {rows.map((item) => (
                 <li

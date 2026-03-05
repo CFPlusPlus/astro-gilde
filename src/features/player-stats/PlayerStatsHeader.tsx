@@ -60,7 +60,7 @@ export function PlayerStatsHeader({
         >
           <span className={uuidCopied ? 'text-transparent' : 'inline-flex items-center gap-1.5'}>
             <span className="text-muted/90 text-[10px] tracking-[0.14em] uppercase">UUID</span>
-            <span className="font-mono text-[11px]">{uuidFull || 'nicht verfuegbar'}</span>
+            <span className="font-mono text-[11px]">{uuidFull || 'nicht verfügbar'}</span>
           </span>
           {uuidCopied ? (
             <span className="pointer-events-none absolute inset-0 inline-flex items-center justify-center px-3">

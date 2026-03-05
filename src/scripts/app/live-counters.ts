@@ -6,7 +6,7 @@ import {
   type LiveDataStatus,
   type LiveDataThresholds,
 } from '../../lib/live/types';
-import { fetchJson, type FetchJsonError } from '../../lib/live/fetchJson';
+import { fetchLiveJson, type FetchJsonError } from '../../lib/live/fetchJson';
 import { getLiveResource } from '../../lib/live/cache';
 import {
   formatLastUpdatedAbsolute,
@@ -32,6 +32,8 @@ const LIVE_DEBUG_QUERY_PARAM = 'debugLive';
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
 type LiveSource = 'cache' | 'network';
+
+const LIVE_TILE_KEYS: readonly LiveTileKey[] = ['mc-online', 'discord-online'];
 
 interface DiscordWidgetResponse {
   presence_count?: number;
@@ -217,7 +219,7 @@ export const initLiveCounters = ({
     }
 
     const apiWidgetUrl = `https://discord.com/api/guilds/${guildId}/widget.json`;
-    const result = await fetchJson<DiscordWidgetResponse>(apiWidgetUrl, {
+    const result = await fetchLiveJson<DiscordWidgetResponse>(apiWidgetUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       requiredKeys: ['presence_count'],
@@ -263,7 +265,7 @@ export const initLiveCounters = ({
     }
 
     const apiUrl = `https://discord.com/api/v10/invites/${encodeURIComponent(code)}?with_counts=true&with_expiration=true`;
-    const result = await fetchJson<DiscordInviteResponse>(apiUrl, {
+    const result = await fetchLiveJson<DiscordInviteResponse>(apiUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       validate: isDiscordInviteResponse,
@@ -310,7 +312,7 @@ export const initLiveCounters = ({
     }
 
     const apiUrl = `https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`;
-    const result = await fetchJson<MinecraftStatusResponse>(apiUrl, {
+    const result = await fetchLiveJson<MinecraftStatusResponse>(apiUrl, {
       cache: 'no-store',
       timeoutMs: LIVE_FETCH_TIMEOUT_MS,
       requiredKeys: ['online'],
@@ -481,7 +483,7 @@ export const initLiveCounters = ({
     if (isDisposed) return;
     if (!liveDebugEnabled) return;
 
-    (['mc-online', 'discord-online'] as const).forEach((key) => {
+    LIVE_TILE_KEYS.forEach((key) => {
       liveTileRefs[key].roots.forEach((root) => {
         if (root.querySelector(`[data-live-debug="${key}"]`)) return;
 
@@ -824,7 +826,7 @@ export const initLiveCounters = ({
     });
   };
 
-  (['mc-online', 'discord-online'] as const).forEach((key) => {
+  LIVE_TILE_KEYS.forEach((key) => {
     liveTileRefs[key].retries.forEach((button) => {
       const onRetryClick = (): void => {
         revalidate(key, { force: true });
@@ -834,7 +836,7 @@ export const initLiveCounters = ({
   });
 
   const refreshLiveTileNotes = (): void => {
-    (['mc-online', 'discord-online'] as const).forEach((key) => {
+    LIVE_TILE_KEYS.forEach((key) => {
       const state = liveTileStateByKey.get(key);
       if (!state) return;
       setLiveTileState(key, state);
@@ -916,7 +918,7 @@ export const initLiveCounters = ({
   ensureLiveTileDebugElements();
   refreshLiveTileNotes();
 
-  const hasLiveTileTargets = (['mc-online', 'discord-online'] as const).some((key) => {
+  const hasLiveTileTargets = LIVE_TILE_KEYS.some((key) => {
     const refs = liveTileRefs[key];
     return refs.roots.length > 0 || refs.notes.length > 0 || refs.actions.length > 0;
   });
