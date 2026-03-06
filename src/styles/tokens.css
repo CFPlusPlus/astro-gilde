@@ -52,6 +52,12 @@
   --ambient-1: rgba(242, 201, 76, 0.4);
   --ambient-2: rgba(120, 176, 246, 0.34);
   --ambient-3: rgba(29, 44, 64, 0.22);
+  --mesh-glow-a: var(--ambient-1);
+  --mesh-glow-b: var(--ambient-2);
+  --mesh-glow-c: color-mix(in oklab, white 6%, transparent);
+  --noise-opacity: 0.02;
+  --cta-border-a: color-mix(in oklab, var(--accent) 90%, white 10%);
+  --cta-border-b: color-mix(in oklab, var(--ambient-2) 80%, white 20%);
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
@@ -96,8 +102,10 @@
     --glass-overlay-bg-fallback: color-mix(in oklab, black 72%, var(--bg) 28%);
 
     --ambient-1: rgba(242, 201, 76, 0.34);
-    --ambient-2: rgba(82, 92, 105, 0.2);
+    --ambient-2: rgba(104, 145, 214, 0.22);
     --ambient-3: rgba(55, 60, 68, 0.18);
+    --mesh-glow-c: color-mix(in oklab, white 8%, transparent);
+    --noise-opacity: 0.03;
 
     --accent: #f2c94c;
     --accent2: #ffd56a;
@@ -148,8 +156,10 @@ html[data-theme='dark'] {
   --glass-overlay-shadow: none;
 
   --ambient-1: rgba(242, 201, 76, 0.34);
-  --ambient-2: rgba(82, 92, 105, 0.2);
+  --ambient-2: rgba(104, 145, 214, 0.22);
   --ambient-3: rgba(55, 60, 68, 0.18);
+  --mesh-glow-c: color-mix(in oklab, white 8%, transparent);
+  --noise-opacity: 0.03;
 
   --accent: #f2c94c;
   --accent2: #ffd56a;
