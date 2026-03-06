@@ -66,10 +66,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
   </PageHeader>
 
   <section class="mg-container pb-16">
-    <div
-      class="divide-border/70 border-border/70 bg-surface/25 divide-y rounded-[var(--radius)] border"
-      data-motion-stagger="70"
-    >
+    <div class="mg-card mg-card--soft divide-border/70 divide-y" data-motion-stagger="70">
       {
         groups.map((g) => (
           <section class="p-6" data-motion="reveal">
@@ -108,7 +105,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
     </div>
 
     <div class="mt-8" data-motion="reveal" data-motion-delay="120">
-      <div class="border-border/70 bg-surface/35 rounded-[var(--radius)] border p-6">
+      <div class="mg-card mg-card--soft p-6">
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div class="min-w-0">
             <h2 class="text-lg font-semibold tracking-tight">Noch Fragen?</h2>
