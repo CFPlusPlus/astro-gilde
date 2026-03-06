@@ -527,6 +527,24 @@
       0 18px 34px -28px var(--glass-shadow-color);
   }
 
+  .mg-card--soft {
+    background: color-mix(in oklab, var(--surface-solid) 22%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  .mg-card--soft.mg-card--hover {
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .mg-card--soft.mg-card--hover:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--border) 86%, transparent);
+  }
+
   /*
     App-Layout-Helfer fuer Statistik/Sheets:
     - flachere, einheitliche Flaechen statt mehrfach verschachtelter "Cards"
