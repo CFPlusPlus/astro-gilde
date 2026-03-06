@@ -12,7 +12,6 @@
   position: absolute;
   top: -220px;
   --mesh-glow-a: transparent;
-  --noise-opacity: 0.026;
   -webkit-mask-image: linear-gradient(to bottom, black 0%, black 90%, transparent 100%);
   mask-image: linear-gradient(to bottom, black 0%, black 90%, transparent 100%);
 }

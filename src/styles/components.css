@@ -31,23 +31,6 @@
       radial-gradient(800px at 50% 100%, var(--mesh-glow-c), transparent 55%), var(--bg);
   }
 
-  .mg-noise {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-  }
-
-  .mg-noise::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image: url('/noise.png');
-    background-repeat: repeat;
-    background-size: 128px 128px;
-    opacity: var(--noise-opacity);
-    mix-blend-mode: soft-light;
-  }
   .mg-page-bg::before {
     content: '';
     position: absolute;
