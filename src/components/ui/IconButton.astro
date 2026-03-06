@@ -31,7 +31,8 @@ const sizes: Record<IconButtonSize, string> = {
 
 const variants: Record<IconButtonVariant, string> = {
   secondary: 'border border-border bg-surface text-fg hover:bg-surface-solid/70',
-  ghost: 'bg-transparent text-fg/85 hover:bg-[var(--accent-soft)] hover:text-fg',
+  ghost:
+    'border border-border/85 bg-surface text-fg/95 hover:border-accent/40 hover:bg-[color:color-mix(in_oklab,var(--surface-solid)_72%,var(--accent)_28%)] hover:text-fg',
   plain: 'bg-transparent text-fg hover:bg-transparent hover:text-accent',
 };
 
