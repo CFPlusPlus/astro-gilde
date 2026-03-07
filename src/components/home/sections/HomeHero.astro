@@ -28,8 +28,10 @@ const HERO_BACKGROUND_SIZES = '100vw';
   Der Hero-Hintergrund wird nach oben verlängert, damit er unter der Navbar sauber abschließt,
   ohne das Layout nach oben zu ziehen oder JavaScript zu benötigen.
 -->
-<section class="home-hero relative pt-28 pb-28 sm:pt-32 sm:pb-32 lg:pt-36 lg:pb-36">
-  <div class="home-hero-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
+<section
+  class="home-hero relative pt-24 pb-24 sm:pt-36 sm:pb-36 lg:pt-44 lg:pb-44 xl:pt-48 xl:pb-48"
+>
+  <div class="home-hero-bg mg-mesh-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
     <Image
       src={headerBackgroundImage}
       alt=""
@@ -40,13 +42,13 @@ const HERO_BACKGROUND_SIZES = '100vw';
       loading="eager"
       fetchpriority="high"
       decoding="async"
-      class="h-full w-full [mask-image:radial-gradient(80%_65%_at_50%_22%,black_0%,black_55%,transparent_100%)] object-cover object-top opacity-25"
+      class="h-full w-full [mask-image:radial-gradient(100%_86%_at_50%_28%,black_0%,black_66%,transparent_100%)] object-cover object-[center_18%] opacity-20"
     />
-    <div class="from-bg/10 via-bg/70 to-bg absolute inset-0 bg-gradient-to-b"></div>
+    <div class="from-bg/3 via-bg/44 to-bg absolute inset-0 bg-gradient-to-b via-72%"></div>
   </div>
 
   <div class="mg-container relative z-10">
-    <div class="grid items-center gap-16 lg:grid-cols-[1.12fr_0.88fr] lg:gap-24">
+    <div class="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.12fr_0.88fr] lg:gap-24">
       <div>
         <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl" data-motion="reveal">
           Minecraft Gilde
@@ -61,17 +63,32 @@ const HERO_BACKGROUND_SIZES = '100vw';
         </p>
 
         <div
-          class="mt-12 flex flex-wrap items-center gap-3"
+          class="mt-10 grid max-w-md grid-cols-2 items-center gap-3 sm:mt-12 sm:flex sm:max-w-none sm:flex-wrap"
           data-motion="reveal"
           data-motion-delay="140"
         >
-          <Button variant="primary" class="gap-2" data-copy-ip>
+          <Button
+            variant="primary"
+            class="col-span-2 w-full justify-center gap-2 sm:w-auto"
+            data-copy-ip
+          >
             <Download size={18} /> Jetzt Spielen
           </Button>
-          <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
+          <Button
+            href={DISCORD_URL}
+            external
+            variant="secondary"
+            class="w-full justify-center gap-2 sm:w-auto"
+          >
             Discord <ArrowRight size={18} />
           </Button>
-          <Button href="/tutorial" variant="secondary" class="gap-2">Tutorial</Button>
+          <Button
+            href="/tutorial"
+            variant="secondary"
+            class="w-full justify-center gap-2 sm:w-auto"
+          >
+            Tutorial
+          </Button>
         </div>
 
         <p class="text-muted mt-8 text-sm" data-motion="reveal" data-motion-delay="200">
@@ -80,7 +97,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
         </p>
 
         <div
-          class="mt-12 flex flex-wrap items-center gap-2"
+          class="mt-10 flex flex-wrap items-center gap-2 sm:mt-12"
           data-motion="reveal"
           data-motion-delay="260"
         >
@@ -92,7 +109,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
       </div>
 
       <div
-        class="relative"
+        class="relative mt-2 sm:mt-4 lg:mt-0"
         data-motion="reveal"
         data-motion-direction="right"
         data-motion-delay="140"
@@ -103,7 +120,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
           height={logoBigImage.height}
           alt="Minecraft Gilde Logo"
           decoding="async"
-          class="mx-auto w-[min(420px,85%)] opacity-95 drop-shadow-[0_24px_60px_rgba(0,0,0,0.32)] select-none sm:w-[min(460px,90%)] lg:w-[min(520px,95%)]"
+          class="mx-auto w-[min(360px,78vw)] opacity-95 drop-shadow-[0_24px_60px_rgba(0,0,0,0.32)] select-none sm:w-[min(440px,88%)] lg:w-[min(520px,95%)]"
         />
       </div>
     </div>
@@ -112,7 +129,10 @@ const HERO_BACKGROUND_SIZES = '100vw';
 
 <!-- Join-Bar (aus dem Hero ausgelagert, damit der Hero luftiger und weniger überladen wirkt) -->
 <HomeSection size="tight" containerClass="pt-0">
-  <div class="mg-surface-2 relative overflow-hidden px-4 py-6 sm:px-6 sm:py-7" data-motion="reveal">
+  <div
+    class="mg-card mg-card--soft relative overflow-hidden px-4 py-6 sm:px-6 sm:py-7"
+    data-motion="reveal"
+  >
     <div
       class="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--accent)]/55 to-transparent"
       aria-hidden="true"
@@ -129,7 +149,7 @@ const HERO_BACKGROUND_SIZES = '100vw';
           <div class="mt-1.5 flex items-center gap-2">
             <button
               type="button"
-              class="focus-visible:ring-offset-bg border-border/70 bg-surface-solid/24 text-fg hover:border-accent/60 inline-flex h-10 min-w-[13rem] items-center justify-center rounded-lg border px-3.5 font-mono text-[0.95rem] font-semibold tracking-[0.01em] transition-colors hover:bg-[color:var(--accent-soft)] focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 sm:justify-start"
+              class="mg-copy-ip-btn h-10 min-w-[13rem] px-3.5 font-mono text-[0.95rem] font-semibold tracking-[0.01em] sm:justify-start"
               aria-label="Server-IP kopieren"
               data-copy-ip-inline
             >

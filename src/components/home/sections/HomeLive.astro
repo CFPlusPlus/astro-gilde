@@ -20,7 +20,7 @@ const STATUS_URL = minecraftGilde.statusUrl;
 
   <div class="mt-10">
     <article
-      class="mg-surface-2 grid gap-6 p-5 sm:p-6 lg:grid-cols-12 lg:gap-0"
+      class="mg-card mg-card--soft grid gap-6 p-5 sm:p-6 lg:grid-cols-12 lg:gap-0"
       data-motion="reveal"
       data-motion-delay="100"
     >
@@ -44,7 +44,7 @@ const STATUS_URL = minecraftGilde.statusUrl;
           <h3 class="text-base font-semibold">Status</h3>
           <div class="mt-3 grid gap-3">
             <div
-              class="mg-live-tile border-border/70 border-b pb-3"
+              class="mg-card mg-card--soft mg-live-tile p-3"
               data-live-tile="mc-online"
               data-live-state="loading"
             >
@@ -57,7 +57,7 @@ const STATUS_URL = minecraftGilde.statusUrl;
               <LiveState tileKey="mc-online" statusUrl={STATUS_URL} />
             </div>
             <div
-              class="mg-live-tile border-border/70 border-b pb-3 lg:border-b-0 lg:pb-0"
+              class="mg-card mg-card--soft mg-live-tile p-3"
               data-live-tile="discord-online"
               data-live-state="loading"
             >

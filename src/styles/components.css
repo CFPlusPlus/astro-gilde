@@ -24,6 +24,13 @@
       );
   }
 
+  .mg-mesh-bg {
+    background:
+      radial-gradient(700px at 20% 15%, var(--mesh-glow-a), transparent 60%),
+      radial-gradient(900px at 85% 25%, var(--mesh-glow-b), transparent 55%),
+      radial-gradient(800px at 50% 100%, var(--mesh-glow-c), transparent 55%), var(--bg);
+  }
+
   .mg-page-bg::before {
     content: '';
     position: absolute;
@@ -503,6 +510,24 @@
       0 18px 34px -28px var(--glass-shadow-color);
   }
 
+  .mg-card--soft {
+    background: color-mix(in oklab, var(--surface-solid) 22%, transparent);
+    border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  .mg-card--soft.mg-card--hover {
+    transition:
+      transform 180ms ease,
+      border-color 180ms ease;
+  }
+
+  .mg-card--soft.mg-card--hover:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklab, var(--border) 86%, transparent);
+  }
+
   /*
     App-Layout-Helfer fuer Statistik/Sheets:
     - flachere, einheitliche Flaechen statt mehrfach verschachtelter "Cards"
@@ -636,29 +661,44 @@
   }
 
   .mg-btn--primary {
-    @apply border-accent bg-accent border text-black;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: color-mix(in oklab, black 90%, var(--accent) 10%);
+    box-shadow: none;
+    transition: none;
   }
 
   .mg-btn--primary:hover {
-    background: var(--accent-dark);
-    border-color: var(--accent-dark);
+    border-color: var(--accent);
+    background: var(--accent);
+    color: color-mix(in oklab, black 90%, var(--accent) 10%);
+    box-shadow: none;
+    filter: none;
   }
 
   .mg-btn--secondary {
-    @apply border-accent/60 text-fg border bg-transparent;
+    border: 1px solid color-mix(in oklab, var(--accent) 54%, var(--border) 46%);
+    background: color-mix(in oklab, var(--surface-solid) 62%, var(--bg) 38%);
+    color: var(--fg);
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 14%, transparent),
+      0 10px 22px -20px color-mix(in oklab, black 80%, transparent);
   }
 
   .mg-btn--secondary:hover {
-    background: var(--accent-soft);
-    border-color: color-mix(in oklab, var(--accent) 100%, transparent);
+    background: color-mix(in oklab, var(--surface-solid) 82%, var(--accent) 18%);
+    border-color: color-mix(in oklab, var(--accent) 68%, var(--border) 32%);
   }
 
   .mg-btn--ghost {
-    @apply text-fg/85 bg-transparent;
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, var(--border) 60%);
+    background: color-mix(in oklab, var(--surface-solid) 52%, var(--bg) 48%);
+    color: color-mix(in oklab, var(--fg) 92%, transparent);
   }
 
   .mg-btn--ghost:hover {
-    background: var(--accent-soft);
+    background: color-mix(in oklab, var(--surface-solid) 62%, var(--bg) 38%);
+    border-color: color-mix(in oklab, var(--accent) 56%, var(--border) 44%);
     color: var(--fg);
   }
 
