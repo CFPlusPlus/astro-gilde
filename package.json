@@ -27,10 +27,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@lucide/astro": "^0.575.0",
+    "@lucide/astro": "^0.577.0",
     "astro": "^5.16.9",
     "isomorphic-dompurify": "^3.0.0",
-    "lucide-react": "^0.575.0",
+    "lucide-react": "^0.577.0",
     "marked": "^17.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
