@@ -209,8 +209,6 @@
   width: 0.65rem;
   height: 0.65rem;
   border-radius: 999px;
-  background: var(--success);
-  box-shadow: 0 0 0 0.32rem color-mix(in oklab, var(--success) 16%, transparent);
 }
 
 [data-home] .home-live-rail {

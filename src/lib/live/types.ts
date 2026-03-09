@@ -1,6 +1,14 @@
 export type LiveDataStatus = 'loading' | 'ok' | 'empty' | 'error' | 'stale';
 
-export type LiveDataErrorKind = 'network' | 'timeout' | 'rate_limit' | 'invalid' | 'unknown';
+export type LiveDataErrorKind =
+  | 'network'
+  | 'timeout'
+  | 'rate_limit'
+  | 'invalid'
+  | 'offline'
+  | 'unknown';
+
+export type LiveIndicatorState = 'ok' | 'loading' | 'error';
 
 export interface LiveDataError {
   kind: LiveDataErrorKind;
@@ -61,5 +69,17 @@ export const resolveLiveDataStatus = (opts: {
   if ((loading || hasError) && hasData) return 'stale';
   if (!hasData) return loaded ? 'empty' : 'loading';
 
+  return 'ok';
+};
+
+export const isLiveOfflineError = (error?: LiveDataError | null): boolean =>
+  error?.kind === 'offline';
+
+export const resolveLiveIndicatorState = <T>(
+  state: Pick<LiveDataState<T>, 'status' | 'error'>,
+): LiveIndicatorState => {
+  if (isLiveOfflineError(state.error)) return 'error';
+  if (state.status === 'error') return 'error';
+  if (state.status === 'loading' || state.status === 'stale') return 'loading';
   return 'ok';
 };

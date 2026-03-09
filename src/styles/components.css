@@ -1448,9 +1448,22 @@
   }
 
   .mg-status-dot {
+    --mg-status-pulse-spread: 6px;
     background: var(--success);
     box-shadow: 0 0 0 0 color-mix(in oklab, var(--success) 44%, transparent);
     animation: mg-status-pulse 2.8s ease-out infinite;
+  }
+
+  .mg-status-dot[data-status-state='loading'] {
+    background: var(--warning);
+    box-shadow: 0 0 0 0.32rem color-mix(in oklab, var(--warning) 18%, transparent);
+    animation: none;
+  }
+
+  .mg-status-dot[data-status-state='error'] {
+    background: #f87171;
+    box-shadow: 0 0 0 0.32rem rgb(248 113 113 / 0.18);
+    animation: none;
   }
 
   @keyframes mg-status-pulse {
@@ -1460,7 +1473,8 @@
     }
     55% {
       transform: scale(1);
-      box-shadow: 0 0 0 10px color-mix(in oklab, var(--success) 0%, transparent);
+      box-shadow: 0 0 0 var(--mg-status-pulse-spread)
+        color-mix(in oklab, var(--success) 0%, transparent);
     }
     100% {
       transform: scale(0.98);
