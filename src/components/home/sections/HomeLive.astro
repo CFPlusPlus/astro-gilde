@@ -1,8 +1,9 @@
 ---
+import Button from '../../ui/Button.astro';
 import HomeSection from '../HomeSection.astro';
 import { minecraftGilde } from '../../../config/minecraftGilde';
 import LiveState from '../../live/LiveState.astro';
-import { Map, Users } from '@lucide/astro';
+import { Lightbulb, Map, Users } from '@lucide/astro';
 
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
@@ -20,74 +21,115 @@ const STATUS_URL = minecraftGilde.statusUrl;
 
   <div class="mt-10">
     <article
-      class="mg-card mg-card--soft grid gap-6 p-5 sm:p-6 lg:grid-cols-12 lg:gap-0"
+      class="home-live-shell px-5 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8"
       data-motion="reveal"
       data-motion-delay="100"
     >
-      <section class="lg:col-span-7 lg:pr-8">
-        <div class="flex items-center justify-between gap-3">
-          <h3 class="text-base font-semibold">Spieler online</h3>
-          <span class="text-muted text-xs">Live</span>
-        </div>
-        <div class="mt-4 min-h-14" id="player-list">
-          <p class="text-muted text-sm">Lade Spieler...</p>
-        </div>
-        <p class="text-muted mt-4 text-xs">
-          Tipp: Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
-        </p>
-      </section>
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(19rem,0.85fr)] lg:gap-10">
+        <section class="min-w-0">
+          <div class="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-muted text-[0.68rem] font-semibold tracking-[0.18em] uppercase">
+                Jetzt online
+              </p>
+              <h3 class="mt-3 text-xl font-semibold tracking-tight sm:text-2xl">
+                Wer ist gerade online?
+              </h3>
+            </div>
+            <div class="home-live-player-meta">
+              <span class="home-live-player-count" data-mc-online>0</span>
+              <span class="home-live-player-label">Spieler</span>
+            </div>
+          </div>
 
-      <aside
-        class="border-border/70 mt-1 border-t pt-5 lg:col-span-5 lg:mt-0 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8"
-      >
-        <section>
-          <h3 class="text-base font-semibold">Status</h3>
-          <div class="mt-3 grid gap-3">
-            <div
-              class="mg-card mg-card--soft mg-live-tile p-3"
-              data-live-tile="mc-online"
-              data-live-state="loading"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <span class="inline-flex items-center gap-2 text-sm"
-                  ><Users size={16} /> Minecraft</span
-                >
-                <span class="text-sm font-semibold tabular-nums" data-mc-online>0</span>
-              </div>
-              <LiveState tileKey="mc-online" statusUrl={STATUS_URL} />
+          <div class="home-live-player-stage mt-6">
+            <div class="min-h-14" id="player-list">
+              <p class="text-muted text-sm">Lade Spieler...</p>
             </div>
-            <div
-              class="mg-card mg-card--soft mg-live-tile p-3"
-              data-live-tile="discord-online"
-              data-live-state="loading"
-            >
-              <div class="flex items-center justify-between gap-3">
-                <span class="inline-flex items-center gap-2 text-sm"
-                  ><Users size={16} /> Discord</span
-                >
-                <span class="text-sm font-semibold tabular-nums" data-discord-online>0</span>
-              </div>
-              <LiveState tileKey="discord-online" statusUrl={STATUS_URL} />
-            </div>
+          </div>
+
+          <div class="text-muted mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
+            <span class="inline-flex items-center gap-2">
+              <span class="home-live-ping mg-status-dot" aria-hidden="true"></span>
+              Live aus dem Serverstatus geladen
+            </span>
+            <span class="inline-flex items-center gap-2">
+              <Lightbulb size={14} aria-hidden="true" />
+              Klicke auf einen Namen, um die Spielerstatistik zu öffnen.
+            </span>
           </div>
         </section>
 
-        <section class="border-border/70 mt-5 border-t pt-5">
-          <h3 class="text-base font-semibold">Hauptwelt & Karte</h3>
-          <p class="text-muted mt-2 text-sm">
-            Hauptwelt aktiv: <span class="text-fg font-semibold" id="world-age">-</span>
-          </p>
-          <p class="text-muted mt-1 text-xs">(seit Feb 2024)</p>
-          <a
-            href={DYNMAP_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="mg-link mt-4 inline-flex items-center gap-2 text-sm font-semibold"
-          >
-            <Map size={16} /> Dynmap öffnen
-          </a>
-        </section>
-      </aside>
+        <aside class="home-live-rail">
+          <div>
+            <p class="text-muted text-[0.68rem] font-semibold tracking-[0.18em] uppercase">
+              Serverpulse
+            </p>
+            <h3 class="mt-3 text-xl font-semibold tracking-tight">Status & Welt</h3>
+          </div>
+
+          <section class="mt-5">
+            <div class="home-live-status-row" data-live-tile="mc-online" data-live-state="loading">
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="home-live-status-icon" aria-hidden="true">
+                  <Users size={16} />
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold">Minecraft</span>
+                    <span class="home-live-badge">Live</span>
+                  </div>
+                  <LiveState tileKey="mc-online" statusUrl={STATUS_URL} class="mt-2" />
+                </div>
+              </div>
+              <span class="home-live-status-value" data-mc-online>0</span>
+            </div>
+
+            <div
+              class="home-live-status-row"
+              data-live-tile="discord-online"
+              data-live-state="loading"
+            >
+              <div class="flex min-w-0 items-start gap-3">
+                <span class="home-live-status-icon" aria-hidden="true">
+                  <Users size={16} />
+                </span>
+                <div class="min-w-0">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-semibold">Discord</span>
+                    <span class="home-live-badge">Community</span>
+                  </div>
+                  <LiveState tileKey="discord-online" statusUrl={STATUS_URL} class="mt-2" />
+                </div>
+              </div>
+              <span class="home-live-status-value" data-discord-online>0</span>
+            </div>
+          </section>
+
+          <section class="border-border/70 mt-6 border-t pt-6">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p class="text-muted text-[0.68rem] font-semibold tracking-[0.18em] uppercase">
+                  Hauptwelt
+                </p>
+                <p class="mt-2 text-base font-semibold">Aktiv seit Februar 2024</p>
+                <p class="text-muted mt-2 text-sm">
+                  Laufzeit: <span class="text-fg font-semibold" id="world-age">-</span>
+                </p>
+              </div>
+              <Button
+                href={DYNMAP_URL}
+                external
+                variant="secondary"
+                size="sm"
+                class="w-full justify-center gap-2 sm:w-auto"
+              >
+                <Map size={16} /> Dynmap öffnen
+              </Button>
+            </div>
+          </section>
+        </aside>
+      </div>
     </article>
   </div>
 </HomeSection>

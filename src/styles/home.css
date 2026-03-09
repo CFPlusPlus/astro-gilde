@@ -38,3 +38,252 @@
 [data-home] [data-section] {
   scroll-margin-top: calc(7.25rem + env(safe-area-inset-top));
 }
+
+[data-home] .home-live-shell {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--border) 82%, transparent);
+  border-radius: calc(var(--radius) + 14px);
+  background:
+    radial-gradient(
+      72% 120% at 0% 0%,
+      color-mix(in oklab, var(--accent) 14%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      64% 100% at 100% 18%,
+      color-mix(in oklab, var(--ambient-2) 20%, transparent) 0%,
+      transparent 66%
+    ),
+    linear-gradient(
+      140deg,
+      color-mix(in oklab, var(--surface-solid) 26%, transparent) 0%,
+      color-mix(in oklab, var(--surface-solid) 12%, transparent) 100%
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, var(--glass-highlight) 52%, transparent),
+    0 26px 40px -34px var(--glass-shadow-color);
+}
+
+[data-home] .home-live-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, var(--accent) 52%, transparent) 20%,
+    color-mix(in oklab, var(--accent2) 42%, transparent) 54%,
+    transparent 100%
+  );
+  opacity: 0.95;
+}
+
+[data-home] .home-live-player-count {
+  font-size: clamp(2.5rem, 6vw, 4.25rem);
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-home] .home-live-player-meta {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+[data-home] .home-live-player-label {
+  padding-bottom: 0.42rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+[data-home] .home-live-player-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 15rem;
+  padding: 1.25rem;
+  border: 1px solid color-mix(in oklab, var(--border) 72%, transparent);
+  border-radius: calc(var(--radius) + 10px);
+  background:
+    radial-gradient(
+      90% 110% at 16% 12%,
+      color-mix(in oklab, var(--accent) 12%, transparent) 0%,
+      transparent 52%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--surface-solid) 20%, transparent) 0%,
+      color-mix(in oklab, var(--surface-solid) 8%, transparent) 100%
+    );
+}
+
+[data-home] .home-live-player-stage::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, color-mix(in oklab, var(--fg) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--fg) 8%, transparent) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(85% 80% at 20% 30%, black 0%, transparent 100%);
+  opacity: 0.3;
+}
+
+[data-home] .home-live-player-stage::after {
+  content: '';
+  position: absolute;
+  right: -12%;
+  bottom: -32%;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklab, var(--ambient-2) 18%, transparent) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+[data-home] .home-live-player-stage #player-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  min-height: 12.5rem;
+}
+
+[data-home] .home-live-player-stage #player-list > * {
+  width: 100%;
+}
+
+[data-home] .home-live-player-stage #player-list > p {
+  text-align: center;
+}
+
+[data-home] .home-live-player-stage #player-list > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+[data-home] .home-live-player-stage #player-list > div > :first-child {
+  flex-basis: 100%;
+  margin-right: 0;
+  margin-bottom: 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+[data-home] .home-live-player-stage .mg-pill {
+  min-height: 3rem;
+  padding-inline: 0.95rem;
+  border-color: color-mix(in oklab, var(--border) 84%, transparent);
+  background: color-mix(in oklab, var(--surface-solid) 26%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+[data-home] .home-live-player-stage .mg-pill:hover {
+  background: color-mix(in oklab, var(--surface-solid) 34%, transparent);
+  border-color: color-mix(in oklab, var(--accent) 34%, var(--border) 66%);
+}
+
+[data-home] .home-live-player-stage .mg-pill img {
+  width: 1.9rem;
+  height: 1.9rem;
+}
+
+[data-home] .home-live-ping {
+  position: relative;
+  display: inline-flex;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 999px;
+  background: var(--success);
+  box-shadow: 0 0 0 0.32rem color-mix(in oklab, var(--success) 16%, transparent);
+}
+
+[data-home] .home-live-rail {
+  position: relative;
+}
+
+[data-home] .home-live-status-row {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 72%, transparent);
+}
+
+[data-home] .home-live-status-row:first-child {
+  padding-top: 0;
+}
+
+[data-home] .home-live-status-row:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+[data-home] .home-live-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--border) 70%);
+  border-radius: 0.8rem;
+  background: color-mix(in oklab, var(--accent) 14%, transparent);
+  color: color-mix(in oklab, var(--accent2) 76%, var(--fg) 24%);
+  flex: none;
+}
+
+[data-home] .home-live-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.45rem;
+  padding: 0 0.5rem;
+  border: 1px solid color-mix(in oklab, var(--accent) 30%, var(--border) 70%);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  color: color-mix(in oklab, var(--fg) 84%, var(--accent) 16%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+[data-home] .home-live-status-value {
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 640px) {
+  [data-home] .home-live-player-stage {
+    min-height: 16.5rem;
+    padding: 1.5rem;
+  }
+
+  [data-home] .home-live-status-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-home] .home-live-rail {
+    padding-left: 2.5rem;
+    border-left: 1px solid color-mix(in oklab, var(--border) 74%, transparent);
+  }
+}
