@@ -117,11 +117,17 @@ const MC_VERSION = minecraftGilde.mcVersion;
 
         <article class="mg-card mg-card--soft p-4 sm:p-5">
           <div class="flex items-center gap-3">
-            <span class="mg-status-dot h-3 w-3 rounded-full"></span>
+            <span
+              class="mg-status-dot h-3 w-3 rounded-full"
+              data-live-indicator="mc-online"
+              data-status-state="loading"></span>
             <h3 class="text-base font-semibold sm:text-xl">Serverstatus</h3>
           </div>
           <p class="text-muted mt-3 text-sm sm:text-base">
             Aktuell online: <span class="text-fg font-semibold" data-mc-online>0</span> Spieler
+          </p>
+          <p class="text-muted mt-2 text-xs sm:text-sm" data-live-note-for="mc-online">
+            Lade Live-Daten ...
           </p>
         </article>
       </div>

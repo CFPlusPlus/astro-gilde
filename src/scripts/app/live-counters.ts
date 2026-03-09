@@ -1,10 +1,12 @@
 import type { Qsa } from './dom';
 import {
   LIVE_WIDGET_THRESHOLDS,
+  isLiveOfflineError,
   type LiveDataError,
   type LiveDataState,
   type LiveDataStatus,
   type LiveDataThresholds,
+  resolveLiveIndicatorState,
 } from '../../lib/live/types';
 import { fetchLiveJson, type FetchJsonError } from '../../lib/live/fetchJson';
 import { getLiveResource } from '../../lib/live/cache';
@@ -28,6 +30,7 @@ const LIVE_RATE_LIMIT_FALLBACK_MS = 30_000;
 const LIVE_MANUAL_REVALIDATE_DEBOUNCE_MS = 2_000;
 const LIVE_MIN_REVALIDATE_INTERVAL_MS = 15_000;
 const LIVE_DEBUG_QUERY_PARAM = 'debugLive';
+const LIVE_NOTE_SEPARATOR = ' - ';
 
 type LiveCounterKey = 'discord-online' | 'discord-members' | 'mc-online';
 type LiveTileKey = 'discord-online' | 'mc-online';
@@ -55,6 +58,7 @@ interface LiveTileRefs {
   notes: HTMLElement[];
   actions: HTMLElement[];
   retries: HTMLButtonElement[];
+  indicators: HTMLElement[];
 }
 
 interface CounterDefinition {
@@ -155,10 +159,24 @@ export const initLiveCounters = ({
     const timestamp = resolveLastUpdatedTimestamp(state);
     const lastUpdatedLabel = timestamp != null ? formatLastUpdatedLabel(timestamp, now) : null;
     const tooltip = timestamp != null ? formatLastUpdatedAbsolute(timestamp) : undefined;
+    const hasOfflineError = isLiveOfflineError(state.error);
 
     if (state.status === 'loading') {
       return {
         text: LIVE_COPY_DE.loading,
+      };
+    }
+
+    if (hasOfflineError) {
+      if (lastUpdatedLabel) {
+        return {
+          text: `${LIVE_COPY_DE.error_offline}${LIVE_NOTE_SEPARATOR}${lastUpdatedLabel}`,
+          tooltip,
+        };
+      }
+
+      return {
+        text: LIVE_COPY_DE.error_offline,
       };
     }
 
@@ -171,19 +189,19 @@ export const initLiveCounters = ({
     if (state.status === 'stale') {
       if (lastUpdatedLabel) {
         return {
-          text: `${lastUpdatedLabel} · ${LIVE_COPY_DE.stale_hint}`,
+          text: `${lastUpdatedLabel}${LIVE_NOTE_SEPARATOR}${LIVE_COPY_DE.stale_hint}`,
           tooltip,
         };
       }
       return {
-        text: `${LIVE_COPY_DE.last_updated_prefix} · ${LIVE_COPY_DE.stale_hint}`,
+        text: `${LIVE_COPY_DE.last_updated_prefix}${LIVE_NOTE_SEPARATOR}${LIVE_COPY_DE.stale_hint}`,
       };
     }
 
     if (state.status === 'empty') {
       if (lastUpdatedLabel) {
         return {
-          text: `${lastUpdatedLabel} · ${LIVE_COPY_DE.live_nobody_online}`,
+          text: `${lastUpdatedLabel}${LIVE_NOTE_SEPARATOR}${LIVE_COPY_DE.live_nobody_online}`,
           tooltip,
         };
       }
@@ -327,20 +345,23 @@ export const initLiveCounters = ({
       };
     }
 
+    if (result.data.online === false) {
+      return {
+        status: 'error',
+        updatedAt: result.fetchedAt,
+        fetchedAt: result.fetchedAt,
+        error: {
+          kind: 'offline',
+          message: LIVE_COPY_DE.error_offline,
+        },
+      };
+    }
+
     const count = toCounterNumber(result.data.players?.online);
     if (count != null) {
       return {
         status: count > 0 ? 'ok' : 'empty',
         data: String(count),
-        updatedAt: result.fetchedAt,
-        fetchedAt: result.fetchedAt,
-      };
-    }
-
-    if (result.data.online === false) {
-      return {
-        status: 'empty',
-        data: '0',
         updatedAt: result.fetchedAt,
         fetchedAt: result.fetchedAt,
       };
@@ -364,12 +385,14 @@ export const initLiveCounters = ({
       notes: qsa<HTMLElement>('[data-live-note-for="mc-online"]'),
       actions: qsa<HTMLElement>('[data-live-actions-for="mc-online"]'),
       retries: qsa<HTMLButtonElement>('[data-live-retry="mc-online"]'),
+      indicators: qsa<HTMLElement>('[data-live-indicator="mc-online"]'),
     },
     'discord-online': {
       roots: qsa<HTMLElement>('[data-live-tile="discord-online"]'),
       notes: qsa<HTMLElement>('[data-live-note-for="discord-online"]'),
       actions: qsa<HTMLElement>('[data-live-actions-for="discord-online"]'),
       retries: qsa<HTMLButtonElement>('[data-live-retry="discord-online"]'),
+      indicators: qsa<HTMLElement>('[data-live-indicator="discord-online"]'),
     },
   };
   const liveTileStateByKey = new Map<LiveTileKey, LiveDataState<string>>();
@@ -602,6 +625,10 @@ export const initLiveCounters = ({
       root.dataset.liveState = state.status;
     });
 
+    refs.indicators.forEach((indicator) => {
+      indicator.dataset.statusState = resolveLiveIndicatorState(state);
+    });
+
     refs.notes.forEach((noteEl) => {
       noteEl.classList.add('mg-live-note', 'mg-live-state-note');
       noteEl.dataset.liveState = state.status;
@@ -644,7 +671,7 @@ export const initLiveCounters = ({
       return;
     }
 
-    if (state.status === 'error') {
+    if (state.status === 'error' || isLiveOfflineError(state.error)) {
       setTargetsState(targets, 'error', errorValue);
       if (isLiveTileKey(key)) setLiveTileState(key, state, debugSource);
       return;

@@ -50,8 +50,12 @@ const STATUS_URL = minecraftGilde.statusUrl;
 
           <div class="text-muted mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs">
             <span class="inline-flex items-center gap-2">
-              <span class="home-live-ping mg-status-dot" aria-hidden="true"></span>
-              Live aus dem Serverstatus geladen
+              <span
+                class="home-live-ping mg-status-dot"
+                aria-hidden="true"
+                data-live-indicator="mc-online"
+                data-status-state="loading"></span>
+              Live-Daten
             </span>
             <span class="inline-flex items-center gap-2">
               <Lightbulb size={14} aria-hidden="true" />

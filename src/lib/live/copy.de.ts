@@ -2,6 +2,7 @@ import type { LiveDataErrorKind, LiveDataStatus } from './types';
 
 export const LIVE_COPY_DE = {
   loading: 'Lade Live-Daten ...',
+  error_offline: 'Server ist aktuell offline.',
   error_generic: 'Live-Daten sind aktuell nicht erreichbar. Bitte versuche es später erneut.',
   error_network: 'Netzwerkfehler beim Laden der Live-Daten.',
   error_timeout: 'Zeitlimit der Live-Abfrage erreicht.',
@@ -61,6 +62,7 @@ export function getLiveMessage({
   if (status !== 'error') return null;
 
   if (errorKind === 'rate_limit') return LIVE_COPY_DE.rate_limit;
+  if (errorKind === 'offline') return LIVE_COPY_DE.error_offline;
   if (errorKind === 'network') return LIVE_COPY_DE.error_network;
   if (errorKind === 'timeout') return LIVE_COPY_DE.error_timeout;
   return LIVE_COPY_DE.error_generic;
