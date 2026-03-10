@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 type StatsLayoutProps = {
   topBar: ReactNode;
@@ -70,12 +70,17 @@ export function StatsLayout({
     };
   }, [stickyTopBar]);
 
-  const stickyContentStyle = {
-    '--stats-sticky-content-top': `${stickyContentTopPx}px`,
-  } as CSSProperties;
+  const stickyContentTopHundreds = Math.trunc(stickyContentTopPx / 100);
+  const stickyContentTopTens = Math.trunc((stickyContentTopPx % 100) / 10);
+  const stickyContentTopOnes = stickyContentTopPx % 10;
 
   return (
-    <div className="pb-12" style={stickyContentStyle}>
+    <div
+      className="mg-stats-layout pb-12"
+      data-stats-sticky-top-hundreds={stickyContentTopHundreds}
+      data-stats-sticky-top-tens={stickyContentTopTens}
+      data-stats-sticky-top-ones={stickyContentTopOnes}
+    >
       <section
         ref={stickyTopBarRef}
         className={joinClassNames(
