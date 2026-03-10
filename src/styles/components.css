@@ -1500,6 +1500,104 @@
     backdrop-filter: saturate(150%) blur(var(--glass-nav-blur));
   }
 
+  .mg-stats-layout {
+    --stats-sticky-content-top-hundreds: 0px;
+    --stats-sticky-content-top-tens: 0px;
+    --stats-sticky-content-top-ones: 0px;
+    --stats-sticky-content-top: calc(
+      var(--stats-sticky-content-top-hundreds) + var(--stats-sticky-content-top-tens) +
+        var(--stats-sticky-content-top-ones)
+    );
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-hundreds='1'] {
+    --stats-sticky-content-top-hundreds: 100px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-hundreds='2'] {
+    --stats-sticky-content-top-hundreds: 200px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-hundreds='3'] {
+    --stats-sticky-content-top-hundreds: 300px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-hundreds='4'] {
+    --stats-sticky-content-top-hundreds: 400px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='1'] {
+    --stats-sticky-content-top-tens: 10px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='2'] {
+    --stats-sticky-content-top-tens: 20px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='3'] {
+    --stats-sticky-content-top-tens: 30px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='4'] {
+    --stats-sticky-content-top-tens: 40px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='5'] {
+    --stats-sticky-content-top-tens: 50px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='6'] {
+    --stats-sticky-content-top-tens: 60px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='7'] {
+    --stats-sticky-content-top-tens: 70px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='8'] {
+    --stats-sticky-content-top-tens: 80px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-tens='9'] {
+    --stats-sticky-content-top-tens: 90px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='1'] {
+    --stats-sticky-content-top-ones: 1px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='2'] {
+    --stats-sticky-content-top-ones: 2px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='3'] {
+    --stats-sticky-content-top-ones: 3px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='4'] {
+    --stats-sticky-content-top-ones: 4px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='5'] {
+    --stats-sticky-content-top-ones: 5px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='6'] {
+    --stats-sticky-content-top-ones: 6px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='7'] {
+    --stats-sticky-content-top-ones: 7px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='8'] {
+    --stats-sticky-content-top-ones: 8px;
+  }
+
+  .mg-stats-layout[data-stats-sticky-top-ones='9'] {
+    --stats-sticky-content-top-ones: 9px;
+  }
+
   @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .mg-table-sticky-head {
       background: var(--glass-nav-bg-fallback);
