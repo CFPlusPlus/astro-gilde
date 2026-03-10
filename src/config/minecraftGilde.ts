@@ -13,8 +13,7 @@ const externalLinks = {
 
 const communityListings = {
   minecraftServerEu: {
-    profileUrl:
-      'https://minecraft-server.eu/server/index/2321D/Minecraft-Gildede-Vanilla-Survival-und-Freebuild-121x',
+    profileUrl: 'https://minecraft-server.eu/server/index/2321D/',
     voteUrl: 'https://minecraft-server.eu/vote/index/2321D',
   },
   minecraftServerlistNet: {
