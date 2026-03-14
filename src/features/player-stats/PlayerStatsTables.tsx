@@ -66,10 +66,12 @@ export function PlayerStatsTables({
     ].join(' ');
   const sortCellClass = (isActive: boolean, baseClass = '') =>
     [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
-  const tableHeadClassLg =
-    'mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top))] lg:z-10';
+  const tableHeadClass = 'mg-table-sticky-head text-muted text-xs';
+  const tableHeadClassLg = `${tableHeadClass} lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top))] lg:z-10`;
   const tableWrapClassLg =
     'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible';
+  const itemsTableWrapClass =
+    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)]';
   const tableBodyClass =
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
@@ -282,10 +284,10 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div ref={itemsTableWrapRef} className={tableWrapClassLg}>
-                <table className="w-full min-w-[1080px] text-sm">
+              <div ref={itemsTableWrapRef} className={itemsTableWrapClass}>
+                <table className="w-full min-w-[940px] text-sm xl:min-w-[1080px]">
                   <caption className="sr-only">Tabelle mit Gegenstandsstatistiken.</caption>
-                  <thead className={tableHeadClassLg}>
+                  <thead className={tableHeadClass}>
                     <tr>
                       <th
                         id="player-items-col-label"
