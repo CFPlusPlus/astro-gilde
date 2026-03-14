@@ -35,6 +35,9 @@ function sortHint(currentKey: string, key: string, dir: SortDir): string {
   return `Aktuell ${sortDirLabel(currentDir)}. Aktiviert ${sortDirLabel(nextDir)}.`;
 }
 
+const FLUSH_HEAD_CLIP_PATH =
+  'inset(0 0 0 0 round calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0)';
+
 export function PlayerStatsTables({
   activeTab,
   filtered,
@@ -68,10 +71,11 @@ export function PlayerStatsTables({
     [baseClass, isActive ? 'bg-accent/[0.06] text-fg font-medium' : ''].join(' ').trim();
   const tableHeadClass = 'mg-table-sticky-head text-muted text-xs';
   const tableHeadClassLg = `${tableHeadClass} lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top))] lg:z-10`;
+  const itemsTableHeadClassXl = `${tableHeadClass} xl:sticky xl:top-[calc(4rem+env(safe-area-inset-top))] xl:z-10`;
   const tableWrapClassLg =
     'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible';
-  const itemsTableWrapClass =
-    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)]';
+  const itemsTableWrapClassXl =
+    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] xl:overflow-x-visible';
   const tableBodyClass =
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
@@ -163,7 +167,7 @@ export function PlayerStatsTables({
               <div ref={generalTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[860px] text-sm">
                   <caption className="sr-only">Tabelle mit allgemeinen Spielerstatistiken.</caption>
-                  <thead className={tableHeadClassLg}>
+                  <thead className={tableHeadClassLg} style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}>
                     <tr>
                       <th
                         id="player-general-col-label"
@@ -284,10 +288,13 @@ export function PlayerStatsTables({
               </>
             }
             content={renderSurfaceContent(
-              <div ref={itemsTableWrapRef} className={itemsTableWrapClass}>
-                <table className="w-full min-w-[940px] text-sm xl:min-w-[1080px]">
+              <div ref={itemsTableWrapRef} className={itemsTableWrapClassXl}>
+                <table className="w-full min-w-[860px] text-sm xl:min-w-[940px]">
                   <caption className="sr-only">Tabelle mit Gegenstandsstatistiken.</caption>
-                  <thead className={tableHeadClass}>
+                  <thead
+                    className={itemsTableHeadClassXl}
+                    style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}
+                  >
                     <tr>
                       <th
                         id="player-items-col-label"
@@ -322,12 +329,22 @@ export function PlayerStatsTables({
                           key={key}
                           id={`player-items-col-${key}`}
                           scope="col"
-                          className={sortHeaderClass(isItemsSortActive(key), true)}
+                          className={[
+                            sortHeaderClass(isItemsSortActive(key)),
+                            key === 'dropped' ? 'xl:min-w-[11.5rem] xl:whitespace-nowrap' : '',
+                          ]
+                            .join(' ')
+                            .trim()}
                           aria-sort={resolveAriaSort(sortItems.key, key, sortItems.dir)}
                         >
                           <button
                             type="button"
-                            className={sortButtonClass}
+                            className={[
+                              sortButtonClass,
+                              key === 'dropped' ? 'xl:whitespace-nowrap' : '',
+                            ]
+                              .join(' ')
+                              .trim()}
                             onClick={() => handleItemsSort(key)}
                             aria-label={`${label} sortieren`}
                           >
@@ -419,7 +436,7 @@ export function PlayerStatsTables({
               <div ref={mobsTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[760px] text-sm">
                   <caption className="sr-only">Tabelle mit Kreaturenstatistiken.</caption>
-                  <thead className={tableHeadClassLg}>
+                  <thead className={tableHeadClassLg} style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}>
                     <tr>
                       <th
                         id="player-mobs-col-label"
