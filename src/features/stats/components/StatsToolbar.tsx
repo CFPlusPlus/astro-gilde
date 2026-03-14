@@ -259,7 +259,7 @@ export function StatsToolbar({
       {isDesktop ? (
         <>
           <div className="space-y-3 rounded-[var(--radius)] border border-transparent px-1 py-2 sm:px-2">
-            <section className="border-border/70 border-b pb-3">
+            <section className="border-border/70 border-b pb-0">
               <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
                 <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
                 Kategorien
