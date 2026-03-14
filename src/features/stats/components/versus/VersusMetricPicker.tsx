@@ -155,7 +155,7 @@ export function VersusMetricPicker({
         ) : null}
       </div>
 
-      <div className="mg-scrollbar mg-ios-scroll-gutter mt-4 max-h-[520px] overflow-auto pr-1">
+      <div className="mg-scrollbar mg-ios-scroll-gutter border-border/60 mt-4 max-h-[520px] overflow-auto border-y py-3 pr-1">
         <div className="space-y-5">
           {versusGroupedMetrics.map(({ cat, items }) => {
             const isCategoryActive = items.some((entry) => selectedMetricIds.has(entry.id));
