@@ -24,8 +24,8 @@ export function VersusSection(props: VersusSectionProps) {
             <VersusPlayerPicker {...props} surface={false} />
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-12">
-            <div className="min-w-0 xl:col-span-5">
+          <section className="space-y-5">
+            <div className="min-w-0">
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                 <h3 className="text-fg text-sm font-semibold">Kategorien</h3>
                 <span className="text-muted text-xs">
@@ -34,7 +34,7 @@ export function VersusSection(props: VersusSectionProps) {
               </div>
               <VersusMetricPicker {...props} surface={false} />
             </div>
-            <div className="min-w-0 xl:col-span-7">
+            <div className="min-w-0">
               <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
                 <h3 className="text-fg text-sm font-semibold">Ergebnis</h3>
                 <span className="text-muted text-xs">Zwischenstand und Detailvergleich.</span>
