@@ -69,7 +69,7 @@ export function PlayerStatsTables({
   const tableHeadClassLg =
     'mg-table-sticky-head text-muted text-xs lg:sticky lg:top-[calc(4rem+env(safe-area-inset-top))] lg:z-10';
   const tableWrapClassLg =
-    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain lg:overflow-x-visible';
+    'mg-scrollbar max-w-full overflow-x-auto overscroll-x-contain rounded-[calc(var(--radius)-1px)] lg:overflow-x-visible';
   const tableBodyClass =
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
