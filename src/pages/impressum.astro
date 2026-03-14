@@ -3,17 +3,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Button from '../components/ui/Button.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { ArrowRight } from '@lucide/astro';
-import impressumHtml from '../partials/impressum.html?raw';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 const DISCORD_URL = minecraftGilde.discord.url;
+const { legal } = minecraftGilde;
+const [legalEmailUser = '', legalEmailDomain = ''] = legal.email.split('@');
+const legalPhoneHref = legal.phone ? `tel:${legal.phone.replace(/[^+\d]/g, '')}` : null;
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Impressum"
   description="Impressum der Minecraft Gilde mit Anbieterkennzeichnung und Kontaktinformationen gemäß den gesetzlichen Vorgaben."
 >
-  <PageHeader title="Impressum" subtitle="Angaben gemäß § 5 DDG.">
+  <PageHeader title="Impressum" subtitle="Anbieterkennzeichnung und Kontaktinformationen.">
     <Fragment slot="actions">
       <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
         Discord <ArrowRight size={18} />
@@ -23,7 +25,100 @@ const DISCORD_URL = minecraftGilde.discord.url;
 
   <section class="border-border/70 bg-surface/30 border-y">
     <div class="mg-container py-10 sm:py-12 lg:py-14">
-      <div class="mg-prose max-w-none" set:html={impressumHtml} />
+      <div class="grid gap-6">
+        <div class="grid gap-6 lg:grid-cols-2">
+          <section class="mg-card mg-card--soft p-6 sm:p-7">
+            <h2 class="text-xl font-semibold tracking-tight">Angaben gemäß § 5 DDG</h2>
+
+            <address class="text-muted mt-4 space-y-1 text-sm not-italic">
+              <p class="text-fg font-semibold">{legal.name}</p>
+              {legal.street ? <p>{legal.street}</p> : null}
+              {
+                legal.postalCode || legal.city ? (
+                  <p>{[legal.postalCode, legal.city].filter(Boolean).join(' ')}</p>
+                ) : null
+              }
+              {legal.country ? <p>{legal.country}</p> : null}
+            </address>
+          </section>
+
+          <section class="mg-card mg-card--soft p-6 sm:p-7">
+            <h2 class="text-xl font-semibold tracking-tight">Kontakt</h2>
+
+            <dl class="mt-4 space-y-3 text-sm">
+              <div>
+                <dt class="text-fg font-semibold">E-Mail</dt>
+                <dd class="text-muted mt-1">
+                  <a
+                    class="js-email hover:text-fg underline decoration-dotted underline-offset-4"
+                    href="#"
+                    data-user={legalEmailUser}
+                    data-domain={legalEmailDomain}
+                    aria-label="E-Mail-Adresse"
+                  >
+                    <span class="js-email-text">
+                      {
+                        legalEmailUser && legalEmailDomain
+                          ? `${legalEmailUser} [at] ${legalEmailDomain}`
+                          : legal.email
+                      }
+                    </span>
+                  </a>
+                </dd>
+              </div>
+
+              {
+                legal.phone ? (
+                  <div>
+                    <dt class="text-fg font-semibold">Telefon</dt>
+                    <dd class="text-muted mt-1">
+                      <a
+                        class="hover:text-fg underline underline-offset-4"
+                        href={legalPhoneHref ?? '#'}
+                      >
+                        {legal.phone}
+                      </a>
+                    </dd>
+                  </div>
+                ) : null
+              }
+            </dl>
+          </section>
+        </div>
+
+        <section class="mg-card mg-card--soft p-6 sm:p-7">
+          <h2 class="text-xl font-semibold tracking-tight">Geltungsbereich</h2>
+          <p class="text-muted mt-4 text-sm leading-relaxed">
+            Dieses Impressum gilt auch für den offiziellen Discord-Server der Minecraft Gilde.
+          </p>
+        </section>
+
+        <section class="mg-card mg-card--soft p-6 sm:p-7">
+          <h2 class="text-xl font-semibold tracking-tight">Haftung für Links</h2>
+          <p class="text-muted mt-4 text-sm leading-relaxed">
+            Diese Website enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen
+            Einfluss haben. Für diese fremden Inhalte übernehmen wir daher keine Gewähr. Für die
+            Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber
+            verantwortlich. Zum Zeitpunkt der Verlinkung waren rechtswidrige Inhalte für uns nicht
+            erkennbar. Eine permanente inhaltliche Kontrolle der verlinkten Seiten ist ohne konkrete
+            Anhaltspunkte einer Rechtsverletzung nicht zumutbar. Bei Bekanntwerden von
+            Rechtsverletzungen werden wir entsprechende Links unverzüglich entfernen.
+          </p>
+        </section>
+
+        <section class="mg-card mg-card--soft p-6 sm:p-7">
+          <h2 class="text-xl font-semibold tracking-tight">Urheberrecht</h2>
+          <p class="text-muted mt-4 text-sm leading-relaxed">
+            Die auf dieser Website veröffentlichten Inhalte und Werke unterliegen dem deutschen
+            Urheberrecht, soweit nicht anders gekennzeichnet. Jede Verwertung außerhalb der Grenzen
+            des Urheberrechts bedarf der vorherigen schriftlichen Zustimmung des jeweiligen Urhebers
+            oder Rechteinhabers. Inhalte Dritter werden als solche gekennzeichnet. Sollten Sie
+            dennoch auf eine Urheberrechtsverletzung aufmerksam werden, bitten wir um einen
+            entsprechenden Hinweis. Bei Bekanntwerden von Rechtsverletzungen werden wir die
+            betroffenen Inhalte unverzüglich entfernen.
+          </p>
+        </section>
+      </div>
     </div>
   </section>
 </BaseLayout>

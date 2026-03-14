@@ -15,7 +15,7 @@ export const FOOTER_LINKS: FooterLink[] = [
 ];
 
 export const FOOTER_COPY = {
-  owner: 'Christian Falkner',
+  owner: minecraftGilde.legal.name,
   brand: 'Minecraft Gilde',
   disclaimer: 'Wir sind weder mit Mojang AB noch mit Microsoft verbunden.',
 } as const;

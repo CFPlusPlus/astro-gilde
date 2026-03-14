@@ -49,12 +49,31 @@ const brandConfig = {
   ],
 } as const;
 
+const legalConfig: {
+  name: string;
+  street: string;
+  postalCode: string;
+  city: string;
+  country: string;
+  email: string;
+  phone?: string;
+} = {
+  name: 'Christian Falkner',
+  street: 'Frauenholzstr. 8',
+  postalCode: '85307',
+  city: 'Paunzhausen',
+  country: 'Deutschland',
+  email: 'webmaster@minecraft-gilde.de',
+  phone: undefined,
+} as const;
+
 const defaultApiOrigin = 'https://api.minecraft-gilde.de';
 const envApiOrigin = import.meta.env.PUBLIC_API_ORIGIN;
 const apiOrigin = (envApiOrigin ?? defaultApiOrigin).replace(/\/+$/, '');
 
 export const minecraftGilde = {
   brand: brandConfig,
+  legal: legalConfig,
   serverIp: 'minecraft-gilde.de',
   mcVersion: '1.21.x',
   apiOrigin,

@@ -786,8 +786,16 @@
   .mg-prose ul,
   .mg-prose ol {
     margin: 0.75rem 0;
-    padding-left: 1.25rem;
+    padding-left: 1.75rem;
     color: color-mix(in oklab, var(--fg) 92%, transparent);
+  }
+
+  .mg-prose ul {
+    list-style: disc;
+  }
+
+  .mg-prose ol {
+    list-style: decimal;
   }
 
   .mg-prose li {
