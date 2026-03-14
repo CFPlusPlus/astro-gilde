@@ -35,8 +35,11 @@ function sortHint(currentKey: string, key: string, dir: SortDir): string {
   return `Aktuell ${sortDirLabel(currentDir)}. Aktiviert ${sortDirLabel(nextDir)}.`;
 }
 
-const FLUSH_HEAD_CLIP_PATH =
-  'inset(0 0 0 0 round calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0)';
+const FLUSH_HEAD_STYLE = {
+  clipPath: 'inset(0 0 0 0)',
+  borderTopLeftRadius: 0,
+  borderTopRightRadius: 0,
+} as const;
 
 export function PlayerStatsTables({
   activeTab,
@@ -79,7 +82,7 @@ export function PlayerStatsTables({
   const tableBodyClass =
     'divide-border/75 [&>tr:hover]:bg-surface-solid/35 divide-y [&>tr>td]:px-4 [&>tr>td]:py-3 [&>tr>td]:text-left [&>tr>th]:px-4 [&>tr>th]:py-3 [&>tr>th]:text-left';
   const sortButtonClass =
-    'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none';
+    'focus-visible:ring-offset-bg inline-flex items-center gap-2 rounded-none focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none';
   const motionMaxRows = 12;
   const generalTableWrapRef = useRef<HTMLDivElement | null>(null);
   const itemsTableWrapRef = useRef<HTMLDivElement | null>(null);
@@ -167,7 +170,7 @@ export function PlayerStatsTables({
               <div ref={generalTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[860px] text-sm">
                   <caption className="sr-only">Tabelle mit allgemeinen Spielerstatistiken.</caption>
-                  <thead className={tableHeadClassLg} style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}>
+                  <thead className={tableHeadClassLg} style={FLUSH_HEAD_STYLE}>
                     <tr>
                       <th
                         id="player-general-col-label"
@@ -291,10 +294,7 @@ export function PlayerStatsTables({
               <div ref={itemsTableWrapRef} className={itemsTableWrapClassXl}>
                 <table className="w-full min-w-[860px] text-sm xl:min-w-[940px]">
                   <caption className="sr-only">Tabelle mit Gegenstandsstatistiken.</caption>
-                  <thead
-                    className={itemsTableHeadClassXl}
-                    style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}
-                  >
+                  <thead className={itemsTableHeadClassXl} style={FLUSH_HEAD_STYLE}>
                     <tr>
                       <th
                         id="player-items-col-label"
@@ -436,7 +436,7 @@ export function PlayerStatsTables({
               <div ref={mobsTableWrapRef} className={tableWrapClassLg}>
                 <table className="w-full min-w-[760px] text-sm">
                   <caption className="sr-only">Tabelle mit Kreaturenstatistiken.</caption>
-                  <thead className={tableHeadClassLg} style={{ clipPath: FLUSH_HEAD_CLIP_PATH }}>
+                  <thead className={tableHeadClassLg} style={FLUSH_HEAD_STYLE}>
                     <tr>
                       <th
                         id="player-mobs-col-label"
