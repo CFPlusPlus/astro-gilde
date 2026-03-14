@@ -7,17 +7,22 @@ import datenschutzHtml from '../partials/datenschutz.html?raw';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 const DISCORD_URL = minecraftGilde.discord.url;
-const datenschutzContent = datenschutzHtml.replaceAll(
-  '{{ legal.name }}',
-  minecraftGilde.legal.name,
-);
+const { legal } = minecraftGilde;
+
+const datenschutzContent = datenschutzHtml
+  .replaceAll('{{ legal.name }}', legal.name)
+  .replaceAll('{{ legal.street }}', legal.street)
+  .replaceAll('{{ legal.postalCode }}', legal.postalCode)
+  .replaceAll('{{ legal.city }}', legal.city)
+  .replaceAll('{{ legal.country }}', legal.country)
+  .replaceAll('{{ legal.email }}', legal.email);
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Datenschutzerklärung"
   description="Datenschutzerklärung der Minecraft Gilde mit Informationen zur Verarbeitung personenbezogener Daten auf Website und Minecraft-Server."
 >
-  <PageHeader title="Datenschutzerklärung" subtitle="So gehen wir mit Ihren Daten um.">
+  <PageHeader title="Datenschutzerklärung" subtitle="So gehen wir mit deinen Daten um.">
     <Fragment slot="actions">
       <Button href={DISCORD_URL} external variant="secondary" class="gap-2">
         Discord <ArrowRight size={18} />
