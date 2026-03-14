@@ -82,7 +82,7 @@ export function PlayerStatsToolbar({
 
   return (
     <section className={panelClassName || rootClassName}>
-      <div className="border-border/70 border-b pb-3">
+      <div className="pb-3">
         <div className="text-muted mb-1.5 flex items-center gap-1.5 px-2 text-[11px] font-semibold tracking-[0.08em] uppercase">
           <ListFilter size={12} className="text-accent/80" aria-hidden="true" />
           Kategorien
