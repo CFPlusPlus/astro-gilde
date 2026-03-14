@@ -59,9 +59,9 @@ const legalConfig: {
   phone?: string;
 } = {
   name: 'Christian Falkner',
-  street: '',
-  postalCode: '',
-  city: '',
+  street: 'Frauenholzstr. 8',
+  postalCode: '85307',
+  city: 'Paunzhausen',
   country: 'Deutschland',
   email: 'webmaster@minecraft-gilde.de',
   phone: undefined,
