@@ -7,6 +7,10 @@ import datenschutzHtml from '../partials/datenschutz.html?raw';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 const DISCORD_URL = minecraftGilde.discord.url;
+const datenschutzContent = datenschutzHtml.replaceAll(
+  '{{ legal.name }}',
+  minecraftGilde.legal.name,
+);
 ---
 
 <BaseLayout
@@ -24,7 +28,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
 
   <section class="border-border/70 bg-surface/30 border-y">
     <div class="mg-container py-10 sm:py-12 lg:py-14">
-      <div class="mg-prose max-w-none" set:html={datenschutzHtml} />
+      <div class="mg-prose max-w-none" set:html={datenschutzContent} />
     </div>
   </section>
 </BaseLayout>

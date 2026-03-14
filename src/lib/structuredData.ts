@@ -267,7 +267,7 @@ export const buildArticle = (args: {
     headline,
     description,
     image,
-    authorName = 'Christian Falkner',
+    authorName = minecraftGilde.legal.name,
     authorUrl,
     datePublished,
     dateModified,
