@@ -34,17 +34,49 @@ Dev-Server: `http://localhost:4321`
 
 ## Wichtige Befehle
 
-| Befehl                 | Zweck                         |
-| :--------------------- | :---------------------------- |
-| `npm run dev`          | Lokale Entwicklung            |
-| `npm run build`        | Produktionsbuild nach `dist/` |
-| `npm run preview`      | Lokale Vorschau des Builds    |
-| `npm run check`        | Astro Type-/Template-Check    |
-| `npm run lint`         | ESLint                        |
-| `npm run test`         | Unit-Tests (Vitest)           |
-| `npm run test:e2e`     | End-to-End-Tests (Playwright) |
-| `npm run config:check` | Konfigurations-Drift prüfen   |
-| `npm run format:check` | Prettier-Check (CI-tauglich)  |
+| Befehl                 | Zweck                           |
+| :--------------------- | :------------------------------ |
+| `npm run dev`          | Lokale Entwicklung              |
+| `npm run dev:worker`   | Lokal inkl. Worker-API (`/api`) |
+| `npm run build`        | Produktionsbuild nach `dist/`   |
+| `npm run preview`      | Lokale Vorschau des Builds      |
+| `npm run check`        | Astro Type-/Template-Check      |
+| `npm run lint`         | ESLint                          |
+| `npm run test`         | Unit-Tests (Vitest)             |
+| `npm run test:e2e`     | End-to-End-Tests (Playwright)   |
+| `npm run config:check` | Konfigurations-Drift prüfen     |
+| `npm run format:check` | Prettier-Check (CI-tauglich)    |
+
+## Lokal testen (mit/ohne API)
+
+### 1) Mit lokaler API (empfohlen)
+
+```bash
+cp .dev.vars.example .dev.vars
+# .dev.vars mit DB-Daten befuellen
+npm run dev:worker
+```
+
+- Website und API laufen zusammen unter `http://localhost:8787`
+- Beispiel: `http://localhost:8787/api/metrics`
+
+### 2) Ohne lokale API (nur Frontend)
+
+```bash
+npm run dev
+```
+
+- Frontend laeuft unter `http://localhost:4321`
+- `/api/*` ist dabei nicht lokal aktiv (Statistikfeatures koennen eingeschraenkt sein)
+
+### 3) Ohne lokale API, aber mit externem API-Ziel
+
+```bash
+PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
+```
+
+- Frontend nutzt dann das externe API-Ziel fuer `/api/*`
+- Keine Secrets im Frontend setzen (nur URL, niemals DB-Credentials)
 
 ## Inhalte pflegen
 
@@ -76,7 +108,7 @@ Hinweis: In Regeln werden Abschnitte teilweise als HTML-Strings gepflegt. Inhalt
 - [Build- und Output-Besonderheiten](./docs/build-output.md)
 - [Teststrategie (Unit und E2E)](./docs/testing.md)
 - [Projektstruktur und Frontend-Konventionen](./docs/project-structure.md)
-- [Statistik-API und lokaler Proxy](./docs/stats-api.md)
+- [Statistik-API im Worker](./docs/stats-api.md)
 - [Live-Daten Architektur](./docs/live-data.md)
 - [Content Security Policy (CSP)](./docs/security-csp.md)
 

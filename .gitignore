@@ -18,6 +18,12 @@ test-results/
 # environment variables
 .env
 .env.production
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# cloudflare local state
+.wrangler/
 
 # macOS-specific files
 .DS_Store

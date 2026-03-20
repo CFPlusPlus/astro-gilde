@@ -101,9 +101,11 @@ Frontend ruft relative Endpunkte auf:
 - `src/features/stats/api.ts` (`/api/summary`, `/api/metrics`, `/api/leaderboard`, `/api/players`)
 - `src/features/stats-core/api.ts` (`/api/player`)
 
-Das Zielsystem hinter `/api/...` wird über Infrastruktur geregelt (Reverse Proxy / Dev-Proxy), nicht in diesen Frontend-Dateien.
+Die API-Runtime liegt in `src/pages/api/[...path].ts` und implementiert die
+Statistik-API direkt im Worker (`src/lib/http/server/statsApiProxy.ts`).
+Die Daten kommen direkt aus MariaDB bzw. für Skin/Cape aus Mojang.
 
-Siehe auch `docs/stats-api.md` für Endpunkte und lokales Proxy-Setup.
+Siehe auch `docs/stats-api.md` für Endpunkte, Caching und lokales Setup.
 
 ## 6) Änderungen sicher durchführen
 
