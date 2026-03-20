@@ -43,7 +43,7 @@ type InstallStatsMocksOptions = {
 };
 
 function apiRoutePatterns(endpoint: string): string[] {
-  return [`**/api/${endpoint}**`, `**/api.minecraft-gilde.de/${endpoint}**`];
+  return [`**/api/${endpoint}**`];
 }
 
 async function routeApi(

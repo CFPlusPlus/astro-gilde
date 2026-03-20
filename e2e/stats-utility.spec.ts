@@ -212,7 +212,6 @@ async function installPlayerStatsSortMock(page: Page): Promise<void> {
   };
 
   await page.route('**/api/player**', handler);
-  await page.route('**/api.minecraft-gilde.de/player**', handler);
 }
 
 test('Overview Mock: loading wechselt auf ok', async ({ page }) => {

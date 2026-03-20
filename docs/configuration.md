@@ -26,7 +26,7 @@ In `src/config/minecraftGilde.ts` werden zentrale Projektwerte gepflegt:
 `apiOrigin` wird wie folgt ermittelt:
 
 - Primär: `import.meta.env.PUBLIC_API_ORIGIN`
-- Fallback: `https://api.minecraft-gilde.de`
+- Fallback: `/api`
 - Danach: Entfernen von abschließenden `/` per `.replace(/\/+$/, '')`
 
 Dadurch bleiben API-URLs stabil, unabhängig davon, ob der Env-Wert mit oder ohne Trailing Slash gesetzt ist.
@@ -42,7 +42,7 @@ Dadurch bleiben API-URLs stabil, unabhängig davon, ob der Env-Wert mit oder ohn
 Beispiel:
 
 - Input: `/api/summary?metrics=hours`
-- Output: `https://api.minecraft-gilde.de/summary?metrics=hours` (oder entsprechender `PUBLIC_API_ORIGIN`)
+- Output: `/api/summary?metrics=hours` (oder entsprechender `PUBLIC_API_ORIGIN`)
 
 ## Browser-Konfiguration über `data-*`
 
@@ -89,3 +89,4 @@ npm run config:check
 1. Bei Domain-/API-Änderungen `minecraftGilde.ts`, `site.ts` und ggf. `astro.config.mjs` gemeinsam prüfen.
 2. Danach `npm run config:check` ausführen.
 3. Bei API-Ursprung-Änderungen Frontend-Aufrufe unter `src/features/*/api.ts` und `src/lib/http/apiUrl.ts` gegenprüfen.
+

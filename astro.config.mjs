@@ -3,6 +3,7 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
+import cloudflare from '@astrojs/cloudflare';
 import { execSync } from 'node:child_process';
 
 // https://astro.build/config
@@ -43,6 +44,7 @@ const tailwindPlugin = /** @type {any} */ (tailwindcss());
 
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
+  adapter: cloudflare(),
   // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
   trailingSlash: 'always',
