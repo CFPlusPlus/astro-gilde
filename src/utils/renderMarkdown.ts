@@ -11,7 +11,10 @@ marked.setOptions({
  * - Setzt target=_blank fuer externe http(s)-Links
  */
 export function renderMarkdown(input: string): string {
-  const source = String(input ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const source = String(input ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 
   // Nackte URLs klickbar machen (ohne Markdown-Link-Ziele "(https://...)" oder bestehende "<https://...>").
   const withAutoLinks = source.replace(

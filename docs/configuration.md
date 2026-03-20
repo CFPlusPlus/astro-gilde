@@ -89,4 +89,3 @@ npm run config:check
 1. Bei Domain-/API-Änderungen `minecraftGilde.ts`, `site.ts` und ggf. `astro.config.mjs` gemeinsam prüfen.
 2. Danach `npm run config:check` ausführen.
 3. Bei API-Ursprung-Änderungen Frontend-Aufrufe unter `src/features/*/api.ts` und `src/lib/http/apiUrl.ts` gegenprüfen.
-
