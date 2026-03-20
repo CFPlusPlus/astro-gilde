@@ -67,7 +67,7 @@ const legalConfig: {
   phone: undefined,
 } as const;
 
-const defaultApiOrigin = 'https://api.minecraft-gilde.de';
+const defaultApiOrigin = '/api';
 const envApiOrigin = import.meta.env.PUBLIC_API_ORIGIN;
 const apiOrigin = (envApiOrigin ?? defaultApiOrigin).replace(/\/+$/, '');
 

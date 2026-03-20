@@ -1,0 +1,23 @@
+name = "minecraft-gilde-web"
+main = "./dist/_worker.js/index.js"
+compatibility_date = "2026-03-20"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+
+# DB-Variablen in Cloudflare setzen:
+# wrangler secret put STATS_DB_PASS
+# wrangler secret put STATS_DB_USER
+# wrangler secret put STATS_DB_HOST
+# wrangler secret put STATS_DB_NAME
+# wrangler vars:
+# STATS_DB_PORT=3306
+# STATS_DB_CHARSET=utf8mb4
+
+# Optional: Hyperdrive Binding (empfohlen fuer Produktionszugriff auf MariaDB).
+# Wenn gesetzt, hat HYPERDRIVE Vorrang vor STATS_DB_HOST/STATS_DB_PORT.
+# [[hyperdrive]]
+# binding = "HYPERDRIVE"
+# id = "<HYPERDRIVE_ID>"

@@ -11,7 +11,7 @@ Zentrale Einstiegseite für die Projektdokumentation.
 - [Build- und Output-Besonderheiten](./build-output.md)
 - [Teststrategie (Unit und E2E)](./testing.md)
 - [Projektstruktur und Frontend-Konventionen](./project-structure.md)
-- [Statistik-API und lokaler Proxy](./stats-api.md)
+- [Statistik-API im Worker](./stats-api.md)
 - [Live-Daten Architektur](./live-data.md)
 - [Content Security Policy (CSP)](./security-csp.md)
 

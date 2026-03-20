@@ -23,6 +23,9 @@ test-results/
 .dev.vars.*
 !.dev.vars.example
 
+# cloudflare local state
+.wrangler/
+
 # macOS-specific files
 .DS_Store
 
