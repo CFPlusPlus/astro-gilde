@@ -161,10 +161,7 @@ function summarizeError(error: unknown): {
   };
   return {
     name: typeof errorObject?.name === 'string' ? errorObject.name : 'UnknownError',
-    message:
-      typeof errorObject?.message === 'string'
-        ? errorObject.message
-        : String(error),
+    message: typeof errorObject?.message === 'string' ? errorObject.message : String(error),
     code: typeof errorObject?.code === 'string' ? errorObject.code : undefined,
     errno: typeof errorObject?.errno === 'number' ? errorObject.errno : undefined,
   };
@@ -889,462 +886,516 @@ function withGenerated<T extends Record<string, unknown>>(
   };
 }
 
-async function routeRequest(context: APIContext, endpoint: string): Promise<Response> {
-  const requestUrl = new URL(context.request.url);
+type DataRouteContext = {
+  context: APIContext;
+  requestUrl: URL;
+  endpoint: string;
+  pool: Pool;
+  active: ActiveRun;
+};
 
-  if (endpoint === 'cape') {
-    const rawUuid = (
-      requestUrl.searchParams.get('uuid') ??
-      requestUrl.searchParams.get('cape') ??
-      ''
-    ).trim();
-    const uuidHex = sanitizeUuidHex(rawUuid);
-    if (!uuidHex) return jsonError(400, 'invalid uuid');
+type EndpointUuidParams = {
+  rawUuid: string;
+  uuidHex: string | null;
+};
 
-    const cached = await fetchMojangProfileCached(context, uuidHex);
-    if (!cached.ok) {
-      return jsonResponse(
-        {
-          error: cached.error,
-          status: cached.upstreamStatus ?? 0,
-        },
-        {
-          status: cached.status,
-          headers: { 'Cache-Control': 'no-store' },
-        },
-      );
-    }
+function readEndpointUuidParams(
+  requestUrl: URL,
+  primaryParam: string,
+  secondaryParam: string,
+): EndpointUuidParams {
+  const rawUuid = (
+    requestUrl.searchParams.get(primaryParam) ??
+    requestUrl.searchParams.get(secondaryParam) ??
+    ''
+  ).trim();
+  return {
+    rawUuid,
+    uuidHex: sanitizeUuidHex(rawUuid),
+  };
+}
 
-    const uuidDash = uuidHexToDashed(uuidHex);
-    const cape = cached.type === 'positive' ? extractCapeFromProfile(cached.body) : null;
-    const capeUrl = cape?.url ?? null;
-    const hasCape = capeUrl !== null;
+function mojangErrorResponse(errorResult: Extract<MojangCachedResult, { ok: false }>): Response {
+  return jsonResponse(
+    {
+      error: errorResult.error,
+      status: errorResult.upstreamStatus ?? 0,
+    },
+    {
+      status: errorResult.status,
+      headers: { 'Cache-Control': 'no-store' },
+    },
+  );
+}
 
-    const headers = etagHeaders(
-      'cape',
-      `cape:${uuidHex}:${sha1Hex(cached.body)}:${capeUrl ?? 'none'}`,
-      new Date(cached.mtime),
-      cached.maxAgeSeconds,
-    );
+function parseRequestedMetrics(rawMetrics: string): string[] {
+  return Array.from(
+    new Set(
+      rawMetrics
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  );
+}
 
-    return jsonResponse(
-      {
-        found: cached.type !== 'negative',
-        uuid: uuidDash,
-        cape,
-        capeUrl,
-        hasCape,
-      },
-      { headers },
-    );
-  }
-
-  if (endpoint === 'profile') {
-    const rawUuid = (
-      requestUrl.searchParams.get('uuid') ??
-      requestUrl.searchParams.get('profile') ??
-      ''
-    ).trim();
-    const uuidHex = sanitizeUuidHex(rawUuid);
-    if (!uuidHex) return jsonError(400, 'invalid uuid');
-
-    const cached = await fetchMojangProfileCached(context, uuidHex);
-    if (!cached.ok) {
-      return jsonResponse(
-        {
-          error: cached.error,
-          status: cached.upstreamStatus ?? 0,
-        },
-        {
-          status: cached.status,
-          headers: { 'Cache-Control': 'no-store' },
-        },
-      );
-    }
-
-    const headers = etagHeaders(
-      'profile',
-      `profile:${uuidHex}:${sha1Hex(cached.body)}`,
-      new Date(cached.mtime),
-      cached.maxAgeSeconds,
-    );
-    headers.set('Content-Type', 'application/json; charset=utf-8');
-    return new Response(cached.body, { status: 200, headers });
-  }
-
-  const pool = await getDbPool(context);
-  let active = emptyActiveRun();
+async function loadActiveRunSafely(pool: Pool, endpoint: string): Promise<ActiveRun> {
   try {
-    active = await getActiveRun(pool);
+    return await getActiveRun(pool);
   } catch (error) {
     console.warn('[stats-api] active run lookup failed', {
       endpoint,
       ...summarizeError(error),
     });
+    return emptyActiveRun();
   }
-  const generatedIso = active.generatedIso;
+}
 
-  if (endpoint === 'metrics') {
-    const defs = await loadMetricDefs(pool);
-    const headers = etagHeaders('metrics', `metrics:${active.runId}`, active.generatedAt);
-    return jsonResponse(withGenerated({ metrics: defs }, generatedIso), { headers });
-  }
+async function buildDataRouteContext(
+  context: APIContext,
+  endpoint: string,
+  requestUrl: URL,
+): Promise<DataRouteContext> {
+  const pool = await getDbPool(context);
+  const active = await loadActiveRunSafely(pool, endpoint);
+  return {
+    context,
+    requestUrl,
+    endpoint,
+    pool,
+    active,
+  };
+}
 
-  if (endpoint === 'summary') {
-    const metricsRaw = requestUrl.searchParams.get('metrics') ?? '';
-    const requested = Array.from(
-      new Set(
-        metricsRaw
-          .split(',')
-          .map((value) => value.trim())
-          .filter((value) => value.length > 0),
-      ),
-    );
+async function handleCapeEndpoint(context: APIContext, requestUrl: URL): Promise<Response> {
+  const { uuidHex } = readEndpointUuidParams(requestUrl, 'uuid', 'cape');
+  if (!uuidHex) return jsonError(400, 'invalid uuid');
 
-    if (requested.length === 0) return jsonError(400, 'metrics required');
-    if (requested.length > 12) return jsonError(400, 'too many metrics');
+  const cached = await fetchMojangProfileCached(context, uuidHex);
+  if (!cached.ok) return mojangErrorResponse(cached);
 
-    const defs = await loadMetricDefs(pool);
-    for (const metric of requested) {
-      if (!defs[metric]) return jsonError(400, 'unknown metric');
-    }
+  const uuidDash = uuidHexToDashed(uuidHex);
+  const cape = cached.type === 'positive' ? extractCapeFromProfile(cached.body) : null;
+  const capeUrl = cape?.url ?? null;
+  const hasCape = capeUrl !== null;
 
-    const playerRows = await queryRows<RowDataPacket>(
-      pool,
-      'SELECT COUNT(*) AS c FROM v_player_profile',
-    );
-    const playerCount = parseInteger(playerRows[0]?.c, 0);
+  const headers = etagHeaders(
+    'cape',
+    `cape:${uuidHex}:${sha1Hex(cached.body)}:${capeUrl ?? 'none'}`,
+    new Date(cached.mtime),
+    cached.maxAgeSeconds,
+  );
 
-    const totals = Object.fromEntries(requested.map((metric) => [metric, 0])) as Record<
-      string,
-      number
-    >;
-    const placeholders = requested.map(() => '?').join(',');
-    const totalRows = await queryRows<RowDataPacket>(
-      pool,
-      `SELECT metric_id, SUM(value) AS total_raw
-       FROM v_metric_value
-       WHERE metric_id IN (${placeholders})
-       GROUP BY metric_id`,
-      requested,
-    );
+  return jsonResponse(
+    {
+      found: cached.type !== 'negative',
+      uuid: uuidDash,
+      cape,
+      capeUrl,
+      hasCape,
+    },
+    { headers },
+  );
+}
 
-    for (const row of totalRows) {
-      const metricId = asNonEmptyString(row.metric_id);
-      if (!metricId || !(metricId in totals)) continue;
-      const raw = parseInteger(row.total_raw, 0);
-      totals[metricId] = applyDivisor(raw, defs[metricId]?.divisor ?? null);
-    }
+async function handleProfileEndpoint(context: APIContext, requestUrl: URL): Promise<Response> {
+  const { uuidHex } = readEndpointUuidParams(requestUrl, 'uuid', 'profile');
+  if (!uuidHex) return jsonError(400, 'invalid uuid');
 
-    const etag = `summary:${active.runId}:${requested.join(',')}`;
-    const headers = etagHeaders('summary', etag, active.generatedAt);
-    return jsonResponse(
-      withGenerated(
-        {
-          player_count: playerCount,
-          totals,
-        },
-        generatedIso,
-      ),
-      { headers },
-    );
-  }
+  const cached = await fetchMojangProfileCached(context, uuidHex);
+  if (!cached.ok) return mojangErrorResponse(cached);
 
-  if (endpoint === 'leaderboards') {
-    const limit = clampLimit(parseInteger(requestUrl.searchParams.get('limit'), 50));
-    const limitPlus = Math.min(limit + 1, API_MAX_LIMIT + 1);
+  const headers = etagHeaders(
+    'profile',
+    `profile:${uuidHex}:${sha1Hex(cached.body)}`,
+    new Date(cached.mtime),
+    cached.maxAgeSeconds,
+  );
+  headers.set('Content-Type', 'application/json; charset=utf-8');
+  return new Response(cached.body, { status: 200, headers });
+}
 
-    const defs = await loadMetricDefs(pool);
-    if (Object.keys(defs).length === 0 || active.runId === 0) {
-      const headers = etagHeaders(
-        'leaderboards',
-        `leaderboards:${active.runId}:${limit}`,
-        active.generatedAt,
-      );
-      return jsonResponse(
-        withGenerated(
-          {
-            __players: {},
-            boards: {},
-            cursors: {},
-          },
-          generatedIso,
-        ),
-        { headers },
-      );
-    }
+async function handleMetricsEndpoint(route: DataRouteContext): Promise<Response> {
+  const defs = await loadMetricDefs(route.pool);
+  const headers = etagHeaders('metrics', `metrics:${route.active.runId}`, route.active.generatedAt);
+  return jsonResponse(withGenerated({ metrics: defs }, route.active.generatedIso), { headers });
+}
 
-    const rows = await queryRows<RowDataPacket>(
-      pool,
-      `SELECT metric_id, LOWER(HEX(uuid)) AS uuid_hex, value, rn
-       FROM (
-         SELECT mv.metric_id, mv.uuid, mv.value,
-                ROW_NUMBER() OVER (PARTITION BY mv.metric_id ORDER BY mv.value DESC, mv.uuid ASC) AS rn
-         FROM v_metric_value mv
-         JOIN metric_def md ON md.id = mv.metric_id AND md.enabled = 1
-       ) t
-       WHERE rn <= ?
-       ORDER BY metric_id ASC, rn ASC`,
-      [limitPlus],
-    );
+async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response> {
+  const requested = parseRequestedMetrics(route.requestUrl.searchParams.get('metrics') ?? '');
+  if (requested.length === 0) return jsonError(400, 'metrics required');
+  if (requested.length > 12) return jsonError(400, 'too many metrics');
 
-    const boards: Record<string, Array<{ uuid: string; value: number }>> = {};
-    const cursors: Record<string, string | null> = {};
-    const needNamesHex: string[] = [];
-    const lastIncluded: Record<string, { raw: number; uuidHex: string }> = {};
-
-    for (const row of rows) {
-      const metricId = asNonEmptyString(row.metric_id);
-      const uuidHex = asNonEmptyString(row.uuid_hex);
-      if (!metricId || !uuidHex || !defs[metricId]) continue;
-
-      const rn = parseInteger(row.rn, 0);
-      const rawValue = parseInteger(row.value, 0);
-      const uuidDash = uuidHexToDashed(uuidHex);
-
-      if (rn <= limit) {
-        boards[metricId] ??= [];
-        boards[metricId].push({
-          uuid: uuidDash,
-          value: applyDivisor(rawValue, defs[metricId].divisor),
-        });
-        needNamesHex.push(uuidHex);
-        if (rn === limit) {
-          lastIncluded[metricId] = { raw: rawValue, uuidHex };
-        }
-      } else {
-        cursors[metricId] = '...';
-      }
-    }
-
-    for (const metricId of Object.keys(defs)) {
-      if (cursors[metricId] && lastIncluded[metricId]) {
-        const cursorRow = lastIncluded[metricId];
-        cursors[metricId] = encodeCursor(cursorRow.raw, cursorRow.uuidHex);
-      } else {
-        cursors[metricId] = null;
-      }
-      boards[metricId] ??= [];
-    }
-
-    const players = await fetchPlayersByHex(pool, needNamesHex);
-    const etag = `boards:${active.runId}:${limit}`;
-    const headers = etagHeaders('leaderboards', etag, active.generatedAt);
-    return jsonResponse(
-      withGenerated(
-        {
-          __players: players,
-          boards,
-          cursors,
-        },
-        generatedIso,
-      ),
-      { headers },
-    );
-  }
-
-  if (endpoint === 'leaderboard') {
-    const metric = (requestUrl.searchParams.get('metric') ?? '').trim();
-    if (!metric) return jsonError(400, 'metric required');
-
-    const limit = clampLimit(parseInteger(requestUrl.searchParams.get('limit'), 200));
-    const limitPlus = Math.min(limit + 1, API_MAX_LIMIT + 1);
-    const cursorRaw = (requestUrl.searchParams.get('cursor') ?? '').trim();
-    const cursor = cursorRaw ? decodeCursor(cursorRaw) : null;
-    if (cursorRaw && !cursor) return jsonError(400, 'invalid cursor');
-
-    const defs = await loadMetricDefs(pool);
+  const defs = await loadMetricDefs(route.pool);
+  for (const metric of requested) {
     if (!defs[metric]) return jsonError(400, 'unknown metric');
+  }
 
-    const sqlParts = [
-      `SELECT LOWER(HEX(uuid)) AS uuid_hex, value
-       FROM v_metric_value
-       WHERE metric_id = ?`,
-    ];
-    const params: unknown[] = [metric];
+  const playerRows = await queryRows<RowDataPacket>(
+    route.pool,
+    'SELECT COUNT(*) AS c FROM v_player_profile',
+  );
+  const playerCount = parseInteger(playerRows[0]?.c, 0);
+  const totals = Object.fromEntries(requested.map((metric) => [metric, 0])) as Record<
+    string,
+    number
+  >;
 
-    if (cursor) {
-      sqlParts.push('AND (value < ? OR (value = ? AND uuid > UNHEX(?)))');
-      params.push(cursor.value, cursor.value, cursor.uuidHex);
-    }
+  const placeholders = requested.map(() => '?').join(',');
+  const totalRows = await queryRows<RowDataPacket>(
+    route.pool,
+    `SELECT metric_id, SUM(value) AS total_raw
+     FROM v_metric_value
+     WHERE metric_id IN (${placeholders})
+     GROUP BY metric_id`,
+    requested,
+  );
 
-    sqlParts.push('ORDER BY value DESC, uuid ASC LIMIT ?');
-    params.push(limitPlus);
+  for (const row of totalRows) {
+    const metricId = asNonEmptyString(row.metric_id);
+    if (!metricId || !(metricId in totals)) continue;
+    const raw = parseInteger(row.total_raw, 0);
+    totals[metricId] = applyDivisor(raw, defs[metricId]?.divisor ?? null);
+  }
 
-    const rows = await queryRows<RowDataPacket>(pool, sqlParts.join(' '), params);
+  const etag = `summary:${route.active.runId}:${requested.join(',')}`;
+  const headers = etagHeaders('summary', etag, route.active.generatedAt);
+  return jsonResponse(
+    withGenerated(
+      {
+        player_count: playerCount,
+        totals,
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
 
-    const board: Array<{ uuid: string; value: number }> = [];
-    const needNamesHex: string[] = [];
-    let hasMore = false;
-    let lastRaw: number | null = null;
-    let lastUuidHex: string | null = null;
+async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Response> {
+  const limit = clampLimit(parseInteger(route.requestUrl.searchParams.get('limit'), 50));
+  const limitPlus = Math.min(limit + 1, API_MAX_LIMIT + 1);
 
-    for (const row of rows) {
-      const uuidHex = asNonEmptyString(row.uuid_hex);
-      if (!uuidHex) continue;
-      const rawValue = parseInteger(row.value, 0);
-      if (board.length < limit) {
-        board.push({
-          uuid: uuidHexToDashed(uuidHex),
-          value: applyDivisor(rawValue, defs[metric].divisor),
-        });
-        needNamesHex.push(uuidHex);
-        lastRaw = rawValue;
-        lastUuidHex = uuidHex;
-      } else {
-        hasMore = true;
-        break;
-      }
-    }
-
-    const nextCursor =
-      hasMore && lastRaw !== null && lastUuidHex !== null
-        ? encodeCursor(lastRaw, lastUuidHex)
-        : null;
-    const players = await fetchPlayersByHex(pool, needNamesHex);
-
-    const etag = `board:${active.runId}:${metric}:${limit}:${cursorRaw}`;
-    const headers = etagHeaders('leaderboard', etag, active.generatedAt);
-
+  const defs = await loadMetricDefs(route.pool);
+  if (Object.keys(defs).length === 0 || route.active.runId === 0) {
+    const headers = etagHeaders(
+      'leaderboards',
+      `leaderboards:${route.active.runId}:${limit}`,
+      route.active.generatedAt,
+    );
     return jsonResponse(
       withGenerated(
         {
-          __players: players,
-          boards: { [metric]: board },
-          cursors: { [metric]: nextCursor },
+          __players: {},
+          boards: {},
+          cursors: {},
         },
-        generatedIso,
+        route.active.generatedIso,
       ),
       { headers },
     );
   }
 
-  if (endpoint === 'players') {
-    const qRaw = (requestUrl.searchParams.get('q') ?? '').trim().toLowerCase();
-    if (qRaw.length < 2) {
-      const headers = etagHeaders(
-        'players',
-        `players:${active.runId}:${qRaw}:0`,
-        active.generatedAt,
-      );
-      return jsonResponse(withGenerated({ items: [] }, generatedIso), { headers });
-    }
+  const rows = await queryRows<RowDataPacket>(
+    route.pool,
+    `SELECT metric_id, LOWER(HEX(uuid)) AS uuid_hex, value, rn
+     FROM (
+       SELECT mv.metric_id, mv.uuid, mv.value,
+              ROW_NUMBER() OVER (PARTITION BY mv.metric_id ORDER BY mv.value DESC, mv.uuid ASC) AS rn
+       FROM v_metric_value mv
+       JOIN metric_def md ON md.id = mv.metric_id AND md.enabled = 1
+     ) t
+     WHERE rn <= ?
+     ORDER BY metric_id ASC, rn ASC`,
+    [limitPlus],
+  );
 
-    const requestedLimit = parseInteger(requestUrl.searchParams.get('limit'), 8);
-    const limit = clampLimit(Math.min(requestedLimit, API_MAX_SEARCH));
-    const escaped = escapeLikeInput(qRaw);
+  const boards: Record<string, Array<{ uuid: string; value: number }>> = {};
+  const cursors: Record<string, string | null> = {};
+  const needNamesHex: string[] = [];
+  const lastIncluded: Record<string, { raw: number; uuidHex: string }> = {};
 
-    const sql = `SELECT LOWER(HEX(uuid)) AS uuid_hex, name
-       FROM v_player_profile
-       WHERE name_lc LIKE CONCAT('%', ?, '%') ESCAPE '\\\\'
-       ORDER BY
-         CASE WHEN name_lc LIKE CONCAT(?, '%') ESCAPE '\\\\' THEN 0 ELSE 1 END,
-         LOCATE(?, name_lc) ASC,
-         name_lc ASC,
-         uuid ASC
-       LIMIT ?`;
-    const sqlParams: unknown[] = [escaped, escaped, qRaw, limit];
+  for (const row of rows) {
+    const metricId = asNonEmptyString(row.metric_id);
+    const uuidHex = asNonEmptyString(row.uuid_hex);
+    if (!metricId || !uuidHex || !defs[metricId]) continue;
 
-    let rows: RowDataPacket[];
-    try {
-      rows = await queryRows<RowDataPacket>(pool, sql, sqlParams);
-    } catch (error) {
-      console.warn('[stats-api] players query failed, retrying once', {
-        endpoint,
-        ...summarizeError(error),
+    const rn = parseInteger(row.rn, 0);
+    const rawValue = parseInteger(row.value, 0);
+    const uuidDash = uuidHexToDashed(uuidHex);
+
+    if (rn <= limit) {
+      boards[metricId] ??= [];
+      boards[metricId].push({
+        uuid: uuidDash,
+        value: applyDivisor(rawValue, defs[metricId].divisor),
       });
-      invalidateDbPool();
-      try {
-        const retryPool = await getDbPool(context);
-        rows = await queryRows<RowDataPacket>(retryPool, sql, sqlParams);
-      } catch (retryError) {
-        console.error('[stats-api] players query failed after retry', {
-          endpoint,
-          ...summarizeError(retryError),
-        });
-        const headers = new Headers({
-          'Cache-Control': 'no-store',
-          'X-Stats-Api-Degraded': '1',
-        });
-        return jsonResponse(withGenerated({ items: [] }, generatedIso), { headers });
+      needNamesHex.push(uuidHex);
+      if (rn === limit) {
+        lastIncluded[metricId] = { raw: rawValue, uuidHex };
       }
+    } else {
+      cursors[metricId] = '...';
     }
-
-    const items = rows
-      .map((row) => {
-        const uuidHex = asNonEmptyString(row.uuid_hex);
-        if (!uuidHex) return null;
-        return {
-          uuid: uuidHexToDashed(uuidHex),
-          name: String(row.name ?? ''),
-        };
-      })
-      .filter((item): item is { uuid: string; name: string } => item !== null);
-
-    const etag = `players:${active.runId}:${qRaw}:${limit}`;
-    const headers = etagHeaders('players', etag, active.generatedAt);
-    return jsonResponse(withGenerated({ items }, generatedIso), { headers });
   }
 
-  if (endpoint === 'player') {
-    const rawUuid = (
-      requestUrl.searchParams.get('uuid') ??
-      requestUrl.searchParams.get('player') ??
-      ''
-    ).trim();
-    const uuidHex = sanitizeUuidHex(rawUuid);
-    if (!uuidHex) return jsonError(400, 'invalid uuid');
+  for (const metricId of Object.keys(defs)) {
+    if (cursors[metricId] && lastIncluded[metricId]) {
+      const cursorRow = lastIncluded[metricId];
+      cursors[metricId] = encodeCursor(cursorRow.raw, cursorRow.uuidHex);
+    } else {
+      cursors[metricId] = null;
+    }
+    boards[metricId] ??= [];
+  }
 
-    const rows = await queryRows<RowDataPacket>(
-      pool,
-      `SELECT LOWER(HEX(p.uuid)) AS uuid_hex, p.name, ps.stats_gzip, ps.stats_sha1
-       FROM v_player_profile p
-       LEFT JOIN v_player_stats ps ON ps.uuid = p.uuid
-       WHERE p.uuid = UNHEX(?)
-       LIMIT 1`,
-      [uuidHex],
-    );
+  const players = await fetchPlayersByHex(route.pool, needNamesHex);
+  const headers = etagHeaders(
+    'leaderboards',
+    `boards:${route.active.runId}:${limit}`,
+    route.active.generatedAt,
+  );
+  return jsonResponse(
+    withGenerated(
+      {
+        __players: players,
+        boards,
+        cursors,
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
 
-    const row = rows[0];
-    const etagBase = `player:${active.runId}:${uuidHex}`;
+async function handleLeaderboardEndpoint(route: DataRouteContext): Promise<Response> {
+  const metric = (route.requestUrl.searchParams.get('metric') ?? '').trim();
+  if (!metric) return jsonError(400, 'metric required');
 
-    if (!row) {
-      const headers = etagHeaders('player', `${etagBase}:nf`, active.generatedAt);
-      return jsonResponse(
-        withGenerated(
-          {
-            found: false,
-            uuid: rawUuid,
-            name: null,
-            player: null,
-          },
-          generatedIso,
-        ),
-        { headers },
-      );
+  const limit = clampLimit(parseInteger(route.requestUrl.searchParams.get('limit'), 200));
+  const limitPlus = Math.min(limit + 1, API_MAX_LIMIT + 1);
+  const cursorRaw = (route.requestUrl.searchParams.get('cursor') ?? '').trim();
+  const cursor = cursorRaw ? decodeCursor(cursorRaw) : null;
+  if (cursorRaw && !cursor) return jsonError(400, 'invalid cursor');
+
+  const defs = await loadMetricDefs(route.pool);
+  if (!defs[metric]) return jsonError(400, 'unknown metric');
+
+  const sqlParts = [
+    `SELECT LOWER(HEX(uuid)) AS uuid_hex, value
+     FROM v_metric_value
+     WHERE metric_id = ?`,
+  ];
+  const params: unknown[] = [metric];
+
+  if (cursor) {
+    sqlParts.push('AND (value < ? OR (value = ? AND uuid > UNHEX(?)))');
+    params.push(cursor.value, cursor.value, cursor.uuidHex);
+  }
+
+  sqlParts.push('ORDER BY value DESC, uuid ASC LIMIT ?');
+  params.push(limitPlus);
+
+  const rows = await queryRows<RowDataPacket>(route.pool, sqlParts.join(' '), params);
+  const board: Array<{ uuid: string; value: number }> = [];
+  const needNamesHex: string[] = [];
+  let hasMore = false;
+  let lastRaw: number | null = null;
+  let lastUuidHex: string | null = null;
+
+  for (const row of rows) {
+    const uuidHex = asNonEmptyString(row.uuid_hex);
+    if (!uuidHex) continue;
+
+    const rawValue = parseInteger(row.value, 0);
+    if (board.length < limit) {
+      board.push({
+        uuid: uuidHexToDashed(uuidHex),
+        value: applyDivisor(rawValue, defs[metric].divisor),
+      });
+      needNamesHex.push(uuidHex);
+      lastRaw = rawValue;
+      lastUuidHex = uuidHex;
+      continue;
     }
 
-    const resolvedHex = asNonEmptyString(row.uuid_hex) ?? uuidHex;
-    const resolvedUuid = uuidHexToDashed(resolvedHex);
-    const statsSha1 = Buffer.isBuffer(row.stats_sha1) ? row.stats_sha1.toString('hex') : '';
-    const headers = etagHeaders('player', `${etagBase}:${statsSha1}`, active.generatedAt);
-    const stats = decodeStatsPayload(row.stats_gzip);
+    hasMore = true;
+    break;
+  }
 
+  const nextCursor =
+    hasMore && lastRaw !== null && lastUuidHex !== null ? encodeCursor(lastRaw, lastUuidHex) : null;
+
+  const players = await fetchPlayersByHex(route.pool, needNamesHex);
+  const etag = `board:${route.active.runId}:${metric}:${limit}:${cursorRaw}`;
+  const headers = etagHeaders('leaderboard', etag, route.active.generatedAt);
+
+  return jsonResponse(
+    withGenerated(
+      {
+        __players: players,
+        boards: { [metric]: board },
+        cursors: { [metric]: nextCursor },
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
+
+async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response> {
+  const qRaw = (route.requestUrl.searchParams.get('q') ?? '').trim().toLowerCase();
+  if (qRaw.length < 2) {
+    const headers = etagHeaders(
+      'players',
+      `players:${route.active.runId}:${qRaw}:0`,
+      route.active.generatedAt,
+    );
+    return jsonResponse(withGenerated({ items: [] }, route.active.generatedIso), { headers });
+  }
+
+  const requestedLimit = parseInteger(route.requestUrl.searchParams.get('limit'), 8);
+  const limit = clampLimit(Math.min(requestedLimit, API_MAX_SEARCH));
+  const escaped = escapeLikeInput(qRaw);
+
+  const sql = `SELECT LOWER(HEX(uuid)) AS uuid_hex, name
+     FROM v_player_profile
+     WHERE name_lc LIKE CONCAT('%', ?, '%') ESCAPE '\\\\'
+     ORDER BY
+       CASE WHEN name_lc LIKE CONCAT(?, '%') ESCAPE '\\\\' THEN 0 ELSE 1 END,
+       LOCATE(?, name_lc) ASC,
+       name_lc ASC,
+       uuid ASC
+     LIMIT ?`;
+  const sqlParams: unknown[] = [escaped, escaped, qRaw, limit];
+
+  let rows: RowDataPacket[];
+  try {
+    rows = await queryRows<RowDataPacket>(route.pool, sql, sqlParams);
+  } catch (error) {
+    console.warn('[stats-api] players query failed, retrying once', {
+      endpoint: route.endpoint,
+      ...summarizeError(error),
+    });
+    invalidateDbPool();
+    try {
+      const retryPool = await getDbPool(route.context);
+      rows = await queryRows<RowDataPacket>(retryPool, sql, sqlParams);
+    } catch (retryError) {
+      console.error('[stats-api] players query failed after retry', {
+        endpoint: route.endpoint,
+        ...summarizeError(retryError),
+      });
+      const headers = new Headers({
+        'Cache-Control': 'no-store',
+        'X-Stats-Api-Degraded': '1',
+      });
+      return jsonResponse(withGenerated({ items: [] }, route.active.generatedIso), { headers });
+    }
+  }
+
+  const items = rows
+    .map((row) => {
+      const uuidHex = asNonEmptyString(row.uuid_hex);
+      if (!uuidHex) return null;
+      return {
+        uuid: uuidHexToDashed(uuidHex),
+        name: String(row.name ?? ''),
+      };
+    })
+    .filter((item): item is { uuid: string; name: string } => item !== null);
+
+  const headers = etagHeaders(
+    'players',
+    `players:${route.active.runId}:${qRaw}:${limit}`,
+    route.active.generatedAt,
+  );
+  return jsonResponse(withGenerated({ items }, route.active.generatedIso), { headers });
+}
+
+async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> {
+  const { rawUuid, uuidHex } = readEndpointUuidParams(route.requestUrl, 'uuid', 'player');
+  if (!uuidHex) return jsonError(400, 'invalid uuid');
+
+  const rows = await queryRows<RowDataPacket>(
+    route.pool,
+    `SELECT LOWER(HEX(p.uuid)) AS uuid_hex, p.name, ps.stats_gzip, ps.stats_sha1
+     FROM v_player_profile p
+     LEFT JOIN v_player_stats ps ON ps.uuid = p.uuid
+     WHERE p.uuid = UNHEX(?)
+     LIMIT 1`,
+    [uuidHex],
+  );
+
+  const row = rows[0];
+  const etagBase = `player:${route.active.runId}:${uuidHex}`;
+
+  if (!row) {
+    const headers = etagHeaders('player', `${etagBase}:nf`, route.active.generatedAt);
     return jsonResponse(
       withGenerated(
         {
-          found: true,
-          uuid: resolvedUuid,
-          name: String(row.name ?? resolvedUuid),
-          player: stats,
+          found: false,
+          uuid: rawUuid,
+          name: null,
+          player: null,
         },
-        generatedIso,
+        route.active.generatedIso,
       ),
       { headers },
     );
   }
 
-  return jsonError(404, 'Unbekannter API-Endpunkt.');
+  const resolvedHex = asNonEmptyString(row.uuid_hex) ?? uuidHex;
+  const resolvedUuid = uuidHexToDashed(resolvedHex);
+  const statsSha1 = Buffer.isBuffer(row.stats_sha1) ? row.stats_sha1.toString('hex') : '';
+  const headers = etagHeaders('player', `${etagBase}:${statsSha1}`, route.active.generatedAt);
+  const stats = decodeStatsPayload(row.stats_gzip);
+
+  return jsonResponse(
+    withGenerated(
+      {
+        found: true,
+        uuid: resolvedUuid,
+        name: String(row.name ?? resolvedUuid),
+        player: stats,
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
+
+async function routeRequest(context: APIContext, endpoint: string): Promise<Response> {
+  const requestUrl = new URL(context.request.url);
+
+  switch (endpoint) {
+    case 'cape':
+      return handleCapeEndpoint(context, requestUrl);
+    case 'profile':
+      return handleProfileEndpoint(context, requestUrl);
+    default:
+      break;
+  }
+
+  const route = await buildDataRouteContext(context, endpoint, requestUrl);
+
+  switch (endpoint) {
+    case 'metrics':
+      return handleMetricsEndpoint(route);
+    case 'summary':
+      return handleSummaryEndpoint(route);
+    case 'leaderboards':
+      return handleLeaderboardsEndpoint(route);
+    case 'leaderboard':
+      return handleLeaderboardEndpoint(route);
+    case 'players':
+      return handlePlayersEndpoint(route);
+    case 'player':
+      return handlePlayerEndpoint(route);
+    default:
+      return jsonError(404, 'Unbekannter API-Endpunkt.');
+  }
 }
 
 export async function handleStatsApiProxy(context: APIContext): Promise<Response> {

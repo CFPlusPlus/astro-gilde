@@ -34,18 +34,18 @@ Dev-Server: `http://localhost:4321`
 
 ## Wichtige Befehle
 
-| Befehl                 | Zweck                         |
-| :--------------------- | :---------------------------- |
-| `npm run dev`          | Lokale Entwicklung            |
+| Befehl                 | Zweck                           |
+| :--------------------- | :------------------------------ |
+| `npm run dev`          | Lokale Entwicklung              |
 | `npm run dev:worker`   | Lokal inkl. Worker-API (`/api`) |
-| `npm run build`        | Produktionsbuild nach `dist/` |
-| `npm run preview`      | Lokale Vorschau des Builds    |
-| `npm run check`        | Astro Type-/Template-Check    |
-| `npm run lint`         | ESLint                        |
-| `npm run test`         | Unit-Tests (Vitest)           |
-| `npm run test:e2e`     | End-to-End-Tests (Playwright) |
-| `npm run config:check` | Konfigurations-Drift prüfen   |
-| `npm run format:check` | Prettier-Check (CI-tauglich)  |
+| `npm run build`        | Produktionsbuild nach `dist/`   |
+| `npm run preview`      | Lokale Vorschau des Builds      |
+| `npm run check`        | Astro Type-/Template-Check      |
+| `npm run lint`         | ESLint                          |
+| `npm run test`         | Unit-Tests (Vitest)             |
+| `npm run test:e2e`     | End-to-End-Tests (Playwright)   |
+| `npm run config:check` | Konfigurations-Drift prüfen     |
+| `npm run format:check` | Prettier-Check (CI-tauglich)    |
 
 ## Lokal testen (mit/ohne API)
 
