@@ -604,51 +604,83 @@ function decodeStatsPayload(raw: unknown): Record<string, unknown> | null {
   return null;
 }
 
-function extractCapeFromProfile(profileJson: string): { url: string; alias?: string } | null {
-  let profile: unknown;
+function parseJsonUnknown(value: string): unknown | null {
   try {
-    profile = JSON.parse(profileJson) as unknown;
+    return JSON.parse(value) as unknown;
   } catch {
     return null;
   }
+}
 
+function decodeBase64Utf8(value: string): string | null {
+  try {
+    return Buffer.from(value, 'base64').toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
+function normalizeMinecraftTextureUrl(rawUrl: string): string {
+  return rawUrl.toLowerCase().startsWith('http://textures.minecraft.net/')
+    ? `https://${rawUrl.slice(7)}`
+    : rawUrl;
+}
+
+function extractCapeFromTexturesPayload(textures: unknown): { url: string; alias?: string } | null {
+  if (!textures || typeof textures !== 'object') return null;
+
+  const cape = (textures as { textures?: { CAPE?: unknown } }).textures?.CAPE;
+  if (!cape || typeof cape !== 'object') return null;
+
+  const rawUrl = asNonEmptyString((cape as { url?: unknown }).url);
+  if (!rawUrl) return null;
+
+  const url = normalizeMinecraftTextureUrl(rawUrl);
+  const alias = asNonEmptyString((cape as { alias?: unknown }).alias);
+  return alias ? { url, alias } : { url };
+}
+
+function inspectTexturesProperty(property: unknown): {
+  matched: boolean;
+  cape: { url: string; alias?: string } | null;
+} {
+  if (!property || typeof property !== 'object') {
+    return { matched: false, cape: null };
+  }
+
+  const name = (property as { name?: unknown }).name;
+  const value = (property as { value?: unknown }).value;
+  if (name !== 'textures' || typeof value !== 'string' || value.length === 0) {
+    return { matched: false, cape: null };
+  }
+
+  const decoded = decodeBase64Utf8(value);
+  if (!decoded) {
+    return { matched: false, cape: null };
+  }
+
+  const textures = parseJsonUnknown(decoded);
+  if (!textures || typeof textures !== 'object') {
+    return { matched: false, cape: null };
+  }
+
+  return {
+    matched: true,
+    cape: extractCapeFromTexturesPayload(textures),
+  };
+}
+
+function extractCapeFromProfile(profileJson: string): { url: string; alias?: string } | null {
+  const profile = parseJsonUnknown(profileJson);
   if (!profile || typeof profile !== 'object') return null;
+
   const properties = (profile as { properties?: unknown }).properties;
   if (!Array.isArray(properties)) return null;
 
   for (const property of properties) {
-    if (!property || typeof property !== 'object') continue;
-    const name = (property as { name?: unknown }).name;
-    const value = (property as { value?: unknown }).value;
-    if (name !== 'textures' || typeof value !== 'string' || value.length === 0) continue;
-
-    let decoded = '';
-    try {
-      decoded = Buffer.from(value, 'base64').toString('utf8');
-    } catch {
-      continue;
-    }
-
-    let textures: unknown;
-    try {
-      textures = JSON.parse(decoded) as unknown;
-    } catch {
-      continue;
-    }
-    if (!textures || typeof textures !== 'object') continue;
-
-    const cape = (textures as { textures?: { CAPE?: unknown } }).textures?.CAPE;
-    if (!cape || typeof cape !== 'object') return null;
-
-    const rawUrl = asNonEmptyString((cape as { url?: unknown }).url);
-    if (!rawUrl) return null;
-
-    const url = rawUrl.toLowerCase().startsWith('http://textures.minecraft.net/')
-      ? `https://${rawUrl.slice(7)}`
-      : rawUrl;
-
-    const alias = asNonEmptyString((cape as { alias?: unknown }).alias);
-    return alias ? { url, alias } : { url };
+    const result = inspectTexturesProperty(property);
+    if (!result.matched) continue;
+    return result.cape;
   }
 
   return null;
@@ -1398,64 +1430,72 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
   }
 }
 
-export async function handleStatsApiProxy(context: APIContext): Promise<Response> {
-  const method = context.request.method.toUpperCase();
+function optionsResponse(): Response {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      Allow: 'GET, HEAD, OPTIONS',
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
+}
 
-  if (method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        Allow: 'GET, HEAD, OPTIONS',
-        'Cache-Control': 'no-store',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Max-Age': '86400',
-      },
-    });
-  }
+function methodNotAllowedResponse(): Response {
+  return new Response(null, {
+    status: 405,
+    headers: {
+      Allow: 'GET, HEAD, OPTIONS',
+      'Cache-Control': 'no-store',
+    },
+  });
+}
 
-  if (method !== 'GET' && method !== 'HEAD') {
-    return new Response(null, {
-      status: 405,
-      headers: {
-        Allow: 'GET, HEAD, OPTIONS',
-        'Cache-Control': 'no-store',
-      },
-    });
-  }
+function validateMethod(method: string): Response | null {
+  if (method === 'OPTIONS') return optionsResponse();
+  if (method !== 'GET' && method !== 'HEAD') return methodNotAllowedResponse();
+  return null;
+}
 
+function resolveEndpointFromContext(context: APIContext): string | null {
   const endpointPath = (context.params.path ?? '').replace(/^\/+|\/+$/g, '');
-  if (!endpointPath || endpointPath.includes('/')) {
-    return jsonError(404, 'Unbekannter API-Endpunkt.');
-  }
+  if (!endpointPath || endpointPath.includes('/')) return null;
 
   const endpoint = endpointPath.toLowerCase();
-  if (!ALLOWED_ENDPOINTS.has(endpoint)) {
-    return jsonError(404, 'Unbekannter API-Endpunkt.');
-  }
+  return ALLOWED_ENDPOINTS.has(endpoint) ? endpoint : null;
+}
 
-  const cacheKey = new Request(new URL(context.request.url).toString(), { method: 'GET' });
-  const edgeCache = getEdgeCache();
-  if (edgeCache) {
-    try {
-      const cached = await edgeCache.match(cacheKey);
-      if (cached) {
-        const conditional = maybeNotModified(context.request, cached);
-        const hitResponse = conditional ?? withApiHeaders(cached, { cacheStatus: 'HIT' });
-        return method === 'HEAD' ? withoutBody(hitResponse) : hitResponse;
-      }
-    } catch (error) {
-      console.warn('[stats-api] edge cache read failed', {
-        endpoint,
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
+async function readCachedApiResponse(
+  context: APIContext,
+  endpoint: string,
+  method: string,
+  edgeCache: Cache | null,
+  cacheKey: Request,
+): Promise<Response | null> {
+  if (!edgeCache) return null;
 
-  let response: Response;
   try {
-    response = await routeRequest(context, endpoint);
+    const cached = await edgeCache.match(cacheKey);
+    if (!cached) return null;
+
+    const conditional = maybeNotModified(context.request, cached);
+    const hitResponse = conditional ?? withApiHeaders(cached, { cacheStatus: 'HIT' });
+    return method === 'HEAD' ? withoutBody(hitResponse) : hitResponse;
+  } catch (error) {
+    console.warn('[stats-api] edge cache read failed', {
+      endpoint,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+}
+
+async function executeRouteRequest(context: APIContext, endpoint: string): Promise<Response> {
+  try {
+    return await routeRequest(context, endpoint);
   } catch (error) {
     const details = summarizeError(error);
     console.error('[stats-api] request failed', {
@@ -1465,33 +1505,78 @@ export async function handleStatsApiProxy(context: APIContext): Promise<Response
 
     // Unerwartete Fehler werden nicht ins JSON geleakt.
     if (error instanceof Error && error.message === 'DB not configured') {
-      response = jsonError(500, 'DB not configured');
-    } else {
-      response = jsonError(500, 'server error');
+      return jsonError(500, 'DB not configured');
     }
+    return jsonError(500, 'server error');
   }
+}
 
-  const cacheable =
+function isCacheableApiResponse(response: Response): boolean {
+  return (
     response.status >= 200 &&
     response.status < 500 &&
-    response.headers.get('Cache-Control') !== 'no-store';
+    response.headers.get('Cache-Control') !== 'no-store'
+  );
+}
+
+function writeResponseToEdgeCache(
+  context: APIContext,
+  endpoint: string,
+  edgeCache: Cache | null,
+  cacheKey: Request,
+  response: Response,
+): void {
+  if (!edgeCache) return;
+
+  try {
+    const putPromise = edgeCache.put(cacheKey, response.clone());
+    asExecutionContext(context)?.waitUntil?.(putPromise);
+  } catch (error) {
+    console.warn('[stats-api] edge cache write failed', {
+      endpoint,
+      message: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+function finalizeApiResponse(
+  method: string,
+  request: Request,
+  responseForClient: Response,
+): Response {
+  const conditional = maybeNotModified(request, responseForClient);
+  const finalResponse = conditional ?? responseForClient;
+  return method === 'HEAD' ? withoutBody(finalResponse) : finalResponse;
+}
+
+export async function handleStatsApiProxy(context: APIContext): Promise<Response> {
+  const method = context.request.method.toUpperCase();
+  const invalidMethodResponse = validateMethod(method);
+  if (invalidMethodResponse) return invalidMethodResponse;
+
+  const endpoint = resolveEndpointFromContext(context);
+  if (!endpoint) return jsonError(404, 'Unbekannter API-Endpunkt.');
+
+  const cacheKey = new Request(new URL(context.request.url).toString(), { method: 'GET' });
+  const edgeCache = getEdgeCache();
+  const cachedResponse = await readCachedApiResponse(
+    context,
+    endpoint,
+    method,
+    edgeCache,
+    cacheKey,
+  );
+  if (cachedResponse) return cachedResponse;
+
+  const response = await executeRouteRequest(context, endpoint);
+  const cacheable = isCacheableApiResponse(response);
   const responseForClient = withApiHeaders(response, {
     cacheStatus: cacheable ? 'MISS' : 'BYPASS',
   });
 
-  if (edgeCache && cacheable) {
-    try {
-      const putPromise = edgeCache.put(cacheKey, responseForClient.clone());
-      asExecutionContext(context)?.waitUntil?.(putPromise);
-    } catch (error) {
-      console.warn('[stats-api] edge cache write failed', {
-        endpoint,
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
+  if (cacheable) {
+    writeResponseToEdgeCache(context, endpoint, edgeCache, cacheKey, responseForClient);
   }
 
-  const conditional = maybeNotModified(context.request, responseForClient);
-  const finalResponse = conditional ?? responseForClient;
-  return method === 'HEAD' ? withoutBody(finalResponse) : finalResponse;
+  return finalizeApiResponse(method, context.request, responseForClient);
 }
