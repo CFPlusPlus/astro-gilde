@@ -77,3 +77,25 @@ Mojang (`cape` / `profile`):
 - `.dev.vars` mit DB-Werten aus `.dev.vars.example`
 
 Damit ist die komplette Statistik-API lokal unter `http://localhost:8787/api/...` testbar.
+
+## Mit und ohne API lokal testen
+
+Mit lokaler API (empfohlen):
+
+```bash
+cp .dev.vars.example .dev.vars
+# .dev.vars befuellen
+npm run dev:worker
+```
+
+Ohne lokale API (nur Frontend):
+
+```bash
+npm run dev
+```
+
+Ohne lokale API, aber mit externem API-Ziel:
+
+```bash
+PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
+```

@@ -89,3 +89,25 @@ npm run config:check
 1. Bei Domain-/API-Änderungen `minecraftGilde.ts`, `site.ts` und ggf. `astro.config.mjs` gemeinsam prüfen.
 2. Danach `npm run config:check` ausführen.
 3. Bei API-Ursprung-Änderungen Frontend-Aufrufe unter `src/features/*/api.ts` und `src/lib/http/apiUrl.ts` gegenprüfen.
+
+## Lokales API-Testing
+
+Mit lokaler API (Worker + DB):
+
+```bash
+npm run dev:worker
+```
+
+Ohne lokale API (nur Frontend):
+
+```bash
+npm run dev
+```
+
+Ohne lokale API, aber mit externem API-Ziel:
+
+```bash
+PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
+```
+
+Details zu Endpunkten, `.dev.vars` und Secrets: `docs/stats-api.md`.
