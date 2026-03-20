@@ -75,6 +75,8 @@ type HyperdriveBinding = {
   database?: unknown;
 };
 
+const mojangMemoryCache = new Map<string, MojangCacheEntry>();
+
 const API_MAX_LIMIT = 100;
 const API_MAX_SEARCH = 25;
 
@@ -144,6 +146,29 @@ const ALLOWED_ENDPOINTS = new Set([
 ]);
 
 let dbPoolPromise: Promise<Pool> | null = null;
+
+function summarizeError(error: unknown): {
+  name: string;
+  message: string;
+  code?: string;
+  errno?: number;
+} {
+  const errorObject = error as {
+    message?: unknown;
+    name?: unknown;
+    code?: unknown;
+    errno?: unknown;
+  };
+  return {
+    name: typeof errorObject?.name === 'string' ? errorObject.name : 'UnknownError',
+    message:
+      typeof errorObject?.message === 'string'
+        ? errorObject.message
+        : String(error),
+    code: typeof errorObject?.code === 'string' ? errorObject.code : undefined,
+    errno: typeof errorObject?.errno === 'number' ? errorObject.errno : undefined,
+  };
+}
 
 function asRuntimeEnv(context: APIContext): RuntimeEnv {
   return (context.locals as RuntimeLocals).runtime?.env ?? {};
@@ -416,7 +441,16 @@ async function getDbPool(context: APIContext): Promise<Pool> {
     const env = asRuntimeEnv(context);
     dbPoolPromise = createDbPool(env);
   }
-  return dbPoolPromise;
+  try {
+    return await dbPoolPromise;
+  } catch (error) {
+    dbPoolPromise = null;
+    throw error;
+  }
+}
+
+function invalidateDbPool(): void {
+  dbPoolPromise = null;
 }
 
 async function createDbPool(env: RuntimeEnv): Promise<Pool> {
@@ -435,6 +469,7 @@ async function createDbPool(env: RuntimeEnv): Promise<Pool> {
     keepAliveInitialDelay: 10_000,
     supportBigNumbers: true,
     bigNumberStrings: false,
+    disableEval: true,
   };
 
   const pool = mysql.createPool(options);
@@ -466,6 +501,14 @@ async function getActiveRun(pool: Pool): Promise<ActiveRun> {
     runId: parseInteger(row?.run_id, 0),
     generatedAt,
     generatedIso: toIsoOrNull(generatedAt),
+  };
+}
+
+function emptyActiveRun(): ActiveRun {
+  return {
+    runId: 0,
+    generatedAt: null,
+    generatedIso: null,
   };
 }
 
@@ -616,31 +659,41 @@ function extractCapeFromProfile(profileJson: string): { url: string; alias?: str
 
 async function readMojangCache(uuidHex: string): Promise<MojangCacheEntry | null> {
   const edgeCache = getEdgeCache();
-  if (!edgeCache) return null;
-
-  const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
-    method: 'GET',
-  });
-  const cached = await edgeCache.match(key);
-  if (!cached) return null;
-
-  try {
-    const payload = (await cached.json()) as MojangCacheEntry;
-    if (
-      (payload.type === 'positive' || payload.type === 'negative') &&
-      typeof payload.body === 'string' &&
-      Number.isFinite(payload.mtime)
-    ) {
-      return payload;
+  if (edgeCache) {
+    try {
+      const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
+        method: 'GET',
+      });
+      const cached = await edgeCache.match(key);
+      if (cached) {
+        const payload = (await cached.json()) as MojangCacheEntry;
+        if (
+          (payload.type === 'positive' || payload.type === 'negative') &&
+          typeof payload.body === 'string' &&
+          Number.isFinite(payload.mtime)
+        ) {
+          return payload;
+        }
+      }
+    } catch {
+      // Cache-Layer ist optional und darf den Request nicht brechen.
     }
-  } catch {
-    return null;
   }
 
-  return null;
+  const inMemory = mojangMemoryCache.get(uuidHex);
+  if (!inMemory) return null;
+  if (
+    (inMemory.type !== 'positive' && inMemory.type !== 'negative') ||
+    typeof inMemory.body !== 'string' ||
+    !Number.isFinite(inMemory.mtime)
+  ) {
+    mojangMemoryCache.delete(uuidHex);
+    return null;
+  }
+  return inMemory;
 }
 
-function writeMojangCache(
+function writeMojangCacheToEdge(
   uuidHex: string,
   entry: MojangCacheEntry,
   executionContext: ReturnType<typeof asExecutionContext>,
@@ -648,18 +701,39 @@ function writeMojangCache(
   const edgeCache = getEdgeCache();
   if (!edgeCache) return;
 
-  const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
-    method: 'GET',
-  });
-  const response = new Response(JSON.stringify(entry), {
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': `public, max-age=${PROFILE_CACHE_STALE_IF_ERROR_SECONDS}`,
-    },
-  });
+  try {
+    const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
+      method: 'GET',
+    });
+    const response = new Response(JSON.stringify(entry), {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': `public, max-age=${PROFILE_CACHE_STALE_IF_ERROR_SECONDS}`,
+      },
+    });
+    const putPromise = edgeCache.put(key, response);
+    executionContext?.waitUntil?.(putPromise);
+  } catch {
+    // Cache-Layer ist optional und darf den Request nicht brechen.
+  }
+}
 
-  const putPromise = edgeCache.put(key, response);
-  executionContext?.waitUntil?.(putPromise);
+function writeMojangCache(
+  uuidHex: string,
+  entry: MojangCacheEntry,
+  executionContext: ReturnType<typeof asExecutionContext>,
+): void {
+  mojangMemoryCache.set(uuidHex, entry);
+  writeMojangCacheToEdge(uuidHex, entry, executionContext);
+}
+
+function cleanupMojangMemoryCache(nowMs: number): void {
+  const maxAgeMs = PROFILE_CACHE_STALE_IF_ERROR_SECONDS * 1000;
+  for (const [uuidHex, entry] of mojangMemoryCache.entries()) {
+    if (nowMs - entry.mtime > maxAgeMs) {
+      mojangMemoryCache.delete(uuidHex);
+    }
+  }
 }
 
 async function fetchMojangProfile(uuidHex: string): Promise<{ status: number; body: string }> {
@@ -689,6 +763,7 @@ async function fetchMojangProfileCached(
   uuidHex: string,
 ): Promise<MojangCachedResult> {
   const now = Date.now();
+  cleanupMojangMemoryCache(now);
   const cached = await readMojangCache(uuidHex);
 
   if (cached) {
@@ -815,10 +890,99 @@ function withGenerated<T extends Record<string, unknown>>(
 }
 
 async function routeRequest(context: APIContext, endpoint: string): Promise<Response> {
-  const pool = await getDbPool(context);
-  const active = await getActiveRun(pool);
-  const generatedIso = active.generatedIso;
   const requestUrl = new URL(context.request.url);
+
+  if (endpoint === 'cape') {
+    const rawUuid = (
+      requestUrl.searchParams.get('uuid') ??
+      requestUrl.searchParams.get('cape') ??
+      ''
+    ).trim();
+    const uuidHex = sanitizeUuidHex(rawUuid);
+    if (!uuidHex) return jsonError(400, 'invalid uuid');
+
+    const cached = await fetchMojangProfileCached(context, uuidHex);
+    if (!cached.ok) {
+      return jsonResponse(
+        {
+          error: cached.error,
+          status: cached.upstreamStatus ?? 0,
+        },
+        {
+          status: cached.status,
+          headers: { 'Cache-Control': 'no-store' },
+        },
+      );
+    }
+
+    const uuidDash = uuidHexToDashed(uuidHex);
+    const cape = cached.type === 'positive' ? extractCapeFromProfile(cached.body) : null;
+    const capeUrl = cape?.url ?? null;
+    const hasCape = capeUrl !== null;
+
+    const headers = etagHeaders(
+      'cape',
+      `cape:${uuidHex}:${sha1Hex(cached.body)}:${capeUrl ?? 'none'}`,
+      new Date(cached.mtime),
+      cached.maxAgeSeconds,
+    );
+
+    return jsonResponse(
+      {
+        found: cached.type !== 'negative',
+        uuid: uuidDash,
+        cape,
+        capeUrl,
+        hasCape,
+      },
+      { headers },
+    );
+  }
+
+  if (endpoint === 'profile') {
+    const rawUuid = (
+      requestUrl.searchParams.get('uuid') ??
+      requestUrl.searchParams.get('profile') ??
+      ''
+    ).trim();
+    const uuidHex = sanitizeUuidHex(rawUuid);
+    if (!uuidHex) return jsonError(400, 'invalid uuid');
+
+    const cached = await fetchMojangProfileCached(context, uuidHex);
+    if (!cached.ok) {
+      return jsonResponse(
+        {
+          error: cached.error,
+          status: cached.upstreamStatus ?? 0,
+        },
+        {
+          status: cached.status,
+          headers: { 'Cache-Control': 'no-store' },
+        },
+      );
+    }
+
+    const headers = etagHeaders(
+      'profile',
+      `profile:${uuidHex}:${sha1Hex(cached.body)}`,
+      new Date(cached.mtime),
+      cached.maxAgeSeconds,
+    );
+    headers.set('Content-Type', 'application/json; charset=utf-8');
+    return new Response(cached.body, { status: 200, headers });
+  }
+
+  const pool = await getDbPool(context);
+  let active = emptyActiveRun();
+  try {
+    active = await getActiveRun(pool);
+  } catch (error) {
+    console.warn('[stats-api] active run lookup failed', {
+      endpoint,
+      ...summarizeError(error),
+    });
+  }
+  const generatedIso = active.generatedIso;
 
   if (endpoint === 'metrics') {
     const defs = await loadMetricDefs(pool);
@@ -1070,9 +1234,7 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
     const limit = clampLimit(Math.min(requestedLimit, API_MAX_SEARCH));
     const escaped = escapeLikeInput(qRaw);
 
-    const rows = await queryRows<RowDataPacket>(
-      pool,
-      `SELECT LOWER(HEX(uuid)) AS uuid_hex, name
+    const sql = `SELECT LOWER(HEX(uuid)) AS uuid_hex, name
        FROM v_player_profile
        WHERE name_lc LIKE CONCAT('%', ?, '%') ESCAPE '\\\\'
        ORDER BY
@@ -1080,9 +1242,33 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
          LOCATE(?, name_lc) ASC,
          name_lc ASC,
          uuid ASC
-       LIMIT ?`,
-      [escaped, escaped, qRaw, limit],
-    );
+       LIMIT ?`;
+    const sqlParams: unknown[] = [escaped, escaped, qRaw, limit];
+
+    let rows: RowDataPacket[];
+    try {
+      rows = await queryRows<RowDataPacket>(pool, sql, sqlParams);
+    } catch (error) {
+      console.warn('[stats-api] players query failed, retrying once', {
+        endpoint,
+        ...summarizeError(error),
+      });
+      invalidateDbPool();
+      try {
+        const retryPool = await getDbPool(context);
+        rows = await queryRows<RowDataPacket>(retryPool, sql, sqlParams);
+      } catch (retryError) {
+        console.error('[stats-api] players query failed after retry', {
+          endpoint,
+          ...summarizeError(retryError),
+        });
+        const headers = new Headers({
+          'Cache-Control': 'no-store',
+          'X-Stats-Api-Degraded': '1',
+        });
+        return jsonResponse(withGenerated({ items: [] }, generatedIso), { headers });
+      }
+    }
 
     const items = rows
       .map((row) => {
@@ -1158,86 +1344,6 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
     );
   }
 
-  if (endpoint === 'cape') {
-    const rawUuid = (
-      requestUrl.searchParams.get('uuid') ??
-      requestUrl.searchParams.get('cape') ??
-      ''
-    ).trim();
-    const uuidHex = sanitizeUuidHex(rawUuid);
-    if (!uuidHex) return jsonError(400, 'invalid uuid');
-
-    const cached = await fetchMojangProfileCached(context, uuidHex);
-    if (!cached.ok) {
-      return jsonResponse(
-        {
-          error: cached.error,
-          status: cached.upstreamStatus ?? 0,
-        },
-        {
-          status: cached.status,
-          headers: { 'Cache-Control': 'no-store' },
-        },
-      );
-    }
-
-    const uuidDash = uuidHexToDashed(uuidHex);
-    const cape = cached.type === 'positive' ? extractCapeFromProfile(cached.body) : null;
-    const capeUrl = cape?.url ?? null;
-    const hasCape = capeUrl !== null;
-
-    const headers = etagHeaders(
-      'cape',
-      `cape:${uuidHex}:${sha1Hex(cached.body)}:${capeUrl ?? 'none'}`,
-      new Date(cached.mtime),
-      cached.maxAgeSeconds,
-    );
-
-    return jsonResponse(
-      {
-        found: cached.type !== 'negative',
-        uuid: uuidDash,
-        cape,
-        capeUrl,
-        hasCape,
-      },
-      { headers },
-    );
-  }
-
-  if (endpoint === 'profile') {
-    const rawUuid = (
-      requestUrl.searchParams.get('uuid') ??
-      requestUrl.searchParams.get('profile') ??
-      ''
-    ).trim();
-    const uuidHex = sanitizeUuidHex(rawUuid);
-    if (!uuidHex) return jsonError(400, 'invalid uuid');
-
-    const cached = await fetchMojangProfileCached(context, uuidHex);
-    if (!cached.ok) {
-      return jsonResponse(
-        {
-          error: cached.error,
-          status: cached.upstreamStatus ?? 0,
-        },
-        {
-          status: cached.status,
-          headers: { 'Cache-Control': 'no-store' },
-        },
-      );
-    }
-
-    const headers = etagHeaders(
-      'profile',
-      `profile:${uuidHex}:${sha1Hex(cached.body)}`,
-      new Date(cached.mtime),
-      cached.maxAgeSeconds,
-    );
-    headers.set('Content-Type', 'application/json; charset=utf-8');
-    return new Response(cached.body, { status: 200, headers });
-  }
-
   return jsonError(404, 'Unbekannter API-Endpunkt.');
 }
 
@@ -1281,11 +1387,18 @@ export async function handleStatsApiProxy(context: APIContext): Promise<Response
   const cacheKey = new Request(new URL(context.request.url).toString(), { method: 'GET' });
   const edgeCache = getEdgeCache();
   if (edgeCache) {
-    const cached = await edgeCache.match(cacheKey);
-    if (cached) {
-      const conditional = maybeNotModified(context.request, cached);
-      const hitResponse = conditional ?? withApiHeaders(cached, { cacheStatus: 'HIT' });
-      return method === 'HEAD' ? withoutBody(hitResponse) : hitResponse;
+    try {
+      const cached = await edgeCache.match(cacheKey);
+      if (cached) {
+        const conditional = maybeNotModified(context.request, cached);
+        const hitResponse = conditional ?? withApiHeaders(cached, { cacheStatus: 'HIT' });
+        return method === 'HEAD' ? withoutBody(hitResponse) : hitResponse;
+      }
+    } catch (error) {
+      console.warn('[stats-api] edge cache read failed', {
+        endpoint,
+        message: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -1293,6 +1406,12 @@ export async function handleStatsApiProxy(context: APIContext): Promise<Response
   try {
     response = await routeRequest(context, endpoint);
   } catch (error) {
+    const details = summarizeError(error);
+    console.error('[stats-api] request failed', {
+      endpoint,
+      ...details,
+    });
+
     // Unerwartete Fehler werden nicht ins JSON geleakt.
     if (error instanceof Error && error.message === 'DB not configured') {
       response = jsonError(500, 'DB not configured');
@@ -1310,8 +1429,15 @@ export async function handleStatsApiProxy(context: APIContext): Promise<Response
   });
 
   if (edgeCache && cacheable) {
-    const putPromise = edgeCache.put(cacheKey, responseForClient.clone());
-    asExecutionContext(context)?.waitUntil?.(putPromise);
+    try {
+      const putPromise = edgeCache.put(cacheKey, responseForClient.clone());
+      asExecutionContext(context)?.waitUntil?.(putPromise);
+    } catch (error) {
+      console.warn('[stats-api] edge cache write failed', {
+        endpoint,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 
   const conditional = maybeNotModified(context.request, responseForClient);
