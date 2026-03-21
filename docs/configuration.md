@@ -104,7 +104,7 @@ npm run dev:worker
 Hinweis für Hyperdrive:
 `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte für
 `wrangler dev` zusätzlich als echte Shell-Umgebungsvariable gesetzt werden
-oder lokal als `localConnectionString` in `wrangler.toml` stehen.
+oder lokal als `localConnectionString` in `wrangler.jsonc` stehen.
 
 Ohne lokale API (nur Frontend):
 

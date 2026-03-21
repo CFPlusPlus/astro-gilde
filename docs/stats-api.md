@@ -44,18 +44,18 @@ Optionale Werte:
 
 Optionaler Hyperdrive-Binding:
 
-- `HYPERDRIVE` in `wrangler.toml`
+- `HYPERDRIVE` in `wrangler.jsonc`
 
 Wenn `HYPERDRIVE` gesetzt ist, werden dessen Verbindungsdaten bevorzugt verwendet.
 Für `wrangler dev` braucht Hyperdrive zusätzlich eine lokale Verbindungszeichenfolge:
 
 - `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
-- alternativ `localConnectionString` direkt in `wrangler.toml`
+- alternativ `localConnectionString` direkt in `wrangler.jsonc`
 
 Wichtig: Diese Variable in `.dev.vars` allein reicht für Wrangler nicht immer aus,
 weil der Hyperdrive-Check bereits vor dem Laden der Worker-Runtime greift.
 In der Praxis die Variable daher besser vor dem Start als Shell-Umgebungsvariable
-setzen oder `localConnectionString` lokal in `wrangler.toml` pflegen.
+setzen oder `localConnectionString` lokal in `wrangler.jsonc` pflegen.
 
 Beispiel für MariaDB/MySQL:
 

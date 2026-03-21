@@ -68,7 +68,7 @@ npm run dev:worker
 - Wichtig: Die Hyperdrive-Variable in `.dev.vars` allein reicht für Wrangler
   nicht immer aus. In PowerShell besser vor dem Start als echte
   Umgebungsvariable setzen oder `localConnectionString` lokal in
-  `wrangler.toml` verwenden.
+  `wrangler.jsonc` verwenden.
 
 ```powershell
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
