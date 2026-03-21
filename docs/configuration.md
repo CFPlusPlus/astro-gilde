@@ -95,8 +95,16 @@ npm run config:check
 Mit lokaler API (Worker + DB):
 
 ```bash
+# Bei aktivem Hyperdrive zusätzlich
+# CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
+# in .dev.vars setzen
 npm run dev:worker
 ```
+
+Hinweis für Hyperdrive:
+`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte für
+`wrangler dev` zusätzlich als echte Shell-Umgebungsvariable gesetzt werden
+oder lokal als `localConnectionString` in `wrangler.toml` stehen.
 
 Ohne lokale API (nur Frontend):
 

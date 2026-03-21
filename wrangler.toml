@@ -21,6 +21,6 @@ binding = "ASSETS"
 # Fuer lokale Entwicklung keine echten Zugangsdaten ins Repo schreiben.
 # Statt `localConnectionString` besser die Umgebungsvariable
 # `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` setzen.
-# [[hyperdrive]]
-# binding = "HYPERDRIVE"
-# id = "1957f1427ada4516aab63e6664f0ef0c"
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "1957f1427ada4516aab63e6664f0ef0c"

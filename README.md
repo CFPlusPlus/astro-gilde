@@ -53,12 +53,27 @@ Dev-Server: `http://localhost:4321`
 
 ```bash
 cp .dev.vars.example .dev.vars
+# Bei aktivem Hyperdrive zusätzlich
+# CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
+# als mysql://... Verbindung setzen
 # .dev.vars mit DB-Daten befüllen
 npm run dev:worker
 ```
 
 - Website und API laufen zusammen unter `http://localhost:8787`
 - Beispiel: `http://localhost:8787/api/metrics`
+- Bei Hyperdrive emuliert Wrangler lokal nur mit
+  `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
+  oder `localConnectionString`
+- Wichtig: Die Hyperdrive-Variable in `.dev.vars` allein reicht für Wrangler
+  nicht immer aus. In PowerShell besser vor dem Start als echte
+  Umgebungsvariable setzen oder `localConnectionString` lokal in
+  `wrangler.toml` verwenden.
+
+```powershell
+$env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
+npm run dev:worker
+```
 
 ### 2) Ohne lokale API (nur Frontend)
 

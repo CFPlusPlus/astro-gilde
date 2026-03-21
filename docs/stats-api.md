@@ -47,6 +47,21 @@ Optionaler Hyperdrive-Binding:
 - `HYPERDRIVE` in `wrangler.toml`
 
 Wenn `HYPERDRIVE` gesetzt ist, werden dessen Verbindungsdaten bevorzugt verwendet.
+Für `wrangler dev` braucht Hyperdrive zusätzlich eine lokale Verbindungszeichenfolge:
+
+- `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
+- alternativ `localConnectionString` direkt in `wrangler.toml`
+
+Wichtig: Diese Variable in `.dev.vars` allein reicht für Wrangler nicht immer aus,
+weil der Hyperdrive-Check bereits vor dem Laden der Worker-Runtime greift.
+In der Praxis die Variable daher besser vor dem Start als Shell-Umgebungsvariable
+setzen oder `localConnectionString` lokal in `wrangler.toml` pflegen.
+
+Beispiel für MariaDB/MySQL:
+
+```text
+mysql://stats_user:bitte_aendern@127.0.0.1:3306/stats
+```
 
 Wichtig:
 
@@ -75,6 +90,8 @@ Mojang (`cape` / `profile`):
 - `npm run dev` fuer Astro
 - `npm run dev:worker` fuer Worker-Runtime mit Wrangler
 - `.dev.vars` mit DB-Werten aus `.dev.vars.example`
+- bei aktivem Hyperdrive zusätzlich
+  `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
 
 Damit ist die komplette Statistik-API lokal unter `http://localhost:8787/api/...` testbar.
 
@@ -84,7 +101,15 @@ Mit lokaler API (empfohlen):
 
 ```bash
 cp .dev.vars.example .dev.vars
-# .dev.vars befuellen
+# Bei Hyperdrive die lokale MySQL-URL setzen
+# .dev.vars befüllen
+npm run dev:worker
+```
+
+PowerShell:
+
+```powershell
+$env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
 npm run dev:worker
 ```
 
