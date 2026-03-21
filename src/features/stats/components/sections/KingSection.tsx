@@ -2,6 +2,7 @@ import { ChevronDown, Crown } from 'lucide-react';
 
 import type { LeaderboardState } from '../../types-ui';
 import { formatMetricValue } from '../../format';
+import { PlayerAvatar } from '../PlayerAvatar';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
@@ -584,8 +585,10 @@ export function KingSection({
 
                       <div className="mt-4 flex items-center gap-3">
                         {entry.name ? (
-                          <img
-                            src={`https://minotar.net/helm/${encodeURIComponent(entry.name)}/64.png`}
+                          <PlayerAvatar
+                            uuid={entry.uuid}
+                            name={entry.name}
+                            size={64}
                             alt=""
                             className={[
                               'flex-none rounded-xl bg-black/20',

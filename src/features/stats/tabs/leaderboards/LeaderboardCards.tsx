@@ -1,6 +1,7 @@
 import { memo } from 'react';
 
 import type { MetricDef } from '../../types';
+import { PlayerAvatar } from '../../components/PlayerAvatar';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 
 type LeaderboardCardRow = {
@@ -64,8 +65,10 @@ const LeaderboardCardItem = memo(function LeaderboardCardItem({
           </span>
 
           <span className="text-fg/90 inline-flex min-w-0 items-center gap-2">
-            <img
-              src={`https://minotar.net/helm/${encodeURIComponent(row.name)}/32.png`}
+            <PlayerAvatar
+              uuid={row.uuid}
+              name={row.name}
+              size={32}
               alt=""
               className="h-8 w-8 flex-none rounded-lg bg-black/20"
               loading="lazy"

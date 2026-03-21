@@ -2,6 +2,7 @@ import React, { useId } from 'react';
 import { Search, X } from 'lucide-react';
 
 import type { PlayersSearchItem } from '../types';
+import { PlayerAvatar } from './PlayerAvatar';
 
 const MIN_QUERY_LENGTH = 2;
 
@@ -288,8 +289,10 @@ function ResultsList({
               className="mg-autocomplete-option text-fg/90 flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors"
               data-active={isActive ? 'true' : 'false'}
             >
-              <img
-                src={`https://minotar.net/helm/${encodeURIComponent(item.name)}/32.png`}
+              <PlayerAvatar
+                uuid={item.uuid}
+                name={item.name}
+                size={32}
                 alt=""
                 className="h-8 w-8 flex-none rounded-lg bg-black/20"
                 loading="lazy"

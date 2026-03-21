@@ -12,6 +12,12 @@ import {
 import { getPlayer, getTranslations } from '../stats-core/api';
 import { logMissingTranslations } from '../stats-core/i18n';
 import type { PlayerApiResponse, PlayerTranslations } from '../stats-core/types';
+import {
+  buildMcHeadsAvatarUrl,
+  buildMcHeadsSkinUrl,
+  buildMinotarHelmUrl,
+  buildMinotarSkinUrl,
+} from '../../lib/minecraft/playerTextures';
 import { parseFilter } from './format';
 import {
   buildPlayerTables,
@@ -23,7 +29,6 @@ import {
   type SortState,
   type TabKey,
 } from './table-model';
-import { compactUUID } from './uuid';
 
 export type UsePlayerStatsState = {
   activeTab: TabKey;
@@ -230,19 +235,22 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     document.title = `Minecraft Gilde - Spielerstatistik von ${playerName}`;
   }, [playerName]);
 
-  const skinId = useMemo(() => {
-    if (!uuidFull) return '';
-    return playerName && playerName !== uuidFull ? playerName : compactUUID(uuidFull);
-  }, [playerName, uuidFull]);
-
-  const skinHeadUrl = skinId
-    ? `https://minotar.net/helm/${encodeURIComponent(skinId)}/512.png`
-    : '';
-  const skinHeadFallback = skinId
-    ? `https://mc-heads.net/avatar/${encodeURIComponent(skinId)}/512`
-    : '';
-  const skinFullUrl = skinId ? `https://minotar.net/skin/${encodeURIComponent(skinId)}.png` : '';
-  const skinFullFallback = skinId ? `https://mc-heads.net/skin/${encodeURIComponent(skinId)}` : '';
+  const skinHeadUrl = useMemo(
+    () => buildMinotarHelmUrl(uuidFull, playerName, 512),
+    [playerName, uuidFull],
+  );
+  const skinHeadFallback = useMemo(
+    () => buildMcHeadsAvatarUrl(uuidFull, playerName, 512),
+    [playerName, uuidFull],
+  );
+  const skinFullUrl = useMemo(
+    () => buildMinotarSkinUrl(uuidFull, playerName),
+    [playerName, uuidFull],
+  );
+  const skinFullFallback = useMemo(
+    () => buildMcHeadsSkinUrl(uuidFull, playerName),
+    [playerName, uuidFull],
+  );
 
   const tables = useMemo(
     () => buildPlayerTables(stats, isGerman, translations),

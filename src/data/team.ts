@@ -1,4 +1,5 @@
 export type TeamMember = {
+  uuid: string;
   inGameName: string;
   role: string;
   group: 'admin' | 'moderator' | 'streamer';
@@ -11,12 +12,43 @@ export const TEAM_GROUPS: Array<{ key: TeamMember['group']; label: string }> = [
 ];
 
 // Quelle: bisherige Konfiguration (public/js/script.js)
+// UUIDs werden fuer Koepfe stabil gehalten, der Anzeigename bleibt redaktionell gepflegt.
 export const TEAM_MEMBERS: TeamMember[] = [
-  { inGameName: 'lestructor', role: 'Admin', group: 'admin' },
-  { inGameName: 'SCHIROKY', role: 'Admin', group: 'admin' },
+  {
+    uuid: '8bb522ddad894727991cc562022587cd',
+    inGameName: 'lestructor',
+    role: 'Admin',
+    group: 'admin',
+  },
+  {
+    uuid: '93d4439c30c14d35a9e939978d436ede',
+    inGameName: 'SCHIROKY',
+    role: 'Admin',
+    group: 'admin',
+  },
 
-  { inGameName: 'Fianaa', role: 'Moderator', group: 'moderator' },
-  { inGameName: 'W4ldi', role: 'Moderator', group: 'moderator' },
-  { inGameName: 'Wurmknoten', role: 'Moderator', group: 'moderator' },
-  { inGameName: 'MasterBenn', role: 'Moderator', group: 'moderator' },
+  {
+    uuid: '8acdac8906524af1ad8e3aadfcfa333a',
+    inGameName: 'Fianaa',
+    role: 'Moderator',
+    group: 'moderator',
+  },
+  {
+    uuid: '87f8fa046d414b66b61f4dd26bdc09a6',
+    inGameName: 'W4ldi',
+    role: 'Moderator',
+    group: 'moderator',
+  },
+  {
+    uuid: '7067d3cda4614efdae4e6fad16d958fa',
+    inGameName: 'Wurmknoten',
+    role: 'Moderator',
+    group: 'moderator',
+  },
+  {
+    uuid: 'd410e7f3c2084ca8badfec3b73311e5e',
+    inGameName: 'MasterBenn',
+    role: 'Moderator',
+    group: 'moderator',
+  },
 ];

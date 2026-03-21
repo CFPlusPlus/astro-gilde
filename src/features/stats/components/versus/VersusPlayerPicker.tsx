@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeftRight, Check, Copy, Info, Swords, X } from 'lucide-react';
 
 import { buildVersusShareUrlSearch } from '../../url-state';
+import { PlayerAvatar } from '../PlayerAvatar';
 import { PlayerSearchCombobox } from '../PlayerSearchCombobox';
 import type { VersusSectionProps } from './types';
 
@@ -69,8 +70,10 @@ function VersusPlayerRow({
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-center gap-2">
           {player ? (
-            <img
-              src={`https://minotar.net/helm/${encodeURIComponent(player.name)}/32.png`}
+            <PlayerAvatar
+              uuid={player.uuid}
+              name={player.name}
+              size={32}
               alt=""
               className="h-8 w-8 flex-none rounded-lg bg-black/20"
               loading="lazy"

@@ -5,12 +5,11 @@ import Badge from '../components/ui/Badge.astro';
 import DividerList from '../components/ui/DividerList.astro';
 import PageHeader from '../components/layout/PageHeader.astro';
 import { TEAM_GROUPS, TEAM_MEMBERS } from '../data/team';
+import { buildMcHeadsAvatarUrl, buildMinotarHelmUrl } from '../lib/minecraft/playerTextures';
 import { Shield, Wrench, ArrowRight } from '@lucide/astro';
 import { minecraftGilde } from '../config/minecraftGilde';
 
 const DISCORD_URL = minecraftGilde.discord.url;
-
-const avatarUrl = (name: string) => `https://minotar.net/helm/${encodeURIComponent(name)}/96.png`;
 
 const groups = TEAM_GROUPS.map((g) => ({
   ...g,
@@ -62,7 +61,8 @@ const groupIconByKey = {
                   <li class="mg-row flex items-center gap-3 py-3">
                     <div class="flex min-w-0 items-center gap-3">
                       <img
-                        src={avatarUrl(m.inGameName)}
+                        src={buildMinotarHelmUrl(m.uuid, null, 96)}
+                        data-avatar-fallback={buildMcHeadsAvatarUrl(m.uuid, null, 96)}
                         alt={m.inGameName}
                         width="48"
                         height="48"
@@ -86,4 +86,18 @@ const groupIconByKey = {
       }
     </div>
   </section>
+
+  <script>
+    document.querySelectorAll<HTMLImageElement>('img[data-avatar-fallback]').forEach((img) => {
+      img.addEventListener('error', () => {
+        const fallbackSrc = img.dataset.avatarFallback || '';
+        const fallbackAttempted = img.dataset.fallbackAttempted === '1';
+
+        if (!fallbackAttempted && fallbackSrc && img.src !== fallbackSrc) {
+          img.dataset.fallbackAttempted = '1';
+          img.src = fallbackSrc;
+        }
+      });
+    });
+  </script>
 </BaseLayout>

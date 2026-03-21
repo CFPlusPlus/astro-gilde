@@ -4,6 +4,7 @@ import type { MetricDef } from '../types';
 import type { LeaderboardState } from '../types-ui';
 import { formatMetricValue } from '../format';
 import { Pagination } from './Pagination';
+import { PlayerAvatar } from './PlayerAvatar';
 import { LeaderboardCards } from '../tabs/leaderboards/LeaderboardCards';
 import { createTableRowMotion, resolveTableMotionStartIndex } from '../../ui/tableRowMotion';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
@@ -92,8 +93,10 @@ const LeaderboardRow = memo(function LeaderboardRow({
       >
         <div className="flex min-w-0 items-center justify-between gap-2">
           <span className="text-fg/90 decoration-accent/70 group-hover:text-fg inline-flex min-w-0 items-center gap-2 rounded-md underline-offset-4 transition-colors group-hover:underline group-focus-visible:underline">
-            <img
-              src={`https://minotar.net/helm/${encodeURIComponent(row.name)}/32.png`}
+            <PlayerAvatar
+              uuid={row.uuid}
+              name={row.name}
+              size={32}
               alt=""
               className="h-8 w-8 flex-none rounded-lg bg-black/20"
               loading="lazy"
