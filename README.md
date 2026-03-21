@@ -53,7 +53,7 @@ Dev-Server: `http://localhost:4321`
 
 ```bash
 cp .dev.vars.example .dev.vars
-# .dev.vars mit DB-Daten befuellen
+# .dev.vars mit DB-Daten befüllen
 npm run dev:worker
 ```
 
@@ -66,8 +66,8 @@ npm run dev:worker
 npm run dev
 ```
 
-- Frontend laeuft unter `http://localhost:4321`
-- `/api/*` ist dabei nicht lokal aktiv (Statistikfeatures koennen eingeschraenkt sein)
+- Frontend läuft unter `http://localhost:4321`
+- `/api/*` ist dabei nicht lokal aktiv (Statistikfeatures können eingeschränkt sein)
 
 ### 3) Ohne lokale API, aber mit externem API-Ziel
 
@@ -75,7 +75,7 @@ npm run dev
 PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
 ```
 
-- Frontend nutzt dann das externe API-Ziel fuer `/api/*`
+- Frontend nutzt dann das externe API-Ziel für `/api/*`
 - Keine Secrets im Frontend setzen (nur URL, niemals DB-Credentials)
 
 ## Inhalte pflegen
