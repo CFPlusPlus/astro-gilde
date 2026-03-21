@@ -2,7 +2,7 @@ import type { APIContext } from 'astro';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 import mysql from 'mysql2/promise';
-import type { Pool, PoolOptions, RowDataPacket } from 'mysql2/promise';
+import type { Connection, ConnectionOptions, RowDataPacket } from 'mysql2/promise';
 
 type CacheProfile = {
   maxAgeSeconds: number;
@@ -144,8 +144,6 @@ const ALLOWED_ENDPOINTS = new Set([
   'cape',
   'profile',
 ]);
-
-let dbPoolPromise: Promise<Pool> | null = null;
 
 function summarizeError(error: unknown): {
   name: string;
@@ -433,35 +431,15 @@ function parseConnectionString(connectionString: string | null): Partial<DbConfi
   }
 }
 
-async function getDbPool(context: APIContext): Promise<Pool> {
-  if (!dbPoolPromise) {
-    const env = asRuntimeEnv(context);
-    dbPoolPromise = createDbPool(env);
-  }
-  try {
-    return await dbPoolPromise;
-  } catch (error) {
-    dbPoolPromise = null;
-    throw error;
-  }
-}
-
-function invalidateDbPool(): void {
-  dbPoolPromise = null;
-}
-
-async function createDbPool(env: RuntimeEnv): Promise<Pool> {
+async function createDbConnection(env: RuntimeEnv): Promise<Connection> {
   const db = resolveDbConfig(env);
-  const options: PoolOptions = {
+  const options: ConnectionOptions = {
     host: db.host,
     port: db.port,
     user: db.user,
     password: db.password,
     database: db.database,
     charset: db.charset,
-    waitForConnections: true,
-    connectionLimit: 5,
-    queueLimit: 0,
     enableKeepAlive: true,
     keepAliveInitialDelay: 10_000,
     supportBigNumbers: true,
@@ -469,24 +447,29 @@ async function createDbPool(env: RuntimeEnv): Promise<Pool> {
     disableEval: true,
   };
 
-  const pool = mysql.createPool(options);
-  const connection = await pool.getConnection();
-  connection.release();
-  return pool;
+  return mysql.createConnection(options);
 }
 
 async function queryRows<T extends RowDataPacket>(
-  pool: Pool,
+  connection: Connection,
   sql: string,
   params: unknown[] = [],
 ): Promise<T[]> {
-  const [rows] = await pool.query<T[]>(sql, params);
+  const [rows] = await connection.query<T[]>(sql, params);
   return rows;
 }
 
-async function getActiveRun(pool: Pool): Promise<ActiveRun> {
+async function closeDbConnection(connection: Connection): Promise<void> {
+  try {
+    await connection.end();
+  } catch {
+    // Die Verbindung ist nur request-lokal und darf das API-Ergebnis nicht ueberschreiben.
+  }
+}
+
+async function getActiveRun(connection: Connection): Promise<ActiveRun> {
   const rows = await queryRows<RowDataPacket>(
-    pool,
+    connection,
     `SELECT s.active_run_id AS run_id, r.generated_at AS generated_at
      FROM site_state s
      LEFT JOIN import_run r ON r.id = s.active_run_id
@@ -509,9 +492,9 @@ function emptyActiveRun(): ActiveRun {
   };
 }
 
-async function loadMetricDefs(pool: Pool): Promise<Record<string, MetricDef>> {
+async function loadMetricDefs(connection: Connection): Promise<Record<string, MetricDef>> {
   const rows = await queryRows<RowDataPacket>(
-    pool,
+    connection,
     `SELECT id, label, category, unit, sort_order, enabled,
             COALESCE(divisor, NULL) AS divisor,
             COALESCE(decimals, NULL) AS decimals
@@ -538,7 +521,7 @@ async function loadMetricDefs(pool: Pool): Promise<Record<string, MetricDef>> {
 }
 
 async function fetchPlayersByHex(
-  pool: Pool,
+  connection: Connection,
   uuidHexList: string[],
 ): Promise<Record<string, string>> {
   const unique = Array.from(
@@ -555,7 +538,7 @@ async function fetchPlayersByHex(
     const chunk = unique.slice(i, i + chunkSize);
     const placeholders = chunk.map(() => 'UNHEX(?)').join(',');
     const rows = await queryRows<RowDataPacket>(
-      pool,
+      connection,
       `SELECT LOWER(HEX(uuid)) AS uuid_hex, name
        FROM v_player_profile
        WHERE uuid IN (${placeholders})`,
@@ -922,7 +905,7 @@ type DataRouteContext = {
   context: APIContext;
   requestUrl: URL;
   endpoint: string;
-  pool: Pool;
+  db: Connection;
   active: ActiveRun;
 };
 
@@ -971,9 +954,9 @@ function parseRequestedMetrics(rawMetrics: string): string[] {
   );
 }
 
-async function loadActiveRunSafely(pool: Pool, endpoint: string): Promise<ActiveRun> {
+async function loadActiveRunSafely(connection: Connection, endpoint: string): Promise<ActiveRun> {
   try {
-    return await getActiveRun(pool);
+    return await getActiveRun(connection);
   } catch (error) {
     console.warn('[stats-api] active run lookup failed', {
       endpoint,
@@ -988,13 +971,13 @@ async function buildDataRouteContext(
   endpoint: string,
   requestUrl: URL,
 ): Promise<DataRouteContext> {
-  const pool = await getDbPool(context);
-  const active = await loadActiveRunSafely(pool, endpoint);
+  const db = await createDbConnection(asRuntimeEnv(context));
+  const active = await loadActiveRunSafely(db, endpoint);
   return {
     context,
     requestUrl,
     endpoint,
-    pool,
+    db,
     active,
   };
 }
@@ -1048,7 +1031,7 @@ async function handleProfileEndpoint(context: APIContext, requestUrl: URL): Prom
 }
 
 async function handleMetricsEndpoint(route: DataRouteContext): Promise<Response> {
-  const defs = await loadMetricDefs(route.pool);
+  const defs = await loadMetricDefs(route.db);
   const headers = etagHeaders('metrics', `metrics:${route.active.runId}`, route.active.generatedAt);
   return jsonResponse(withGenerated({ metrics: defs }, route.active.generatedIso), { headers });
 }
@@ -1058,13 +1041,13 @@ async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response>
   if (requested.length === 0) return jsonError(400, 'metrics required');
   if (requested.length > 12) return jsonError(400, 'too many metrics');
 
-  const defs = await loadMetricDefs(route.pool);
+  const defs = await loadMetricDefs(route.db);
   for (const metric of requested) {
     if (!defs[metric]) return jsonError(400, 'unknown metric');
   }
 
   const playerRows = await queryRows<RowDataPacket>(
-    route.pool,
+    route.db,
     'SELECT COUNT(*) AS c FROM v_player_profile',
   );
   const playerCount = parseInteger(playerRows[0]?.c, 0);
@@ -1075,7 +1058,7 @@ async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response>
 
   const placeholders = requested.map(() => '?').join(',');
   const totalRows = await queryRows<RowDataPacket>(
-    route.pool,
+    route.db,
     `SELECT metric_id, SUM(value) AS total_raw
      FROM v_metric_value
      WHERE metric_id IN (${placeholders})
@@ -1108,7 +1091,7 @@ async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Resp
   const limit = clampLimit(parseInteger(route.requestUrl.searchParams.get('limit'), 50));
   const limitPlus = Math.min(limit + 1, API_MAX_LIMIT + 1);
 
-  const defs = await loadMetricDefs(route.pool);
+  const defs = await loadMetricDefs(route.db);
   if (Object.keys(defs).length === 0 || route.active.runId === 0) {
     const headers = etagHeaders(
       'leaderboards',
@@ -1129,7 +1112,7 @@ async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Resp
   }
 
   const rows = await queryRows<RowDataPacket>(
-    route.pool,
+    route.db,
     `SELECT metric_id, LOWER(HEX(uuid)) AS uuid_hex, value, rn
      FROM (
        SELECT mv.metric_id, mv.uuid, mv.value,
@@ -1181,7 +1164,7 @@ async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Resp
     boards[metricId] ??= [];
   }
 
-  const players = await fetchPlayersByHex(route.pool, needNamesHex);
+  const players = await fetchPlayersByHex(route.db, needNamesHex);
   const headers = etagHeaders(
     'leaderboards',
     `boards:${route.active.runId}:${limit}`,
@@ -1210,7 +1193,7 @@ async function handleLeaderboardEndpoint(route: DataRouteContext): Promise<Respo
   const cursor = cursorRaw ? decodeCursor(cursorRaw) : null;
   if (cursorRaw && !cursor) return jsonError(400, 'invalid cursor');
 
-  const defs = await loadMetricDefs(route.pool);
+  const defs = await loadMetricDefs(route.db);
   if (!defs[metric]) return jsonError(400, 'unknown metric');
 
   const sqlParts = [
@@ -1228,7 +1211,7 @@ async function handleLeaderboardEndpoint(route: DataRouteContext): Promise<Respo
   sqlParts.push('ORDER BY value DESC, uuid ASC LIMIT ?');
   params.push(limitPlus);
 
-  const rows = await queryRows<RowDataPacket>(route.pool, sqlParts.join(' '), params);
+  const rows = await queryRows<RowDataPacket>(route.db, sqlParts.join(' '), params);
   const board: Array<{ uuid: string; value: number }> = [];
   const needNamesHex: string[] = [];
   let hasMore = false;
@@ -1258,7 +1241,7 @@ async function handleLeaderboardEndpoint(route: DataRouteContext): Promise<Respo
   const nextCursor =
     hasMore && lastRaw !== null && lastUuidHex !== null ? encodeCursor(lastRaw, lastUuidHex) : null;
 
-  const players = await fetchPlayersByHex(route.pool, needNamesHex);
+  const players = await fetchPlayersByHex(route.db, needNamesHex);
   const etag = `board:${route.active.runId}:${metric}:${limit}:${cursorRaw}`;
   const headers = etagHeaders('leaderboard', etag, route.active.generatedAt);
 
@@ -1303,16 +1286,16 @@ async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response>
 
   let rows: RowDataPacket[];
   try {
-    rows = await queryRows<RowDataPacket>(route.pool, sql, sqlParams);
+    rows = await queryRows<RowDataPacket>(route.db, sql, sqlParams);
   } catch (error) {
     console.warn('[stats-api] players query failed, retrying once', {
       endpoint: route.endpoint,
       ...summarizeError(error),
     });
-    invalidateDbPool();
+    await closeDbConnection(route.db);
     try {
-      const retryPool = await getDbPool(route.context);
-      rows = await queryRows<RowDataPacket>(retryPool, sql, sqlParams);
+      route.db = await createDbConnection(asRuntimeEnv(route.context));
+      rows = await queryRows<RowDataPacket>(route.db, sql, sqlParams);
     } catch (retryError) {
       console.error('[stats-api] players query failed after retry', {
         endpoint: route.endpoint,
@@ -1350,7 +1333,7 @@ async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> 
   if (!uuidHex) return jsonError(400, 'invalid uuid');
 
   const rows = await queryRows<RowDataPacket>(
-    route.pool,
+    route.db,
     `SELECT LOWER(HEX(p.uuid)) AS uuid_hex, p.name, ps.stats_gzip, ps.stats_sha1
      FROM v_player_profile p
      LEFT JOIN v_player_stats ps ON ps.uuid = p.uuid
@@ -1411,22 +1394,25 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
   }
 
   const route = await buildDataRouteContext(context, endpoint, requestUrl);
-
-  switch (endpoint) {
-    case 'metrics':
-      return handleMetricsEndpoint(route);
-    case 'summary':
-      return handleSummaryEndpoint(route);
-    case 'leaderboards':
-      return handleLeaderboardsEndpoint(route);
-    case 'leaderboard':
-      return handleLeaderboardEndpoint(route);
-    case 'players':
-      return handlePlayersEndpoint(route);
-    case 'player':
-      return handlePlayerEndpoint(route);
-    default:
-      return jsonError(404, 'Unbekannter API-Endpunkt.');
+  try {
+    switch (endpoint) {
+      case 'metrics':
+        return await handleMetricsEndpoint(route);
+      case 'summary':
+        return await handleSummaryEndpoint(route);
+      case 'leaderboards':
+        return await handleLeaderboardsEndpoint(route);
+      case 'leaderboard':
+        return await handleLeaderboardEndpoint(route);
+      case 'players':
+        return await handlePlayersEndpoint(route);
+      case 'player':
+        return await handlePlayerEndpoint(route);
+      default:
+        return jsonError(404, 'Unbekannter API-Endpunkt.');
+    }
+  } finally {
+    await closeDbConnection(route.db);
   }
 }
 
