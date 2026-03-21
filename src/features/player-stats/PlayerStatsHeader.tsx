@@ -19,6 +19,8 @@ export function PlayerStatsHeader({
   onCopyUuid: () => void;
   generatedIso: string | null;
 }) {
+  const fallbackStatsHref = '/statistiken/';
+
   return (
     <header className="space-y-6">
       <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
@@ -47,8 +49,41 @@ export function PlayerStatsHeader({
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <a href="/statistiken/" className="mg-btn mg-btn--sm mg-btn--primary">
-          <ArrowLeft size={16} /> Zurück zur Statistik
+        <a
+          href={fallbackStatsHref}
+          className="mg-btn mg-btn--sm mg-btn--primary"
+          aria-label="Zur vorherigen Seite"
+          title="Zur vorherigen Seite"
+          onClick={(event) => {
+            if (
+              event.defaultPrevented ||
+              event.button !== 0 ||
+              event.metaKey ||
+              event.altKey ||
+              event.ctrlKey ||
+              event.shiftKey
+            ) {
+              return;
+            }
+
+            if (typeof window === 'undefined') return;
+            if (window.history.length < 2) return;
+
+            const referrer = document.referrer;
+            if (!referrer) return;
+
+            try {
+              const referrerUrl = new URL(referrer);
+              if (referrerUrl.origin !== window.location.origin) return;
+            } catch {
+              return;
+            }
+
+            event.preventDefault();
+            window.history.back();
+          }}
+        >
+          <ArrowLeft size={16} /> Zurück
         </a>
 
         <button
