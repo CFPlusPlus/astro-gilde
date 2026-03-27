@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { installStatsMocks } from './helpers/stats-mocks';
+import { installStatsMocks, waitForStatsAppReady } from './helpers/stats-mocks';
 
 const hasBrokenQuestionMarkArtifact = (text: string): boolean => {
   const withoutUrls = text.replace(/https?:\/\/\S+/g, ' ');
@@ -163,6 +163,7 @@ test('Statistiken laden mit API Mock', async ({ page }) => {
     },
   });
   await page.goto('/statistiken/');
+  await waitForStatsAppReady(page);
 
   await expect(page.getByRole('heading', { level: 1, name: 'Statistiken' })).toBeVisible();
   await expect(page.getByText(/321[.,]50 h/)).toBeVisible();

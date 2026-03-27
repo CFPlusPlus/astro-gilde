@@ -16,6 +16,7 @@ import {
 } from '../stats/layout/StatsLayout';
 
 export default function PlayerStatsApp() {
+  const [isReady, setIsReady] = useState(false);
   const playerStatsState = usePlayerStatsState();
   const activeTab = playerStatsState.activeTab;
   const setActiveTab = playerStatsState.setActiveTab;
@@ -59,6 +60,10 @@ export default function PlayerStatsApp() {
     return () => {
       window.clearTimeout(timeoutId);
     };
+  }, []);
+
+  useEffect(() => {
+    setIsReady(true);
   }, []);
 
   const kpiItems = useMemo<KpiItem[]>(() => {
@@ -128,7 +133,7 @@ export default function PlayerStatsApp() {
   const wideContainerClass = 'mx-auto w-full max-w-[118rem] px-4 sm:px-6 xl:px-8';
 
   return (
-    <>
+    <div data-player-stats-app-ready={isReady ? 'true' : 'false'}>
       <StatsLayout
         topBarClassName={wideContainerClass}
         contentClassName={wideContainerClass}
@@ -262,6 +267,6 @@ export default function PlayerStatsApp() {
         playerUuid={uuidFull}
         playerName={playerName}
       />
-    </>
+    </div>
   );
 }
