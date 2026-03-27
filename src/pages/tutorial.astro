@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import { ArrowRight, Download, Hammer, Map, Shield, UserRound, Vote, Wand } from '@lucide/astro';
 import Button from '../components/ui/Button.astro';
 import Callout from '../components/ui/Callout.astro';
@@ -66,7 +66,7 @@ const sectionEntries = (await getCollection('tutorial')).sort(
 
 const sections = await Promise.all(
   sectionEntries.map(async (entry) => {
-    const { Content } = await entry.render();
+    const { Content } = await render(entry);
 
     return {
       ...entry.data,

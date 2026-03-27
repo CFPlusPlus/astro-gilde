@@ -47,7 +47,8 @@ export default defineConfig({
   adapter: cloudflare(),
   // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
-  trailingSlash: 'always',
+  // Verhindert die Astro-Hinweisseite fuer fehlende/nicht passende Trailing-Slashes.
+  trailingSlash: 'ignore',
   integrations: [
     react(),
     sitemap({
@@ -55,7 +56,7 @@ export default defineConfig({
       filter: (page) => !page.endsWith('/404/') && !page.endsWith('/statistiken/spieler/'),
     }),
   ],
-  experimental: {
+  security: {
     // CSP-Hashes fuer Astro-inlinte Skripte/Styles automatisch erzeugen
     csp: {
       scriptDirective: {

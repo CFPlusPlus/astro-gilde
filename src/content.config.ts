@@ -1,7 +1,9 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const commands = defineCollection({
-  type: 'data',
+  loader: glob({ base: './src/content/commands', pattern: '**/*.json' }),
   schema: z.object({
     categories: z.array(
       z.object({
@@ -18,7 +20,7 @@ const commands = defineCollection({
 });
 
 const rules = defineCollection({
-  type: 'data',
+  loader: glob({ base: './src/content/rules', pattern: '**/*.json' }),
   schema: z.object({
     serverIp: z.string().optional(),
     warning: z.string(),
@@ -32,8 +34,9 @@ const rules = defineCollection({
     }),
   }),
 });
+
 const faq = defineCollection({
-  type: 'data',
+  loader: glob({ base: './src/content/faq', pattern: '**/*.json' }),
   schema: z.array(
     z.object({
       title: z.string(),
@@ -44,7 +47,7 @@ const faq = defineCollection({
 });
 
 const tutorial = defineCollection({
-  type: 'content',
+  loader: glob({ base: './src/content/tutorial', pattern: '**/*.md' }),
   schema: z.object({
     order: z.number().int().positive(),
     title: z.string(),

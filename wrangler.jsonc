@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "minecraft-gilde-web",
-  "main": "./dist/_worker.js/index.js",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "compatibility_date": "2026-03-20",
   "compatibility_flags": ["nodejs_compat"],
 
@@ -19,6 +19,7 @@
     {
       "binding": "HYPERDRIVE",
       "id": "1957f1427ada4516aab63e6664f0ef0c",
+      "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/postgres",
     },
   ],
 }
