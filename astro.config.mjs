@@ -44,7 +44,7 @@ const tailwindPlugin = /** @type {any} */ (tailwindcss());
 
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
-  adapter: cloudflare(),
+  adapter: cloudflare({ imageService: 'compile' }),
   // Explizit kein Cloudflare-KV fuer Astro-Sessions erzwingen.
   session: {
     driver: sessionDrivers.lruCache(),
