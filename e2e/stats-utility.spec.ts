@@ -188,57 +188,6 @@ async function seedSummaryCache(page: Page): Promise<void> {
 }
 
 async function installPlayerStatsSortMock(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const rawWindow = window as Window & {
-      fetch: typeof fetch;
-      __MG_SORT_FETCH_MOCK_INSTALLED__?: boolean;
-    };
-
-    if (rawWindow.__MG_SORT_FETCH_MOCK_INSTALLED__) return;
-    rawWindow.__MG_SORT_FETCH_MOCK_INSTALLED__ = true;
-
-    const originalFetch = rawWindow.fetch.bind(window);
-    rawWindow.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
-      const requestUrl =
-        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-
-      let parsedUrl: URL;
-      try {
-        parsedUrl = new URL(requestUrl, window.location.origin);
-      } catch {
-        return originalFetch(input, init);
-      }
-
-      const segments = parsedUrl.pathname.split('/').filter((segment) => segment.length > 0);
-      if (segments.at(-1) !== 'player') {
-        return originalFetch(input, init);
-      }
-
-      const uuid = (parsedUrl.searchParams.get('uuid') || '').trim();
-      return new Response(
-        JSON.stringify({
-          __generated: '2026-02-20T12:00:00.000Z',
-          found: true,
-          uuid,
-          name: 'SortPlayer',
-          player: {
-            'minecraft:custom': {
-              'minecraft:jump': 2,
-              'minecraft:mob_kills': 150,
-              'minecraft:play_time': 72_000,
-            },
-          },
-        }),
-        {
-          status: 200,
-          headers: {
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        },
-      );
-    };
-  });
-
   const handler = async (route: Route) => {
     const requestUrl = new URL(route.request().url());
     const uuid = (requestUrl.searchParams.get('uuid') || '').trim();
