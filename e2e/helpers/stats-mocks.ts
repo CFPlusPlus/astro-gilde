@@ -42,6 +42,19 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
+type StatsFetchMockState = {
+  generatedAt: string;
+  fallbackMetricId: string;
+  metrics: StatsMetrics;
+  players: StatsPlayers;
+  leaderboards: StatsLeaderboards;
+  playerStatsByUuid?: Record<string, StatsPlayerData>;
+  defaultPlayerStats?: StatsPlayerData;
+  summaryDelayMs: number;
+  summaryStatus: 200 | 500;
+  summaryPayload: StatsSummaryPayload;
+};
+
 function resolveLastPathSegment(requestUrl: string): string | null {
   try {
     const url = new URL(requestUrl);
@@ -65,6 +78,124 @@ async function routeApi(
     }
     await handler(route);
   });
+}
+
+async function installStatsFetchMocks(page: Page, state: StatsFetchMockState): Promise<void> {
+  await page.addInitScript((payload: StatsFetchMockState) => {
+    const rawWindow = window as Window & {
+      fetch: typeof fetch;
+      __MG_STATS_FETCH_MOCK_INSTALLED__?: boolean;
+      __MG_STATS_FETCH_MOCK_STATE__?: StatsFetchMockState;
+    };
+
+    rawWindow.__MG_STATS_FETCH_MOCK_STATE__ = payload;
+    if (rawWindow.__MG_STATS_FETCH_MOCK_INSTALLED__) return;
+    rawWindow.__MG_STATS_FETCH_MOCK_INSTALLED__ = true;
+
+    const originalFetch = rawWindow.fetch.bind(window);
+    rawWindow.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+      const requestUrl =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(requestUrl, window.location.origin);
+      } catch {
+        return originalFetch(input, init);
+      }
+
+      const segments = parsedUrl.pathname.split('/').filter((segment) => segment.length > 0);
+      const endpoint = segments.at(-1);
+      const state = rawWindow.__MG_STATS_FETCH_MOCK_STATE__;
+      if (!endpoint || !state) {
+        return originalFetch(input, init);
+      }
+
+      const jsonResponse = (body: unknown, status = 200): Response =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        });
+
+      if (endpoint === 'summary') {
+        if (state.summaryDelayMs > 0) {
+          await new Promise((resolve) => {
+            setTimeout(resolve, state.summaryDelayMs);
+          });
+        }
+        if (state.summaryStatus !== 200) {
+          return jsonResponse({ error: 'summary-failed' }, state.summaryStatus);
+        }
+        return jsonResponse(state.summaryPayload);
+      }
+
+      if (endpoint === 'metrics') {
+        return jsonResponse({
+          __generated: state.generatedAt,
+          metrics: state.metrics,
+        });
+      }
+
+      if (endpoint === 'leaderboard') {
+        const metricId = parsedUrl.searchParams.get('metric') ?? state.fallbackMetricId;
+        const rows = state.leaderboards[metricId] ?? [];
+        return jsonResponse({
+          __generated: state.generatedAt,
+          __players: state.players,
+          boards: {
+            [metricId]: rows,
+          },
+          cursors: {
+            [metricId]: null,
+          },
+        });
+      }
+
+      if (endpoint === 'players') {
+        const query = (parsedUrl.searchParams.get('q') ?? '').trim().toLowerCase();
+        const items = Object.entries(state.players)
+          .filter(([uuid, name]) => {
+            if (!query) return false;
+            return uuid.toLowerCase().includes(query) || name.toLowerCase().includes(query);
+          })
+          .slice(0, 6)
+          .map(([uuid, name]) => ({ uuid, name }));
+        return jsonResponse({
+          __generated: state.generatedAt,
+          items,
+        });
+      }
+
+      if (endpoint === 'player') {
+        const uuid = (parsedUrl.searchParams.get('uuid') ?? '').trim();
+        const hasSpecificData =
+          state.playerStatsByUuid !== undefined &&
+          Object.prototype.hasOwnProperty.call(state.playerStatsByUuid, uuid);
+        const playerData = hasSpecificData
+          ? state.playerStatsByUuid?.[uuid]
+          : state.defaultPlayerStats;
+        if (!playerData) {
+          return jsonResponse({
+            __generated: state.generatedAt,
+            found: false,
+            uuid,
+            name: state.players[uuid] ?? uuid,
+          });
+        }
+        return jsonResponse({
+          __generated: state.generatedAt,
+          found: true,
+          uuid,
+          name: state.players[uuid] ?? uuid,
+          player: playerData,
+        });
+      }
+
+      return originalFetch(input, init);
+    };
+  }, state);
 }
 
 const DEFAULT_SUMMARY_PAYLOAD: StatsSummaryPayload = {
@@ -93,6 +224,18 @@ export async function installStatsMocks(
 ): Promise<void> {
   const generatedAt = summaryPayload.__generated;
   const fallbackMetricId = Object.keys(metrics)[0] ?? 'hours';
+  await installStatsFetchMocks(page, {
+    generatedAt,
+    fallbackMetricId,
+    metrics,
+    players,
+    leaderboards,
+    playerStatsByUuid,
+    defaultPlayerStats,
+    summaryDelayMs,
+    summaryStatus,
+    summaryPayload,
+  });
 
   await routeApi(page, 'summary', async (route) => {
     if (summaryDelayMs > 0) {
