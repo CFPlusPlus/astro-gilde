@@ -42,15 +42,13 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function apiRoutePatterns(endpoint: string): RegExp[] {
-  const escapedEndpoint = escapeRegex(endpoint);
+function apiRoutePatterns(endpoint: string): Array<(url: URL) => boolean> {
   return [
-    new RegExp(`^https?://[^?#]+/api/${escapedEndpoint}(?:\\?.*)?$`),
-    new RegExp(`^https?://[^?#]+/${escapedEndpoint}(?:\\?.*)?$`),
+    (url) => {
+      const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
+      const lastSegment = segments.at(-1);
+      return lastSegment === endpoint;
+    },
   ];
 }
 

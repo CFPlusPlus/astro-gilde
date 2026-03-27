@@ -211,8 +211,10 @@ async function installPlayerStatsSortMock(page: Page): Promise<void> {
     });
   };
 
-  await page.route(/^https?:\/\/[^?#]+\/api\/player(?:\?.*)?$/, handler);
-  await page.route(/^https?:\/\/[^?#]+\/player(?:\?.*)?$/, handler);
+  await page.route((url) => {
+    const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
+    return segments.at(-1) === 'player';
+  }, handler);
 }
 
 test('Overview Mock: loading wechselt auf ok', async ({ page }) => {

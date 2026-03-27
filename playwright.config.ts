@@ -19,6 +19,8 @@ export default defineConfig({
     command: 'npm run dev -- --host 127.0.0.1 --port 4321',
     env: {
       ...process.env,
+      // E2E-Mocks erwarten dieselbe API-Basis in allen Umgebungen.
+      PUBLIC_API_ORIGIN: '/api',
       // Fuer lokale E2E-Tests reicht eine Platzhalter-URL, damit der
       // Cloudflare-Adapter den Hyperdrive-Check beim Dev-Server-Start besteht.
       CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE:
