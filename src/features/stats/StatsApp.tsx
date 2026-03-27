@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { OverviewSection } from './components/sections/OverviewSection';
 import { getStatsPanelId, getStatsTabId } from './components/StatsNavPills';
@@ -91,6 +91,7 @@ function resolveRankMetricFromCandidates(
 }
 
 export default function StatsApp() {
+  const [isReady, setIsReady] = useState(false);
   const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
   const initialUrlStateHydratedRef = useRef(false);
 
@@ -358,155 +359,161 @@ export default function StatsApp() {
     window.scrollTo({ top: y, left: 0, behavior: 'auto' });
   }, [activeTab, consumeScrollToRestore]);
 
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
+
   return (
-    <StatsLayout
-      stickyTopBar
-      topBarClassName="py-2 md:py-3"
-      topBar={
-        <StatsToolbar
-          activeTab={activeTab}
-          onTabChange={setTab}
-          tabsDisabled={tabsDisabled}
-          search={mainSearch}
-          onChoosePlayer={goToPlayer}
-          activeVersusSlot={mobileSearchVersusSlot}
-          onChooseVersusPlayer={versus.setVersusPlayer}
-          showPageSize={showPageSize}
-          pageSize={pageSize}
-          onPageSizeChange={setPageSize}
-          liveVariant={toolbarLiveVariant}
-          updatedAt={summaryLastUpdatedAt}
-          generatedIso={generatedIso}
-          apiError={apiError}
-          onReload={handleReload}
-          reloadDisabled={summaryRetryDisabled}
-          reloadInSeconds={summaryRetryInSeconds}
-          activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
-          onOpenLeaderboardCategories={handleOpenLeaderboardCategories}
-        />
-      }
-    >
-      {activeTab === 'uebersicht' ? (
-        <section
-          role="tabpanel"
-          id={getStatsPanelId('uebersicht')}
-          aria-labelledby={getStatsTabId('uebersicht')}
-        >
-          <OverviewSection
-            showWelcome={showWelcome}
-            onDismissWelcome={dismissWelcome}
-            onOpenRankings={handleOpenRankingsFromOverview}
-            navigationDisabled={tabsDisabled}
-            totals={totals}
-            summaryLoaded={summaryLoaded}
-            summaryLoading={summaryLoading}
-            summaryError={summaryError}
-            onRetrySummary={retrySummary}
-            summaryRetryDisabled={summaryRetryDisabled}
-            summaryRetryInSeconds={summaryRetryInSeconds}
+    <div data-stats-app-ready={isReady ? 'true' : 'false'}>
+      <StatsLayout
+        stickyTopBar
+        topBarClassName="py-2 md:py-3"
+        topBar={
+          <StatsToolbar
+            activeTab={activeTab}
+            onTabChange={setTab}
+            tabsDisabled={tabsDisabled}
+            search={mainSearch}
+            onChoosePlayer={goToPlayer}
+            activeVersusSlot={mobileSearchVersusSlot}
+            onChooseVersusPlayer={versus.setVersusPlayer}
+            showPageSize={showPageSize}
+            pageSize={pageSize}
+            onPageSizeChange={setPageSize}
+            liveVariant={toolbarLiveVariant}
+            updatedAt={summaryLastUpdatedAt}
+            generatedIso={generatedIso}
+            apiError={apiError}
+            onReload={handleReload}
+            reloadDisabled={summaryRetryDisabled}
+            reloadInSeconds={summaryRetryInSeconds}
+            activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
+            onOpenLeaderboardCategories={handleOpenLeaderboardCategories}
           />
-        </section>
-      ) : null}
-
-      {activeTab === 'king' ? (
-        <section
-          role="tabpanel"
-          id={getStatsPanelId('king')}
-          aria-labelledby={getStatsTabId('king')}
-        >
-          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.table_loading} />}>
-            <LazyKingSection
-              king={king}
-              pageSize={pageSize}
-              getPlayerName={getPlayerName}
-              onPlayerClick={goToPlayer}
-              onGoPage={setKingCurrentPage}
-              onLoadMore={() => {
-                void loadMoreKing();
-              }}
+        }
+      >
+        {activeTab === 'uebersicht' ? (
+          <section
+            role="tabpanel"
+            id={getStatsPanelId('uebersicht')}
+            aria-labelledby={getStatsTabId('uebersicht')}
+          >
+            <OverviewSection
+              showWelcome={showWelcome}
+              onDismissWelcome={dismissWelcome}
+              onOpenRankings={handleOpenRankingsFromOverview}
+              navigationDisabled={tabsDisabled}
+              totals={totals}
+              summaryLoaded={summaryLoaded}
+              summaryLoading={summaryLoading}
+              summaryError={summaryError}
+              onRetrySummary={retrySummary}
+              summaryRetryDisabled={summaryRetryDisabled}
+              summaryRetryInSeconds={summaryRetryInSeconds}
             />
-          </Suspense>
-        </section>
-      ) : null}
+          </section>
+        ) : null}
 
-      {activeTab === 'ranglisten' ? (
-        <section
-          role="tabpanel"
-          id={getStatsPanelId('ranglisten')}
-          aria-labelledby={getStatsTabId('ranglisten')}
-        >
-          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.rankings_loading} />}>
-            <LazyRankingsSection
-              metrics={metrics}
-              groupedMetrics={groupedMetrics}
-              metricFilter={metricFilter}
-              onMetricFilterChange={setMetricFilter}
-              activeMetricId={activeMetricId}
-              onSelectMetric={handleSelectMetric}
-              onReset={handleResetRankings}
-              hasNoRanklistResults={hasNoRanklistResults}
-              activeMetricState={activeMetricState}
-              pageSize={pageSize}
-              getPlayerName={getPlayerName}
-              onPlayerClick={goToPlayer}
-              onGoPage={setActiveMetricCurrentPage}
-              onLoadMore={() => {
-                void loadMoreActiveMetric();
-              }}
-            />
-          </Suspense>
-        </section>
-      ) : null}
+        {activeTab === 'king' ? (
+          <section
+            role="tabpanel"
+            id={getStatsPanelId('king')}
+            aria-labelledby={getStatsTabId('king')}
+          >
+            <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.table_loading} />}>
+              <LazyKingSection
+                king={king}
+                pageSize={pageSize}
+                getPlayerName={getPlayerName}
+                onPlayerClick={goToPlayer}
+                onGoPage={setKingCurrentPage}
+                onLoadMore={() => {
+                  void loadMoreKing();
+                }}
+              />
+            </Suspense>
+          </section>
+        ) : null}
 
-      {activeTab === 'versus' ? (
-        <section
-          role="tabpanel"
-          id={getStatsPanelId('versus')}
-          aria-labelledby={getStatsTabId('versus')}
-        >
-          <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.loading} />}>
-            <LazyVersusSection
-              maxMetrics={versus.maxMetrics}
-              searchA={versus.searchA}
-              searchB={versus.searchB}
-              versusMetricFilter={versus.versusMetricFilter}
-              onVersusMetricFilterChange={versus.setVersusMetricFilter}
-              versusMetricIds={versus.versusMetricIds}
-              versusPlayerA={versus.versusPlayerA}
-              versusPlayerB={versus.versusPlayerB}
-              versusCatalog={versus.versusCatalog}
-              versusLoading={versus.versusLoading}
-              versusError={versus.versusError}
-              versusNotice={versus.versusNotice}
-              versusFilteredCatalog={versus.versusFilteredCatalog}
-              versusGroupedMetrics={versus.versusGroupedMetrics}
-              hasNoVersusResults={versus.hasNoVersusResults}
-              isSameVersusPlayer={versus.isSameVersusPlayer}
-              canRunVersus={versus.canRunVersus}
-              versusSwapFxClass={versus.versusSwapFxClass}
-              versusCardAZClass={versus.versusCardAZClass}
-              versusCardBZClass={versus.versusCardBZClass}
-              hasVersusData={versus.hasVersusData}
-              versusRows={versus.versusRows}
-              versusSummary={versus.versusSummary}
-              hasVersusResults={versus.hasVersusResults}
-              hasMissingVersusValues={versus.hasMissingVersusValues}
-              onSetVersusPlayer={versus.setVersusPlayer}
-              onClearVersusPlayer={versus.clearVersusPlayer}
-              onSetVersusSearchOpen={versus.setVersusSearchOpen}
-              onSwapVersusPlayers={versus.swapVersusPlayers}
-              onUpdateVersusSearch={versus.updateVersusSearch}
-              onRunVersusCompare={() => {
-                void versus.runVersusCompare();
-              }}
-              onApplyVersusSelection={versus.applyVersusSelection}
-              onToggleVersusMetric={versus.toggleVersusMetric}
-              onResetVersus={versus.resetVersus}
-              onGoToPlayer={goToPlayer}
-            />
-          </Suspense>
-        </section>
-      ) : null}
-    </StatsLayout>
+        {activeTab === 'ranglisten' ? (
+          <section
+            role="tabpanel"
+            id={getStatsPanelId('ranglisten')}
+            aria-labelledby={getStatsTabId('ranglisten')}
+          >
+            <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.rankings_loading} />}>
+              <LazyRankingsSection
+                metrics={metrics}
+                groupedMetrics={groupedMetrics}
+                metricFilter={metricFilter}
+                onMetricFilterChange={setMetricFilter}
+                activeMetricId={activeMetricId}
+                onSelectMetric={handleSelectMetric}
+                onReset={handleResetRankings}
+                hasNoRanklistResults={hasNoRanklistResults}
+                activeMetricState={activeMetricState}
+                pageSize={pageSize}
+                getPlayerName={getPlayerName}
+                onPlayerClick={goToPlayer}
+                onGoPage={setActiveMetricCurrentPage}
+                onLoadMore={() => {
+                  void loadMoreActiveMetric();
+                }}
+              />
+            </Suspense>
+          </section>
+        ) : null}
+
+        {activeTab === 'versus' ? (
+          <section
+            role="tabpanel"
+            id={getStatsPanelId('versus')}
+            aria-labelledby={getStatsTabId('versus')}
+          >
+            <Suspense fallback={<StatsTabFallback label={LIVE_COPY_DE.loading} />}>
+              <LazyVersusSection
+                maxMetrics={versus.maxMetrics}
+                searchA={versus.searchA}
+                searchB={versus.searchB}
+                versusMetricFilter={versus.versusMetricFilter}
+                onVersusMetricFilterChange={versus.setVersusMetricFilter}
+                versusMetricIds={versus.versusMetricIds}
+                versusPlayerA={versus.versusPlayerA}
+                versusPlayerB={versus.versusPlayerB}
+                versusCatalog={versus.versusCatalog}
+                versusLoading={versus.versusLoading}
+                versusError={versus.versusError}
+                versusNotice={versus.versusNotice}
+                versusFilteredCatalog={versus.versusFilteredCatalog}
+                versusGroupedMetrics={versus.versusGroupedMetrics}
+                hasNoVersusResults={versus.hasNoVersusResults}
+                isSameVersusPlayer={versus.isSameVersusPlayer}
+                canRunVersus={versus.canRunVersus}
+                versusSwapFxClass={versus.versusSwapFxClass}
+                versusCardAZClass={versus.versusCardAZClass}
+                versusCardBZClass={versus.versusCardBZClass}
+                hasVersusData={versus.hasVersusData}
+                versusRows={versus.versusRows}
+                versusSummary={versus.versusSummary}
+                hasVersusResults={versus.hasVersusResults}
+                hasMissingVersusValues={versus.hasMissingVersusValues}
+                onSetVersusPlayer={versus.setVersusPlayer}
+                onClearVersusPlayer={versus.clearVersusPlayer}
+                onSetVersusSearchOpen={versus.setVersusSearchOpen}
+                onSwapVersusPlayers={versus.swapVersusPlayers}
+                onUpdateVersusSearch={versus.updateVersusSearch}
+                onRunVersusCompare={() => {
+                  void versus.runVersusCompare();
+                }}
+                onApplyVersusSelection={versus.applyVersusSelection}
+                onToggleVersusMetric={versus.toggleVersusMetric}
+                onResetVersus={versus.resetVersus}
+                onGoToPlayer={goToPlayer}
+              />
+            </Suspense>
+          </section>
+        ) : null}
+      </StatsLayout>
+    </div>
   );
 }

@@ -1,5 +1,10 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
-import { installStatsMocks } from './helpers/stats-mocks';
+import { expect, test, type Page } from '@playwright/test';
+import {
+  installPlayerStatsMock,
+  installStatsMocks,
+  waitForPlayerStatsAppReady,
+  waitForStatsAppReady,
+} from './helpers/stats-mocks';
 
 const LAST_CATEGORIES_STORAGE_KEY = 'stats:lastCategories:v1';
 const SUMMARY_CACHE_STORAGE_KEY = 'mg:live-resource:v1:stats-kpi-summary';
@@ -188,35 +193,30 @@ async function seedSummaryCache(page: Page): Promise<void> {
 }
 
 async function installPlayerStatsSortMock(page: Page): Promise<void> {
-  const handler = async (route: Route) => {
-    const requestUrl = new URL(route.request().url());
-    const uuid = (requestUrl.searchParams.get('uuid') || '').trim();
+  await installPlayerStatsMock(page, {
+    defaultPlayerStats: {
+      'minecraft:custom': {
+        'minecraft:jump': 2,
+        'minecraft:mob_kills': 150,
+        'minecraft:play_time': 72_000,
+      },
+    },
+  });
+}
 
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json; charset=utf-8',
-      body: JSON.stringify({
-        __generated: '2026-02-20T12:00:00.000Z',
-        found: true,
-        uuid,
-        name: 'SortPlayer',
-        player: {
-          'minecraft:custom': {
-            'minecraft:jump': 2,
-            'minecraft:mob_kills': 150,
-            'minecraft:play_time': 72_000,
-          },
-        },
-      }),
-    });
-  };
+async function gotoStatsPage(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+  await waitForStatsAppReady(page);
+}
 
-  await page.route('**/api/player**', handler);
+async function gotoPlayerStatsPage(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+  await waitForPlayerStatsAppReady(page);
 }
 
 test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
   await installUtilityStatsMocks(page, { summaryDelayMs: 450, summaryStatus: 200 });
-  await page.goto('/statistiken/');
+  await gotoStatsPage(page, '/statistiken/');
 
   await expect(page.locator('.animate-pulse').first()).toBeVisible();
   await expect(page.getByText(/321[.,]50 h/)).toBeVisible();
@@ -224,7 +224,7 @@ test('Overview Mock: loading wechselt auf ok', async ({ page }) => {
 
 test('Overview Suche behaelt bei Fokus eine neutrale Border', async ({ page }) => {
   await installUtilityStatsMocks(page);
-  await page.goto('/statistiken/');
+  await gotoStatsPage(page, '/statistiken/');
 
   const searchField = page
     .locator('.mg-app-field')
@@ -250,7 +250,7 @@ test('Overview Suche behaelt bei Fokus eine neutrale Border', async ({ page }) =
 
 test('Overview Mock: zeigt error ohne Cache', async ({ page }) => {
   await installUtilityStatsMocks(page, { summaryStatus: 500 });
-  await page.goto('/statistiken/');
+  await gotoStatsPage(page, '/statistiken/');
 
   await expect(page.getByText('Daten konnten nicht geladen werden').first()).toBeVisible();
 });
@@ -258,7 +258,7 @@ test('Overview Mock: zeigt error ohne Cache', async ({ page }) => {
 test('Overview Mock: zeigt stale mit Cache bei API-Fehler', async ({ page }) => {
   await seedSummaryCache(page);
   await installUtilityStatsMocks(page, { summaryStatus: 500 });
-  await page.goto('/statistiken/');
+  await gotoStatsPage(page, '/statistiken/');
 
   await expect(page.getByText(/111[.,]50 h/)).toBeVisible();
   await expect(page.getByText('veraltet').first()).toBeVisible();
@@ -266,7 +266,7 @@ test('Overview Mock: zeigt stale mit Cache bei API-Fehler', async ({ page }) => 
 
 test('URL ?tab=ranglisten&cat=playtime&top=20 oeffnet Ranglisten-View', async ({ page }) => {
   await installUtilityStatsMocks(page);
-  await page.goto('/statistiken/?tab=ranglisten&cat=playtime&top=20');
+  await gotoStatsPage(page, '/statistiken/?tab=ranglisten&cat=playtime&top=20');
 
   await expect(page.getByRole('tab', { name: 'Ranglisten' })).toHaveAttribute(
     'aria-selected',
@@ -282,7 +282,7 @@ test('URL ?tab=ranglisten&cat=playtime&top=20 oeffnet Ranglisten-View', async ({
 
 test('Schnellzugriff-Pill setzt Kategorie und URL', async ({ page }) => {
   await installUtilityStatsMocks(page);
-  await page.goto('/statistiken/?tab=leaderboards');
+  await gotoStatsPage(page, '/statistiken/?tab=leaderboards');
 
   const quickAccess = page.locator('section[aria-label="Schnellzugriff"]');
   await quickAccess.getByRole('button', { name: 'Mob-Kills' }).click();
@@ -298,7 +298,7 @@ test('Schnellzugriff-Pill setzt Kategorie und URL', async ({ page }) => {
 
 test('Kategorie-Auswahl schreibt Zuletzt angesehen und rendert Pills', async ({ page }) => {
   await installUtilityStatsMocks(page);
-  await page.goto('/statistiken/?tab=leaderboards');
+  await gotoStatsPage(page, '/statistiken/?tab=leaderboards');
 
   await page.getByRole('button', { name: 'Warden Defeats' }).click();
 
@@ -319,7 +319,7 @@ test('Kategorie-Auswahl schreibt Zuletzt angesehen und rendert Pills', async ({ 
 
 test('URL ?tab=versus&a=...&b=... zeigt Vergleich', async ({ page }) => {
   await installUtilityStatsMocks(page);
-  await page.goto('/statistiken/?tab=versus&a=uuid-alpha&b=uuid-beta');
+  await gotoStatsPage(page, '/statistiken/?tab=versus&a=uuid-alpha&b=uuid-beta');
 
   await expect(page.getByRole('tab', { name: 'Versus' })).toHaveAttribute('aria-selected', 'true');
   await expect(page.getByText('Zwischenstand', { exact: true })).toBeVisible();
@@ -336,7 +336,7 @@ test('Sortierung auf Spielerseite aendert die Reihenfolge', async ({ page }) => 
     params.set('tab', 'allgemein');
     window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
   });
-  await page.goto('/statistiken/spieler/');
+  await gotoPlayerStatsPage(page, '/statistiken/spieler/');
 
   const panel = page.locator('#player-stats-panel-allgemein');
   const firstRawCell = panel.locator('tbody tr').first().locator('td').nth(1);

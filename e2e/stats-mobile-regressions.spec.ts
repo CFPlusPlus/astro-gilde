@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { installStatsMocks } from './helpers/stats-mocks';
+import { installStatsMocks, waitForStatsAppReady } from './helpers/stats-mocks';
 
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
 
@@ -73,6 +73,7 @@ function intersects(
 
 async function gotoRankingsReady(page: Page): Promise<void> {
   await page.goto('/statistiken/?tab=ranglisten&cat=hours');
+  await waitForStatsAppReady(page);
   const rankingsRegion = page.getByRole('region', { name: 'Ranglisten Ergebnisse' });
   await expect(rankingsRegion.getByRole('button', { name: /HourHero.*ffnen/i })).toBeVisible();
 }
