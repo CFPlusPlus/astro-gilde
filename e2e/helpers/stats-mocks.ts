@@ -42,8 +42,16 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
-function apiRoutePatterns(endpoint: string): string[] {
-  return [`**/api/${endpoint}**`];
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function apiRoutePatterns(endpoint: string): RegExp[] {
+  const escapedEndpoint = escapeRegex(endpoint);
+  return [
+    new RegExp(`^https?://[^?#]+/api/${escapedEndpoint}(?:\\?.*)?$`),
+    new RegExp(`^https?://[^?#]+/${escapedEndpoint}(?:\\?.*)?$`),
+  ];
 }
 
 async function routeApi(
