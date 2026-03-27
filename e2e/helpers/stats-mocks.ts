@@ -42,29 +42,12 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
-function resolveLastPathSegment(requestUrl: string): string | null {
-  try {
-    const url = new URL(requestUrl);
-    const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
-    return segments.at(-1) ?? null;
-  } catch {
-    return null;
-  }
-}
-
 async function routeApi(
   page: Page,
   endpoint: string,
   handler: (route: Route) => Promise<void> | void,
 ): Promise<void> {
-  await page.route('**/*', async (route) => {
-    const lastSegment = resolveLastPathSegment(route.request().url());
-    if (lastSegment !== endpoint) {
-      await route.fallback();
-      return;
-    }
-    await handler(route);
-  });
+  await page.route(new RegExp(`/api/${endpoint}(?:\\?.*)?$`), handler);
 }
 
 const DEFAULT_SUMMARY_PAYLOAD: StatsSummaryPayload = {
