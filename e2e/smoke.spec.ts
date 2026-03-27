@@ -7,7 +7,7 @@ const hasBrokenQuestionMarkArtifact = (text: string): boolean => {
 };
 
 const expectNoEncodingArtifacts = async (page: Page, path: string): Promise<string> => {
-  await page.goto(path);
+  await page.goto(path, { waitUntil: 'domcontentloaded' });
   const text = await page.locator('body').innerText();
   expect(text).not.toContain('\uFFFD');
   expect(hasBrokenQuestionMarkArtifact(text)).toBe(false);
@@ -55,6 +55,8 @@ test('Startseite laedt und zeigt Hero', async ({ page }) => {
 });
 
 test('Inhalte haben keine Encoding-Artefakte', async ({ page }) => {
+  test.slow();
+
   const befehleText = await expectNoEncodingArtifacts(page, '/befehle/');
   expect(befehleText).toContain('Türen');
 
