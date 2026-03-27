@@ -1,6 +1,7 @@
 import type { APIContext } from 'astro';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
+import { env as workerEnv } from 'cloudflare:workers';
 import mysql from 'mysql2/promise';
 import type { Connection, ConnectionOptions, RowDataPacket } from 'mysql2/promise';
 
@@ -58,11 +59,8 @@ type DbConfig = {
 type RuntimeEnv = Record<string, unknown>;
 
 type RuntimeLocals = {
-  runtime?: {
-    env?: RuntimeEnv;
-    ctx?: {
-      waitUntil?: (promise: Promise<unknown>) => void;
-    };
+  cfContext?: {
+    waitUntil?: (promise: Promise<unknown>) => void;
   };
 };
 
@@ -165,8 +163,8 @@ function summarizeError(error: unknown): {
   };
 }
 
-function asRuntimeEnv(context: APIContext): RuntimeEnv {
-  return (context.locals as RuntimeLocals).runtime?.env ?? {};
+function asRuntimeEnv(): RuntimeEnv {
+  return workerEnv as RuntimeEnv;
 }
 
 function asExecutionContext(context: APIContext):
@@ -174,7 +172,7 @@ function asExecutionContext(context: APIContext):
       waitUntil?: (promise: Promise<unknown>) => void;
     }
   | undefined {
-  return (context.locals as RuntimeLocals).runtime?.ctx;
+  return (context.locals as RuntimeLocals).cfContext;
 }
 
 function asNonEmptyString(value: unknown): string | null {
@@ -402,7 +400,11 @@ function resolveDbConfigFromHyperdrive(bindingValue: unknown): Partial<DbConfig>
   }
 
   const binding = bindingValue as HyperdriveBinding;
-  const parsedFromConnection = parseConnectionString(asNonEmptyString(binding.connectionString));
+  const connectionString = asNonEmptyString(binding.connectionString);
+  if (!isSupportedSqlConnectionString(connectionString)) {
+    return {};
+  }
+  const parsedFromConnection = parseConnectionString(connectionString);
 
   return {
     host: asNonEmptyString(binding.host) ?? parsedFromConnection.host ?? undefined,
@@ -418,6 +420,10 @@ function parseConnectionString(connectionString: string | null): Partial<DbConfi
 
   try {
     const url = new URL(connectionString);
+    const protocol = url.protocol.toLowerCase();
+    if (protocol !== 'mysql:' && protocol !== 'mariadb:') {
+      return {};
+    }
     const database = url.pathname.replace(/^\/+/, '') || null;
     return {
       host: url.hostname || undefined,
@@ -428,6 +434,17 @@ function parseConnectionString(connectionString: string | null): Partial<DbConfi
     };
   } catch {
     return {};
+  }
+}
+
+function isSupportedSqlConnectionString(connectionString: string | null): boolean {
+  if (!connectionString) return true;
+
+  try {
+    const protocol = new URL(connectionString).protocol.toLowerCase();
+    return protocol === 'mysql:' || protocol === 'mariadb:';
+  } catch {
+    return false;
   }
 }
 
@@ -493,15 +510,33 @@ function emptyActiveRun(): ActiveRun {
 }
 
 async function loadMetricDefs(connection: Connection): Promise<Record<string, MetricDef>> {
-  const rows = await queryRows<RowDataPacket>(
-    connection,
-    `SELECT id, label, category, unit, sort_order, enabled,
-            COALESCE(divisor, NULL) AS divisor,
-            COALESCE(decimals, NULL) AS decimals
-     FROM metric_def
-     WHERE enabled = 1
-     ORDER BY sort_order ASC, id ASC`,
-  );
+  let rows: RowDataPacket[];
+  try {
+    rows = await queryRows<RowDataPacket>(
+      connection,
+      `SELECT id, label, category, unit, sort_order, enabled,
+              COALESCE(divisor, NULL) AS divisor,
+              COALESCE(decimals, NULL) AS decimals
+       FROM metric_def
+       WHERE enabled = 1
+       ORDER BY sort_order ASC, id ASC`,
+    );
+  } catch (error) {
+    const maybeError = error as { code?: unknown; message?: unknown };
+    const isMissingLegacyColumn =
+      maybeError?.code === 'ER_BAD_FIELD_ERROR' &&
+      typeof maybeError?.message === 'string' &&
+      (maybeError.message.includes("'divisor'") || maybeError.message.includes("'decimals'"));
+    if (!isMissingLegacyColumn) throw error;
+
+    rows = await queryRows<RowDataPacket>(
+      connection,
+      `SELECT id, label, category, unit, sort_order, enabled
+       FROM metric_def
+       WHERE enabled = 1
+       ORDER BY sort_order ASC, id ASC`,
+    );
+  }
 
   const defs: Record<string, MetricDef> = {};
   for (const row of rows) {
@@ -512,8 +547,10 @@ async function loadMetricDefs(connection: Connection): Promise<Record<string, Me
       category: String(row.category ?? ''),
       unit: row.unit === null ? null : String(row.unit ?? ''),
       sortOrder: parseInteger(row.sort_order, 0),
-      divisor: row.divisor === null ? null : parseInteger(row.divisor, 0),
-      decimals: row.decimals === null ? null : parseInteger(row.decimals, 0),
+      divisor:
+        row.divisor === undefined || row.divisor === null ? null : parseInteger(row.divisor, 0),
+      decimals:
+        row.decimals === undefined || row.decimals === null ? null : parseInteger(row.decimals, 0),
     };
   }
 
@@ -902,7 +939,6 @@ function withGenerated<T extends Record<string, unknown>>(
 }
 
 type DataRouteContext = {
-  context: APIContext;
   requestUrl: URL;
   endpoint: string;
   db: Connection;
@@ -966,15 +1002,10 @@ async function loadActiveRunSafely(connection: Connection, endpoint: string): Pr
   }
 }
 
-async function buildDataRouteContext(
-  context: APIContext,
-  endpoint: string,
-  requestUrl: URL,
-): Promise<DataRouteContext> {
-  const db = await createDbConnection(asRuntimeEnv(context));
+async function buildDataRouteContext(endpoint: string, requestUrl: URL): Promise<DataRouteContext> {
+  const db = await createDbConnection(asRuntimeEnv());
   const active = await loadActiveRunSafely(db, endpoint);
   return {
-    context,
     requestUrl,
     endpoint,
     db,
@@ -1294,7 +1325,7 @@ async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response>
     });
     await closeDbConnection(route.db);
     try {
-      route.db = await createDbConnection(asRuntimeEnv(route.context));
+      route.db = await createDbConnection(asRuntimeEnv());
       rows = await queryRows<RowDataPacket>(route.db, sql, sqlParams);
     } catch (retryError) {
       console.error('[stats-api] players query failed after retry', {
@@ -1393,7 +1424,7 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
       break;
   }
 
-  const route = await buildDataRouteContext(context, endpoint, requestUrl);
+  const route = await buildDataRouteContext(endpoint, requestUrl);
   try {
     switch (endpoint) {
       case 'metrics':
