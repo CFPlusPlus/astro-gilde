@@ -42,14 +42,14 @@ type InstallStatsMocksOptions = {
   summaryPayload?: StatsSummaryPayload;
 };
 
-function apiRoutePatterns(endpoint: string): Array<(url: URL) => boolean> {
-  return [
-    (url) => {
-      const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
-      const lastSegment = segments.at(-1);
-      return lastSegment === endpoint;
-    },
-  ];
+function resolveLastPathSegment(requestUrl: string): string | null {
+  try {
+    const url = new URL(requestUrl);
+    const segments = url.pathname.split('/').filter((segment) => segment.length > 0);
+    return segments.at(-1) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function routeApi(
@@ -57,9 +57,14 @@ async function routeApi(
   endpoint: string,
   handler: (route: Route) => Promise<void> | void,
 ): Promise<void> {
-  for (const pattern of apiRoutePatterns(endpoint)) {
-    await page.route(pattern, handler);
-  }
+  await page.route('**/*', async (route) => {
+    const lastSegment = resolveLastPathSegment(route.request().url());
+    if (lastSegment !== endpoint) {
+      await route.fallback();
+      return;
+    }
+    await handler(route);
+  });
 }
 
 const DEFAULT_SUMMARY_PAYLOAD: StatsSummaryPayload = {
