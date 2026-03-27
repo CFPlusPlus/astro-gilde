@@ -47,8 +47,7 @@ export default defineConfig({
   adapter: cloudflare(),
   // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
-  // Verhindert die Astro-Hinweisseite fuer fehlende/nicht passende Trailing-Slashes.
-  trailingSlash: 'ignore',
+  trailingSlash: 'always',
   integrations: [
     react(),
     sitemap({
