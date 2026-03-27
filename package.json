@@ -29,10 +29,10 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@lucide/astro": "^0.577.0",
+    "@lucide/astro": "^1.0.0",
     "astro": "^5.16.9",
     "isomorphic-dompurify": "^3.0.0",
-    "lucide-react": "^0.577.0",
+    "lucide-react": "^1.0.0",
     "marked": "^17.0.1",
     "mysql2": "^3.20.0",
     "react": "^19.0.0",
