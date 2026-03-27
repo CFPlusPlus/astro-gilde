@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, sessionDrivers } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
@@ -45,6 +45,10 @@ const tailwindPlugin = /** @type {any} */ (tailwindcss());
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
   adapter: cloudflare(),
+  // Explizit kein Cloudflare-KV fuer Astro-Sessions erzwingen.
+  session: {
+    driver: sessionDrivers.lruCache(),
+  },
   // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
   trailingSlash: 'always',
