@@ -50,7 +50,11 @@ jobs:
         run: npm run test
 
       - name: E2E smoke tests (Playwright)
-        run: npm run test:e2e
+        env:
+          PUBLIC_API_ORIGIN: /api
+        run: |
+          echo "PUBLIC_API_ORIGIN=$PUBLIC_API_ORIGIN"
+          npm run test:e2e
 
       - name: Build
         run: npm run build
