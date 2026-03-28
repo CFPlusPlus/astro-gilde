@@ -34,18 +34,22 @@ Dev-Server: `http://localhost:4321`
 
 ## Wichtige Befehle
 
-| Befehl                 | Zweck                           |
-| :--------------------- | :------------------------------ |
-| `npm run dev`          | Lokale Entwicklung              |
-| `npm run dev:worker`   | Lokal inkl. Worker-API (`/api`) |
-| `npm run build`        | Produktionsbuild nach `dist/`   |
-| `npm run preview`      | Lokale Vorschau des Builds      |
-| `npm run check`        | Astro Type-/Template-Check      |
-| `npm run lint`         | ESLint                          |
-| `npm run test`         | Unit-Tests (Vitest)             |
-| `npm run test:e2e`     | End-to-End-Tests (Playwright)   |
-| `npm run config:check` | Konfigurations-Drift prüfen     |
-| `npm run format:check` | Prettier-Check (CI-tauglich)    |
+| Befehl                 | Zweck                                       |
+| :--------------------- | :------------------------------------------ |
+| `npm run dev`          | Lokale Entwicklung (Astro + Worker-Runtime) |
+| `npm run build`        | Produktionsbuild nach `dist/`               |
+| `npm run preview`      | Lokale Vorschau des Builds (`workerd`)      |
+| `npm run check`        | Astro Type-/Template-Check                  |
+| `npm run lint`         | ESLint                                      |
+| `npm run test`         | Unit-Tests (Vitest)                         |
+| `npm run test:e2e`     | End-to-End-Tests (Playwright)               |
+| `npm run config:check` | Konfigurations-Drift prüfen                 |
+| `npm run format:check` | Prettier-Check (CI-tauglich)                |
+
+## Wann `dev` und wann `preview`?
+
+- `npm run dev` fuer die tägliche Entwicklung mit schnellem Feedback.
+- `npm run preview` für den Produktions-Check nach `npm run build`.
 
 ## Lokal testen (mit/ohne API)
 
@@ -53,26 +57,26 @@ Dev-Server: `http://localhost:4321`
 
 ```bash
 cp .dev.vars.example .dev.vars
-# Bei aktivem Hyperdrive zusätzlich
+# Bei aktivem Hyperdrive zusaetzlich
 # CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
 # als mysql://... Verbindung setzen
-# .dev.vars mit DB-Daten befüllen
-npm run dev:worker
+# .dev.vars mit DB-Daten befuellen
+npm run dev
 ```
 
-- Website und API laufen zusammen unter `http://localhost:8787`
-- Beispiel: `http://localhost:8787/api/metrics`
-- Bei Hyperdrive emuliert Wrangler lokal nur mit
+- Website und API laufen zusammen unter `http://localhost:4321`
+- Beispiel: `http://localhost:4321/api/metrics`
+- Bei Hyperdrive emuliert das Cloudflare-Tooling lokal nur mit
   `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
   oder `localConnectionString`
-- Wichtig: Die Hyperdrive-Variable in `.dev.vars` allein reicht für Wrangler
-  nicht immer aus. In PowerShell besser vor dem Start als echte
+- Wichtig: Die Hyperdrive-Variable in `.dev.vars` allein reicht lokal nicht immer.
+  In PowerShell besser vor dem Start als echte
   Umgebungsvariable setzen oder `localConnectionString` lokal in
   `wrangler.jsonc` verwenden.
 
 ```powershell
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
-npm run dev:worker
+npm run dev
 ```
 
 ### 2) Ohne lokale API (nur Frontend)
@@ -81,8 +85,8 @@ npm run dev:worker
 npm run dev
 ```
 
-- Frontend läuft unter `http://localhost:4321`
-- `/api/*` ist dabei nicht lokal aktiv (Statistikfeatures können eingeschränkt sein)
+- Frontend laeuft unter `http://localhost:4321`
+- `/api/*` ist technisch vorhanden, aber ohne DB-Config nicht voll nutzbar
 
 ### 3) Ohne lokale API, aber mit externem API-Ziel
 
@@ -90,8 +94,17 @@ npm run dev
 PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
 ```
 
-- Frontend nutzt dann das externe API-Ziel für `/api/*`
+- Frontend nutzt dann das externe API-Ziel fuer `/api/*`
 - Keine Secrets im Frontend setzen (nur URL, niemals DB-Credentials)
+
+### 4) Produktionsnahe Vorschau lokal
+
+```bash
+npm run build
+npm run preview
+```
+
+- `astro preview` nutzt mit `@astrojs/cloudflare` ebenfalls `workerd`
 
 ## Inhalte pflegen
 

@@ -13,10 +13,9 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "wrangler types && astro dev",
     "build": "astro build && node scripts/postbuild-404.mjs",
-    "preview": "astro preview",
-    "dev:worker": "npm run build && wrangler dev",
+    "preview": "wrangler types && astro preview",
     "deploy:worker": "npm run build && wrangler deploy",
     "astro": "astro",
     "format": "prettier . --write",
