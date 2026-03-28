@@ -45,6 +45,10 @@ const tailwindPlugin = /** @type {any} */ (tailwindcss());
 export default defineConfig({
   site: 'https://minecraft-gilde.de',
   adapter: cloudflare({ imageService: 'compile' }),
+  // Kein Shiki-Inline-CSS, damit CSP sauber bleibt.
+  markdown: {
+    syntaxHighlight: false,
+  },
   // Explizit kein Cloudflare-KV fuer Astro-Sessions erzwingen.
   session: {
     driver: sessionDrivers.lruCache(),
