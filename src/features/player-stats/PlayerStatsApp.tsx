@@ -148,7 +148,7 @@ function PlayerSkinQuickAccess({
             {playerName || 'Unbekannter Spieler'}
           </span>
           <span className="text-muted mt-1 inline-flex items-center gap-2 text-xs">
-            <Info size={14} className="shrink-0" /> Skin-Viewer \u00f6ffnen
+            <Info size={14} className="shrink-0" /> Skin-Viewer öffnen
           </span>
         </span>
       </button>

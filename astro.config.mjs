@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig, sessionDrivers } from 'astro/config';
+import { defineConfig, fontProviders, sessionDrivers } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
@@ -49,6 +49,24 @@ export default defineConfig({
   session: {
     driver: sessionDrivers.lruCache(),
   },
+  fonts: [
+    {
+      name: 'Geist',
+      cssVariable: '--font-geist',
+      provider: fontProviders.fontsource(),
+      weights: [400, 500, 600, 700],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+    {
+      name: 'Space Grotesk',
+      cssVariable: '--font-space-grotesk',
+      provider: fontProviders.fontsource(),
+      weights: [400, 500, 600, 700],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+  ],
   // Verzeichnis-Format fuer Ausgaben (kein .html in URLs)
   build: { format: 'directory' },
   trailingSlash: 'always',
