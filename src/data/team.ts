@@ -51,4 +51,10 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: 'Moderator',
     group: 'moderator',
   },
+  {
+    uuid: 'a7ec5ecbab6a44b386c970c28762145f',
+    inGameName: 'Darcball',
+    role: 'Moderator',
+    group: 'moderator',
+  },
 ];
