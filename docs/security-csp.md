@@ -1,6 +1,6 @@
 # Content Security Policy (CSP)
 
-Die Seite setzt eine CSP über Astro `experimental.csp` in `astro.config.mjs`.
+Die Seite setzt eine CSP über Astro `security.csp` in `astro.config.mjs`.
 
 ## Aktuelle Direktiven
 
@@ -19,6 +19,7 @@ Die Seite setzt eine CSP über Astro `experimental.csp` in `astro.config.mjs`.
 - `frame-ancestors` ist aktuell nicht gesetzt.
 - JSON-LD bleibt als nicht-ausführender Script-Block im HTML.
 - Inline-`style`-Attribute werden durch die Policy blockiert.
+- Markdown-Syntax-Highlighting ist auf `false` gesetzt, damit keine Shiki-Inline-Styles gegen die CSP laufen.
 
 ## Browser-Check (optional)
 

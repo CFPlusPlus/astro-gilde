@@ -95,15 +95,15 @@ npm run config:check
 Mit lokaler API (Worker + DB):
 
 ```bash
-# Bei aktivem Hyperdrive zusätzlich
+# Bei aktivem Hyperdrive zusaetzlich
 # CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
 # in .dev.vars setzen
-npm run dev:worker
+npm run dev
 ```
 
-Hinweis für Hyperdrive:
-`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte für
-`wrangler dev` zusätzlich als echte Shell-Umgebungsvariable gesetzt werden
+Hinweis fuer Hyperdrive:
+`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte fuer
+die lokale Cloudflare-Runtime zusaetzlich als echte Shell-Umgebungsvariable gesetzt werden
 oder lokal als `localConnectionString` in `wrangler.jsonc` stehen.
 
 Ohne lokale API (nur Frontend):
@@ -116,6 +116,13 @@ Ohne lokale API, aber mit externem API-Ziel:
 
 ```bash
 PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
+```
+
+Produktionsnahe Vorschau (nach Build):
+
+```bash
+npm run build
+npm run preview
 ```
 
 Details zu Endpunkten, `.dev.vars` und Secrets: `docs/stats-api.md`.

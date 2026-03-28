@@ -13,7 +13,14 @@ import globals from 'globals';
  */
 export default [
   {
-    ignores: ['dist/**', '.astro/**', 'node_modules/**', 'public/**', 'src/partials/**'],
+    ignores: [
+      'dist/**',
+      '.astro/**',
+      'node_modules/**',
+      'public/**',
+      'src/partials/**',
+      'worker-configuration.d.ts',
+    ],
   },
 
   // Basisregeln fuer JavaScript

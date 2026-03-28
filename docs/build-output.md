@@ -37,9 +37,13 @@ Sitemap-Filter:
 
 ## CSP im Build
 
-Das Projekt nutzt `experimental.csp` mit Hash-Erzeugung für Astro-Inline-Runtime.
+Das Projekt nutzt `security.csp` mit Hash-Erzeugung für Astro-Inline-Runtime.
 
 Details sind in [security-csp.md](./security-csp.md) dokumentiert.
+
+## Markdown-Rendering
+
+- `markdown.syntaxHighlight: false`, damit keine Shiki-Inline-Styles gegen CSP-Regeln laufen.
 
 ## Vite-Besonderheiten
 
