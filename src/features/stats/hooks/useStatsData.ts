@@ -519,15 +519,22 @@ export function useStatsData({
         return;
       }
 
-      setSummaryLoaded(true);
+      const shouldTreatInitialStateAsLoading =
+        options.initial &&
+        options.hasRevalidate &&
+        (state.status === 'stale' || state.status === 'error');
 
-      if (state.status === 'stale' && options.initial && options.hasRevalidate) {
+      if (shouldTreatInitialStateAsLoading) {
+        if (state.status === 'stale') {
+          setSummaryLoaded(true);
+        }
         setSummaryLoading(true);
         setSummaryError(null);
         setApiErrorWithKind(null, null);
         return;
       }
 
+      setSummaryLoaded(true);
       setSummaryLoading(false);
 
       if (state.status === 'error' || state.status === 'stale') {

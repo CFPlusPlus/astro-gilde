@@ -154,6 +154,8 @@ export function usePlayerStatsState(): UsePlayerStatsState {
   }, [filterRaw]);
 
   useEffect(() => {
+    if (!queryReady) return;
+
     const uuid = uuidParam.trim();
     if (!uuid) {
       setApiError(
@@ -228,7 +230,7 @@ export function usePlayerStatsState(): UsePlayerStatsState {
     })();
 
     return () => ac.abort();
-  }, [forceTranslationCheck, uuidParam]);
+  }, [forceTranslationCheck, queryReady, uuidParam]);
 
   useEffect(() => {
     if (!playerName) return;

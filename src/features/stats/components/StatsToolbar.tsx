@@ -44,6 +44,7 @@ type StatsToolbarProps = {
   reloadInSeconds?: number;
   activeLeaderboardCategoryLabel?: string | null;
   onOpenLeaderboardCategories?: () => void;
+  showLoadingHint?: boolean;
 };
 
 function useMediaQuery(query: string, initialValue = false): boolean {
@@ -232,6 +233,7 @@ export function StatsToolbar({
   reloadInSeconds = 0,
   activeLeaderboardCategoryLabel = null,
   onOpenLeaderboardCategories,
+  showLoadingHint = false,
 }: StatsToolbarProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)', true);
   const showReload = typeof onReload === 'function';
@@ -297,6 +299,15 @@ export function StatsToolbar({
               />
 
               <div className="flex min-w-0 items-center justify-end gap-2">
+                {showLoadingHint ? (
+                  <span
+                    className="border-accent/40 bg-accent/10 text-accent inline-flex h-7 shrink-0 items-center rounded-full border px-2.5 text-[10px] font-semibold tracking-[0.08em] uppercase"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    L\u00e4dt...
+                  </span>
+                ) : null}
                 <LiveBadgeSlot
                   variant={liveVariant}
                   updatedAt={updatedAt}
@@ -351,6 +362,7 @@ export function StatsToolbar({
           reloadInSeconds={reloadInSeconds}
           activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
           onOpenLeaderboardCategories={onOpenLeaderboardCategories}
+          showLoadingHint={showLoadingHint}
         />
       )}
     </header>

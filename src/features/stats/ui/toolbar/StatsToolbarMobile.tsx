@@ -45,6 +45,7 @@ export function StatsToolbarMobile({
   reloadInSeconds,
   activeLeaderboardCategoryLabel,
   onOpenLeaderboardCategories,
+  showLoadingHint = false,
 }: {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
@@ -64,6 +65,7 @@ export function StatsToolbarMobile({
   reloadInSeconds: number;
   activeLeaderboardCategoryLabel?: string | null;
   onOpenLeaderboardCategories?: () => void;
+  showLoadingHint?: boolean;
 }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -77,6 +79,7 @@ export function StatsToolbarMobile({
   const searchSheetId = useId();
   const optionsSheetId = useId();
   const staleChipLabel = resolveStaleChipLabel(liveVariant);
+  const statusChipLabel = showLoadingHint ? 'L\u00e4dt...' : staleChipLabel;
 
   searchApiRef.current = {
     setOpen: search.setOpen,
@@ -111,9 +114,18 @@ export function StatsToolbarMobile({
           disabled={tabsDisabled}
         />
 
-        {staleChipLabel ? (
-          <span className="border-border/85 bg-surface-solid/55 text-muted hidden h-7 shrink-0 items-center rounded-full border px-2.5 text-[10px] font-semibold tracking-[0.08em] uppercase min-[390px]:inline-flex">
-            {staleChipLabel}
+        {statusChipLabel ? (
+          <span
+            className={[
+              'hidden h-7 shrink-0 items-center rounded-full border px-2.5 text-[10px] font-semibold tracking-[0.08em] uppercase min-[390px]:inline-flex',
+              showLoadingHint
+                ? 'border-accent/40 bg-accent/10 text-accent'
+                : 'border-border/85 bg-surface-solid/55 text-muted',
+            ].join(' ')}
+            role={showLoadingHint ? 'status' : undefined}
+            aria-live={showLoadingHint ? 'polite' : undefined}
+          >
+            {statusChipLabel}
           </span>
         ) : null}
 

@@ -6,7 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 import { getLiveResource } from '../../../lib/live/cache';
+import type { LiveDataState } from '../../../lib/live/types';
 import { getLeaderboard, getMetrics, getSummary } from '../api';
+import type { SummaryResponse } from '../types';
 import type { TabKey } from '../types-ui';
 import { useStatsData } from './useStatsData';
 
@@ -202,6 +204,64 @@ describe('useStatsData rate limit', () => {
     expect(getLiveResource).toHaveBeenCalledTimes(1);
     expect(getMetrics).not.toHaveBeenCalled();
     expect(getLeaderboard).not.toHaveBeenCalled();
+
+    await hook.unmount();
+  });
+
+  it('keeps apiError hidden while an initial cached summary error is revalidating', async () => {
+    let resolveRevalidate: ((value: LiveDataState<SummaryResponse>) => void) | null = null;
+    const revalidate = new Promise<LiveDataState<SummaryResponse>>((resolve) => {
+      resolveRevalidate = resolve;
+    });
+
+    vi.mocked(getLiveResource).mockReturnValueOnce({
+      state: {
+        status: 'error',
+        fetchedAt: 1_000,
+        error: {
+          kind: 'network',
+          message: 'Kurzzeitig nicht erreichbar',
+        },
+      },
+      revalidate,
+    });
+
+    const hook = await mountHook({
+      activeTab: 'uebersicht',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: null,
+    });
+
+    await flushEffects(2);
+
+    const pendingState = hook.getLatest();
+    expect(pendingState.summaryLoading).toBe(true);
+    expect(pendingState.summaryError).toBeNull();
+    expect(pendingState.apiError).toBeNull();
+
+    await act(async () => {
+      resolveRevalidate?.({
+        status: 'ok',
+        data: {
+          player_count: 12,
+          totals: {
+            hours: 120,
+          },
+          __generated: '2026-02-19T12:00:01.000Z',
+        },
+        updatedAt: 2_000,
+        fetchedAt: 2_000,
+      });
+      await Promise.resolve();
+    });
+
+    await flushEffects(2);
+
+    const nextState = hook.getLatest();
+    expect(nextState.summaryLoading).toBe(false);
+    expect(nextState.summaryError).toBeNull();
+    expect(nextState.apiError).toBeNull();
 
     await hook.unmount();
   });

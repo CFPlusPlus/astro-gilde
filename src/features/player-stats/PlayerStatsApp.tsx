@@ -36,6 +36,27 @@ function useFadeOutPlaceholder(): void {
   }, []);
 }
 
+function useDelayedFlag(value: boolean, delayMs = 350): boolean {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!value) {
+      setVisible(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setVisible(true);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return visible;
+}
+
 function buildKpiItems(stats: Record<string, unknown> | null): KpiItem[] {
   const asObj = (v: unknown) => (v && typeof v === 'object' ? (v as Record<string, number>) : null);
   const custom = asObj(stats?.['minecraft:custom']) || {};
@@ -195,11 +216,11 @@ function PlayerStatsSidebar({
 function PlayerStatsNotices({
   hasUuidInLocation,
   apiError,
-  isLoading,
+  showLoadingNotice,
 }: {
   hasUuidInLocation: boolean;
   apiError: string | null;
-  isLoading: boolean;
+  showLoadingNotice: boolean;
 }) {
   return (
     <>
@@ -212,7 +233,7 @@ function PlayerStatsNotices({
         </div>
       ) : null}
 
-      {isLoading ? (
+      {showLoadingNotice ? (
         <div className="mg-notice text-sm" data-variant="neutral" role="status">
           <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
           <span className="text-fg/90">Spielerstatistiken werden geladen...</span>
@@ -231,10 +252,40 @@ function PlayerStatsNotices({
   );
 }
 
+function PlayerStatsLoadingSkeleton() {
+  return (
+    <div className="space-y-4" aria-hidden="true">
+      <section className="mg-app-panel mg-app-panel--soft p-4">
+        <div className="animate-pulse space-y-3">
+          <div className="bg-surface-solid/55 h-4 w-40 rounded-md" />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <div key={`kpi-skeleton-${index}`} className="bg-surface-solid/45 h-16 rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mg-app-panel mg-app-panel--strong p-4">
+        <div className="animate-pulse space-y-3">
+          <div className="bg-surface-solid/55 h-4 w-48 rounded-md" />
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={`row-skeleton-${index}`}
+              className="bg-surface-solid/40 h-10 rounded-[calc(var(--radius)-3px)]"
+            />
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function PlayerStatsResults({
   hasUuidInLocation,
   apiError,
   isLoading,
+  showLoadingNotice,
   hasData,
   activeTab,
   setActiveTab,
@@ -254,6 +305,7 @@ function PlayerStatsResults({
   hasUuidInLocation: boolean;
   apiError: string | null;
   isLoading: boolean;
+  showLoadingNotice: boolean;
   hasData: boolean;
   activeTab: UsePlayerStatsState['activeTab'];
   setActiveTab: UsePlayerStatsState['setActiveTab'];
@@ -271,12 +323,14 @@ function PlayerStatsResults({
   setSortMobs: UsePlayerStatsState['setSortMobs'];
 }) {
   return (
-    <div className="space-y-5">
+    <div className="space-y-5" aria-busy={isLoading}>
       <PlayerStatsNotices
         hasUuidInLocation={hasUuidInLocation}
         apiError={apiError}
-        isLoading={isLoading}
+        showLoadingNotice={showLoadingNotice}
       />
+
+      {isLoading ? <PlayerStatsLoadingSkeleton /> : null}
 
       {hasData ? (
         <>
@@ -342,6 +396,7 @@ export default function PlayerStatsApp() {
 
   const hasUuidInLocation = uuidParam.trim().length > 0;
   const isLoading = hasUuidInLocation && !apiError && !stats;
+  const showLoadingNotice = useDelayedFlag(isLoading);
   const hasData = Boolean(stats) && !apiError;
 
   useFadeOutPlaceholder();
@@ -408,6 +463,7 @@ export default function PlayerStatsApp() {
               hasUuidInLocation={hasUuidInLocation}
               apiError={apiError}
               isLoading={isLoading}
+              showLoadingNotice={showLoadingNotice}
               hasData={hasData}
               activeTab={activeTab}
               setActiveTab={setActiveTab}

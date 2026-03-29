@@ -90,6 +90,27 @@ function resolveRankMetricFromCandidates(
   return null;
 }
 
+function useDelayedFlag(value: boolean, delayMs = 350): boolean {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!value) {
+      setVisible(false);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setVisible(true);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [delayMs, value]);
+
+  return visible;
+}
+
 export default function StatsApp() {
   const [isReady, setIsReady] = useState(false);
   const initialUrlState = useMemo(() => parseStatsUrlState(''), []);
@@ -363,8 +384,39 @@ export default function StatsApp() {
     setIsReady(true);
   }, []);
 
+  const activeTabLoading = useMemo(() => {
+    if (activeTab === 'uebersicht') {
+      return summaryLoading && !summaryLoaded;
+    }
+
+    if (activeTab === 'king') {
+      return king.loading && !king.loaded;
+    }
+
+    if (activeTab === 'ranglisten') {
+      return activeMetricState.loading && !activeMetricState.loaded;
+    }
+
+    if (activeTab === 'versus') {
+      return versus.versusLoading && !versus.hasVersusResults;
+    }
+
+    return false;
+  }, [
+    activeMetricState.loaded,
+    activeMetricState.loading,
+    activeTab,
+    king.loaded,
+    king.loading,
+    summaryLoaded,
+    summaryLoading,
+    versus.hasVersusResults,
+    versus.versusLoading,
+  ]);
+  const showToolbarLoadingHint = useDelayedFlag(activeTabLoading);
+
   return (
-    <div data-stats-app-ready={isReady ? 'true' : 'false'}>
+    <div data-stats-app-ready={isReady ? 'true' : 'false'} aria-busy={activeTabLoading}>
       <StatsLayout
         stickyTopBar
         topBarClassName="py-2 md:py-3"
@@ -389,6 +441,7 @@ export default function StatsApp() {
             reloadInSeconds={summaryRetryInSeconds}
             activeLeaderboardCategoryLabel={activeLeaderboardCategoryLabel}
             onOpenLeaderboardCategories={handleOpenLeaderboardCategories}
+            showLoadingHint={showToolbarLoadingHint}
           />
         }
       >
