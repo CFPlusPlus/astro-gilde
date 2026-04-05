@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
 
 /**
  * Kleine UI-Helfer fuer die Statistik-Seite.
@@ -14,18 +14,50 @@ export function Chip({ children }: { children: React.ReactNode }) {
   );
 }
 
+export function Notice({
+  children,
+  variant = 'neutral',
+  role = 'status',
+  icon,
+  iconPosition,
+  className,
+}: {
+  children: React.ReactNode;
+  variant?: 'neutral' | 'warning';
+  role?: 'status' | 'alert';
+  icon?: React.ReactNode;
+  iconPosition?: 'start' | 'end';
+  className?: string;
+}) {
+  const resolvedIconPosition = iconPosition ?? (variant === 'warning' ? 'start' : 'end');
+
+  return (
+    <div
+      className={['mg-notice', className].filter(Boolean).join(' ')}
+      data-variant={variant}
+      role={role}
+    >
+      {icon && resolvedIconPosition === 'start' ? (
+        <span className="mg-notice__icon mg-notice__icon--start" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+      <div className="mg-notice__content">{children}</div>
+      {icon && resolvedIconPosition === 'end' ? (
+        <span className="mg-notice__icon" aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 export function ApiAlert({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <div className="mg-notice" data-variant="warning" role="alert">
-      <span
-        className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
-        aria-hidden="true"
-      >
-        <Info size={14} />
-      </span>
-      <span className="text-fg/90">{message}</span>
-    </div>
+    <Notice variant="warning" role="alert" icon={<CircleAlert size={16} />}>
+      {message}
+    </Notice>
   );
 }
 

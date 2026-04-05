@@ -446,23 +446,35 @@
     box-shadow: inset 3px 0 0 color-mix(in oklab, var(--mg-notice-tone) 62%, transparent);
   }
 
-  .mg-notice[data-variant='warning'] {
-    --mg-notice-tone: var(--warning);
+  .mg-notice__content {
+    @apply min-w-0 flex-1 leading-relaxed;
+    color: color-mix(in oklab, var(--fg) 94%, transparent);
   }
 
-  .mg-notice:not([data-variant='neutral']) > :where(span:first-child) {
+  .mg-notice__icon {
+    @apply inline-flex h-7 w-7 flex-none items-center justify-center self-start rounded-lg;
+    margin-inline-start: auto;
     background: color-mix(in oklab, var(--mg-notice-tone) 24%, var(--surface-solid) 76%);
     color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
   }
 
-  .mg-notice:not([data-variant='neutral']) :where(.text-accent) {
-    color: color-mix(in oklab, var(--mg-notice-tone) 78%, var(--fg) 22%);
+  .mg-notice__icon--start {
+    margin-inline-start: 0;
+  }
+
+  .mg-notice[data-variant='warning'] {
+    --mg-notice-tone: var(--warning);
   }
 
   .mg-notice[data-variant='neutral'] {
     background: color-mix(in oklab, var(--surface-solid) 84%, var(--bg) 16%);
     border: 1px solid color-mix(in oklab, var(--border) 84%, transparent);
     box-shadow: none;
+  }
+
+  .mg-notice[data-variant='neutral'] .mg-notice__icon {
+    background: color-mix(in oklab, var(--accent) 15%, var(--surface-solid) 85%);
+    color: color-mix(in oklab, var(--accent) 76%, var(--fg) 24%);
   }
 
   .mg-error-message {

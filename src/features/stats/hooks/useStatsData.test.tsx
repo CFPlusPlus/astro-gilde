@@ -208,6 +208,28 @@ describe('useStatsData rate limit', () => {
     await hook.unmount();
   });
 
+  it('keeps king errors stable instead of retrying in a loop', async () => {
+    vi.mocked(getLeaderboard).mockRejectedValue({
+      status: 500,
+      message: 'HTTP 500',
+    });
+
+    const hook = await mountHook({
+      activeTab: 'king',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: null,
+    });
+
+    await flushEffects(5);
+
+    expect(getLeaderboard).toHaveBeenCalledTimes(1);
+    expect(hook.getLatest().king.liveStatus).toBe('error');
+    expect(hook.getLatest().king.lastAttemptedPageSize).toBe(10);
+
+    await hook.unmount();
+  });
+
   it('keeps apiError hidden while an initial cached summary error is revalidating', async () => {
     let resolveRevalidate: ((value: LiveDataState<SummaryResponse>) => void) | null = null;
     const revalidate = new Promise<LiveDataState<SummaryResponse>>((resolve) => {
@@ -298,6 +320,34 @@ describe('useStatsData rate limit', () => {
 
     expect(getMetrics).toHaveBeenCalledTimes(1);
     expect(getLeaderboard).toHaveBeenCalledTimes(1);
+
+    await hook.unmount();
+  });
+
+  it('keeps rankings errors stable instead of retrying in a loop', async () => {
+    vi.mocked(getMetrics).mockResolvedValue({
+      metrics: {
+        hours: { label: 'Spielzeit', category: 'Aktivitaet' },
+      },
+    });
+    vi.mocked(getLeaderboard).mockRejectedValue({
+      status: 500,
+      message: 'HTTP 500',
+    });
+
+    const hook = await mountHook({
+      activeTab: 'ranglisten',
+      pageSize: 10,
+      metricFilter: '',
+      initialActiveMetricId: 'hours',
+    });
+
+    await flushEffects(5);
+
+    expect(getMetrics).toHaveBeenCalledTimes(1);
+    expect(getLeaderboard).toHaveBeenCalledTimes(1);
+    expect(hook.getLatest().activeMetricState.liveStatus).toBe('error');
+    expect(hook.getLatest().activeMetricState.lastAttemptedPageSize).toBe(10);
 
     await hook.unmount();
   });

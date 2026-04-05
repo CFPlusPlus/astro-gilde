@@ -95,16 +95,15 @@ npm run config:check
 Mit lokaler API (Worker + DB):
 
 ```bash
-# Bei aktivem Hyperdrive zusaetzlich
-# CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
-# in .dev.vars setzen
 npm run dev
 ```
 
-Hinweis fuer Hyperdrive:
-`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte fuer
-die lokale Cloudflare-Runtime zusaetzlich als echte Shell-Umgebungsvariable gesetzt werden
-oder lokal als `localConnectionString` in `wrangler.jsonc` stehen.
+Hinweis für Hyperdrive:
+`CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte für
+die lokale Cloudflare-Runtime als echte Shell-Umgebungsvariable gesetzt werden.
+Zusätzlich muss für lokales Hyperdrive `CLOUDFLARE_ENV=production` gesetzt
+werden, weil die Hyperdrive-Bindung nur in der produktiven Cloudflare-Umgebung
+konfiguriert ist.
 
 Ohne lokale API (nur Frontend):
 

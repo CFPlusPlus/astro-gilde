@@ -48,7 +48,7 @@ Dev-Server: `http://localhost:4321`
 
 ## Wann `dev` und wann `preview`?
 
-- `npm run dev` fuer die tägliche Entwicklung mit schnellem Feedback.
+- `npm run dev` für die tägliche Entwicklung mit schnellem Feedback.
 - `npm run preview` für den Produktions-Check nach `npm run build`.
 
 ## Lokal testen (mit/ohne API)
@@ -57,47 +57,44 @@ Dev-Server: `http://localhost:4321`
 
 ```bash
 cp .dev.vars.example .dev.vars
-# Bei aktivem Hyperdrive zusaetzlich
-# CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE
-# als mysql://... Verbindung setzen
-# .dev.vars mit DB-Daten befuellen
+# .dev.vars mit DB-Daten befüllen
 npm run dev
 ```
 
 - Website und API laufen zusammen unter `http://localhost:4321`
 - Beispiel: `http://localhost:4321/api/metrics`
-- Bei Hyperdrive emuliert das Cloudflare-Tooling lokal nur mit
-  `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
-  oder `localConnectionString`
-- Wichtig: Die Hyperdrive-Variable in `.dev.vars` allein reicht lokal nicht immer.
-  In PowerShell besser vor dem Start als echte
-  Umgebungsvariable setzen oder `localConnectionString` lokal in
-  `wrangler.jsonc` verwenden.
+- Standardmässig nutzt die lokale Entwicklung kein Hyperdrive.
+- Andere Entwickler können über `STATS_DB_*` in `.dev.vars` ihre eigene DB anbinden.
+
+### 2) Mit lokal emuliertem Hyperdrive (optional)
 
 ```powershell
+$env:CLOUDFLARE_ENV="production"
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
 npm run dev
 ```
 
-### 2) Ohne lokale API (nur Frontend)
+- Dabei wird die Cloudflare-Umgebung `production` lokal verwendet.
+
+### 3) Ohne lokale API (nur Frontend)
 
 ```bash
 npm run dev
 ```
 
-- Frontend laeuft unter `http://localhost:4321`
+- Das Frontend läuft unter `http://localhost:4321`
 - `/api/*` ist technisch vorhanden, aber ohne DB-Config nicht voll nutzbar
 
-### 3) Ohne lokale API, aber mit externem API-Ziel
+### 4) Ohne lokale API, aber mit externem API-Ziel
 
 ```bash
 PUBLIC_API_ORIGIN=https://<dein-api-host> npm run dev
 ```
 
-- Frontend nutzt dann das externe API-Ziel fuer `/api/*`
+- Frontend nutzt dann das externe API-Ziel für `/api/*`
 - Keine Secrets im Frontend setzen (nur URL, niemals DB-Credentials)
 
-### 4) Produktionsnahe Vorschau lokal
+### 5) Produktionsnahe Vorschau lokal
 
 ```bash
 npm run build
@@ -105,6 +102,8 @@ npm run preview
 ```
 
 - `astro preview` nutzt mit `@astrojs/cloudflare` ebenfalls `workerd`
+- `npm run deploy:worker` baut mit `CLOUDFLARE_ENV=production` und deployed
+  die produktive Cloudflare-Umgebung.
 
 ## Inhalte pflegen
 

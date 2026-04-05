@@ -72,6 +72,7 @@ function makeEmptyLeaderboardState(): LeaderboardState {
     loading: false,
     liveStatus: 'ok',
     liveErrorKind: null,
+    lastAttemptedPageSize: null,
     pages: [],
     currentPage: 0,
     nextCursor: null,
@@ -409,10 +410,14 @@ export function useStatsData({
 
       if (currentState.loading) return;
 
-      setBoardState(stateKey, (state) => ({ ...state, loading: true }));
+      const requestedPageSize = pageSizeRef.current;
+      setBoardState(stateKey, (state) => ({
+        ...state,
+        loading: true,
+        lastAttemptedPageSize: silent ? state.lastAttemptedPageSize : requestedPageSize,
+      }));
 
       try {
-        const requestedPageSize = pageSizeRef.current;
         const isSamePageSize = currentState.pageSize === requestedPageSize;
         const cursor =
           !forceRefresh && currentState.loaded && isSamePageSize ? currentState.nextCursor : null;
@@ -441,6 +446,7 @@ export function useStatsData({
             loading: false,
             liveStatus: 'ok',
             liveErrorKind: null,
+            lastAttemptedPageSize: requestedPageSize,
             pages,
             currentPage: nextCurrentPage,
             nextCursor,
@@ -685,6 +691,7 @@ export function useStatsData({
   }, [activeTab, metrics, filteredMetricIds, activeMetricId]);
 
   const activeMetricBoard = activeMetricId ? boards[activeMetricId] : null;
+  const activeMetricState = activeMetricBoard || makeEmptyLeaderboardState();
   const activeMetricLoaded = activeMetricBoard?.loaded ?? false;
   const activeMetricLoading = activeMetricBoard?.loading ?? false;
   const activeMetricBoardPageSize = activeMetricBoard?.pageSize ?? null;
@@ -693,13 +700,15 @@ export function useStatsData({
     if (activeTab !== 'king') return;
     if (isRateLimitBlocked) return;
 
-    const kingNeedsRefresh = !king.loaded || king.pageSize !== pageSize;
+    const kingNeedsRefresh =
+      (!king.loaded || king.pageSize !== pageSize) && king.lastAttemptedPageSize !== pageSize;
     if (kingNeedsRefresh && !king.loading) {
       void loadLeaderboard('king', 'king');
     }
   }, [
     activeTab,
     isRateLimitBlocked,
+    king.lastAttemptedPageSize,
     king.loaded,
     king.loading,
     king.pageSize,
@@ -711,7 +720,9 @@ export function useStatsData({
     if (activeTab !== 'ranglisten' || !activeMetricId) return;
     if (isRateLimitBlocked) return;
 
-    const metricNeedsRefresh = !activeMetricLoaded || activeMetricBoardPageSize !== pageSize;
+    const metricNeedsRefresh =
+      (!activeMetricLoaded || activeMetricBoardPageSize !== pageSize) &&
+      activeMetricState.lastAttemptedPageSize !== pageSize;
     if (metricNeedsRefresh && !activeMetricLoading) {
       void loadLeaderboard(activeMetricId, activeMetricId);
     }
@@ -721,6 +732,7 @@ export function useStatsData({
     activeMetricLoaded,
     activeMetricLoading,
     activeMetricBoardPageSize,
+    activeMetricState.lastAttemptedPageSize,
     isRateLimitBlocked,
     pageSize,
     loadLeaderboard,
@@ -781,9 +793,7 @@ export function useStatsData({
     boards,
     activeMetricId,
     setActiveMetricId,
-    activeMetricState: activeMetricId
-      ? boards[activeMetricId] || makeEmptyLeaderboardState()
-      : makeEmptyLeaderboardState(),
+    activeMetricState,
     setActiveMetricCurrentPage,
     loadMoreActiveMetric: () => {
       if (!activeMetricId) return Promise.resolve();

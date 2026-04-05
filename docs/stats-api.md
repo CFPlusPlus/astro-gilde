@@ -1,10 +1,10 @@
 # Statistik-API im Worker
 
-Mini-Doku fuer die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
+Mini-Doku für die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
 
 ## Verwendete Endpunkte
 
-- `/api/summary?metrics=...` (KPI-Uebersicht)
+- `/api/summary?metrics=...` (KPI-Übersicht)
 - `/api/metrics` (Kategorien/Definitionen)
 - `/api/leaderboard?metric=...&limit=...&cursor=...` (Ranglisten mit Cursor-Paging)
 - `/api/leaderboards?limit=...` (Top-Listen je Metrik)
@@ -16,12 +16,12 @@ Mini-Doku fuer die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
 
 ## API-Basis im Frontend
 
-Die API-URLs werden ueber `minecraftGilde.apiOrigin` und `toApiUrl(...)` gebaut.
+Die API-URLs werden über `minecraftGilde.apiOrigin` und `toApiUrl(...)` gebaut.
 Default bleibt `/api`, damit Frontend und API unter derselben Origin laufen.
 
 ## Runtime in Astro
 
-Die Route `src/pages/api/[...path].ts` laeuft serverseitig im Cloudflare Worker
+Die Route `src/pages/api/[...path].ts` läuft serverseitig im Cloudflare Worker
 und ruft die MariaDB direkt an (kein Upstream-Proxy mehr auf `api.minecraft-gilde.de`).
 
 Implementierung:
@@ -30,7 +30,7 @@ Implementierung:
 
 ## Runtime-Variablen und Secrets
 
-Pflichtwerte fuer DB-Zugriff:
+Pflichtwerte für DB-Zugriff:
 
 - `STATS_DB_HOST`
 - `STATS_DB_NAME`
@@ -44,29 +44,34 @@ Optionale Werte:
 
 Optionaler Hyperdrive-Binding:
 
-- `HYPERDRIVE` in `wrangler.jsonc`
+- `env.production.HYPERDRIVE` in `wrangler.jsonc`
 
 Wenn `HYPERDRIVE` gesetzt ist, werden dessen Verbindungsdaten bevorzugt verwendet.
-Fuer die lokale Cloudflare-Runtime braucht Hyperdrive zusaetzlich eine lokale Verbindungszeichenfolge:
+Für die lokale Cloudflare-Runtime braucht Hyperdrive zusätzlich eine lokale Verbindungszeichenfolge:
 
 - `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
-- alternativ `localConnectionString` direkt in `wrangler.jsonc`
 
 Wichtig: Diese Variable in `.dev.vars` allein reicht lokal nicht immer aus,
 weil der Hyperdrive-Check bereits vor dem Laden der Worker-Runtime greift.
 In der Praxis die Variable daher besser vor dem Start als Shell-Umgebungsvariable
-setzen oder `localConnectionString` lokal in `wrangler.jsonc` pflegen.
+setzen.
+
+Im Repository ist Hyperdrive nur für `env.production` hinterlegt. Die
+Top-Level-Konfiguration bleibt lokal absichtlich ohne Hyperdrive, damit andere
+Entwickler standardmäßig über `STATS_DB_*` in `.dev.vars` mit einer eigenen
+DB arbeiten können. Wer Hyperdrive lokal testen will, setzt bewusst
+`CLOUDFLARE_ENV=production` und die lokale Hyperdrive-Umgebungsvariable.
 
 Beispiel für MariaDB/MySQL:
 
 ```text
-mysql://stats_user:bitte_aendern@127.0.0.1:3306/stats
+mysql://stats_user:bitte_ändern@127.0.0.1:3306/stats
 ```
 
 Wichtig:
 
-- Niemals `PUBLIC_*` fuer DB-Daten nutzen.
-- Secrets immer ueber Cloudflare Secrets setzen (`wrangler secret put ...`).
+- Niemals `PUBLIC_*` für DB-Daten nutzen.
+- Secrets immer über Cloudflare Secrets setzen (`wrangler secret put ...`).
 
 ## Caching-Profile
 
@@ -83,13 +88,15 @@ Mojang (`cape` / `profile`):
 - Positive Treffer: `6h`
 - Negative Treffer (`204/404`): `10m`
 - Stale bei Upstream-Fehler: `30s`
-- Header zusaetzlich: `stale-while-revalidate=30`, `stale-if-error=86400`
+- Header zusätzlich: `stale-while-revalidate=30`, `stale-if-error=86400`
 
 ## Lokale Entwicklung
 
-- `npm run dev` fuer Astro + Cloudflare-Worker-Runtime
+- `npm run dev` für Astro + Cloudflare-Worker-Runtime
 - `.dev.vars` mit DB-Werten aus `.dev.vars.example`
-- bei aktivem Hyperdrive zusaetzlich
+- für lokales Hyperdrive zusätzlich
+  `CLOUDFLARE_ENV=production`
+- und zusätzlich
   `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
 
 Damit ist die komplette Statistik-API lokal unter `http://localhost:4321/api/...` testbar.
@@ -100,14 +107,14 @@ Mit lokaler API (empfohlen):
 
 ```bash
 cp .dev.vars.example .dev.vars
-# Bei Hyperdrive die lokale MySQL-URL setzen
-# .dev.vars befuellen
+# .dev.vars befüllen
 npm run dev
 ```
 
 PowerShell:
 
 ```powershell
+$env:CLOUDFLARE_ENV="production"
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
 npm run dev
 ```

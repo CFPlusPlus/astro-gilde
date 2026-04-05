@@ -8,6 +8,7 @@ export type LeaderboardState = {
   loading: boolean;
   liveStatus: 'ok' | 'stale' | 'error';
   liveErrorKind: LiveDataErrorKind | null;
+  lastAttemptedPageSize: number | null;
   pages: LeaderboardRow[][];
   currentPage: number;
   nextCursor: string | null;

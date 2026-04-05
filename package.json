@@ -16,7 +16,7 @@
     "dev": "wrangler types && astro dev",
     "build": "astro build && node scripts/postbuild-404.mjs",
     "preview": "wrangler types && astro preview",
-    "deploy:worker": "npm run build && wrangler deploy",
+    "deploy:worker": "node scripts/deploy-worker.mjs",
     "astro": "astro",
     "format": "prettier . --write",
     "format:check": "prettier . --check",

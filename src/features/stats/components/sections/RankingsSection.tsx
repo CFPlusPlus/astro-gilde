@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ListFilter, RotateCcw, SearchX } from 'lucide-react';
+import { CircleAlert, Info, ListFilter, RotateCcw, SearchX } from 'lucide-react';
 
 import type { GroupedMetrics } from '../MetricPicker';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { LeaderboardTable } from '../LeaderboardTable';
 import { MetricPicker } from '../MetricPicker';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../LiveBadge';
-import { SectionTitle } from '../StatsPrimitives';
+import { Notice, SectionTitle } from '../StatsPrimitives';
 import { QuickAccessPills } from './QuickAccessPills';
 import { RecentPills } from './RecentPills';
 import type { MetricDef } from '../../types';
@@ -211,24 +211,17 @@ function LoadingState() {
 
 function NoResultsNotice() {
   return (
-    <div className="mg-notice text-sm" data-variant="warning" role="status">
-      <span
-        className="bg-accent/15 text-accent inline-flex h-6 w-6 flex-none items-center justify-center rounded-lg"
-        aria-hidden="true"
-      >
-        <SearchX size={14} />
-      </span>
-      <span className="text-fg/90">Keine Ranglisten gefunden.</span>
-    </div>
+    <Notice variant="warning" icon={<SearchX size={16} />} className="text-sm">
+      Keine Ranglisten gefunden.
+    </Notice>
   );
 }
 
 function NoActiveMetricNotice() {
   return (
-    <div className="mg-notice text-sm" data-variant="neutral" role="status">
-      <div className="bg-accent mt-0.5 h-2 w-2 flex-none rounded-full" />
-      <span className="text-fg/90">{'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}</span>
-    </div>
+    <Notice variant="neutral" icon={<Info size={16} />} className="text-sm">
+      {'Keine Rangliste ausgewählt. Wähle eine Kategorie aus.'}
+    </Notice>
   );
 }
 
@@ -308,9 +301,16 @@ function RankingsMainContent({
   return (
     <>
       {activeBoardNotice ? (
-        <div className="mg-notice text-sm" data-variant={activeBoardNotice.variant} role="status">
-          <span className="text-fg/90">{activeBoardNotice.text}</span>
-        </div>
+        <Notice
+          variant={activeBoardNotice.variant}
+          role={activeBoardNotice.variant === 'warning' ? 'alert' : 'status'}
+          icon={
+            activeBoardNotice.variant === 'warning' ? <CircleAlert size={16} /> : <Info size={16} />
+          }
+          className="text-sm"
+        >
+          {activeBoardNotice.text}
+        </Notice>
       ) : null}
 
       <ActiveCategoryInfo activeMetricId={activeMetricId} activeCategory={activeCategory} />

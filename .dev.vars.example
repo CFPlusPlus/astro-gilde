@@ -4,8 +4,7 @@ STATS_DB_NAME=stats
 STATS_DB_USER=stats_user
 STATS_DB_PASS=bitte_aendern
 STATS_DB_CHARSET=utf8mb4
-# Hinweis: Für Wrangler allein in .dev.vars nicht ausreichend.
-# Entweder vor `npm run dev` als Shell-Umgebungsvariable setzen
-# oder `localConnectionString` lokal in `wrangler.jsonc` nutzen.
-CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE=mysql://STATS_DB_USER:STATS_DB_PASS@STATS_DB_HOST:STATS_DB_PORT/STATS_DB_NAME
-
+# Optional fuer lokales Hyperdrive:
+# In PowerShell vor `npm run dev` zusaetzlich setzen:
+# $env:CLOUDFLARE_ENV="production"
+# $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>"
