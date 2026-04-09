@@ -101,9 +101,6 @@ npm run dev
 Hinweis für Hyperdrive:
 `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE` sollte für
 die lokale Cloudflare-Runtime als echte Shell-Umgebungsvariable gesetzt werden.
-Zusätzlich muss für lokales Hyperdrive `CLOUDFLARE_ENV=production` gesetzt
-werden, weil die Hyperdrive-Bindung nur in der produktiven Cloudflare-Umgebung
-konfiguriert ist.
 
 Ohne lokale API (nur Frontend):
 

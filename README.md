@@ -69,12 +69,11 @@ npm run dev
 ### 2) Mit lokal emuliertem Hyperdrive (optional)
 
 ```powershell
-$env:CLOUDFLARE_ENV="production"
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
 npm run dev
 ```
 
-- Dabei wird die Cloudflare-Umgebung `production` lokal verwendet.
+- Damit nutzt die lokale Runtime den konfigurierten Hyperdrive-Binding.
 
 ### 3) Ohne lokale API (nur Frontend)
 
@@ -102,8 +101,7 @@ npm run preview
 ```
 
 - `astro preview` nutzt mit `@astrojs/cloudflare` ebenfalls `workerd`
-- `npm run deploy:worker` baut mit `CLOUDFLARE_ENV=production` und deployed
-  die produktive Cloudflare-Umgebung (inklusive Hyperdrive-Guard vor Deploy).
+- `npm run deploy:worker` baut und deployed die produktive Cloudflare-Umgebung.
 
 ## Inhalte pflegen
 

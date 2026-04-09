@@ -10,18 +10,12 @@
     "binding": "ASSETS",
   },
 
-  // Top-Level bleibt lokal bewusst ohne Hyperdrive.
-  // Fuer Produktionszugriff liegt die Hyperdrive-Bindung nur in `env.production`.
-  "env": {
-    "production": {
-      // Hyperdrive Binding (empfohlen fuer Produktionszugriff auf MariaDB).
-      // Wenn gesetzt, hat HYPERDRIVE Vorrang vor STATS_DB_HOST/STATS_DB_PORT.
-      "hyperdrive": [
-        {
-          "binding": "HYPERDRIVE",
-          "id": "1957f1427ada4516aab63e6664f0ef0c",
-        },
-      ],
+  // Hyperdrive Binding (empfohlen fuer MariaDB-Zugriff im Worker).
+  // Wenn gesetzt, hat HYPERDRIVE Vorrang vor STATS_DB_HOST/STATS_DB_PORT.
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "1957f1427ada4516aab63e6664f0ef0c",
     },
-  },
+  ],
 }

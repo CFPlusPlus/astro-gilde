@@ -44,12 +44,9 @@ Optionale Werte:
 
 Optionaler Hyperdrive-Binding:
 
-- `env.production.HYPERDRIVE` in `wrangler.jsonc`
+- `hyperdrive` in `wrangler.jsonc`
 
 Wenn `HYPERDRIVE` gesetzt ist, werden dessen Verbindungsdaten bevorzugt verwendet.
-Wichtig für Deploys mit Astro-Adapter: `CLOUDFLARE_ENV=production` muss bereits
-beim Build gesetzt sein, damit die generierte `dist/server/wrangler.json` den
-Hyperdrive-Binding enthält.
 Für die lokale Cloudflare-Runtime braucht Hyperdrive zusätzlich eine lokale Verbindungszeichenfolge:
 
 - `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
@@ -59,11 +56,9 @@ weil der Hyperdrive-Check bereits vor dem Laden der Worker-Runtime greift.
 In der Praxis die Variable daher besser vor dem Start als Shell-Umgebungsvariable
 setzen.
 
-Im Repository ist Hyperdrive nur für `env.production` hinterlegt. Die
-Top-Level-Konfiguration bleibt lokal absichtlich ohne Hyperdrive, damit andere
-Entwickler standardmäßig über `STATS_DB_*` in `.dev.vars` mit einer eigenen
-DB arbeiten können. Wer Hyperdrive lokal testen will, setzt bewusst
-`CLOUDFLARE_ENV=production` und die lokale Hyperdrive-Umgebungsvariable.
+Im Repository ist Hyperdrive auf Top-Level hinterlegt. Lokal kann weiterhin
+alternativ über `STATS_DB_*` in `.dev.vars` gegen eine eigene DB gearbeitet
+werden.
 
 Beispiel für MariaDB/MySQL:
 
@@ -98,8 +93,6 @@ Mojang (`cape` / `profile`):
 - `npm run dev` für Astro + Cloudflare-Worker-Runtime
 - `.dev.vars` mit DB-Werten aus `.dev.vars.example`
 - für lokales Hyperdrive zusätzlich
-  `CLOUDFLARE_ENV=production`
-- und zusätzlich
   `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`
 
 Damit ist die komplette Statistik-API lokal unter `http://localhost:4321/api/...` testbar.
@@ -117,7 +110,6 @@ npm run dev
 PowerShell:
 
 ```powershell
-$env:CLOUDFLARE_ENV="production"
 $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>?sslMode=REQUIRED"
 npm run dev
 ```
