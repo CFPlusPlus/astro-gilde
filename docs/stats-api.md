@@ -47,6 +47,9 @@ Optionaler Hyperdrive-Binding:
 - `env.production.HYPERDRIVE` in `wrangler.jsonc`
 
 Wenn `HYPERDRIVE` gesetzt ist, werden dessen Verbindungsdaten bevorzugt verwendet.
+Wichtig für Deploys mit Astro-Adapter: `CLOUDFLARE_ENV=production` muss bereits
+beim Build gesetzt sein, damit die generierte `dist/server/wrangler.json` den
+Hyperdrive-Binding enthält.
 Für die lokale Cloudflare-Runtime braucht Hyperdrive zusätzlich eine lokale Verbindungszeichenfolge:
 
 - `CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE`

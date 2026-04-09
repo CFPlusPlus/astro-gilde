@@ -103,7 +103,7 @@ npm run preview
 
 - `astro preview` nutzt mit `@astrojs/cloudflare` ebenfalls `workerd`
 - `npm run deploy:worker` baut mit `CLOUDFLARE_ENV=production` und deployed
-  die produktive Cloudflare-Umgebung.
+  die produktive Cloudflare-Umgebung (inklusive Hyperdrive-Guard vor Deploy).
 
 ## Inhalte pflegen
 
