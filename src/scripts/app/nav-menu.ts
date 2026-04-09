@@ -13,8 +13,6 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
   const panel = qs<HTMLElement>('[data-nav-panel]', navRoot ?? document);
   const toggle = qs<HTMLElement>('[data-nav-toggle]', navRoot ?? document);
   const overlay = qs<HTMLElement>('[data-nav-overlay]', panel ?? document);
-  const iconOpen = qs<HTMLElement>('[data-icon-open]', toggle ?? document);
-  const iconClose = qs<HTMLElement>('[data-icon-close]', toggle ?? document);
   const menuBackgroundFallbackState = new WeakMap<
     HTMLElement,
     { ariaHidden: string | null; hadPointerEventsNone: boolean }
@@ -175,8 +173,6 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
     if (panel) panel.classList.add('hidden');
     if (overlay) overlay.classList.add('hidden');
     if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    if (iconOpen) iconOpen.classList.remove('hidden');
-    if (iconClose) iconClose.classList.add('hidden');
 
     unbindMenuFocusTrap();
     setMenuBackgroundInert(false);
@@ -196,8 +192,6 @@ export const initNavMenu = ({ qs, qsa }: { qs: Qs; qsa: Qsa }): NavMenuControlle
     panel.classList.remove('hidden');
     if (overlay) overlay.classList.toggle('hidden', !isMobile());
     toggle.setAttribute('aria-expanded', 'true');
-    if (iconOpen) iconOpen.classList.add('hidden');
-    if (iconClose) iconClose.classList.remove('hidden');
 
     if (isMobile()) {
       lockScroll();

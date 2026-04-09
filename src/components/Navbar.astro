@@ -1,7 +1,5 @@
 ---
 import {
-  Menu,
-  X,
   ExternalLink,
   Sun,
   Moon,
@@ -170,10 +168,14 @@ const linkClassMega = (active: boolean) =>
           ariaLabel="Menü öffnen"
           aria-controls="nav-panel"
           aria-expanded="false"
+          class="site-nav-toggle shrink-0"
           data-nav-toggle
         >
-          <Menu size={20} data-icon-open />
-          <X size={20} class="hidden" data-icon-close />
+          <span class="site-nav-toggle-icon" aria-hidden="true">
+            <span class="site-nav-toggle-line site-nav-toggle-line--top"></span>
+            <span class="site-nav-toggle-line site-nav-toggle-line--middle"></span>
+            <span class="site-nav-toggle-line site-nav-toggle-line--bottom"></span>
+          </span>
         </IconButton>
 
         <div id="nav-panel" class="absolute top-full right-0 z-50 hidden" data-nav-panel>
