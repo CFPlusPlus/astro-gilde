@@ -9,7 +9,7 @@
         },
         {
           "command": "/help",
-          "description": "Mit diesem Befehl könnt ihr euch alle Befehle anzeigen lassen"
+          "description": "Mit diesem Befehl kannst du dir alle Befehle anzeigen lassen."
         },
         {
           "command": "/helpop <nachricht>",
@@ -17,7 +17,7 @@
         },
         {
           "command": "/afk",
-          "description": "Mit diesem Befehl setzt ihr euch abwesend (Achtung: Monster können euch immer noch angreifen!)"
+          "description": "Mit diesem Befehl setzt du dich abwesend (Achtung: Monster können dich immer noch angreifen!)."
         },
         {
           "command": "/back",
@@ -44,12 +44,24 @@
           "description": "Sendet eine private Nachricht an einen Spieler."
         },
         {
+          "command": "/ignoreplayer <spieler>",
+          "description": "Ignoriert die Chat-Nachrichten eines angegebenen Spielers."
+        },
+        {
+          "command": "/ignoredplayerlist",
+          "description": "Listet alle Spieler auf, die du aktuell ignorierst."
+        },
+        {
+          "command": "/unignoreplayer <spieler>",
+          "description": "Hebt das Ignorieren der Chat-Nachrichten eines angegebenen Spielers wieder auf."
+        },
+        {
           "command": "/r",
           "description": "Antwortet schnell auf die letzte Nachricht."
         },
         {
           "command": "/rtp",
-          "description": "Teleportiert dich an eine zufällige Stelle auf der Karte"
+          "description": "Teleportiert dich an eine zufällige Stelle auf der Karte."
         },
         {
           "command": "/rules",
@@ -93,7 +105,7 @@
         },
         {
           "command": "/tutorial",
-          "description": "Mit diesem Befehl öffnest du unser Tutorial"
+          "description": "Mit diesem Befehl öffnest du unser Tutorial."
         }
       ]
     },
@@ -106,7 +118,7 @@
         },
         {
           "command": "/delhome <name>",
-          "description": "Löscht ein Home"
+          "description": "Löscht ein Home."
         },
         {
           "command": "/home <name>",
@@ -127,11 +139,11 @@
       "commands": [
         {
           "command": "/abandonclaim",
-          "description": "Löscht den Claim, in dem du stehst"
+          "description": "Löscht den Claim, in dem du stehst."
         },
         {
           "command": "/abandonallclaims",
-          "description": "Löscht alle deine Grundstücke (Muss Bestätigt werden)"
+          "description": "Löscht alle deine Grundstücke (muss bestätigt werden)."
         },
         {
           "command": "/claimexplosions",
@@ -143,11 +155,11 @@
         },
         {
           "command": "/untrust <spieler>",
-          "description": "Widerruft alle Berechtigungen, die einem Spieler in Ihrem Claim gewährt wurden"
+          "description": "Widerruft alle Berechtigungen, die einem Spieler in deinem Claim gewährt wurden."
         },
         {
           "command": "/untrust all",
-          "description": "Entfernt alle Berechtigungen für alle Spieler in Ihrem Claim"
+          "description": "Entfernt alle Berechtigungen für alle Spieler in deinem Claim."
         },
         {
           "command": "/accesstrust <spieler>",
@@ -155,11 +167,11 @@
         },
         {
           "command": "/containertrust <spieler>",
-          "description": "Gibt einem Spieler die Erlaubnis, deine Knöpfe, Hebel, Betten, Handwerksgeräte, Container und Tiere zu benutzen"
+          "description": "Gibt einem Spieler die Erlaubnis, deine Knöpfe, Hebel, Betten, Handwerksgeräte, Container und Tiere zu benutzen."
         },
         {
           "command": "/trustlist",
-          "description": "Listet die Berechtigungen für den Claim auf, in dem Sie sich befinden"
+          "description": "Listet die Berechtigungen für den Claim auf, in dem du dich befindest."
         },
         {
           "command": "/permissiontrust <spieler>",
@@ -175,11 +187,23 @@
         },
         {
           "command": "/expandclaim <+/- Wert>",
-          "description": "Erweitert den Claim um die angegebene Distanz (Der Befehl ist nur möglich, wenn eine Holz-Schaufel in der Hand gehalten wird)"
+          "description": "Erweitert den Claim um die angegebene Distanz (der Befehl ist nur möglich, wenn eine Holz-Schaufel in der Hand gehalten wird)."
         },
         {
           "command": "/subdivideclaims",
           "description": "Schaltet deine Holzschaufel in den Unterteilungsmodus, damit du Claims unterteilen kannst."
+        },
+        {
+          "command": "/basicclaims",
+          "description": "Schaltet deine Holzschaufel wieder in den normalen Claim-Modus."
+        },
+        {
+          "command": "/3dsubdivideclaims",
+          "description": "Erstellt Unterteilungen mit exakten H\u00f6henbegrenzungen (Y-Ebene)."
+        },
+        {
+          "command": "/restrictsubclaim",
+          "description": "Beschr\u00e4nkt einen Unterclaim, damit er keine Berechtigungen vom Hauptclaim \u00fcbernimmt."
         }
       ]
     },
@@ -209,11 +233,11 @@
         },
         {
           "command": "/votegui",
-          "description": "Öffnet die Vote-Oberfläche"
+          "description": "Öffnet die Vote-Oberfläche."
         },
         {
           "command": "/voteshop",
-          "description": "Öffnet den Vote-Shop"
+          "description": "Öffnet den Vote-Shop."
         },
         {
           "command": "/votepoints",
@@ -221,7 +245,7 @@
         },
         {
           "command": "/votenext",
-          "description": "Zeigt dir die nächsten möglichen Vote-Seiten an"
+          "description": "Zeigt dir die nächsten möglichen Vote-Seiten an."
         },
         {
           "command": "/votetop",
