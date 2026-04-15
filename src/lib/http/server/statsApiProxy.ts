@@ -640,6 +640,41 @@ function decodeBase64Utf8(value: string): string | null {
   }
 }
 
+function buildMojangProfileFromAshconBody(uuidHex: string, body: string): string | null {
+  const parsed = parseJsonUnknown(body);
+  if (!parsed || typeof parsed !== 'object') return null;
+
+  const textures = (parsed as { textures?: unknown }).textures;
+  if (!textures || typeof textures !== 'object') return null;
+
+  const raw = (textures as { raw?: unknown }).raw;
+  if (!raw || typeof raw !== 'object') return null;
+
+  const textureValue = asNonEmptyString((raw as { value?: unknown }).value);
+  if (!textureValue) return null;
+
+  const textureSignature = asNonEmptyString((raw as { signature?: unknown }).signature);
+  const rawUuid = asNonEmptyString((parsed as { uuid?: unknown }).uuid);
+  const resolvedUuidHex = sanitizeUuidHex(rawUuid) ?? uuidHex;
+  const resolvedName =
+    asNonEmptyString((parsed as { username?: unknown }).username) ?? resolvedUuidHex;
+
+  const property: { name: string; value: string; signature?: string } = {
+    name: 'textures',
+    value: textureValue,
+  };
+  if (textureSignature) {
+    property.signature = textureSignature;
+  }
+
+  return JSON.stringify({
+    id: resolvedUuidHex,
+    name: resolvedName,
+    properties: [property],
+    profileActions: [],
+  });
+}
+
 function normalizeMinecraftTextureUrl(rawUrl: string): string {
   return rawUrl.toLowerCase().startsWith('http://textures.minecraft.net/')
     ? `https://${rawUrl.slice(7)}`
@@ -787,7 +822,8 @@ function cleanupMojangMemoryCache(nowMs: number): void {
 
 async function fetchMojangProfile(uuidHex: string): Promise<{ status: number; body: string }> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 3000);
+  const timeout = setTimeout(() => controller.abort(), 4500);
+  let sessionStatus = 0;
   try {
     const response = await fetch(
       `https://sessionserver.mojang.com/session/minecraft/profile/${encodeURIComponent(uuidHex)}`,
@@ -796,14 +832,50 @@ async function fetchMojangProfile(uuidHex: string): Promise<{ status: number; bo
         signal: controller.signal,
         headers: {
           Accept: 'application/json',
-          'User-Agent': 'minecraft-gilde.de api',
         },
       },
     );
+    sessionStatus = response.status;
     const body = await response.text();
-    return { status: response.status, body };
+    if (response.status === 200 || response.status === 204 || response.status === 404) {
+      return { status: response.status, body };
+    }
+
+    if (response.status !== 403 && response.status !== 429 && response.status < 500) {
+      return { status: response.status, body };
+    }
+  } catch {
+    // Netzwerkprobleme auf Primär-Endpoint lösen den Fallback aus.
   } finally {
     clearTimeout(timeout);
+  }
+
+  try {
+    const fallbackResponse = await fetch(
+      `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    );
+    const fallbackBody = await fallbackResponse.text();
+    if (fallbackResponse.status === 200) {
+      const convertedBody = buildMojangProfileFromAshconBody(uuidHex, fallbackBody);
+      if (convertedBody) {
+        return { status: 200, body: convertedBody };
+      }
+    }
+    if (fallbackResponse.status === 204 || fallbackResponse.status === 404) {
+      return { status: fallbackResponse.status, body: fallbackBody };
+    }
+    return {
+      status: sessionStatus || fallbackResponse.status,
+      body: sessionStatus ? '' : fallbackBody,
+    };
+  } catch {
+    return { status: sessionStatus, body: '' };
   }
 }
 

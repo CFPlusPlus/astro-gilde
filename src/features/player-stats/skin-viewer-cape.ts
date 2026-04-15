@@ -7,15 +7,6 @@ type MojangProfile = {
   properties?: Array<{ name?: string; value?: string }>;
 };
 
-type MinetoolsProfile = {
-  decoded?: {
-    textures?: {
-      CAPE?: { url?: string };
-    };
-  };
-  raw?: MojangProfile;
-};
-
 type CapeCacheEntry = {
   capeUrl: string | null;
   expiresAt: number;
@@ -87,9 +78,12 @@ export async function fetchCapeFromMojangProfile(
   uuidCompact: string,
   signal: AbortSignal,
 ): Promise<string | null> {
-  const res = await fetch(`https://api.minetools.eu/profile/${encodeURIComponent(uuidCompact)}`, {
+  const res = await fetch(toApiUrl(`/api/profile?uuid=${encodeURIComponent(uuidCompact)}`), {
     signal,
     cache: 'no-store',
+    headers: {
+      Accept: 'application/json',
+    },
   });
 
   if (!res.ok) {
@@ -97,13 +91,8 @@ export async function fetchCapeFromMojangProfile(
     throw new Error(`HTTP ${res.status}`);
   }
 
-  const data = (await res.json()) as MinetoolsProfile;
-
-  const decodedCape = data?.decoded?.textures?.CAPE?.url;
-  if (typeof decodedCape === 'string' && decodedCape) return decodedCape;
-
-  if (data?.raw) return decodeCapeFromProfile(data.raw);
-  return null;
+  const profile = (await res.json()) as MojangProfile;
+  return decodeCapeFromProfile(profile);
 }
 
 function parseCapeApiResponse(data: CapeApiResponse): string | null | undefined {
