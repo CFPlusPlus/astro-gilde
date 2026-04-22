@@ -11,6 +11,7 @@ const appRouteMeta = {
   commands: { path: '/befehle/', navLabel: 'Befehle' },
   vote: { path: '/voten/', navLabel: 'Voten' },
   serverInfo: { path: '/serverinfos/', navLabel: 'Serverinfo', breadcrumbLabel: 'Serverinfos' },
+  banLookup: { path: '/bannabfrage/', navLabel: 'Bannabfrage' },
   stats: { path: '/statistiken/', navLabel: 'Statistiken' },
   faq: { path: '/faq/', navLabel: 'FAQ' },
   history: { path: '/geschichte/', navLabel: 'Geschichte' },

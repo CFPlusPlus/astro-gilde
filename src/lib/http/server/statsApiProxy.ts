@@ -115,6 +115,11 @@ const CACHE_PROFILES: Record<string, CacheProfile> = {
     staleWhileRevalidateSeconds: 30,
     staleIfErrorSeconds: 300,
   },
+  'ban-status': {
+    maxAgeSeconds: 60,
+    staleWhileRevalidateSeconds: 30,
+    staleIfErrorSeconds: 300,
+  },
   cape: {
     maxAgeSeconds: PROFILE_CACHE_FRESH_SECONDS,
     staleWhileRevalidateSeconds: PROFILE_CACHE_STALE_WHILE_REVALIDATE_SECONDS,
@@ -139,6 +144,7 @@ const ALLOWED_ENDPOINTS = new Set([
   'leaderboard',
   'players',
   'player',
+  'ban-status',
   'cape',
   'profile',
 ]);
@@ -279,6 +285,16 @@ function parseNumber(value: unknown, fallback = 0): number {
 
 function parseInteger(value: unknown, fallback = 0): number {
   return Math.trunc(parseNumber(value, fallback));
+}
+
+function parseBoolean(value: unknown, fallback = false): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === 'true') return true;
+    if (normalized === 'false') return false;
+  }
+  return parseInteger(value, fallback ? 1 : 0) !== 0;
 }
 
 function applyDivisor(raw: number, divisor: number | null): number {
@@ -1484,6 +1500,136 @@ async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> 
   );
 }
 
+async function handleBanStatusEndpoint(route: DataRouteContext): Promise<Response> {
+  const rawQuery = (
+    route.requestUrl.searchParams.get('query') ??
+    route.requestUrl.searchParams.get('q') ??
+    ''
+  ).trim();
+  if (!rawQuery) return jsonError(400, 'query required');
+  if (rawQuery.length > 64) return jsonError(400, 'query too long');
+
+  const queryNameLc = rawQuery.toLowerCase();
+  const queryUuidHex = sanitizeUuidHex(rawQuery);
+
+  const rows = await queryRows<RowDataPacket>(
+    route.db,
+    `SELECT LOWER(HEX(k.uuid)) AS uuid_hex,
+            k.name,
+            k.name_source,
+            k.first_seen,
+            k.last_seen,
+            k.seen_in_stats,
+            k.seen_in_usercache,
+            k.seen_in_bans,
+            b.reason,
+            b.banned_by,
+            b.banned_at,
+            b.expires_at,
+            b.is_permanent
+     FROM v_player_known k
+     LEFT JOIN v_player_ban b ON b.uuid = k.uuid
+     WHERE k.name_lc = ?
+        OR (? IS NOT NULL AND k.uuid = UNHEX(?))
+     ORDER BY k.last_seen DESC
+     LIMIT 1`,
+    [queryNameLc, queryUuidHex, queryUuidHex],
+  );
+
+  const row = rows[0];
+
+  if (!row) {
+    const headers = etagHeaders(
+      'ban-status',
+      `ban-status:${route.active.runId}:${queryNameLc}:unknown`,
+      route.active.generatedAt,
+    );
+    return jsonResponse(
+      withGenerated(
+        {
+          query: rawQuery,
+          status: 'unknown_player',
+          player: null,
+          ban: null,
+        },
+        route.active.generatedIso,
+      ),
+      { headers },
+    );
+  }
+
+  const uuidHex = asNonEmptyString(row.uuid_hex);
+  const firstSeenIso = toIsoOrNull(toDateOrNull(row.first_seen));
+  const lastSeenIso = toIsoOrNull(toDateOrNull(row.last_seen));
+  const bannedAtIso = toIsoOrNull(toDateOrNull(row.banned_at));
+  const expiresAtIso = toIsoOrNull(toDateOrNull(row.expires_at));
+  const reason = asNonEmptyString(row.reason);
+  const bannedBy = asNonEmptyString(row.banned_by);
+  const isPermanent = parseBoolean(row.is_permanent, false);
+
+  const status =
+    bannedAtIso !== null ||
+    expiresAtIso !== null ||
+    reason !== null ||
+    bannedBy !== null ||
+    isPermanent
+      ? 'banned'
+      : 'not_banned';
+
+  const player = {
+    uuid: uuidHex ? uuidHexToDashed(uuidHex) : null,
+    name: String(row.name ?? ''),
+    nameSource: asNonEmptyString(row.name_source),
+    firstSeen: firstSeenIso,
+    lastSeen: lastSeenIso,
+    seenInStats: parseBoolean(row.seen_in_stats, false),
+    seenInUsercache: parseBoolean(row.seen_in_usercache, false),
+    seenInBans: parseBoolean(row.seen_in_bans, false),
+  };
+
+  const ban =
+    status === 'banned'
+      ? {
+          reason,
+          bannedBy,
+          bannedAt: bannedAtIso,
+          expiresAt: expiresAtIso,
+          isPermanent,
+        }
+      : null;
+
+  const etagParts = [
+    route.active.runId,
+    queryNameLc,
+    player.uuid ?? 'no-uuid',
+    player.lastSeen ?? 'no-last-seen',
+    status,
+    ban?.bannedAt ?? 'no-ban-at',
+    ban?.expiresAt ?? 'no-expires-at',
+    String(ban?.isPermanent ?? false),
+    ban?.bannedBy ?? 'no-banned-by',
+    ban?.reason ?? 'no-reason',
+  ];
+  const headers = etagHeaders(
+    'ban-status',
+    `ban-status:${etagParts.join(':')}`,
+    route.active.generatedAt,
+  );
+
+  return jsonResponse(
+    withGenerated(
+      {
+        query: rawQuery,
+        status,
+        player,
+        ban,
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
+
 async function routeRequest(context: APIContext, endpoint: string): Promise<Response> {
   const requestUrl = new URL(context.request.url);
 
@@ -1511,6 +1657,8 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
         return await handlePlayersEndpoint(route);
       case 'player':
         return await handlePlayerEndpoint(route);
+      case 'ban-status':
+        return await handleBanStatusEndpoint(route);
       default:
         return jsonError(404, 'Unbekannter API-Endpunkt.');
     }

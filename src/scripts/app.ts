@@ -79,6 +79,12 @@ const hasAnyTarget = (selector: string): boolean => document.querySelector(selec
           if (runId !== mountRunId) return;
           addCleanup(initHomeApp());
         }
+
+        if (hasAnyTarget('[data-ban-query-app]')) {
+          const { initBanQuery } = await import('./app/ban-query');
+          if (runId !== mountRunId) return;
+          addCleanup(initBanQuery());
+        }
       } finally {
         const runCleanup = (): void => {
           while (nextCleanup.length > 0) {

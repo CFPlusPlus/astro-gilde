@@ -20,6 +20,7 @@ export type NavMenuIcon =
   | 'history'
   | 'status'
   | 'map'
+  | 'ban'
   | 'partner'
   | 'privacy'
   | 'imprint';
@@ -73,6 +74,7 @@ export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
     title: 'Server',
     items: [
       navMenuItemForRoute('serverInfo', 'server'),
+      navMenuItemForRoute('banLookup', 'ban'),
       navMenuItemForRoute('commands', 'commands'),
       navMenuItemForRoute('faq', 'faq'),
       navMenuItemForRoute('history', 'history'),

@@ -10,6 +10,7 @@ Mini-Doku für die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
 - `/api/leaderboards?limit=...` (Top-Listen je Metrik)
 - `/api/players?q=...&limit=...` (Autocomplete)
 - `/api/player?uuid=...` (Spieler-Detail)
+- `/api/ban-status?query=...` (Bann-Status per exaktem Name oder UUID)
 - `/api/cape?uuid=...` (Cape aus Mojang-Profil)
 - `/api/profile?uuid=...` (rohes Mojang-Profil)
 - `/i18n/translations.de.json` (statisches i18n-Asset)
