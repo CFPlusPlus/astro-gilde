@@ -81,6 +81,12 @@ Edge-Cache (`caches.default`) + `Cache-Control`:
 - `leaderboard` / `leaderboards`: `max-age=60`
 - `players`: `max-age=30`
 - `player`: `max-age=60`
+- `ban-status`: `max-age=60`, serverseitig auf 8 Abfragen pro Minute und IP limitiert
+
+Rate-Limit:
+
+- `/api/ban-status`: 8 Abfragen pro 60 Sekunden und IP-Adresse
+- Bei Überschreitung: `429 Too Many Requests` mit `Retry-After`
 
 Mojang (`cape` / `profile`):
 

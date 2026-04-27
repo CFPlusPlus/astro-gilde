@@ -4,7 +4,7 @@ import PageHeader from '../components/layout/PageHeader.astro';
 import Button from '../components/ui/Button.astro';
 import Badge from '../components/ui/Badge.astro';
 import { canonicalFor } from '../config/site';
-import { Search, X } from '@lucide/astro';
+import { Search, TimerReset, X } from '@lucide/astro';
 
 const canonicalUrl = canonicalFor('/bannabfrage/');
 ---
@@ -16,7 +16,7 @@ const canonicalUrl = canonicalFor('/bannabfrage/');
 >
   <PageHeader
     title="Bannabfrage"
-    subtitle="Prüfe mit einem exakten Spielernamen oder einer UUID, ob ein Spieler unseren Server besucht hat und ob aktuell ein Bann aktiv ist."
+    subtitle="Prüfe mit einem exakten Spielernamen oder einer UUID, ob für einen Spieler aktuell ein Bann aktiv ist."
   >
     <div class="mt-6 flex flex-wrap gap-2">
       <Badge variant="accent">Live-Abfrage</Badge>
@@ -161,6 +161,9 @@ const canonicalUrl = canonicalFor('/bannabfrage/');
           </article>
 
           <article class="mg-error-message" data-ban-view="error" hidden>
+            <span class="mg-error-message__icon" data-ban-rate-limit-icon hidden aria-hidden="true">
+              <TimerReset size={14} />
+            </span>
             <div data-ban-error-message>Die Bannabfrage ist aktuell nicht verfügbar.</div>
           </article>
         </div>

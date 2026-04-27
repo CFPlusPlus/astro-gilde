@@ -4,6 +4,11 @@ import { gunzipSync } from 'node:zlib';
 import { env as workerEnv } from 'cloudflare:workers';
 import mysql from 'mysql2/promise';
 import type { Connection, ConnectionOptions, RowDataPacket } from 'mysql2/promise';
+import {
+  BAN_STATUS_RATE_LIMIT,
+  consumeDefaultFixedWindowRateLimit,
+  type FixedWindowRateLimitDecision,
+} from './rateLimit';
 
 type CacheProfile = {
   maxAgeSeconds: number;
@@ -384,6 +389,47 @@ function jsonError(status: number, message: string): Response {
       },
     },
   );
+}
+
+function rateLimitErrorResponse(decision: FixedWindowRateLimitDecision): Response {
+  return jsonResponse(
+    { error: 'rate limit exceeded' },
+    {
+      status: 429,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Retry-After': String(decision.retryAfterSeconds),
+        'X-RateLimit-Limit': String(decision.limit),
+        'X-RateLimit-Remaining': String(decision.remaining),
+        'X-RateLimit-Reset': String(Math.ceil(decision.resetAtMs / 1_000)),
+      },
+    },
+  );
+}
+
+function firstForwardedAddress(headerValue: string | null): string | null {
+  const value = headerValue?.split(',')[0]?.trim();
+  return value && value.length > 0 ? value : null;
+}
+
+function readClientAddress(context: APIContext): string {
+  return (
+    firstForwardedAddress(context.request.headers.get('CF-Connecting-IP')) ??
+    firstForwardedAddress(context.request.headers.get('X-Forwarded-For')) ??
+    firstForwardedAddress(context.request.headers.get('X-Real-IP')) ??
+    'unknown'
+  );
+}
+
+function maybeRateLimitBanStatus(context: APIContext, endpoint: string): Response | null {
+  if (endpoint !== 'ban-status') return null;
+
+  const clientAddress = readClientAddress(context);
+  const decision = consumeDefaultFixedWindowRateLimit(
+    `ban-status:${clientAddress}`,
+    BAN_STATUS_RATE_LIMIT,
+  );
+  return decision.allowed ? null : rateLimitErrorResponse(decision);
 }
 
 function resolveDbConfig(env: RuntimeEnv): DbConfig {
@@ -1793,6 +1839,15 @@ export async function handleStatsApiProxy(context: APIContext): Promise<Response
 
   const endpoint = resolveEndpointFromContext(context);
   if (!endpoint) return jsonError(404, 'Unbekannter API-Endpunkt.');
+
+  const rateLimitResponse = maybeRateLimitBanStatus(context, endpoint);
+  if (rateLimitResponse) {
+    return finalizeApiResponse(
+      method,
+      context.request,
+      withApiHeaders(rateLimitResponse, { cacheStatus: 'BYPASS' }),
+    );
+  }
 
   const cacheKey = new Request(new URL(context.request.url).toString(), { method: 'GET' });
   const edgeCache = getEdgeCache();

@@ -1,4 +1,5 @@
 import { toApiUrl } from '../../lib/http/apiUrl';
+import { parseRetryAfterMs } from '../../lib/http/retryAfter';
 
 type BanQueryStatus = 'unknown_player' | 'not_banned' | 'banned';
 type BanView = 'idle' | 'loading' | 'unknown' | 'not-banned' | 'banned' | 'error';
@@ -28,6 +29,18 @@ type BanQueryResponse = {
   player: BanQueryPlayer | null;
   ban: BanQueryBan | null;
 };
+
+class BanQueryHttpError extends Error {
+  status: number;
+  retryAfterMs?: number;
+
+  constructor(status: number, retryAfterMs?: number) {
+    super(`API-Fehler (${status})`);
+    this.name = 'BanQueryHttpError';
+    this.status = status;
+    this.retryAfterMs = retryAfterMs;
+  }
+}
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('de-DE', {
   dateStyle: 'medium',
@@ -64,6 +77,12 @@ const getMessageFromError = (error: unknown): string => {
   return 'Unbekannter Fehler';
 };
 
+const formatRetryAfter = (retryAfterMs: number | undefined): string => {
+  if (retryAfterMs === undefined) return 'Bitte versuche es später erneut.';
+  const seconds = Math.max(1, Math.ceil(retryAfterMs / 1_000));
+  return `Bitte versuche es in ${seconds} Sekunden erneut.`;
+};
+
 const getQueryFromLocation = (): string => {
   const url = new URL(window.location.href);
   const value = (url.searchParams.get('query') ?? '').trim();
@@ -91,6 +110,7 @@ export function initBanQuery(): () => void {
   const clearButton = root.querySelector<HTMLElement>('[data-ban-search-clear]');
   const feedback = root.querySelector<HTMLElement>('[data-ban-feedback]');
   const errorMessage = root.querySelector<HTMLElement>('[data-ban-error-message]');
+  const rateLimitIcon = root.querySelector<HTMLElement>('[data-ban-rate-limit-icon]');
 
   if (!form || !input || !submitButton || !feedback || !errorMessage || !clearButton) {
     return () => {};
@@ -139,8 +159,17 @@ export function initBanQuery(): () => void {
     setText(root, '[data-ban-is-permanent]', ban?.isPermanent ? 'Ja' : 'Nein');
   };
 
+  const showError = (message: string, options: { rateLimited?: boolean } = {}): void => {
+    setView('error');
+    if (rateLimitIcon) {
+      rateLimitIcon.hidden = options.rateLimited !== true;
+    }
+    errorMessage.textContent = message;
+  };
+
   let activeController: AbortController | null = null;
   let isDisposed = false;
+  let nextAllowedRequestAt = 0;
 
   const requestBanStatus = async (
     query: string,
@@ -155,6 +184,15 @@ export function initBanQuery(): () => void {
 
     if (options.syncLocation) {
       syncQueryInLocation(query);
+    }
+
+    const retryAfterMs = nextAllowedRequestAt - Date.now();
+    if (retryAfterMs > 0) {
+      showError(`Zu viele Bannabfragen. ${formatRetryAfter(retryAfterMs)}`, {
+        rateLimited: true,
+      });
+      feedback.textContent = 'Die Bannabfrage ist kurzzeitig pausiert.';
+      return;
     }
 
     if (activeController) {
@@ -176,7 +214,12 @@ export function initBanQuery(): () => void {
       });
 
       if (!response.ok) {
-        throw new Error(`API-Fehler (${response.status})`);
+        throw new BanQueryHttpError(
+          response.status,
+          response.status === 429
+            ? parseRetryAfterMs(response.headers.get('retry-after'))
+            : undefined,
+        );
       }
 
       const data = (await response.json()) as BanQueryResponse;
@@ -204,8 +247,17 @@ export function initBanQuery(): () => void {
       const message = getMessageFromError(error);
       if (message === 'aborted' || isDisposed || activeController !== controller) return;
 
-      setView('error');
-      errorMessage.textContent = `Die Bannabfrage ist aktuell nicht verfügbar (${message}).`;
+      if (error instanceof BanQueryHttpError && error.status === 429) {
+        const retryAfterMs = error.retryAfterMs ?? 60_000;
+        nextAllowedRequestAt = Date.now() + retryAfterMs;
+        showError(`Zu viele Bannabfragen. ${formatRetryAfter(retryAfterMs)}`, {
+          rateLimited: true,
+        });
+        feedback.textContent = 'Die Bannabfrage ist kurzzeitig pausiert.';
+        return;
+      }
+
+      showError(`Die Bannabfrage ist aktuell nicht verfügbar (${message}).`);
       feedback.textContent = 'Die Abfrage konnte nicht abgeschlossen werden.';
     } finally {
       if (activeController === controller) {
