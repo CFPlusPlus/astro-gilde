@@ -212,15 +212,7 @@
       "commands": [
         {
           "command": "/farmwelt",
-          "description": "Teleportiert dich in die normale Farmwelt."
-        },
-        {
-          "command": "/netherfarm",
-          "description": "Teleportiert dich in die Nether-Farmwelt."
-        },
-        {
-          "command": "/endfarm",
-          "description": "Teleportiert dich in die End-Farmwelt."
+          "description": "Bringt dich in die Farmwelten."
         }
       ]
     },
