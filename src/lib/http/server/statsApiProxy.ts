@@ -1084,6 +1084,37 @@ type EndpointUuidParams = {
   uuidHex: string | null;
 };
 
+type BanStatusQuery = {
+  raw: string;
+  nameLc: string;
+  uuidHex: string | null;
+};
+
+type BanStatusKnownPlayer = {
+  uuid: string | null;
+  name: string;
+  nameSource: string | null;
+  firstSeen: string | null;
+  lastSeen: string | null;
+  seenInStats: boolean;
+  seenInUsercache: boolean;
+  seenInBans: boolean;
+};
+
+type BanStatusBan = {
+  reason: string | null;
+  bannedBy: string | null;
+  bannedAt: string | null;
+  expiresAt: string | null;
+  isPermanent: boolean;
+};
+
+type BanStatusKnownResult = {
+  status: 'banned' | 'not_banned';
+  player: BanStatusKnownPlayer;
+  ban: BanStatusBan | null;
+};
+
 function readEndpointUuidParams(
   requestUrl: URL,
   primaryParam: string,
@@ -1546,18 +1577,27 @@ async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> 
   );
 }
 
-async function handleBanStatusEndpoint(route: DataRouteContext): Promise<Response> {
-  const rawQuery = (
-    route.requestUrl.searchParams.get('query') ??
-    route.requestUrl.searchParams.get('q') ??
+function readBanStatusQuery(requestUrl: URL): BanStatusQuery | Response {
+  const raw = (
+    requestUrl.searchParams.get('query') ??
+    requestUrl.searchParams.get('q') ??
     ''
   ).trim();
-  if (!rawQuery) return jsonError(400, 'query required');
-  if (rawQuery.length > 64) return jsonError(400, 'query too long');
 
-  const queryNameLc = rawQuery.toLowerCase();
-  const queryUuidHex = sanitizeUuidHex(rawQuery);
+  if (!raw) return jsonError(400, 'query required');
+  if (raw.length > 64) return jsonError(400, 'query too long');
 
+  return {
+    raw,
+    nameLc: raw.toLowerCase(),
+    uuidHex: sanitizeUuidHex(raw),
+  };
+}
+
+async function fetchBanStatusRow(
+  route: DataRouteContext,
+  query: BanStatusQuery,
+): Promise<RowDataPacket | undefined> {
   const rows = await queryRows<RowDataPacket>(
     route.db,
     `SELECT LOWER(HEX(k.uuid)) AS uuid_hex,
@@ -1579,96 +1619,120 @@ async function handleBanStatusEndpoint(route: DataRouteContext): Promise<Respons
         OR (? IS NOT NULL AND k.uuid = UNHEX(?))
      ORDER BY k.last_seen DESC
      LIMIT 1`,
-    [queryNameLc, queryUuidHex, queryUuidHex],
+    [query.nameLc, query.uuidHex, query.uuidHex],
   );
 
-  const row = rows[0];
+  return rows[0];
+}
 
-  if (!row) {
-    const headers = etagHeaders(
-      'ban-status',
-      `ban-status:${route.active.runId}:${queryNameLc}:unknown`,
-      route.active.generatedAt,
-    );
-    return jsonResponse(
-      withGenerated(
-        {
-          query: rawQuery,
-          status: 'unknown_player',
-          player: null,
-          ban: null,
-        },
-        route.active.generatedIso,
-      ),
-      { headers },
-    );
-  }
+function hasBanDetails(ban: BanStatusBan): boolean {
+  return (
+    ban.bannedAt !== null ||
+    ban.expiresAt !== null ||
+    ban.reason !== null ||
+    ban.bannedBy !== null ||
+    ban.isPermanent
+  );
+}
 
+function buildBanStatusKnownPlayer(row: RowDataPacket): BanStatusKnownPlayer {
   const uuidHex = asNonEmptyString(row.uuid_hex);
-  const firstSeenIso = toIsoOrNull(toDateOrNull(row.first_seen));
-  const lastSeenIso = toIsoOrNull(toDateOrNull(row.last_seen));
-  const bannedAtIso = toIsoOrNull(toDateOrNull(row.banned_at));
-  const expiresAtIso = toIsoOrNull(toDateOrNull(row.expires_at));
-  const reason = asNonEmptyString(row.reason);
-  const bannedBy = asNonEmptyString(row.banned_by);
-  const isPermanent = parseBoolean(row.is_permanent, false);
 
-  const status =
-    bannedAtIso !== null ||
-    expiresAtIso !== null ||
-    reason !== null ||
-    bannedBy !== null ||
-    isPermanent
-      ? 'banned'
-      : 'not_banned';
-
-  const player = {
+  return {
     uuid: uuidHex ? uuidHexToDashed(uuidHex) : null,
     name: String(row.name ?? ''),
     nameSource: asNonEmptyString(row.name_source),
-    firstSeen: firstSeenIso,
-    lastSeen: lastSeenIso,
+    firstSeen: toIsoOrNull(toDateOrNull(row.first_seen)),
+    lastSeen: toIsoOrNull(toDateOrNull(row.last_seen)),
     seenInStats: parseBoolean(row.seen_in_stats, false),
     seenInUsercache: parseBoolean(row.seen_in_usercache, false),
     seenInBans: parseBoolean(row.seen_in_bans, false),
   };
+}
 
-  const ban =
-    status === 'banned'
-      ? {
-          reason,
-          bannedBy,
-          bannedAt: bannedAtIso,
-          expiresAt: expiresAtIso,
-          isPermanent,
-        }
-      : null;
+function buildBanStatusBan(row: RowDataPacket): BanStatusBan {
+  return {
+    reason: asNonEmptyString(row.reason),
+    bannedBy: asNonEmptyString(row.banned_by),
+    bannedAt: toIsoOrNull(toDateOrNull(row.banned_at)),
+    expiresAt: toIsoOrNull(toDateOrNull(row.expires_at)),
+    isPermanent: parseBoolean(row.is_permanent, false),
+  };
+}
 
-  const etagParts = [
-    route.active.runId,
-    queryNameLc,
-    player.uuid ?? 'no-uuid',
-    player.lastSeen ?? 'no-last-seen',
+function buildBanStatusKnownResult(row: RowDataPacket): BanStatusKnownResult {
+  const player = buildBanStatusKnownPlayer(row);
+  const ban = buildBanStatusBan(row);
+  const status = hasBanDetails(ban) ? 'banned' : 'not_banned';
+
+  return {
     status,
-    ban?.bannedAt ?? 'no-ban-at',
-    ban?.expiresAt ?? 'no-expires-at',
-    String(ban?.isPermanent ?? false),
-    ban?.bannedBy ?? 'no-banned-by',
-    ban?.reason ?? 'no-reason',
-  ];
+    player,
+    ban: status === 'banned' ? ban : null,
+  };
+}
+
+function unknownBanStatusResponse(route: DataRouteContext, query: BanStatusQuery): Response {
   const headers = etagHeaders(
     'ban-status',
-    `ban-status:${etagParts.join(':')}`,
+    `ban-status:${route.active.runId}:${query.nameLc}:unknown`,
     route.active.generatedAt,
   );
 
   return jsonResponse(
     withGenerated(
       {
-        query: rawQuery,
-        status,
-        player,
-        ban,
+        query: query.raw,
+        status: 'unknown_player',
+        player: null,
+        ban: null,
+      },
+      route.active.generatedIso,
+    ),
+    { headers },
+  );
+}
+
+function banStatusHeaders(
+  route: DataRouteContext,
+  query: BanStatusQuery,
+  result: BanStatusKnownResult,
+): Headers {
+  const etagParts = [
+    route.active.runId,
+    query.nameLc,
+    result.player.uuid ?? 'no-uuid',
+    result.player.lastSeen ?? 'no-last-seen',
+    result.status,
+    result.ban?.bannedAt ?? 'no-ban-at',
+    result.ban?.expiresAt ?? 'no-expires-at',
+    String(result.ban?.isPermanent ?? false),
+    result.ban?.bannedBy ?? 'no-banned-by',
+    result.ban?.reason ?? 'no-reason',
+  ];
+
+  return etagHeaders('ban-status', `ban-status:${etagParts.join(':')}`, route.active.generatedAt);
+}
+
+async function handleBanStatusEndpoint(route: DataRouteContext): Promise<Response> {
+  const query = readBanStatusQuery(route.requestUrl);
+  if (query instanceof Response) return query;
+
+  const row = await fetchBanStatusRow(route, query);
+  if (!row) {
+    return unknownBanStatusResponse(route, query);
+  }
+
+  const result = buildBanStatusKnownResult(row);
+  const headers = banStatusHeaders(route, query, result);
+
+  return jsonResponse(
+    withGenerated(
+      {
+        query: query.raw,
+        status: result.status,
+        player: result.player,
+        ban: result.ban,
       },
       route.active.generatedIso,
     ),
