@@ -12,12 +12,14 @@ export interface MetricDef {
 export interface MetricsResponse {
   metrics?: Record<MetricId, MetricDef>;
   __generated?: string;
+  __generated_timezone?: string | null;
 }
 
 export interface SummaryResponse {
   player_count?: number;
   totals?: Record<MetricId, number>;
   __generated?: string;
+  __generated_timezone?: string | null;
 }
 
 export interface LeaderboardRow {
@@ -30,6 +32,7 @@ export interface LeaderboardResponse {
   cursors?: Record<MetricId, string | null>;
   __players?: Record<string, string>; // uuid -> name (Cache fuer Anzeige)
   __generated?: string;
+  __generated_timezone?: string | null;
 }
 
 export interface PlayersSearchItem {
@@ -40,4 +43,5 @@ export interface PlayersSearchItem {
 export interface PlayersSearchResponse {
   items?: PlayersSearchItem[];
   __generated?: string;
+  __generated_timezone?: string | null;
 }

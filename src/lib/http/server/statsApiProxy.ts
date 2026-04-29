@@ -29,6 +29,7 @@ type ActiveRun = {
   runId: number;
   generatedAt: Date | null;
   generatedIso: string | null;
+  generatedTimeZone: string | null;
 };
 
 type MojangCacheEntry = {
@@ -82,6 +83,7 @@ const mojangMemoryCache = new Map<string, MojangCacheEntry>();
 
 const API_MAX_LIMIT = 100;
 const API_MAX_SEARCH = 25;
+const DEFAULT_STATS_DB_TIME_ZONE = 'Europe/Berlin';
 
 const PROFILE_CACHE_FRESH_SECONDS = 6 * 3600;
 const PROFILE_CACHE_NEGATIVE_SECONDS = 10 * 60;
@@ -274,6 +276,148 @@ function toIsoOrNull(value: Date | null): string | null {
   return value ? value.toISOString() : null;
 }
 
+function resolveStatsDbTimeZone(env: RuntimeEnv, detectedOffsetMinutes: number | null): string {
+  const configured =
+    asNonEmptyString(env.STATS_DB_TIME_ZONE) ?? asNonEmptyString(env.STATS_DB_TIMEZONE);
+  if (configured && isSupportedStatsDbTimeZone(configured)) return configured;
+  if (detectedOffsetMinutes === 0) return 'UTC';
+  return DEFAULT_STATS_DB_TIME_ZONE;
+}
+
+function normalizeMysqlDateTime(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value
+    .trim()
+    .replace(' ', 'T')
+    .replace(/\.\d+$/, '');
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(normalized)) return normalized;
+  return null;
+}
+
+function parseLocalDateTimeParts(value: string): {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
+} | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})$/);
+  if (!match) return null;
+
+  const [, year, month, day, hour, minute, second] = match;
+  return {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hour: Number(hour),
+    minute: Number(minute),
+    second: Number(second),
+  };
+}
+
+function normalizeFixedTimeZoneOffset(timeZone: string): string | null {
+  const value = timeZone.trim();
+  if (/^(?:UTC|GMT|Z)$/i.test(value)) return '+00:00';
+
+  const match = value.match(/^(?:UTC|GMT)?([+-])(\d{1,2})(?::?(\d{2}))?$/i);
+  if (!match) return null;
+
+  const [, sign, rawHours, rawMinutes = '00'] = match;
+  const hours = Number(rawHours);
+  const minutes = Number(rawMinutes);
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) return null;
+  if (hours > 23 || minutes > 59) return null;
+
+  return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function isSupportedStatsDbTimeZone(timeZone: string): boolean {
+  if (normalizeFixedTimeZoneOffset(timeZone)) return true;
+
+  try {
+    new Intl.DateTimeFormat('en-CA', { timeZone }).format(new Date(0));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function readIntlPart(
+  parts: Intl.DateTimeFormatPart[],
+  type: Intl.DateTimeFormatPartTypes,
+): string {
+  return parts.find((part) => part.type === type)?.value ?? '';
+}
+
+function getTimeZoneOffsetMinutes(date: Date, timeZone: string): number | null {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hourCycle: 'h23',
+    }).formatToParts(date);
+
+    const year = Number(readIntlPart(parts, 'year'));
+    const month = Number(readIntlPart(parts, 'month'));
+    const day = Number(readIntlPart(parts, 'day'));
+    const hour = Number(readIntlPart(parts, 'hour'));
+    const minute = Number(readIntlPart(parts, 'minute'));
+    const second = Number(readIntlPart(parts, 'second'));
+
+    if (![year, month, day, hour, minute, second].every(Number.isFinite)) return null;
+
+    const asUtc = Date.UTC(year, month - 1, day, hour, minute, second);
+    return Math.round((asUtc - date.getTime()) / 60_000);
+  } catch {
+    return null;
+  }
+}
+
+function formatOffsetMinutes(offsetMinutes: number): string {
+  const sign = offsetMinutes < 0 ? '-' : '+';
+  const absolute = Math.abs(offsetMinutes);
+  const hours = Math.floor(absolute / 60);
+  const minutes = absolute % 60;
+  return `${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+function resolveOffsetForLocalDateTime(localDateTime: string, timeZone: string): string {
+  const fixedOffset = normalizeFixedTimeZoneOffset(timeZone);
+  if (fixedOffset) return fixedOffset;
+
+  const parts = parseLocalDateTimeParts(localDateTime);
+  if (!parts) return '+00:00';
+
+  const utcGuess = Date.UTC(
+    parts.year,
+    parts.month - 1,
+    parts.day,
+    parts.hour,
+    parts.minute,
+    parts.second,
+  );
+  const guessOffset = getTimeZoneOffsetMinutes(new Date(utcGuess), timeZone);
+  if (guessOffset === null) return '+00:00';
+
+  const candidateOffset = getTimeZoneOffsetMinutes(
+    new Date(utcGuess - guessOffset * 60_000),
+    timeZone,
+  );
+  return formatOffsetMinutes(candidateOffset ?? guessOffset);
+}
+
+function toOffsetIsoOrNull(value: unknown, timeZone: string): string | null {
+  const localDateTime = normalizeMysqlDateTime(value);
+  if (!localDateTime) return null;
+  return `${localDateTime}${resolveOffsetForLocalDateTime(localDateTime, timeZone)}`;
+}
+
 function parseNumber(value: unknown, fallback = 0): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value === 'bigint') return Number(value);
@@ -290,6 +434,11 @@ function parseNumber(value: unknown, fallback = 0): number {
 
 function parseInteger(value: unknown, fallback = 0): number {
   return Math.trunc(parseNumber(value, fallback));
+}
+
+function parseIntegerOrNull(value: unknown): number | null {
+  const parsed = parseNumber(value, Number.NaN);
+  return Number.isFinite(parsed) ? Math.trunc(parsed) : null;
 }
 
 function parseBoolean(value: unknown, fallback = false): boolean {
@@ -549,17 +698,23 @@ async function closeDbConnection(connection: Connection): Promise<void> {
 async function getActiveRun(connection: Connection): Promise<ActiveRun> {
   const rows = await queryRows<RowDataPacket>(
     connection,
-    `SELECT s.active_run_id AS run_id, r.generated_at AS generated_at
+    `SELECT s.active_run_id AS run_id,
+            DATE_FORMAT(r.generated_at, '%Y-%m-%dT%H:%i:%s') AS generated_at,
+            TIMESTAMPDIFF(MINUTE, UTC_TIMESTAMP(), NOW()) AS db_utc_offset_minutes
      FROM site_state s
      LEFT JOIN import_run r ON r.id = s.active_run_id
      WHERE s.id = 1`,
   );
   const row = rows[0];
-  const generatedAt = toDateOrNull(row?.generated_at);
+  const detectedOffsetMinutes = parseIntegerOrNull(row?.db_utc_offset_minutes);
+  const generatedTimeZone = resolveStatsDbTimeZone(asRuntimeEnv(), detectedOffsetMinutes);
+  const generatedIso = toOffsetIsoOrNull(row?.generated_at, generatedTimeZone);
+  const generatedAt = toDateOrNull(generatedIso);
   return {
     runId: parseInteger(row?.run_id, 0),
     generatedAt,
-    generatedIso: toIsoOrNull(generatedAt),
+    generatedIso,
+    generatedTimeZone: generatedIso ? generatedTimeZone : null,
   };
 }
 
@@ -568,6 +723,7 @@ function emptyActiveRun(): ActiveRun {
     runId: 0,
     generatedAt: null,
     generatedIso: null,
+    generatedTimeZone: null,
   };
 }
 
@@ -1062,13 +1218,11 @@ function etagHeaders(
   return headers;
 }
 
-function withGenerated<T extends Record<string, unknown>>(
-  payload: T,
-  generatedIso: string | null,
-): T {
+function withGenerated<T extends Record<string, unknown>>(payload: T, active: ActiveRun): T {
   return {
     ...payload,
-    __generated: generatedIso,
+    __generated: active.generatedIso,
+    __generated_timezone: active.generatedTimeZone,
   };
 }
 
@@ -1229,7 +1383,7 @@ async function handleProfileEndpoint(context: APIContext, requestUrl: URL): Prom
 async function handleMetricsEndpoint(route: DataRouteContext): Promise<Response> {
   const defs = await loadMetricDefs(route.db);
   const headers = etagHeaders('metrics', `metrics:${route.active.runId}`, route.active.generatedAt);
-  return jsonResponse(withGenerated({ metrics: defs }, route.active.generatedIso), { headers });
+  return jsonResponse(withGenerated({ metrics: defs }, route.active), { headers });
 }
 
 async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response> {
@@ -1277,7 +1431,7 @@ async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response>
         player_count: playerCount,
         totals,
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );
@@ -1301,7 +1455,7 @@ async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Resp
           boards: {},
           cursors: {},
         },
-        route.active.generatedIso,
+        route.active,
       ),
       { headers },
     );
@@ -1373,7 +1527,7 @@ async function handleLeaderboardsEndpoint(route: DataRouteContext): Promise<Resp
         boards,
         cursors,
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );
@@ -1448,7 +1602,7 @@ async function handleLeaderboardEndpoint(route: DataRouteContext): Promise<Respo
         boards: { [metric]: board },
         cursors: { [metric]: nextCursor },
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );
@@ -1462,7 +1616,7 @@ async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response>
       `players:${route.active.runId}:${qRaw}:0`,
       route.active.generatedAt,
     );
-    return jsonResponse(withGenerated({ items: [] }, route.active.generatedIso), { headers });
+    return jsonResponse(withGenerated({ items: [] }, route.active), { headers });
   }
 
   const requestedLimit = parseInteger(route.requestUrl.searchParams.get('limit'), 8);
@@ -1501,7 +1655,7 @@ async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response>
         'Cache-Control': 'no-store',
         'X-Stats-Api-Degraded': '1',
       });
-      return jsonResponse(withGenerated({ items: [] }, route.active.generatedIso), { headers });
+      return jsonResponse(withGenerated({ items: [] }, route.active), { headers });
     }
   }
 
@@ -1521,7 +1675,7 @@ async function handlePlayersEndpoint(route: DataRouteContext): Promise<Response>
     `players:${route.active.runId}:${qRaw}:${limit}`,
     route.active.generatedAt,
   );
-  return jsonResponse(withGenerated({ items }, route.active.generatedIso), { headers });
+  return jsonResponse(withGenerated({ items }, route.active), { headers });
 }
 
 async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> {
@@ -1551,7 +1705,7 @@ async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> 
           name: null,
           player: null,
         },
-        route.active.generatedIso,
+        route.active,
       ),
       { headers },
     );
@@ -1571,7 +1725,7 @@ async function handlePlayerEndpoint(route: DataRouteContext): Promise<Response> 
         name: String(row.name ?? resolvedUuid),
         player: stats,
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );
@@ -1687,7 +1841,7 @@ function unknownBanStatusResponse(route: DataRouteContext, query: BanStatusQuery
         player: null,
         ban: null,
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );
@@ -1734,7 +1888,7 @@ async function handleBanStatusEndpoint(route: DataRouteContext): Promise<Respons
         player: result.player,
         ban: result.ban,
       },
-      route.active.generatedIso,
+      route.active,
     ),
     { headers },
   );

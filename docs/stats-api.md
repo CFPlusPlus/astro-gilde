@@ -42,6 +42,9 @@ Optionale Werte:
 
 - `STATS_DB_PORT` (Default: `3306`)
 - `STATS_DB_CHARSET` (Default: `utf8mb4`)
+- `STATS_DB_TIME_ZONE` (fuer naive `DATETIME`-Werte wie
+  `import_run.generated_at`; ohne Konfiguration wird eine UTC-DB-Session als `UTC`,
+  sonst `Europe/Berlin` interpretiert; alternativ wird auch `STATS_DB_TIMEZONE` gelesen)
 
 Optionaler Hyperdrive-Binding:
 

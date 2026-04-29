@@ -1,5 +1,6 @@
 export interface PlayerApiResponse {
   __generated?: string;
+  __generated_timezone?: string | null;
   uuid?: string;
   name?: string;
   found?: boolean;

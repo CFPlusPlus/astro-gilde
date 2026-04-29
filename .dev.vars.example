@@ -4,6 +4,7 @@ STATS_DB_NAME=stats
 STATS_DB_USER=stats_user
 STATS_DB_PASS=bitte_aendern
 STATS_DB_CHARSET=utf8mb4
+STATS_DB_TIME_ZONE=Europe/Berlin
 # Optional fuer lokales Hyperdrive:
 # In PowerShell vor `npm run dev` zusaetzlich setzen:
 # $env:CLOUDFLARE_HYPERDRIVE_LOCAL_CONNECTION_STRING_HYPERDRIVE="mysql://<user>:<pass>@<host>:3306/<db>"
