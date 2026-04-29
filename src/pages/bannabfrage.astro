@@ -1,0 +1,191 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/layout/PageHeader.astro';
+import Button from '../components/ui/Button.astro';
+import Badge from '../components/ui/Badge.astro';
+import { canonicalFor } from '../config/site';
+import { Search, TimerReset, X } from '@lucide/astro';
+
+const canonicalUrl = canonicalFor('/bannabfrage/');
+---
+
+<BaseLayout
+  title="Minecraft Gilde - Bannabfrage"
+  canonical={canonicalUrl}
+  description="Prüfe, ob ein Spieler auf der Minecraft Gilde bekannt ist und ob ein aktiver Bann vorliegt."
+>
+  <PageHeader
+    title="Bannabfrage"
+    subtitle="Prüfe mit einem exakten Spielernamen oder einer UUID, ob für einen Spieler aktuell ein Bann aktiv ist."
+  >
+    <div class="mt-6 flex flex-wrap gap-2">
+      <Badge variant="accent">Live-Abfrage</Badge>
+      <Badge>Name oder UUID</Badge>
+      <Badge>Aktive Bans</Badge>
+    </div>
+  </PageHeader>
+
+  <section class="mg-container pb-16" data-ban-query-app>
+    <div class="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+      <article class="mg-card mg-card--soft p-6 sm:p-7" data-motion="reveal">
+        <form class="space-y-3" data-ban-form>
+          <label for="ban-query-input" class="text-sm font-medium">Spielername oder UUID</label>
+          <div class="flex items-stretch gap-2">
+            <div
+              class="mg-app-field mg-app-field--muted-focus flex h-10 w-full items-center gap-2 px-3"
+            >
+              <Search size={18} class="text-muted" />
+              <input
+                id="ban-query-input"
+                name="query"
+                data-ban-input
+                class="peer placeholder:text-muted/70 text-fg min-w-0 flex-1 bg-transparent text-sm outline-none"
+                type="search"
+                placeholder="Spieler suchen..."
+                minlength="2"
+                maxlength="64"
+                autocomplete="off"
+                required
+              />
+              <button
+                type="button"
+                class="mg-search-clear mg-search-clear--hidden"
+                data-ban-search-clear
+                aria-label="Suche zurücksetzen"
+                title="Suche zurücksetzen"
+              >
+                <X size={14} />
+              </button>
+            </div>
+            <Button
+              type="submit"
+              variant="primary"
+              class="min-w-[8.5rem] self-stretch"
+              data-ban-submit-button
+            >
+              Prüfen
+            </Button>
+          </div>
+          <p class="text-muted text-xs">
+            Die Abfrage prüft den Spielerbestand und aktive Bans anhand von Name oder UUID.
+          </p>
+        </form>
+
+        <p
+          class="text-muted mt-4 min-h-6 text-sm"
+          role="status"
+          aria-live="polite"
+          data-ban-feedback
+        >
+          Suche nach einem Spieler, um den Bannstatus zu sehen.
+        </p>
+
+        <div class="mt-4 space-y-4" data-ban-result>
+          <article class="mg-notice" data-variant="neutral" data-ban-view="idle">
+            <div class="mg-notice__content">
+              Gib oben einen Spielernamen oder eine UUID ein und starte die Abfrage.
+            </div>
+          </article>
+
+          <article class="mg-notice" data-variant="neutral" data-ban-view="loading" hidden>
+            <div class="mg-notice__content">Abfrage läuft. Bitte kurz warten...</div>
+          </article>
+
+          <article class="mg-notice" data-variant="neutral" data-ban-view="unknown" hidden>
+            <div class="mg-notice__content">
+              Der Spieler <strong data-ban-query-value>Unbekannt</strong> hat unseren Server noch nie
+              besucht.
+            </div>
+          </article>
+
+          <article class="mg-notice" data-variant="neutral" data-ban-view="not-banned" hidden>
+            <div class="mg-notice__content">
+              <p class="font-semibold">Der Spieler ist nicht gebannt.</p>
+              <dl class="mg-list mt-3 text-sm">
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Spieler</dt><dd data-ban-player-name>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">UUID</dt><dd
+                    class="font-mono text-xs"
+                    data-ban-player-uuid
+                  >
+                    -
+                  </dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Quelle</dt><dd data-ban-player-source>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Erst gesehen</dt><dd data-ban-player-first-seen>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Zuletzt gesehen</dt><dd data-ban-player-last-seen>-</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+
+          <article class="mg-notice" data-variant="warning" data-ban-view="banned" hidden>
+            <div class="mg-notice__content">
+              <p class="font-semibold">Der Spieler ist gebannt.</p>
+              <dl class="mg-list mt-3 text-sm">
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Spieler</dt><dd data-ban-player-name>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">UUID</dt><dd
+                    class="font-mono text-xs"
+                    data-ban-player-uuid
+                  >
+                    -
+                  </dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Grund</dt><dd data-ban-reason>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Gebannt von</dt><dd data-ban-by>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Gebannt am</dt><dd data-ban-at>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Läuft ab</dt><dd data-ban-expires-at>-</dd>
+                </div>
+                <div class="mg-row items-center">
+                  <dt class="text-muted">Permanent</dt><dd data-ban-is-permanent>-</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+
+          <article class="mg-error-message" data-ban-view="error" hidden>
+            <span class="mg-error-message__icon" data-ban-rate-limit-icon hidden aria-hidden="true">
+              <TimerReset size={14} />
+            </span>
+            <div data-ban-error-message>Die Bannabfrage ist aktuell nicht verfügbar.</div>
+          </article>
+        </div>
+      </article>
+
+      <aside class="mg-card mg-card--soft p-6 sm:p-7" data-motion="reveal" data-motion-delay="90">
+        <h2 class="text-xl font-semibold tracking-tight">So liest du das Ergebnis</h2>
+        <ul class="text-muted mt-4 space-y-3 text-sm leading-relaxed">
+          <li>
+            <strong class="text-fg">Noch nie besucht:</strong> Es wurde kein Eintrag im bekannten Spielerbestand
+            gefunden.
+          </li>
+          <li>
+            <strong class="text-fg">Nicht gebannt:</strong> Der Spieler ist bekannt, aber es liegt kein
+            aktiver Bann vor.
+          </li>
+          <li>
+            <strong class="text-fg">Gebannt:</strong> Ein aktiver Bann wurde gefunden und die Banninformationen
+            werden angezeigt.
+          </li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>

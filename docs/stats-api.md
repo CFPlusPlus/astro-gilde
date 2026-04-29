@@ -10,6 +10,7 @@ Mini-Doku für die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
 - `/api/leaderboards?limit=...` (Top-Listen je Metrik)
 - `/api/players?q=...&limit=...` (Autocomplete)
 - `/api/player?uuid=...` (Spieler-Detail)
+- `/api/ban-status?query=...` (Bann-Status per exaktem Name oder UUID)
 - `/api/cape?uuid=...` (Cape aus Mojang-Profil)
 - `/api/profile?uuid=...` (rohes Mojang-Profil)
 - `/i18n/translations.de.json` (statisches i18n-Asset)
@@ -80,6 +81,12 @@ Edge-Cache (`caches.default`) + `Cache-Control`:
 - `leaderboard` / `leaderboards`: `max-age=60`
 - `players`: `max-age=30`
 - `player`: `max-age=60`
+- `ban-status`: `max-age=60`, serverseitig auf 8 Abfragen pro Minute und IP limitiert
+
+Rate-Limit:
+
+- `/api/ban-status`: 8 Abfragen pro 60 Sekunden und IP-Adresse
+- Bei Überschreitung: `429 Too Many Requests` mit `Retry-After`
 
 Mojang (`cape` / `profile`):
 

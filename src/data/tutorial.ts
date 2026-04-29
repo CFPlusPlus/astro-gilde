@@ -71,7 +71,7 @@ export const tutorialQuickstart = {
     },
     {
       title: 'Nur in Farmwelten abbauen',
-      text: 'Farmen in der Oberwelt ist verboten. Nutze nur /farmwelt, /netherfarm und /endfarm.',
+      text: 'Farmen in der Oberwelt ist verboten. Nutze dafür den Befehl /farmwelt.',
     },
   ],
 } as const;
