@@ -649,6 +649,11 @@
     border-color: color-mix(in oklab, var(--border) 82%, transparent);
   }
 
+  .mg-app-search-field {
+    @apply flex w-full items-center gap-2 px-3;
+    height: 2.5rem;
+  }
+
   .mg-app-chip {
     border: 1px solid color-mix(in oklab, var(--border) 80%, transparent);
     border-radius: 999px;
