@@ -1256,6 +1256,7 @@ type BanStatusKnownPlayer = {
 };
 
 type BanStatusBan = {
+  nameAtBan: string | null;
   reason: string | null;
   bannedBy: string | null;
   bannedAt: string | null;
@@ -1762,6 +1763,7 @@ async function fetchBanStatusRow(
             k.seen_in_stats,
             k.seen_in_usercache,
             k.seen_in_bans,
+            b.name AS ban_name,
             b.reason,
             b.banned_by,
             b.banned_at,
@@ -1770,10 +1772,11 @@ async function fetchBanStatusRow(
      FROM v_player_known k
      LEFT JOIN v_player_ban b ON b.uuid = k.uuid
      WHERE k.name_lc = ?
+        OR LOWER(b.name) = ?
         OR (? IS NOT NULL AND k.uuid = UNHEX(?))
      ORDER BY k.last_seen DESC
      LIMIT 1`,
-    [query.nameLc, query.uuidHex, query.uuidHex],
+    [query.nameLc, query.nameLc, query.uuidHex, query.uuidHex],
   );
 
   return rows[0];
@@ -1781,6 +1784,7 @@ async function fetchBanStatusRow(
 
 function hasBanDetails(ban: BanStatusBan): boolean {
   return (
+    ban.nameAtBan !== null ||
     ban.bannedAt !== null ||
     ban.expiresAt !== null ||
     ban.reason !== null ||
@@ -1806,6 +1810,7 @@ function buildBanStatusKnownPlayer(row: RowDataPacket): BanStatusKnownPlayer {
 
 function buildBanStatusBan(row: RowDataPacket): BanStatusBan {
   return {
+    nameAtBan: asNonEmptyString(row.ban_name),
     reason: asNonEmptyString(row.reason),
     bannedBy: asNonEmptyString(row.banned_by),
     bannedAt: toIsoOrNull(toDateOrNull(row.banned_at)),
@@ -1856,8 +1861,10 @@ function banStatusHeaders(
     route.active.runId,
     query.nameLc,
     result.player.uuid ?? 'no-uuid',
+    result.player.name,
     result.player.lastSeen ?? 'no-last-seen',
     result.status,
+    result.ban?.nameAtBan ?? 'no-name-at-ban',
     result.ban?.bannedAt ?? 'no-ban-at',
     result.ban?.expiresAt ?? 'no-expires-at',
     String(result.ban?.isPermanent ?? false),

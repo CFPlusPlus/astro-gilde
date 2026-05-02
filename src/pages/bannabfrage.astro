@@ -146,69 +146,102 @@ const canonicalUrl = canonicalFor('/bannabfrage/');
             </div>
           </article>
 
-          <article class="mg-notice" data-variant="warning" data-ban-view="banned" hidden>
-            <div class="mg-notice__content">
-              <p class="font-semibold">Der Spieler ist gebannt.</p>
-              <dl class="mg-list mt-3 text-sm">
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Spieler</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-player-name
-                  >
-                    -
-                  </dd>
+          <div class="space-y-4" data-ban-view="banned" hidden>
+            <article class="mg-notice" data-ban-name-change-notice hidden>
+              <div class="mg-notice__content space-y-3">
+                <div>
+                  <p class="font-semibold" data-ban-status-headline>Aktiver Bann gefunden.</p>
+                  <p class="text-muted mt-1" data-ban-status-description>
+                    Der Bannstatus wurde eindeutig zugeordnet.
+                  </p>
                 </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">UUID</dt><dd
-                    class="m-0 max-w-full min-w-0 font-mono text-xs break-all sm:text-right"
-                    data-ban-player-uuid
-                  >
-                    -
-                  </dd>
-                </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Grund</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-reason
-                  >
-                    -
-                  </dd>
-                </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Gebannt von</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-by
-                  >
-                    -
-                  </dd>
-                </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Gebannt am</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-at
-                  >
-                    -
-                  </dd>
-                </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Läuft ab</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-expires-at
-                  >
-                    -
-                  </dd>
-                </div>
-                <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
-                  <dt class="text-muted shrink-0">Permanent</dt><dd
-                    class="m-0 max-w-full min-w-0 break-words sm:text-right"
-                    data-ban-is-permanent
-                  >
-                    -
-                  </dd>
-                </div>
-              </dl>
-            </div>
-          </article>
+                <dl class="grid min-w-0 gap-3 text-sm sm:grid-cols-2">
+                  <div class="min-w-0" data-ban-status-current-row>
+                    <dt class="text-muted text-xs font-medium">Aktueller Name</dt>
+                    <dd
+                      class="text-fg m-0 mt-1 min-w-0 font-semibold break-words"
+                      data-ban-status-current-name
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="min-w-0" data-ban-status-name-at-ban-row>
+                    <dt class="text-muted text-xs font-medium">Gebannt als</dt>
+                    <dd
+                      class="text-fg m-0 mt-1 min-w-0 font-semibold break-words"
+                      data-ban-status-name-at-ban
+                    >
+                      -
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+
+            <article class="mg-notice" data-variant="warning">
+              <div class="mg-notice__content">
+                <p class="font-semibold">Ban-Details</p>
+                <dl class="mg-list mt-3 text-sm">
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Spieler</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-banned-player-name
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">UUID</dt><dd
+                      class="m-0 max-w-full min-w-0 font-mono text-xs break-all sm:text-right"
+                      data-ban-player-uuid
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Grund</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-reason
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Gebannt von</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-by
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Gebannt am</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-at
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Läuft ab</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-expires-at
+                    >
+                      -
+                    </dd>
+                  </div>
+                  <div class="mg-row flex-col gap-1 sm:flex-row sm:items-center">
+                    <dt class="text-muted shrink-0">Permanent</dt><dd
+                      class="m-0 max-w-full min-w-0 break-words sm:text-right"
+                      data-ban-is-permanent
+                    >
+                      -
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </article>
+          </div>
 
           <article class="mg-error-message" data-ban-view="error" hidden>
             <span class="mg-error-message__icon" data-ban-rate-limit-icon hidden aria-hidden="true">

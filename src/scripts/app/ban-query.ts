@@ -16,6 +16,7 @@ type BanQueryPlayer = {
 };
 
 type BanQueryBan = {
+  nameAtBan: string | null;
   reason: string | null;
   bannedBy: string | null;
   bannedAt: string | null;
@@ -65,6 +66,72 @@ const setText = (root: ParentNode, selector: string, value: string): void => {
   for (const node of nodes) {
     node.textContent = value;
   }
+};
+
+const setHidden = (root: ParentNode, selector: string, hidden: boolean): void => {
+  const nodes = root.querySelectorAll<HTMLElement>(selector);
+  for (const node of nodes) {
+    node.hidden = hidden;
+  }
+};
+
+type BannedPlayerNameInfo = {
+  detailName: string;
+  headline: string;
+  description: string;
+  currentName: string;
+  nameAtBan: string;
+  showNameChangeNotice: boolean;
+  showCurrentName: boolean;
+  showNameAtBan: boolean;
+};
+
+export const buildBannedPlayerNameInfo = (
+  player: Pick<BanQueryPlayer, 'name'> | null,
+  ban: Pick<BanQueryBan, 'nameAtBan'> | null,
+): BannedPlayerNameInfo => {
+  const currentName = readText(player?.name, '');
+  const nameAtBan = readText(ban?.nameAtBan, '');
+
+  if (!currentName) {
+    const fallbackName = readText(nameAtBan, '-');
+    return {
+      detailName: fallbackName,
+      headline: 'Aktiver Bann gefunden.',
+      description:
+        'Zu diesem Bann ist kein aktueller Spielername bekannt. Angezeigt wird der Name aus dem Ban-Eintrag.',
+      currentName: '-',
+      nameAtBan: fallbackName,
+      showNameChangeNotice: false,
+      showCurrentName: false,
+      showNameAtBan: false,
+    };
+  }
+
+  if (!nameAtBan || currentName.toLowerCase() === nameAtBan.toLowerCase()) {
+    return {
+      detailName: currentName,
+      headline: 'Dieser Spieler ist aktuell gebannt.',
+      description: 'Aktueller Name und Ban-Eintrag verwenden denselben Spielernamen.',
+      currentName,
+      nameAtBan: readText(nameAtBan, currentName),
+      showNameChangeNotice: false,
+      showCurrentName: true,
+      showNameAtBan: false,
+    };
+  }
+
+  return {
+    detailName: currentName,
+    headline: 'Dieser Spieler ist aktuell gebannt.',
+    description:
+      'Namenswechsel erkannt: Der aktuelle bekannte Name unterscheidet sich vom Namen im Ban-Eintrag.',
+    currentName,
+    nameAtBan,
+    showNameChangeNotice: true,
+    showCurrentName: true,
+    showNameAtBan: true,
+  };
 };
 
 const getMessageFromError = (error: unknown): string => {
@@ -145,6 +212,19 @@ export function initBanQuery(): () => void {
     setText(root, '[data-ban-player-source]', readText(player?.nameSource, 'Unbekannt'));
     setText(root, '[data-ban-player-first-seen]', formatIsoDate(player?.firstSeen ?? null));
     setText(root, '[data-ban-player-last-seen]', formatIsoDate(player?.lastSeen ?? null));
+  };
+
+  const applyBannedPlayer = (player: BanQueryPlayer | null, ban: BanQueryBan | null): void => {
+    const nameInfo = buildBannedPlayerNameInfo(player, ban);
+
+    setText(root, '[data-ban-banned-player-name]', nameInfo.detailName);
+    setText(root, '[data-ban-status-headline]', nameInfo.headline);
+    setText(root, '[data-ban-status-description]', nameInfo.description);
+    setText(root, '[data-ban-status-current-name]', nameInfo.currentName);
+    setText(root, '[data-ban-status-name-at-ban]', nameInfo.nameAtBan);
+    setHidden(root, '[data-ban-name-change-notice]', !nameInfo.showNameChangeNotice);
+    setHidden(root, '[data-ban-status-current-row]', !nameInfo.showCurrentName);
+    setHidden(root, '[data-ban-status-name-at-ban-row]', !nameInfo.showNameAtBan);
   };
 
   const applyBan = (ban: BanQueryBan | null): void => {
@@ -228,6 +308,7 @@ export function initBanQuery(): () => void {
       setText(root, '[data-ban-query-value]', readText(data.query, query));
       applyPlayer(data.player);
       applyBan(data.ban);
+      applyBannedPlayer(data.player, data.ban);
 
       if (data.status === 'unknown_player') {
         setView('unknown');
@@ -242,7 +323,7 @@ export function initBanQuery(): () => void {
       }
 
       setView('banned');
-      feedback.textContent = `Spieler "${readText(data.player?.name, query)}" ist aktuell gebannt.`;
+      feedback.textContent = 'Aktiver Bann gefunden. Die Details werden angezeigt.';
     } catch (error) {
       const message = getMessageFromError(error);
       if (message === 'aborted' || isDisposed || activeController !== controller) return;
