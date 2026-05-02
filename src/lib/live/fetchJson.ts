@@ -115,7 +115,7 @@ const validatePayload = <T>(
 
   if (!validate) return null;
 
-  let isValid = false;
+  let isValid: boolean;
   try {
     isValid = validate(payload);
   } catch {
