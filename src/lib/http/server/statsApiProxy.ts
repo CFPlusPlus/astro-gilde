@@ -814,7 +814,7 @@ async function fetchPlayersByHex(
 function decodeStatsPayload(raw: unknown): Record<string, unknown> | null {
   if (raw === null || raw === undefined) return null;
 
-  let jsonText = '';
+  let jsonText: string;
   if (Buffer.isBuffer(raw)) {
     try {
       jsonText = gunzipSync(raw).toString('utf8');

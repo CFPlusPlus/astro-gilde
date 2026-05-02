@@ -1,13 +1,12 @@
 import js from '@eslint/js';
 import astro from 'eslint-plugin-astro';
-import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 /**
- * ESLint Flat Config (ESLint v9)
+ * ESLint Flat Config
  * - Prueft Astro- sowie TS/JS-Quellcode
  * - Ueberlaesst Formatierung Prettier (separat via `npm run format:check`)
  */
@@ -49,19 +48,11 @@ export default [
   {
     files: ['**/*.{tsx,jsx}'],
     plugins: {
-      react: reactPlugin,
       'react-hooks': reactHooksPlugin,
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
     },
     rules: {
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'react/react-in-jsx-scope': 'off',
-      'react/jsx-uses-react': 'off',
     },
   },
 
