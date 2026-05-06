@@ -175,7 +175,7 @@
         },
         {
           "command": "/claimslist",
-          "description": "Listet die Claims und Claim-Block-Details eines Spielers auf."
+          "description": "Listet deine Claims und Claim-Block-Details auf."
         },
         {
           "command": "/trapped",
