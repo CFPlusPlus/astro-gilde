@@ -44,15 +44,11 @@
           "description": "Sendet eine private Nachricht an einen Spieler."
         },
         {
-          "command": "/ignoreplayer <spieler>",
-          "description": "Ignoriert die Chat-Nachrichten eines angegebenen Spielers."
+          "command": "/ignore [spieler]",
+          "description": "Zeigt ohne Spieler deine Ignore-Liste an oder ignoriert einen angegebenen Spieler."
         },
         {
-          "command": "/ignoredplayerlist",
-          "description": "Listet alle Spieler auf, die du aktuell ignorierst."
-        },
-        {
-          "command": "/unignoreplayer <spieler>",
+          "command": "/unignore <spieler>",
           "description": "Hebt das Ignorieren der Chat-Nachrichten eines angegebenen Spielers wieder auf."
         },
         {
