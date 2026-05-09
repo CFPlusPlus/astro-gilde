@@ -22,8 +22,16 @@ async function mountOverview(overrides: OverviewOverrides = {}) {
       hours: 123,
       distance: 456,
       mob_kills: 789,
-      creeper: 321,
     },
+    worldState: {
+      name: 'world',
+      ageTicks: 102_880_000,
+      ageDays: 5_144,
+      importedAt: '2026-02-19T12:00:00.000Z',
+    },
+    worldStateLoaded: true,
+    worldStateLoading: false,
+    worldStateError: null,
     summaryLoaded: true,
     summaryLoading: false,
     summaryError: null,
@@ -70,6 +78,10 @@ describe('OverviewSection', () => {
   it('opens ranking deep-link via KPI cards', async () => {
     const onOpenRankings = vi.fn();
     const view = await mountOverview({ onOpenRankings });
+
+    expect(view.container.textContent).toContain('Weltalter');
+    expect(view.container.textContent).toContain('5.144');
+    expect(view.container.textContent).toContain('Minecraft-Tage seit Weltstart.');
 
     const leadCard = view.container.querySelector(
       '[aria-label="Spielzeit Rangliste \u00f6ffnen"]',

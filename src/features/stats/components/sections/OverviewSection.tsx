@@ -1,13 +1,14 @@
 import { useMemo, type KeyboardEvent, type ReactNode } from 'react';
-import { ArrowRight, Clock, Map as MapIcon, Skull, Sparkles, Swords, X } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock, Map as MapIcon, Sparkles, Swords, X } from 'lucide-react';
 
 import { KPI_FALLBACK_DEFS, KPI_METRICS } from '../../constants';
-import { formatMetricValue } from '../../format';
+import { fmtNumber, formatMetricValue } from '../../format';
 import { StatsLayoutGrid, StatsLayoutMain, StatsLayoutRail } from '../../layout/StatsLayout';
 import { StatValue, type StatValueState } from '../StatValue';
 import { SectionTitle } from '../StatsPrimitives';
 import { resolveLiveDataStatus } from '../../../../lib/live/types';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
+import type { WorldState } from '../../types';
 
 export function OverviewSection({
   showWelcome,
@@ -15,6 +16,10 @@ export function OverviewSection({
   onOpenRankings,
   navigationDisabled,
   totals,
+  worldState,
+  worldStateLoaded,
+  worldStateLoading,
+  worldStateError,
   summaryLoaded,
   summaryLoading,
   summaryError,
@@ -27,6 +32,10 @@ export function OverviewSection({
   onOpenRankings: (metricId?: string | string[]) => void;
   navigationDisabled: boolean;
   totals: Record<string, number> | null;
+  worldState: WorldState | null;
+  worldStateLoaded: boolean;
+  worldStateLoading: boolean;
+  worldStateError: string | null;
   summaryLoaded: boolean;
   summaryLoading: boolean;
   summaryError: string | null;
@@ -130,7 +139,6 @@ export function OverviewSection({
       hours: <Clock size={16} />,
       distance: <MapIcon size={16} />,
       mob_kills: <Swords size={16} />,
-      creeper: <Skull size={16} />,
     };
     return KPI_METRICS.map((id) => {
       const def = KPI_FALLBACK_DEFS[id];
@@ -158,8 +166,33 @@ export function OverviewSection({
     onOpenRankings(metricId);
   };
 
-  const highlightItem = overviewItems[0];
-  const rows = overviewItems.slice(1, 4);
+  const rows = overviewItems;
+  const worldAgeDays =
+    typeof worldState?.ageDays === 'number' && Number.isFinite(worldState.ageDays)
+      ? worldState.ageDays
+      : undefined;
+  const worldAgeState = resolveLiveDataStatus({
+    loading: worldStateLoading,
+    loaded: worldStateLoaded,
+    hasData: typeof worldAgeDays === 'number',
+    hasSnapshot: Boolean(worldState),
+    error: worldStateError
+      ? {
+          kind: 'unknown',
+          message: worldStateError,
+        }
+      : null,
+  });
+  const worldAgeHint =
+    worldAgeState === 'empty'
+      ? 'Das Weltalter wurde vom Server noch nicht geliefert.'
+      : worldAgeState === 'stale' && worldStateLoading
+        ? LIVE_COPY_DE.summary_stale_refreshing
+        : worldAgeState === 'stale' && worldStateError
+          ? LIVE_COPY_DE.summary_stale_failed
+          : worldStateError ||
+            `${worldAgeDays === 1 ? 'Minecraft-Tag' : 'Minecraft-Tage'} seit Weltstart.`;
+  const worldAgeValue = typeof worldAgeDays === 'number' ? fmtNumber(worldAgeDays) : undefined;
   const rankingQuicklinks: Array<{ label: string; metricIds: string[] }> = [
     {
       label: 'Diamanterz abgebaut',
@@ -247,49 +280,32 @@ export function OverviewSection({
           subtitle="Von langen Reisen &uuml;ber gef&auml;hrliche N&auml;chte bis zu gro&szlig;en Projekten: Hier siehst du den Puls des Servers."
         />
         <div aria-live="polite" className="mt-5 space-y-5">
-          {highlightItem ? (
-            <section
-              className={[
-                'mg-app-panel mg-app-panel--strong relative overflow-hidden px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5',
-                navigationDisabled
-                  ? ''
-                  : 'hover:border-accent/45 hover:bg-surface-solid/45 cursor-pointer transition-colors',
-              ].join(' ')}
-              role="button"
-              tabIndex={navigationDisabled ? -1 : 0}
-              aria-disabled={navigationDisabled ? 'true' : undefined}
-              aria-label={`${highlightItem.label} Rangliste \u00f6ffnen`}
-              onClick={() => handleCardActivate(highlightItem.id)}
-              onKeyDown={(event) => handleCardKeyDown(event, highlightItem.id)}
-            >
-              <div className="bg-accent/18 text-accent absolute top-4 right-4 inline-flex h-9 w-9 items-center justify-center rounded-xl">
-                {highlightItem.icon}
-              </div>
-              <p className="text-muted pr-12 text-xs font-semibold tracking-[0.16em] uppercase">
-                Leitwert
-              </p>
-              <p className="text-fg mt-2 text-lg font-semibold tracking-tight">
-                {highlightItem.label}
-              </p>
-              <StatValue
-                state={highlightItem.state}
-                value={highlightItem.value}
-                label={highlightItem.label}
-                hint={highlightItem.hint || 'Serverweiter Gesamtwert.'}
-                onRetry={highlightItem.onRetry}
-                retryDisabled={highlightItem.retryDisabled}
-                retryDisabledHint={highlightItem.retryDisabledHint}
-                className="mt-2"
-                valueClassName="text-fg text-3xl font-semibold tracking-tight"
-              />
-              <p className="text-muted mt-3 inline-flex items-center gap-1 text-xs font-semibold">
-                Zur Rangliste
-                <ArrowRight size={13} />
-              </p>
-            </section>
-          ) : null}
+          <section className="mg-app-panel mg-app-panel--strong relative overflow-hidden px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5">
+            <div className="bg-accent/18 text-accent absolute top-4 right-4 inline-flex h-9 w-9 items-center justify-center rounded-xl">
+              <CalendarDays size={16} />
+            </div>
+            <p className="text-muted pr-12 text-xs font-semibold tracking-[0.16em] uppercase">
+              Leitwert
+            </p>
+            <p className="text-fg mt-2 text-lg font-semibold tracking-tight">Weltalter</p>
+            <StatValue
+              state={worldAgeState}
+              value={worldAgeValue}
+              label="Weltalter"
+              hint={worldAgeHint}
+              onRetry={worldAgeState === 'error' ? onRetrySummary : undefined}
+              retryDisabled={summaryRetryDisabled}
+              retryDisabledHint={retryWaitText || undefined}
+              className="mt-2"
+              valueClassName="text-fg text-3xl font-semibold tracking-tight"
+            />
+          </section>
 
           <div className="mg-app-panel mg-app-panel--soft overflow-hidden">
+            <div className="border-border/75 border-b px-4 py-3 sm:px-5">
+              <p className="text-fg text-sm font-semibold">Serverweite Gesamtwerte</p>
+              <p className="text-muted mt-1 text-xs">Alle Spieler zusammengezählt.</p>
+            </div>
             <ul className="mg-list divide-border/75 divide-y text-sm">
               {rows.map((item) => (
                 <li

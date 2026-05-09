@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { getLeaderboard, getMetrics, getSummary } from '../api';
+import { getLeaderboard, getMetrics, getSummary, getWorldState } from '../api';
 import { KPI_METRICS } from '../constants';
 import { filterMetricIds, groupMetricIds, pickDefaultRankMetricId } from '../metric-utils';
 import { normalizeUmlauts } from '../normalizeUmlauts';
-import type { MetricDef, SummaryResponse } from '../types';
+import type { MetricDef, SummaryResponse, WorldState, WorldStateResponse } from '../types';
 import type { LeaderboardState, TabKey } from '../types-ui';
 import { usePlayerAutocomplete } from '../usePlayerAutocomplete';
 import type { GroupedMetrics } from '../components/MetricPicker';
@@ -64,6 +64,7 @@ function resolveLeaderboardErrorKind(error: unknown): LiveDataErrorKind {
   return 'unknown';
 }
 const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
+const WORLD_STATE_CACHE_KEY = 'stats-world-state';
 const SUMMARY_MIN_REVALIDATE_INTERVAL_MS = 15_000;
 
 function makeEmptyLeaderboardState(): LeaderboardState {
@@ -145,11 +146,16 @@ export function useStatsData({
   const [playerCount, setPlayerCount] = useState<number | null>(null);
   const [metrics, setMetrics] = useState<Record<string, MetricDef> | null>(null);
   const [totals, setTotals] = useState<Record<string, number> | null>(null);
+  const [worldState, setWorldState] = useState<WorldState | null>(null);
+  const [worldStateLoaded, setWorldStateLoaded] = useState(false);
+  const [worldStateLoading, setWorldStateLoading] = useState(false);
+  const [worldStateError, setWorldStateError] = useState<string | null>(null);
   const [summaryLoaded, setSummaryLoaded] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryLastUpdatedAt, setSummaryLastUpdatedAt] = useState<number | null>(null);
   const [summaryReloadTrigger, setSummaryReloadTrigger] = useState(0);
+  const [worldStateReloadTrigger, setWorldStateReloadTrigger] = useState(0);
   const [apiError, setApiError] = useState<string | null>(null);
   const [apiErrorKind, setApiErrorKind] = useState<LiveDataErrorKind | null>(null);
   const [nextAllowedFetchAt, setNextAllowedFetchAt] = useState<number | null>(null);
@@ -464,6 +470,7 @@ export function useStatsData({
   const retrySummary = useCallback(() => {
     if (isRateLimitBlocked) return;
     setSummaryReloadTrigger((prev) => prev + 1);
+    setWorldStateReloadTrigger((prev) => prev + 1);
   }, [isRateLimitBlocked]);
 
   const goToPlayer = useCallback((uuid: string) => {
@@ -639,6 +646,143 @@ export function useStatsData({
   useEffect(() => {
     if (activeTab !== 'uebersicht') return;
 
+    const ac = new AbortController();
+    const thresholds = LIVE_WIDGET_THRESHOLDS['stats-kpi'];
+
+    const applyWorldStatePayload = (data: WorldStateResponse): void => {
+      if (typeof data.__generated === 'string') setGeneratedIso(data.__generated);
+      if ('world' in data) {
+        setWorldState(data.world ?? null);
+      }
+    };
+
+    const applyWorldState = (
+      state: LiveDataState<WorldStateResponse>,
+      options: { initial: boolean; hasRevalidate: boolean },
+    ): void => {
+      if (ac.signal.aborted) return;
+
+      if (state.data) {
+        applyWorldStatePayload(state.data);
+      }
+
+      if (state.status === 'loading') {
+        setWorldStateLoading(true);
+        setWorldStateError(null);
+        return;
+      }
+
+      const shouldTreatInitialStateAsLoading =
+        options.initial &&
+        options.hasRevalidate &&
+        (state.status === 'stale' || state.status === 'error');
+
+      if (shouldTreatInitialStateAsLoading) {
+        if (state.status === 'stale') {
+          setWorldStateLoaded(true);
+        }
+        setWorldStateLoading(true);
+        setWorldStateError(null);
+        return;
+      }
+
+      setWorldStateLoaded(true);
+      setWorldStateLoading(false);
+
+      if (state.status === 'error' || state.status === 'stale') {
+        const errorKind = state.error?.kind === 'rate_limit' ? 'rate_limit' : 'unknown';
+        const message =
+          getLiveMessage({ status: 'error', errorKind }) ??
+          (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE);
+        setWorldStateError(message);
+        return;
+      }
+
+      setWorldStateError(null);
+    };
+
+    (async () => {
+      const resource = getLiveResource(
+        WORLD_STATE_CACHE_KEY,
+        async (): Promise<LiveDataState<WorldStateResponse>> => {
+          try {
+            const data = await getWorldState(ac.signal);
+            const fetchedAt = Date.now();
+            return {
+              status: 'ok',
+              data,
+              updatedAt: fetchedAt,
+              fetchedAt,
+            };
+          } catch (error) {
+            if ((error as Error)?.name === 'AbortError') {
+              return {
+                status: 'error',
+                fetchedAt: Date.now(),
+                error: {
+                  kind: 'network',
+                  message: 'Anfrage wurde abgebrochen.',
+                },
+              };
+            }
+
+            const errorKind = resolveLeaderboardErrorKind(error);
+            const retryAfterMs = resolveRetryAfterMs(error);
+            if (errorKind === 'rate_limit') {
+              registerRateLimit(retryAfterMs);
+            }
+
+            return {
+              status: 'error',
+              fetchedAt: Date.now(),
+              error: {
+                kind: errorKind,
+                message:
+                  getLiveMessage({ status: 'error', errorKind }) ??
+                  (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
+                retryAfterMs: retryAfterMs ?? undefined,
+              },
+            };
+          }
+        },
+        {
+          staleAfterMs: thresholds.staleAfterMs,
+          maxCacheAgeMs: thresholds.maxCacheAgeMs,
+          persist: true,
+          minRevalidateIntervalMs: SUMMARY_MIN_REVALIDATE_INTERVAL_MS,
+        },
+      );
+
+      applyWorldState(resource.state, {
+        initial: true,
+        hasRevalidate: resource.revalidate != null,
+      });
+
+      if (!resource.revalidate) return;
+
+      const latest = await resource.revalidate;
+      applyWorldState(latest, {
+        initial: false,
+        hasRevalidate: true,
+      });
+
+      if (
+        !ac.signal.aborted &&
+        (latest.status === 'error' || (latest.status === 'stale' && latest.error))
+      ) {
+        console.warn('Weltzustand Fehler', latest.error ?? latest);
+      }
+    })();
+
+    return () => {
+      ac.abort();
+      setWorldStateLoading(false);
+    };
+  }, [activeTab, registerRateLimit, worldStateReloadTrigger]);
+
+  useEffect(() => {
+    if (activeTab !== 'uebersicht') return;
+
     const staleAfterMs = LIVE_WIDGET_THRESHOLDS['stats-kpi'].staleAfterMs;
 
     const onVisibilityChange = (): void => {
@@ -656,6 +800,7 @@ export function useStatsData({
 
       summaryVisibilityRevalidateAtRef.current = now;
       setSummaryReloadTrigger((prev) => prev + 1);
+      setWorldStateReloadTrigger((prev) => prev + 1);
     };
 
     document.addEventListener('visibilitychange', onVisibilityChange);
@@ -771,6 +916,10 @@ export function useStatsData({
     setGeneratedIso,
     playerCount,
     totals,
+    worldState,
+    worldStateLoaded,
+    worldStateLoading,
+    worldStateError,
     summaryLoaded,
     summaryLoading,
     summaryError,

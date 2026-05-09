@@ -22,6 +22,19 @@ export interface SummaryResponse {
   __generated_timezone?: string | null;
 }
 
+export interface WorldState {
+  name: string;
+  ageTicks: number;
+  ageDays: number;
+  importedAt: string | null;
+}
+
+export interface WorldStateResponse {
+  world?: WorldState | null;
+  __generated?: string;
+  __generated_timezone?: string | null;
+}
+
 export interface LeaderboardRow {
   uuid: string;
   value: number;

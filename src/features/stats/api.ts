@@ -3,6 +3,7 @@ import type {
   MetricsResponse,
   PlayersSearchResponse,
   SummaryResponse,
+  WorldStateResponse,
 } from './types';
 import { fetchJsonOrThrow } from '../../lib/http/fetchJson';
 import { toApiUrl } from '../../lib/http/apiUrl';
@@ -19,6 +20,10 @@ export function getSummary(metrics: string[], signal?: AbortSignal) {
       signal,
     },
   );
+}
+
+export function getWorldState(signal?: AbortSignal) {
+  return fetchJsonOrThrow<WorldStateResponse>(toApiUrl('/api/world-state'), { signal });
 }
 
 export function getLeaderboard(

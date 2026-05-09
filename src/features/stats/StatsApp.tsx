@@ -136,6 +136,10 @@ export default function StatsApp() {
     generatedIso,
     setGeneratedIso,
     totals,
+    worldState,
+    worldStateLoaded,
+    worldStateLoading,
+    worldStateError,
     summaryLoaded,
     summaryLoading,
     summaryError,
@@ -457,6 +461,10 @@ export default function StatsApp() {
               onOpenRankings={handleOpenRankingsFromOverview}
               navigationDisabled={tabsDisabled}
               totals={totals}
+              worldState={worldState}
+              worldStateLoaded={worldStateLoaded}
+              worldStateLoading={worldStateLoading}
+              worldStateError={worldStateError}
               summaryLoaded={summaryLoaded}
               summaryLoading={summaryLoading}
               summaryError={summaryError}

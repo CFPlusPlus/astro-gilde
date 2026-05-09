@@ -2,7 +2,7 @@ import type { MetricDef, MetricId } from './types';
 
 export const STATS_PAGE_SIZES = [5, 10, 20, 30, 40] as const;
 export const STATS_DEFAULT_PAGE_SIZE = 20;
-export const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills', 'creeper'];
+export const KPI_METRICS: MetricId[] = ['hours', 'distance', 'mob_kills'];
 export const VERSUS_MAX_METRICS = 12;
 export const RANKINGS_TOP_CATEGORY_KEYS = [
   'hours',
@@ -24,5 +24,4 @@ export const KPI_FALLBACK_DEFS: Record<string, MetricDef> = {
     decimals: 2,
   },
   mob_kills: { label: 'Mobs get\u00f6tet', category: '\u00dcbersicht' },
-  creeper: { label: 'Creeper get\u00f6tet', category: '\u00dcbersicht' },
 };
