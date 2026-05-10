@@ -107,6 +107,11 @@ const CACHE_PROFILES: Record<string, CacheProfile> = {
     staleWhileRevalidateSeconds: 30,
     staleIfErrorSeconds: 300,
   },
+  'world-state': {
+    maxAgeSeconds: 60,
+    staleWhileRevalidateSeconds: 30,
+    staleIfErrorSeconds: 300,
+  },
   leaderboard: {
     maxAgeSeconds: 60,
     staleWhileRevalidateSeconds: 30,
@@ -148,6 +153,7 @@ const ALLOWED_ENDPOINTS = new Set([
   'metrics',
   'summary',
   'leaderboards',
+  'world-state',
   'leaderboard',
   'players',
   'player',
@@ -1270,6 +1276,14 @@ type BanStatusKnownResult = {
   ban: BanStatusBan | null;
 };
 
+type WorldStateResult = {
+  name: string;
+  ageTicks: number;
+  ageDays: number;
+  importedAt: string | null;
+  importedAtDate: Date | null;
+};
+
 function readEndpointUuidParams(
   requestUrl: URL,
   primaryParam: string,
@@ -1431,6 +1445,67 @@ async function handleSummaryEndpoint(route: DataRouteContext): Promise<Response>
       {
         player_count: playerCount,
         totals,
+      },
+      route.active,
+    ),
+    { headers },
+  );
+}
+
+async function fetchWorldState(route: DataRouteContext): Promise<WorldStateResult | null> {
+  const rows = await queryRows<RowDataPacket>(
+    route.db,
+    `SELECT world_name,
+            world_age_ticks,
+            world_age_days,
+            DATE_FORMAT(imported_at, '%Y-%m-%dT%H:%i:%s') AS imported_at,
+            TIMESTAMPDIFF(MINUTE, UTC_TIMESTAMP(), NOW()) AS db_utc_offset_minutes
+     FROM v_world_state
+     ORDER BY CASE WHEN world_name = 'world' THEN 0 ELSE 1 END, world_name ASC
+     LIMIT 1`,
+  );
+
+  const row = rows[0];
+  if (!row) return null;
+
+  const detectedOffsetMinutes = parseIntegerOrNull(row.db_utc_offset_minutes);
+  const importedTimeZone = resolveStatsDbTimeZone(asRuntimeEnv(), detectedOffsetMinutes);
+  const importedAt = toOffsetIsoOrNull(row.imported_at, importedTimeZone);
+
+  return {
+    name: String(row.world_name ?? ''),
+    ageTicks: parseInteger(row.world_age_ticks, 0),
+    ageDays: parseInteger(row.world_age_days, 0),
+    importedAt,
+    importedAtDate: toDateOrNull(importedAt),
+  };
+}
+
+async function handleWorldStateEndpoint(route: DataRouteContext): Promise<Response> {
+  const worldState = await fetchWorldState(route);
+  const etagParts = worldState
+    ? [
+        route.active.runId,
+        worldState.name,
+        worldState.ageTicks,
+        worldState.ageDays,
+        worldState.importedAt ?? 'no-imported-at',
+      ]
+    : [route.active.runId, 'empty'];
+  const lastModified = route.active.generatedAt ?? worldState?.importedAtDate ?? null;
+  const headers = etagHeaders('world-state', `world-state:${etagParts.join(':')}`, lastModified);
+
+  return jsonResponse(
+    withGenerated(
+      {
+        world: worldState
+          ? {
+              name: worldState.name,
+              ageTicks: worldState.ageTicks,
+              ageDays: worldState.ageDays,
+              importedAt: worldState.importedAt,
+            }
+          : null,
       },
       route.active,
     ),
@@ -1922,6 +1997,8 @@ async function routeRequest(context: APIContext, endpoint: string): Promise<Resp
         return await handleSummaryEndpoint(route);
       case 'leaderboards':
         return await handleLeaderboardsEndpoint(route);
+      case 'world-state':
+        return await handleWorldStateEndpoint(route);
       case 'leaderboard':
         return await handleLeaderboardEndpoint(route);
       case 'players':

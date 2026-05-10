@@ -8,6 +8,7 @@ Mini-Doku für die API-Endpunkte, die das Frontend unter `/statistiken` nutzt.
 - `/api/metrics` (Kategorien/Definitionen)
 - `/api/leaderboard?metric=...&limit=...&cursor=...` (Ranglisten mit Cursor-Paging)
 - `/api/leaderboards?limit=...` (Top-Listen je Metrik)
+- `/api/world-state` (globaler Weltzustand, aktuell Weltalter)
 - `/api/players?q=...&limit=...` (Autocomplete)
 - `/api/player?uuid=...` (Spieler-Detail)
 - `/api/ban-status?query=...` (Bann-Status per exaktem Name oder UUID)
@@ -81,6 +82,7 @@ Edge-Cache (`caches.default`) + `Cache-Control`:
 
 - `metrics`: `max-age=3600`
 - `summary`: `max-age=60`
+- `world-state`: `max-age=60`
 - `leaderboard` / `leaderboards`: `max-age=60`
 - `players`: `max-age=30`
 - `player`: `max-age=60`
@@ -97,6 +99,40 @@ Mojang (`cape` / `profile`):
 - Negative Treffer (`204/404`): `10m`
 - Stale bei Upstream-Fehler: `30s`
 - Header zusätzlich: `stale-while-revalidate=30`, `stale-if-error=86400`
+
+## Weltzustand
+
+`GET /api/world-state`
+
+Liefert den globalen Zustand des aktiven Import-Snapshots. Aktuell nutzt der
+Endpunkt die View `v_world_state` und gibt das vorberechnete Weltalter aus.
+Das Frontend soll `world.ageDays` direkt anzeigen und keine eigene Umrechnung
+von Ticks in Minecraft-Tage vornehmen.
+
+Antwort:
+
+```json
+{
+  "world": {
+    "name": "world",
+    "ageTicks": 123456789,
+    "ageDays": 5144,
+    "importedAt": "2026-05-09T12:34:56+02:00"
+  },
+  "__generated": "2026-05-09T12:34:56+02:00",
+  "__generated_timezone": "Europe/Berlin"
+}
+```
+
+Felder:
+
+- `world.name`: Name der Minecraft-Welt, z. B. `world`
+- `world.ageTicks`: Rohwert aus Bukkit/Paper `World#getFullTime()`
+- `world.ageDays`: fertig berechnete Minecraft-Tage aus der Datenbank
+- `world.importedAt`: Import-Zeitpunkt des Weltzustands
+
+Wenn kein Weltzustand im aktiven Snapshot vorhanden ist, wird `world: null`
+zurueckgegeben.
 
 ## Lokale Entwicklung
 

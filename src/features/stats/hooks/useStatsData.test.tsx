@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 import { getLiveResource } from '../../../lib/live/cache';
 import type { LiveDataState } from '../../../lib/live/types';
-import { getLeaderboard, getMetrics, getSummary } from '../api';
+import { getLeaderboard, getMetrics, getSummary, getWorldState } from '../api';
 import type { SummaryResponse } from '../types';
 import type { TabKey } from '../types-ui';
 import { useStatsData } from './useStatsData';
@@ -16,6 +16,7 @@ vi.mock('../api', () => ({
   getLeaderboard: vi.fn(),
   getMetrics: vi.fn(),
   getSummary: vi.fn(),
+  getWorldState: vi.fn(),
 }));
 
 vi.mock('../usePlayerAutocomplete', () => ({
@@ -137,6 +138,7 @@ describe('useStatsData rate limit', () => {
     vi.mocked(getLeaderboard).mockReset();
     vi.mocked(getMetrics).mockReset();
     vi.mocked(getSummary).mockReset();
+    vi.mocked(getWorldState).mockReset();
     vi.mocked(getLiveResource).mockClear();
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
@@ -191,7 +193,7 @@ describe('useStatsData rate limit', () => {
     await hook.unmount();
   });
 
-  it('loads only summary on initial overview tab', async () => {
+  it('loads overview live resources on initial overview tab', async () => {
     const hook = await mountHook({
       activeTab: 'uebersicht',
       pageSize: 10,
@@ -201,7 +203,7 @@ describe('useStatsData rate limit', () => {
 
     await flushEffects(3);
 
-    expect(getLiveResource).toHaveBeenCalledTimes(1);
+    expect(getLiveResource).toHaveBeenCalledTimes(2);
     expect(getMetrics).not.toHaveBeenCalled();
     expect(getLeaderboard).not.toHaveBeenCalled();
 
