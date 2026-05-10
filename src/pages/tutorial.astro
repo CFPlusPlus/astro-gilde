@@ -60,6 +60,14 @@ const ACTION_ICONS = {
 type SectionIconName = keyof typeof SECTION_ICONS;
 type ActionIconName = keyof typeof ACTION_ICONS;
 
+const QUICKSTART_COMMANDS = ['/sethome <Name>', '/home <Name>', '/farmwelt', '/rtp'] as const;
+const QUICKSTART_COMMAND_PATTERN = new RegExp(
+  `(${QUICKSTART_COMMANDS.map((command) => command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+);
+const isQuickstartCommand = (part: string): boolean =>
+  QUICKSTART_COMMANDS.includes(part as (typeof QUICKSTART_COMMANDS)[number]);
+const formatQuickstartText = (text: string) => text.split(QUICKSTART_COMMAND_PATTERN);
+
 const sectionEntries = (await getCollection('tutorial')).sort(
   (a, b) => a.data.order - b.data.order,
 );
@@ -120,7 +128,10 @@ const sections = await Promise.all(
         {
           tutorialQuickstart.steps.map((step) => (
             <li>
-              <span class="text-fg/90 font-medium">{step.title}</span>: {step.text}
+              <span class="text-fg/90 font-medium">{step.title}</span>:{' '}
+              {formatQuickstartText(step.text).map((part) =>
+                isQuickstartCommand(part) ? <code>{part}</code> : part,
+              )}
             </li>
           ))
         }

@@ -36,7 +36,7 @@ export const isTutorialExternalTarget = (target: TutorialLinkTarget): boolean =>
 export const tutorialHeaderIntro = {
   title: 'Tutorial',
   subtitle:
-    'In 2 Minuten startklar - darunter findest du alle Themen als Kapitel zum Nachschlagen.',
+    'Neu auf dem Server? Hier findest du einfach erklärt, was du für deinen Start brauchst.',
 } as const;
 
 export const tutorialHeaderActions: readonly TutorialAction[] = [
@@ -70,15 +70,15 @@ export const tutorialQuickstart = {
       text: 'Nimm eine Holzschaufel und markiere zwei Ecken per Rechtsklick.',
     },
     {
-      title: 'Nur in Farmwelten abbauen',
-      text: 'Farmen in der Oberwelt ist verboten. Nutze dafür den Befehl /farmwelt.',
+      title: 'Farmwelt nutzen',
+      text: 'Mit /farmwelt kommst du in eine separate Welt zum Abbauen, Sammeln und Erkunden.',
     },
   ],
 } as const;
 
 export const tutorialQuickstartCallout = {
-  title: 'Wichtige Regel',
-  text: 'Farmen in der Oberwelt ist verboten. Ressourcen bitte ausschließlich in den Farmwelten abbauen.',
+  title: 'Kleiner Hinweis',
+  text: 'Bitte sammle Ressourcen in den Farmwelten, damit die Hauptwelt schön bleibt und langfristig Platz für Bauprojekte bietet.',
   variant: 'warning' as const,
 } as const;
 
