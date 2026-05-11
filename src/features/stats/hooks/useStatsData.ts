@@ -63,6 +63,51 @@ function resolveLeaderboardErrorKind(error: unknown): LiveDataErrorKind {
   if ((error as Error | undefined)?.name === 'AbortError') return 'timeout';
   return 'unknown';
 }
+
+async function resolveStatsLiveData<T>(
+  request: () => Promise<T>,
+  onRateLimit: (retryAfterMs: number | null) => void,
+): Promise<LiveDataState<T>> {
+  try {
+    const data = await request();
+    const fetchedAt = Date.now();
+    return {
+      status: 'ok',
+      data,
+      updatedAt: fetchedAt,
+      fetchedAt,
+    };
+  } catch (error) {
+    if ((error as Error)?.name === 'AbortError') {
+      return {
+        status: 'error',
+        fetchedAt: Date.now(),
+        error: {
+          kind: 'network',
+          message: 'Anfrage wurde abgebrochen.',
+        },
+      };
+    }
+
+    const errorKind = resolveLeaderboardErrorKind(error);
+    const retryAfterMs = resolveRetryAfterMs(error);
+    if (errorKind === 'rate_limit') {
+      onRateLimit(retryAfterMs);
+    }
+
+    return {
+      status: 'error',
+      fetchedAt: Date.now(),
+      error: {
+        kind: errorKind,
+        message:
+          getLiveMessage({ status: 'error', errorKind }) ??
+          (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
+        retryAfterMs: retryAfterMs ?? undefined,
+      },
+    };
+  }
+}
 const SUMMARY_CACHE_KEY = 'stats-kpi-summary';
 const WORLD_STATE_CACHE_KEY = 'stats-world-state';
 const SUMMARY_MIN_REVALIDATE_INTERVAL_MS = 15_000;
@@ -567,47 +612,7 @@ export function useStatsData({
     (async () => {
       const resource = getLiveResource(
         SUMMARY_CACHE_KEY,
-        async (): Promise<LiveDataState<SummaryResponse>> => {
-          try {
-            const data = await getSummary(KPI_METRICS, ac.signal);
-            const fetchedAt = Date.now();
-            return {
-              status: 'ok',
-              data,
-              updatedAt: fetchedAt,
-              fetchedAt,
-            };
-          } catch (error) {
-            if ((error as Error)?.name === 'AbortError') {
-              return {
-                status: 'error',
-                fetchedAt: Date.now(),
-                error: {
-                  kind: 'network',
-                  message: 'Anfrage wurde abgebrochen.',
-                },
-              };
-            }
-
-            const errorKind = resolveLeaderboardErrorKind(error);
-            const retryAfterMs = resolveRetryAfterMs(error);
-            if (errorKind === 'rate_limit') {
-              registerRateLimit(retryAfterMs);
-            }
-
-            return {
-              status: 'error',
-              fetchedAt: Date.now(),
-              error: {
-                kind: errorKind,
-                message:
-                  getLiveMessage({ status: 'error', errorKind }) ??
-                  (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
-                retryAfterMs: retryAfterMs ?? undefined,
-              },
-            };
-          }
-        },
+        () => resolveStatsLiveData(() => getSummary(KPI_METRICS, ac.signal), registerRateLimit),
         {
           staleAfterMs: thresholds.staleAfterMs,
           maxCacheAgeMs: thresholds.maxCacheAgeMs,
@@ -704,47 +709,7 @@ export function useStatsData({
     (async () => {
       const resource = getLiveResource(
         WORLD_STATE_CACHE_KEY,
-        async (): Promise<LiveDataState<WorldStateResponse>> => {
-          try {
-            const data = await getWorldState(ac.signal);
-            const fetchedAt = Date.now();
-            return {
-              status: 'ok',
-              data,
-              updatedAt: fetchedAt,
-              fetchedAt,
-            };
-          } catch (error) {
-            if ((error as Error)?.name === 'AbortError') {
-              return {
-                status: 'error',
-                fetchedAt: Date.now(),
-                error: {
-                  kind: 'network',
-                  message: 'Anfrage wurde abgebrochen.',
-                },
-              };
-            }
-
-            const errorKind = resolveLeaderboardErrorKind(error);
-            const retryAfterMs = resolveRetryAfterMs(error);
-            if (errorKind === 'rate_limit') {
-              registerRateLimit(retryAfterMs);
-            }
-
-            return {
-              status: 'error',
-              fetchedAt: Date.now(),
-              error: {
-                kind: errorKind,
-                message:
-                  getLiveMessage({ status: 'error', errorKind }) ??
-                  (errorKind === 'rate_limit' ? API_RATE_LIMIT_MESSAGE : API_ERROR_MESSAGE),
-                retryAfterMs: retryAfterMs ?? undefined,
-              },
-            };
-          }
-        },
+        () => resolveStatsLiveData(() => getWorldState(ac.signal), registerRateLimit),
         {
           staleAfterMs: thresholds.staleAfterMs,
           maxCacheAgeMs: thresholds.maxCacheAgeMs,
