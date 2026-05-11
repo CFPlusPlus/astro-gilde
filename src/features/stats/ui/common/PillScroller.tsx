@@ -66,7 +66,7 @@ export function PillScroller({
     <div className={['relative min-w-0', className].filter(Boolean).join(' ')}>
       <div
         ref={scrollerRef}
-        className="min-w-0 overflow-x-auto pb-1 whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="min-w-0 [scrollbar-width:none] overflow-x-auto pb-1 whitespace-nowrap [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       >
         <ul
           className={['inline-flex w-max items-center gap-2', listClassName]
