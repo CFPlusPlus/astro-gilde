@@ -1,8 +1,8 @@
-import { formatBerlinDateTime, formatDeNumber } from '../stats-core/format';
+import { formatDeNumber, formatLocalDateTime } from '../stats-core/format';
 import type { MetricDef } from './types';
 
-export function fmtDateBerlin(iso: string): string {
-  return formatBerlinDateTime(iso);
+export function fmtDateLocal(iso: string): string {
+  return formatLocalDateTime(iso);
 }
 
 export function fmtNumber(value: number, decimals = 0): string {

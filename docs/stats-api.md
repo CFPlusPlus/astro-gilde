@@ -43,9 +43,6 @@ Optionale Werte:
 
 - `STATS_DB_PORT` (Default: `3306`)
 - `STATS_DB_CHARSET` (Default: `utf8mb4`)
-- `STATS_DB_TIME_ZONE` (fuer naive `DATETIME`-Werte wie
-  `import_run.generated_at`; ohne Konfiguration wird eine UTC-DB-Session als `UTC`,
-  sonst `Europe/Berlin` interpretiert; alternativ wird auch `STATS_DB_TIMEZONE` gelesen)
 
 Optionaler Hyperdrive-Binding:
 
@@ -100,6 +97,16 @@ Mojang (`cape` / `profile`):
 - Stale bei Upstream-Fehler: `30s`
 - Header zusätzlich: `stale-while-revalidate=30`, `stale-if-error=86400`
 
+## Zeitwerte
+
+Alle Importer-Zeitwerte aus der Datenbank werden von der API als UTC interpretiert
+und eindeutig als ISO-8601 mit `Z` ausgegeben, z. B. `2026-05-13T12:00:00Z`.
+Das Frontend formatiert diese absoluten Zeitpunkte anschliessend in der
+Browser-Zeitzone des Users.
+
+Alte, vor dem UTC-Vertrag gespeicherte `DATETIME`-Werte muessen ausserhalb der
+API migriert oder durch einen neuen Import ersetzt werden.
+
 ## Weltzustand
 
 `GET /api/world-state`
@@ -117,10 +124,10 @@ Antwort:
     "name": "world",
     "ageTicks": 123456789,
     "ageDays": 5144,
-    "importedAt": "2026-05-09T12:34:56+02:00"
+    "importedAt": "2026-05-09T10:34:56Z"
   },
-  "__generated": "2026-05-09T12:34:56+02:00",
-  "__generated_timezone": "Europe/Berlin"
+  "__generated": "2026-05-09T10:34:56Z",
+  "__generated_timezone": "UTC"
 }
 ```
 
