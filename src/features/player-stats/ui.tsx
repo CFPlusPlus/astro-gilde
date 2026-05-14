@@ -1,11 +1,11 @@
 import React from 'react';
 import { ChevronDown, ChevronsUpDown, ChevronUp, SearchX } from 'lucide-react';
 
-import { formatBerlinDateTime } from '../stats-core/format';
+import { formatLocalDateTime } from '../stats-core/format';
 import type { SortDir } from './table-model';
 
 export function fmtGenerated(iso: string) {
-  return `Stand: ${formatBerlinDateTime(iso)}`;
+  return `Stand: ${formatLocalDateTime(iso)}`;
 }
 
 export function DataSurface({

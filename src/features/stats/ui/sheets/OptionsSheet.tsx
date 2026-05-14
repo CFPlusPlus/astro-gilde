@@ -5,7 +5,7 @@ import { LastUpdated } from '../../../../components/live/LastUpdated';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
 import { LiveBadgeSlot, type LiveBadgeVariant } from '../../components/LiveBadge';
 import { STATS_PAGE_SIZES } from '../../constants';
-import { fmtDateBerlin } from '../../format';
+import { fmtDateLocal } from '../../format';
 import type { TabKey } from '../../types-ui';
 import { useSheetDialog } from './useSheetDialog';
 
@@ -225,7 +225,7 @@ export function OptionsSheet({
               </div>
               {generatedIso ? (
                 <p className="text-muted min-w-0 text-xs leading-relaxed break-words">
-                  Stand: {fmtDateBerlin(generatedIso)}
+                  Stand: {fmtDateLocal(generatedIso)}
                 </p>
               ) : null}
               <LastUpdated updatedAt={updatedAt} className="text-muted text-xs" showWhenMissing />

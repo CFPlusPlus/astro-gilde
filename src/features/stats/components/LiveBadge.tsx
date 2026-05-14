@@ -1,7 +1,7 @@
 import { Clock3 } from 'lucide-react';
 import { LIVE_COPY_DE } from '../../../lib/live/copy.de';
 import { formatLastUpdatedAbsolute } from '../../../lib/live/lastUpdated';
-import { formatBerlinDateTime } from '../../stats-core/format';
+import { formatLocalDateTime } from '../../stats-core/format';
 
 export type LiveBadgeVariant = 'ok' | 'stale' | 'rate_limit' | 'error';
 
@@ -42,7 +42,7 @@ export function LiveBadge({
   const statusTitle =
     variant === 'ok'
       ? typeof generatedIso === 'string' && generatedIso
-        ? `Stand: ${formatBerlinDateTime(generatedIso)}`
+        ? `Stand: ${formatLocalDateTime(generatedIso)}`
         : typeof updatedAt === 'number'
           ? `Stand: ${formatLastUpdatedAbsolute(updatedAt)}`
           : undefined

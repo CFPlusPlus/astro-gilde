@@ -1,7 +1,7 @@
 import type { RefObject } from 'react';
 
 import { STATS_PAGE_SIZES } from '../../constants';
-import { fmtDateBerlin, fmtNumber } from '../../format';
+import { fmtDateLocal, fmtNumber } from '../../format';
 import type { PlayersSearchItem } from '../../types';
 import type { TabKey } from '../../types-ui';
 import { LIVE_COPY_DE } from '../../../../lib/live/copy.de';
@@ -76,7 +76,7 @@ export function StatsHeader({
           </Chip>
           {generatedIso ? (
             <Chip>
-              {LIVE_COPY_DE.stats_generated_prefix} {fmtDateBerlin(generatedIso)}
+              {LIVE_COPY_DE.stats_generated_prefix} {fmtDateLocal(generatedIso)}
             </Chip>
           ) : null}
           {typeof playerCount === 'number' ? <Chip>{fmtNumber(playerCount)} Spieler</Chip> : null}
