@@ -1185,6 +1185,30 @@
     color: color-mix(in oklab, var(--warning) 72%, var(--fg) 28%);
   }
 
+  .mg-pagination-control {
+    width: 1.875rem;
+    min-width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+    line-height: 1;
+  }
+
+  .mg-pagination-load-more {
+    height: 1.875rem;
+    padding-block: 0;
+    line-height: 1;
+  }
+
+  .mg-pagination-page--active,
+  .mg-pagination-page--active:hover {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: color-mix(in oklab, black 90%, var(--accent) 10%);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--accent) 38%, transparent),
+      0 8px 18px -14px color-mix(in oklab, var(--accent) 82%, black 18%);
+  }
+
   /* Einheitlicher, schmaler Range-Slider im Projekt-Stil */
   .mg-range {
     -webkit-appearance: none;

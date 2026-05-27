@@ -61,7 +61,7 @@ export function Pagination({
         <button
           type="button"
           onClick={() => onGo(state.currentPage - 1)}
-          className="mg-btn mg-btn--xs mg-btn--surface"
+          className="mg-btn mg-btn--xs mg-btn--surface mg-pagination-control"
           disabled={!canGoPrev}
           aria-label="Vorherige Seite"
         >
@@ -83,9 +83,12 @@ export function Pagination({
               key={control}
               type="button"
               onClick={() => onGo(control)}
+              aria-current={isActive ? 'page' : undefined}
+              aria-label={`Seite ${control + 1}${isActive ? ', aktuelle Seite' : ''}`}
+              data-active={isActive ? 'true' : 'false'}
               className={[
-                'mg-btn mg-btn--xs mg-btn--surface',
-                isActive ? 'border-accent bg-accent/10' : '',
+                'mg-btn mg-btn--xs mg-btn--surface mg-pagination-control mg-pagination-page',
+                isActive ? 'mg-pagination-page--active' : '',
               ].join(' ')}
             >
               {control + 1}
@@ -96,7 +99,7 @@ export function Pagination({
         <button
           type="button"
           onClick={() => onGo(state.currentPage + 1)}
-          className="mg-btn mg-btn--xs mg-btn--surface"
+          className="mg-btn mg-btn--xs mg-btn--surface mg-pagination-control"
           disabled={!canGoNext}
           aria-label="Nächste Seite"
         >
@@ -109,7 +112,7 @@ export function Pagination({
           <button
             type="button"
             onClick={onLoadMore}
-            className="mg-btn mg-btn--xs mg-btn--surface"
+            className="mg-btn mg-btn--xs mg-btn--surface mg-pagination-load-more"
             disabled={state.loading}
           >
             <ArrowRight size={14} />

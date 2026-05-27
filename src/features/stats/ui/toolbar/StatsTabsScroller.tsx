@@ -60,7 +60,7 @@ export function StatsTabsScroller({
   return (
     <nav
       aria-label="Statistik Navigation"
-      className="min-w-0 flex-1 snap-x snap-mandatory [scrollbar-width:none] overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="min-w-0 flex-1 snap-x snap-mandatory overflow-x-auto whitespace-nowrap [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
       <ul
         className="flex w-max items-center gap-1 pr-1"
