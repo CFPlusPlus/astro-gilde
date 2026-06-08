@@ -18,6 +18,7 @@ import {
   buildMinotarHelmUrl,
   buildMinotarSkinUrl,
 } from '../../lib/minecraft/playerTextures';
+import { FetchJsonHttpError } from '../../lib/http/fetchJson';
 import { parseFilter } from './format';
 import {
   buildPlayerTables,
@@ -59,6 +60,35 @@ export type UsePlayerStatsState = {
   skinFullUrl: string;
   skinFullFallback: string;
 };
+
+function hasPlayerStatsPayload(
+  player: PlayerApiResponse['player'],
+): player is Record<string, unknown> {
+  return !!player && typeof player === 'object' && Object.keys(player).length > 0;
+}
+
+function buildMissingStatsMessage(playerName: string): string {
+  const label = playerName.trim() || 'dieser Spieler';
+  return `F\u00fcr ${label} liegen noch keine Spielerstatistiken vor. Der Spieler ist bekannt oder gerade online, wurde aber noch nicht in den Statistikdaten erfasst.`;
+}
+
+function getPlayerLoadErrorMessage(error: unknown): string {
+  if (error instanceof DOMException && error.name === 'AbortError') {
+    return '';
+  }
+
+  if (error instanceof FetchJsonHttpError) {
+    if (error.status === 400) {
+      return 'Der Spielerlink ist ung\u00fcltig. \u00d6ffne einen Spieler \u00fcber die Suche auf /statistiken oder pr\u00fcfe den Link.';
+    }
+
+    if (error.status === 429) {
+      return 'Die Spielerstatistiken wurden zu oft angefragt. Bitte versuche es gleich erneut.';
+    }
+  }
+
+  return 'Die Spielerstatistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.';
+}
 
 export function usePlayerStatsState(): UsePlayerStatsState {
   const [activeTab, setActiveTab] = useState<TabKey>('allgemein');
@@ -175,7 +205,7 @@ export function usePlayerStatsState(): UsePlayerStatsState {
       fallbackUuid: string,
       nextTranslations: PlayerTranslations | null,
     ) => {
-      const found = data.found !== false && !!data.player;
+      const found = data.found === true || hasPlayerStatsPayload(data.player);
 
       if (!found) {
         setApiError(
@@ -190,15 +220,23 @@ export function usePlayerStatsState(): UsePlayerStatsState {
 
       const uuidResolved = (data.uuid || fallbackUuid).trim();
       const nameResolved = (data.name || uuidResolved).trim();
+      const playerStats = data.player;
 
       setUuidFull(uuidResolved);
       setPlayerName(nameResolved);
       setGeneratedIso(typeof data.__generated === 'string' ? data.__generated : null);
-      setStats((data.player || null) as Record<string, unknown> | null);
+
+      if (!hasPlayerStatsPayload(playerStats)) {
+        setApiError(buildMissingStatsMessage(nameResolved));
+        setStats(null);
+        return;
+      }
+
+      setStats(playerStats);
 
       try {
-        if (data.player && typeof data.player === 'object') {
-          logMissingTranslations(data.player as Record<string, unknown>, nextTranslations, {
+        if (playerStats && typeof playerStats === 'object') {
+          logMissingTranslations(playerStats, nextTranslations, {
             enabled: import.meta.env.DEV || forceTranslationCheck,
           });
         }
@@ -216,12 +254,13 @@ export function usePlayerStatsState(): UsePlayerStatsState {
 
         setTranslations(nextTranslations);
         applyPlayerResponse(playerData, uuid, nextTranslations);
-        setApiError(null);
+        if (hasPlayerStatsPayload(playerData.player)) setApiError(null);
       } catch (e) {
+        const errorMessage = getPlayerLoadErrorMessage(e);
+        if (!errorMessage) return;
+
         console.warn('Spielerstatistiken konnten nicht geladen werden:', e);
-        setApiError(
-          'Die Spielerstatistiken sind aktuell nicht erreichbar. Bitte versuche es sp\u00e4ter erneut.',
-        );
+        setApiError(errorMessage);
         setPlayerName('');
         setUuidFull(uuid);
         setStats(null);

@@ -4,7 +4,7 @@ export interface PlayerApiResponse {
   uuid?: string;
   name?: string;
   found?: boolean;
-  player?: Record<string, unknown>;
+  player?: Record<string, unknown> | null;
 }
 
 export interface PlayerTranslations {
