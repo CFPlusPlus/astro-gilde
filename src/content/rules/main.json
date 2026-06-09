@@ -10,7 +10,7 @@
       },
       {
         "title": "Keine Beeinträchtigung anderer Spieler",
-        "html": "Du darfst frei spielen, solange du andere nicht direkt oder indirekt beeinträchtigst. Dazu zählen z. B. Zerstörung, Diebstahl oder Umweltzerstörung in der Hauptwelt."
+        "html": "Du darfst frei spielen, solange du andere nicht direkt oder indirekt beeinträchtigst. Dazu zählen z. B. Zerstörung, Diebstahl, Umweltzerstörung in der Hauptwelt, Fallen, absichtliches Töten, Portal-Traps oder andere Handlungen, die Spielern ohne deren Zustimmung schaden."
       },
       {
         "title": "Verbot von Griefing",
@@ -18,7 +18,7 @@
       },
       {
         "title": "Ressourcenabbau in Farmwelten",
-        "html": "Ressourcen dürfen ausschließlich in den dafür vorgesehenen Farmwelten abgebaut werden. Verstöße können zum Verlust der gesammelten Materialien führen."
+        "html": "Größerer oder gezielter Ressourcenabbau ist ausschließlich in den dafür vorgesehenen Farmwelten erlaubt. Kleinere Anpassungen für Bauprojekte in der Hauptwelt bleiben erlaubt, solange sie die Umgebung nicht beeinträchtigen. Verstöße können zum Verlust der gesammelten Materialien führen."
       },
       {
         "title": "Kommunikation ohne Spam oder Werbung",
@@ -27,6 +27,10 @@
       {
         "title": "Keine persönlichen Daten",
         "html": "Das Teilen personenbezogener oder sensibler Daten ist verboten. Das gilt auch für Screenshots mit vertraulichen Informationen."
+      },
+      {
+        "title": "Anstößige Inhalte, Namen und Darstellungen",
+        "html": "Anstößige, provozierende, diskriminierende, extremistische, sexuell unangemessene oder gewaltverherrlichende Inhalte sind auf dem Server nicht erlaubt. Das gilt für Bauwerke, Schilder, Bücher, Kartenbilder, Banner, Itemnamen, Haustiernamen, Skins, Benutzernamen, Nicknames und Chatnachrichten.<br/><br/>Verboten sind insbesondere Inhalte mit Bezug zu realen Katastrophen, Anschlägen, Terrorismus, Nationalsozialismus, Extremismus, Rassismus, sexuellen Darstellungen, Tierquälerei oder gezielter Provokation."
       },
       {
         "title": "Verbot von Hacks, unfairen Mods und Auto-Klickern",
@@ -42,19 +46,19 @@
       },
       {
         "title": "Verbot von Bugs und Exploits",
-        "html": "Das Ausnutzen von Bugs oder Exploits, um sich spielerische Vorteile zu verschaffen, ist strengstens untersagt."
+        "html": "Das Ausnutzen von Bugs oder Exploits, um sich spielerische Vorteile zu verschaffen, ist strengstens untersagt. Gefundene Bugs oder mögliche Exploits sind dem Serverteam zu melden und dürfen nicht weitergegeben oder ausgenutzt werden."
       },
       {
         "title": "Weisungsrecht der Admins und Moderatoren",
-        "html": "Admins und Moderatoren haben das Weisungsrecht, um einen geordneten und respektvollen Ablauf auf dem Server sicherzustellen. Ihren Anweisungen ist Folge zu leisten. Wiederholte Missachtung oder endlose Diskussionen über getroffene Entscheidungen können zu Verwarnungen oder Sanktionen führen."
+        "html": "Admins und Moderatoren haben das Weisungsrecht, um einen geordneten und respektvollen Ablauf auf dem Server sicherzustellen. Ihren Anweisungen ist Folge zu leisten. Das Vortäuschen einer Zugehörigkeit zum Serverteam, z. B. durch Namen, Skins, Aussagen oder Schilder, ist nicht erlaubt. Wiederholte Missachtung oder endlose Diskussionen über getroffene Entscheidungen können zu Verwarnungen oder Sanktionen führen."
       },
       {
         "title": "Redstone-Maschinen",
-        "html": "Redstone-Maschinen sind erlaubt, sofern sie die Server-Performance nicht merklich beeinträchtigen. Du bist dafür verantwortlich, dass solche Maschinen vollständig abschaltbar sind, falls Probleme auftreten. Anlagen, die Server-Lags oder andere Störungen verursachen, müssen deaktiviert werden."
+        "html": "Redstone-Maschinen sind grundsätzlich erlaubt. Du bist dafür verantwortlich, dass deine Anlagen die Server-Performance nicht merklich beeinträchtigen und bei Bedarf vollständig abgeschaltet werden können. Verboten sind Lag-Maschinen sowie Konstruktionen, die absichtlich Server-Lags oder andere Störungen verursachen. Anlagen, die z. B. durch viele Entities, Hopper, Minecarts, Boote oder ähnliche Mechaniken die Server-Performance erheblich beeinträchtigen, müssen auf Anweisung des Serverteams deaktiviert oder angepasst werden."
       },
       {
         "title": "Konsequenzen bei Regelverstößen",
-        "html": "Regelverstöße werden je nach Schwere sanktioniert. Mögliche Konsequenzen sind Verwarnungen, temporäre Banns, der Verlust unrechtmäßig erlangter Gegenstände oder ein permanenter Bann."
+        "html": "Regelverstöße werden je nach Schwere sanktioniert. Mögliche Konsequenzen sind Verwarnungen, temporäre Banns, der Verlust unrechtmäßig erlangter Gegenstände oder ein permanenter Bann. Das Serverteam kann regelwidrige Inhalte entfernen, umbenennen oder sperren lassen. Das Umgehen von Strafen, z. B. durch Zweitaccounts, Namenswechsel, VPNs oder andere Umgehungsversuche, kann zu strengeren Sanktionen führen."
       }
     ]
   },
