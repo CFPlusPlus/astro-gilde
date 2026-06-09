@@ -63,7 +63,7 @@ const legalConfig: {
   postalCode: '85307',
   city: 'Paunzhausen',
   country: 'Deutschland',
-  email: 'webmaster@minecraft-gilde.de',
+  email: 'info@minecraft-gilde.de',
   phone: undefined,
 } as const;
 
