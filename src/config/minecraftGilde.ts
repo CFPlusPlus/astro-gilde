@@ -80,7 +80,7 @@ export const minecraftGilde = {
 
   // Optional: Link zum GitHub-Repository (wird im Footer angezeigt)
   // Beispiel: 'https://github.com/<user>/<repo>'
-  repoUrl: 'https://github.com/minecraft-gilde/website',
+  repoUrl: 'https://github.com/GAMINGGILDE/minecraft-website',
 
   discord: {
     url: externalLinks.discord,
