@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://discord.minecraft-gilde.de"><img alt="Discord" src="https://img.shields.io/discord/1219625244906754093?label=Discord&amp;logo=discord&amp;logoColor=white&amp;color=5865F2" /></a>&nbsp;</a>&nbsp;
   <a href="https://github.com/CFPlusPlus/minecraft-gilde-web/actions/workflows/quality.yml"><img alt="Build &amp; Quality" src="https://img.shields.io/github/actions/workflow/status/CFPlusPlus/minecraft-gilde-web/quality.yml?branch=main&amp;label=Build%20%26%20Quality" /></a>&nbsp;
-  <a href="https://www.codefactor.io/repository/github/minecraft-gilde/website/overview/main"><img alt="CodeFactor" src="https://www.codefactor.io/repository/github/minecraft-gilde/website/badge/main" /></a>&nbsp;
+  <a href="https://www.codefactor.io/repository/github/gaminggilde/minecraft-website"><img src="https://www.codefactor.io/repository/github/gaminggilde/minecraft-website/badge" alt="CodeFactor" /></a>&nbsp;
 </p>
 
 # Minecraft Gilde Web
