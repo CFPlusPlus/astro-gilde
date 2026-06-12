@@ -40,12 +40,15 @@ type MojangCacheEntry = {
 
 type MojangProfileFetchOptions = {
   allowFallback?: boolean;
+  acceptFallbackProfile?: (body: string, provider: MojangFallbackProvider) => boolean;
 };
 
 type MojangCacheOptions = MojangProfileFetchOptions & {
   cacheKeyPrefix?: string;
   positiveMaxAgeSeconds?: (body: string) => number;
 };
+
+type MojangFallbackProvider = 'minetools' | 'ashcon';
 
 type MojangCachedResult =
   | {
@@ -775,6 +778,55 @@ function buildMojangProfileFromAshconBody(uuidHex: string, body: string): string
   });
 }
 
+function buildMojangProfileFromMinetoolsBody(uuidHex: string, body: string): string | null {
+  const parsed = parseJsonUnknown(body);
+  if (!parsed || typeof parsed !== 'object') return null;
+
+  const raw = (parsed as { raw?: unknown }).raw;
+  if (raw && typeof raw === 'object') {
+    const properties = (raw as { properties?: unknown }).properties;
+    if (Array.isArray(properties)) {
+      const hasTextures = properties.some(
+        (property) =>
+          property &&
+          typeof property === 'object' &&
+          (property as { name?: unknown }).name === 'textures' &&
+          typeof (property as { value?: unknown }).value === 'string',
+      );
+      if (hasTextures) {
+        const rawUuid = asNonEmptyString((raw as { id?: unknown }).id);
+        const resolvedUuidHex = sanitizeUuidHex(rawUuid) ?? uuidHex;
+        const resolvedName = asNonEmptyString((raw as { name?: unknown }).name) ?? resolvedUuidHex;
+        return JSON.stringify({
+          id: resolvedUuidHex,
+          name: resolvedName,
+          properties,
+          profileActions: [],
+        });
+      }
+    }
+  }
+
+  const decoded = (parsed as { decoded?: unknown }).decoded;
+  if (!decoded || typeof decoded !== 'object') return null;
+
+  const textures = (decoded as { textures?: unknown }).textures;
+  if (!textures || typeof textures !== 'object') return null;
+
+  const rawUuid = asNonEmptyString((decoded as { profileId?: unknown }).profileId);
+  const resolvedUuidHex = sanitizeUuidHex(rawUuid) ?? uuidHex;
+  const resolvedName =
+    asNonEmptyString((decoded as { profileName?: unknown }).profileName) ?? resolvedUuidHex;
+  const textureValue = Buffer.from(JSON.stringify(decoded), 'utf8').toString('base64');
+
+  return JSON.stringify({
+    id: resolvedUuidHex,
+    name: resolvedName,
+    properties: [{ name: 'textures', value: textureValue }],
+    profileActions: [],
+  });
+}
+
 function normalizeMinecraftTextureUrl(rawUrl: string): string {
   return rawUrl.toLowerCase().startsWith('http://textures.minecraft.net/')
     ? `https://${rawUrl.slice(7)}`
@@ -942,6 +994,7 @@ async function fetchMojangProfile(
   options: MojangProfileFetchOptions = {},
 ): Promise<{ status: number; body: string }> {
   const allowFallback = options.allowFallback ?? true;
+  const acceptFallbackProfile = options.acceptFallbackProfile ?? (() => true);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4500);
   let sessionStatus = 0;
@@ -976,6 +1029,30 @@ async function fetchMojangProfile(
   }
 
   try {
+    const minetoolsResponse = await fetch(
+      `https://api.minetools.eu/profile/${encodeURIComponent(uuidHex)}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
+      },
+    );
+    const minetoolsBody = await minetoolsResponse.text();
+    if (minetoolsResponse.status === 200) {
+      const convertedBody = buildMojangProfileFromMinetoolsBody(uuidHex, minetoolsBody);
+      if (convertedBody && acceptFallbackProfile(convertedBody, 'minetools')) {
+        return { status: 200, body: convertedBody };
+      }
+    }
+    if (minetoolsResponse.status === 204 || minetoolsResponse.status === 404) {
+      return { status: minetoolsResponse.status, body: minetoolsBody };
+    }
+  } catch {
+    // Netzwerkprobleme auf Fallback-Endpoint ignorieren, danach wird Ashcon versucht.
+  }
+
+  try {
     const fallbackResponse = await fetch(
       `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
       {
@@ -988,7 +1065,7 @@ async function fetchMojangProfile(
     const fallbackBody = await fallbackResponse.text();
     if (fallbackResponse.status === 200) {
       const convertedBody = buildMojangProfileFromAshconBody(uuidHex, fallbackBody);
-      if (convertedBody) {
+      if (convertedBody && acceptFallbackProfile(convertedBody, 'ashcon')) {
         return { status: 200, body: convertedBody };
       }
     }
@@ -1227,6 +1304,10 @@ function resolveCapeProfileMaxAgeSeconds(profileJson: string): number {
     : CAPE_EMPTY_PROFILE_CACHE_FRESH_SECONDS;
 }
 
+function acceptCapeFallbackProfile(body: string, provider: MojangFallbackProvider): boolean {
+  return provider === 'minetools' || extractCapeFromProfile(body) !== null;
+}
+
 function parseRequestedMetrics(rawMetrics: string): string[] {
   return Array.from(
     new Set(
@@ -1266,7 +1347,8 @@ async function handleCapeEndpoint(context: APIContext, requestUrl: URL): Promise
   if (!uuidHex) return jsonError(400, 'invalid uuid');
 
   const cached = await fetchMojangProfileCached(context, uuidHex, {
-    allowFallback: false,
+    allowFallback: true,
+    acceptFallbackProfile: acceptCapeFallbackProfile,
     cacheKeyPrefix: PROFILE_SESSION_CACHE_KEY_PREFIX,
     positiveMaxAgeSeconds: resolveCapeProfileMaxAgeSeconds,
   });
