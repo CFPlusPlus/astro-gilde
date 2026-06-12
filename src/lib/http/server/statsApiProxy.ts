@@ -50,6 +50,21 @@ type MojangCacheOptions = MojangProfileFetchOptions & {
 
 type MojangFallbackProvider = 'minetools' | 'ashcon';
 
+type MojangProfileResult = {
+  status: number;
+  body: string;
+};
+
+type MojangSessionProfileResult = {
+  profile: MojangProfileResult | null;
+  status: number;
+};
+
+type MojangFallbackCandidate = MojangProfileResult & {
+  provider: MojangFallbackProvider;
+  convertedBody: string | null;
+};
+
 type MojangCachedResult =
   | {
       ok: true;
@@ -989,15 +1004,19 @@ function cleanupMojangMemoryCache(nowMs: number): void {
   }
 }
 
-async function fetchMojangProfile(
-  uuidHex: string,
-  options: MojangProfileFetchOptions = {},
-): Promise<{ status: number; body: string }> {
-  const allowFallback = options.allowFallback ?? true;
-  const acceptFallbackProfile = options.acceptFallbackProfile ?? (() => true);
+function isTerminalMojangProfileStatus(status: number): boolean {
+  return (
+    status === 200 ||
+    status === 204 ||
+    status === 404 ||
+    (status !== 403 && status !== 429 && status < 500)
+  );
+}
+
+async function fetchMojangSessionProfile(uuidHex: string): Promise<MojangSessionProfileResult> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4500);
-  let sessionStatus = 0;
+
   try {
     const response = await fetch(
       `https://sessionserver.mojang.com/session/minecraft/profile/${encodeURIComponent(uuidHex)}`,
@@ -1009,76 +1028,101 @@ async function fetchMojangProfile(
         },
       },
     );
-    sessionStatus = response.status;
+
     const body = await response.text();
-    if (response.status === 200 || response.status === 204 || response.status === 404) {
-      return { status: response.status, body };
+    if (isTerminalMojangProfileStatus(response.status)) {
+      return { profile: { status: response.status, body }, status: response.status };
     }
 
-    if (response.status !== 403 && response.status !== 429 && response.status < 500) {
-      return { status: response.status, body };
-    }
+    return { profile: null, status: response.status };
   } catch {
-    // Netzwerkprobleme auf Primär-Endpoint lösen den Fallback aus.
+    return { profile: null, status: 0 };
   } finally {
     clearTimeout(timeout);
   }
+}
 
-  if (!allowFallback) {
-    return { status: sessionStatus, body: '' };
-  }
+async function fetchMojangFallbackCandidate(params: {
+  uuidHex: string;
+  provider: MojangFallbackProvider;
+  url: string;
+  convertBody: (uuidHex: string, body: string) => string | null;
+}): Promise<MojangFallbackCandidate | null> {
+  const { uuidHex, provider, url, convertBody } = params;
 
   try {
-    const minetoolsResponse = await fetch(
-      `https://api.minetools.eu/profile/${encodeURIComponent(uuidHex)}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
       },
-    );
-    const minetoolsBody = await minetoolsResponse.text();
-    if (minetoolsResponse.status === 200) {
-      const convertedBody = buildMojangProfileFromMinetoolsBody(uuidHex, minetoolsBody);
-      if (convertedBody && acceptFallbackProfile(convertedBody, 'minetools')) {
-        return { status: 200, body: convertedBody };
-      }
-    }
-    if (minetoolsResponse.status === 204 || minetoolsResponse.status === 404) {
-      return { status: minetoolsResponse.status, body: minetoolsBody };
-    }
+    });
+    const body = await response.text();
+    const convertedBody = response.status === 200 ? convertBody(uuidHex, body) : null;
+    return { provider, status: response.status, body, convertedBody };
   } catch {
-    // Netzwerkprobleme auf Fallback-Endpoint ignorieren, danach wird Ashcon versucht.
+    return null;
+  }
+}
+
+function resolveAcceptedFallbackCandidate(
+  candidate: MojangFallbackCandidate | null,
+  acceptFallbackProfile: NonNullable<MojangProfileFetchOptions['acceptFallbackProfile']>,
+): MojangProfileResult | null {
+  if (!candidate) return null;
+
+  if (candidate.status === 200 && candidate.convertedBody) {
+    return acceptFallbackProfile(candidate.convertedBody, candidate.provider)
+      ? { status: 200, body: candidate.convertedBody }
+      : null;
   }
 
-  try {
-    const fallbackResponse = await fetch(
-      `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
-      {
-        method: 'GET',
-        headers: {
-          Accept: 'application/json',
-        },
-      },
-    );
-    const fallbackBody = await fallbackResponse.text();
-    if (fallbackResponse.status === 200) {
-      const convertedBody = buildMojangProfileFromAshconBody(uuidHex, fallbackBody);
-      if (convertedBody && acceptFallbackProfile(convertedBody, 'ashcon')) {
-        return { status: 200, body: convertedBody };
-      }
-    }
-    if (fallbackResponse.status === 204 || fallbackResponse.status === 404) {
-      return { status: fallbackResponse.status, body: fallbackBody };
-    }
+  if (candidate.status === 204 || candidate.status === 404) {
+    return { status: candidate.status, body: candidate.body };
+  }
+
+  return null;
+}
+
+async function fetchMojangProfile(
+  uuidHex: string,
+  options: MojangProfileFetchOptions = {},
+): Promise<MojangProfileResult> {
+  const session = await fetchMojangSessionProfile(uuidHex);
+  if (session.profile) return session.profile;
+
+  if (options.allowFallback === false) {
+    return { status: session.status, body: '' };
+  }
+
+  const acceptFallbackProfile = options.acceptFallbackProfile ?? (() => true);
+
+  const minetools = await fetchMojangFallbackCandidate({
+    uuidHex,
+    provider: 'minetools',
+    url: `https://api.minetools.eu/profile/${encodeURIComponent(uuidHex)}`,
+    convertBody: buildMojangProfileFromMinetoolsBody,
+  });
+  const minetoolsProfile = resolveAcceptedFallbackCandidate(minetools, acceptFallbackProfile);
+  if (minetoolsProfile) return minetoolsProfile;
+
+  const ashcon = await fetchMojangFallbackCandidate({
+    uuidHex,
+    provider: 'ashcon',
+    url: `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
+    convertBody: buildMojangProfileFromAshconBody,
+  });
+  const ashconProfile = resolveAcceptedFallbackCandidate(ashcon, acceptFallbackProfile);
+  if (ashconProfile) return ashconProfile;
+
+  if (ashcon) {
     return {
-      status: sessionStatus || fallbackResponse.status,
-      body: sessionStatus ? '' : fallbackBody,
+      status: session.status || ashcon.status,
+      body: session.status ? '' : ashcon.body,
     };
-  } catch {
-    return { status: sessionStatus, body: '' };
   }
+
+  return { status: session.status, body: '' };
 }
 
 async function fetchMojangProfileCached(
