@@ -38,33 +38,6 @@ type MojangCacheEntry = {
   mtime: number;
 };
 
-type MojangProfileFetchOptions = {
-  allowFallback?: boolean;
-  acceptFallbackProfile?: (body: string, provider: MojangFallbackProvider) => boolean;
-};
-
-type MojangCacheOptions = MojangProfileFetchOptions & {
-  cacheKeyPrefix?: string;
-  positiveMaxAgeSeconds?: (body: string) => number;
-};
-
-type MojangFallbackProvider = 'minetools' | 'ashcon';
-
-type MojangProfileResult = {
-  status: number;
-  body: string;
-};
-
-type MojangSessionProfileResult = {
-  profile: MojangProfileResult | null;
-  status: number;
-};
-
-type MojangFallbackCandidate = MojangProfileResult & {
-  provider: MojangFallbackProvider;
-  convertedBody: string | null;
-};
-
 type MojangCachedResult =
   | {
       ok: true;
@@ -116,9 +89,6 @@ const PROFILE_CACHE_NEGATIVE_SECONDS = 10 * 60;
 const PROFILE_CACHE_STALE_ON_ERROR_SECONDS = 30;
 const PROFILE_CACHE_STALE_WHILE_REVALIDATE_SECONDS = 30;
 const PROFILE_CACHE_STALE_IF_ERROR_SECONDS = 24 * 3600;
-const PROFILE_CACHE_KEY_PREFIX = 'mojang-profile';
-const PROFILE_SESSION_CACHE_KEY_PREFIX = 'mojang-profile-session-v2';
-const CAPE_EMPTY_PROFILE_CACHE_FRESH_SECONDS = 30 * 60;
 
 const CACHE_PROFILES: Record<string, CacheProfile> = {
   metrics: {
@@ -793,55 +763,6 @@ function buildMojangProfileFromAshconBody(uuidHex: string, body: string): string
   });
 }
 
-function buildMojangProfileFromMinetoolsBody(uuidHex: string, body: string): string | null {
-  const parsed = parseJsonUnknown(body);
-  if (!parsed || typeof parsed !== 'object') return null;
-
-  const raw = (parsed as { raw?: unknown }).raw;
-  if (raw && typeof raw === 'object') {
-    const properties = (raw as { properties?: unknown }).properties;
-    if (Array.isArray(properties)) {
-      const hasTextures = properties.some(
-        (property) =>
-          property &&
-          typeof property === 'object' &&
-          (property as { name?: unknown }).name === 'textures' &&
-          typeof (property as { value?: unknown }).value === 'string',
-      );
-      if (hasTextures) {
-        const rawUuid = asNonEmptyString((raw as { id?: unknown }).id);
-        const resolvedUuidHex = sanitizeUuidHex(rawUuid) ?? uuidHex;
-        const resolvedName = asNonEmptyString((raw as { name?: unknown }).name) ?? resolvedUuidHex;
-        return JSON.stringify({
-          id: resolvedUuidHex,
-          name: resolvedName,
-          properties,
-          profileActions: [],
-        });
-      }
-    }
-  }
-
-  const decoded = (parsed as { decoded?: unknown }).decoded;
-  if (!decoded || typeof decoded !== 'object') return null;
-
-  const textures = (decoded as { textures?: unknown }).textures;
-  if (!textures || typeof textures !== 'object') return null;
-
-  const rawUuid = asNonEmptyString((decoded as { profileId?: unknown }).profileId);
-  const resolvedUuidHex = sanitizeUuidHex(rawUuid) ?? uuidHex;
-  const resolvedName =
-    asNonEmptyString((decoded as { profileName?: unknown }).profileName) ?? resolvedUuidHex;
-  const textureValue = Buffer.from(JSON.stringify(decoded), 'utf8').toString('base64');
-
-  return JSON.stringify({
-    id: resolvedUuidHex,
-    name: resolvedName,
-    properties: [{ name: 'textures', value: textureValue }],
-    profileActions: [],
-  });
-}
-
 function normalizeMinecraftTextureUrl(rawUrl: string): string {
   return rawUrl.toLowerCase().startsWith('http://textures.minecraft.net/')
     ? `https://${rawUrl.slice(7)}`
@@ -908,25 +829,11 @@ function extractCapeFromProfile(profileJson: string): { url: string; alias?: str
   return null;
 }
 
-function mojangCacheMemoryKey(cacheKeyPrefix: string, uuidHex: string): string {
-  return `${cacheKeyPrefix}:${uuidHex}`;
-}
-
-function resolvePositiveProfileMaxAgeSeconds(body: string, options: MojangCacheOptions): number {
-  const resolved = options.positiveMaxAgeSeconds?.(body);
-  return typeof resolved === 'number' && Number.isFinite(resolved) && resolved > 0
-    ? resolved
-    : PROFILE_CACHE_FRESH_SECONDS;
-}
-
-async function readMojangCache(
-  uuidHex: string,
-  cacheKeyPrefix = PROFILE_CACHE_KEY_PREFIX,
-): Promise<MojangCacheEntry | null> {
+async function readMojangCache(uuidHex: string): Promise<MojangCacheEntry | null> {
   const edgeCache = getEdgeCache();
   if (edgeCache) {
     try {
-      const key = new Request(`https://cache.internal.mg/${cacheKeyPrefix}/${uuidHex}`, {
+      const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
         method: 'GET',
       });
       const cached = await edgeCache.match(key);
@@ -945,15 +852,14 @@ async function readMojangCache(
     }
   }
 
-  const memoryKey = mojangCacheMemoryKey(cacheKeyPrefix, uuidHex);
-  const inMemory = mojangMemoryCache.get(memoryKey);
+  const inMemory = mojangMemoryCache.get(uuidHex);
   if (!inMemory) return null;
   if (
     (inMemory.type !== 'positive' && inMemory.type !== 'negative') ||
     typeof inMemory.body !== 'string' ||
     !Number.isFinite(inMemory.mtime)
   ) {
-    mojangMemoryCache.delete(memoryKey);
+    mojangMemoryCache.delete(uuidHex);
     return null;
   }
   return inMemory;
@@ -963,13 +869,12 @@ function writeMojangCacheToEdge(
   uuidHex: string,
   entry: MojangCacheEntry,
   executionContext: ReturnType<typeof asExecutionContext>,
-  cacheKeyPrefix = PROFILE_CACHE_KEY_PREFIX,
 ): void {
   const edgeCache = getEdgeCache();
   if (!edgeCache) return;
 
   try {
-    const key = new Request(`https://cache.internal.mg/${cacheKeyPrefix}/${uuidHex}`, {
+    const key = new Request(`https://cache.internal.mg/mojang-profile/${uuidHex}`, {
       method: 'GET',
     });
     const response = new Response(JSON.stringify(entry), {
@@ -989,10 +894,9 @@ function writeMojangCache(
   uuidHex: string,
   entry: MojangCacheEntry,
   executionContext: ReturnType<typeof asExecutionContext>,
-  cacheKeyPrefix = PROFILE_CACHE_KEY_PREFIX,
 ): void {
-  mojangMemoryCache.set(mojangCacheMemoryKey(cacheKeyPrefix, uuidHex), entry);
-  writeMojangCacheToEdge(uuidHex, entry, executionContext, cacheKeyPrefix);
+  mojangMemoryCache.set(uuidHex, entry);
+  writeMojangCacheToEdge(uuidHex, entry, executionContext);
 }
 
 function cleanupMojangMemoryCache(nowMs: number): void {
@@ -1004,19 +908,10 @@ function cleanupMojangMemoryCache(nowMs: number): void {
   }
 }
 
-function isTerminalMojangProfileStatus(status: number): boolean {
-  return (
-    status === 200 ||
-    status === 204 ||
-    status === 404 ||
-    (status !== 403 && status !== 429 && status < 500)
-  );
-}
-
-async function fetchMojangSessionProfile(uuidHex: string): Promise<MojangSessionProfileResult> {
+async function fetchMojangProfile(uuidHex: string): Promise<{ status: number; body: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 4500);
-
+  let sessionStatus = 0;
   try {
     const response = await fetch(
       `https://sessionserver.mojang.com/session/minecraft/profile/${encodeURIComponent(uuidHex)}`,
@@ -1028,126 +923,67 @@ async function fetchMojangSessionProfile(uuidHex: string): Promise<MojangSession
         },
       },
     );
-
+    sessionStatus = response.status;
     const body = await response.text();
-    if (isTerminalMojangProfileStatus(response.status)) {
-      return { profile: { status: response.status, body }, status: response.status };
+    if (response.status === 200 || response.status === 204 || response.status === 404) {
+      return { status: response.status, body };
     }
 
-    return { profile: null, status: response.status };
+    if (response.status !== 403 && response.status !== 429 && response.status < 500) {
+      return { status: response.status, body };
+    }
   } catch {
-    return { profile: null, status: 0 };
+    // Netzwerkprobleme auf Primär-Endpoint lösen den Fallback aus.
   } finally {
     clearTimeout(timeout);
   }
-}
-
-async function fetchMojangFallbackCandidate(params: {
-  uuidHex: string;
-  provider: MojangFallbackProvider;
-  url: string;
-  convertBody: (uuidHex: string, body: string) => string | null;
-}): Promise<MojangFallbackCandidate | null> {
-  const { uuidHex, provider, url, convertBody } = params;
 
   try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
+    const fallbackResponse = await fetch(
+      `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
+      {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+        },
       },
-    });
-    const body = await response.text();
-    const convertedBody = response.status === 200 ? convertBody(uuidHex, body) : null;
-    return { provider, status: response.status, body, convertedBody };
-  } catch {
-    return null;
-  }
-}
-
-function resolveAcceptedFallbackCandidate(
-  candidate: MojangFallbackCandidate | null,
-  acceptFallbackProfile: NonNullable<MojangProfileFetchOptions['acceptFallbackProfile']>,
-): MojangProfileResult | null {
-  if (!candidate) return null;
-
-  if (candidate.status === 200 && candidate.convertedBody) {
-    return acceptFallbackProfile(candidate.convertedBody, candidate.provider)
-      ? { status: 200, body: candidate.convertedBody }
-      : null;
-  }
-
-  if (candidate.status === 204 || candidate.status === 404) {
-    return { status: candidate.status, body: candidate.body };
-  }
-
-  return null;
-}
-
-async function fetchMojangProfile(
-  uuidHex: string,
-  options: MojangProfileFetchOptions = {},
-): Promise<MojangProfileResult> {
-  const session = await fetchMojangSessionProfile(uuidHex);
-  if (session.profile) return session.profile;
-
-  if (options.allowFallback === false) {
-    return { status: session.status, body: '' };
-  }
-
-  const acceptFallbackProfile = options.acceptFallbackProfile ?? (() => true);
-
-  const minetools = await fetchMojangFallbackCandidate({
-    uuidHex,
-    provider: 'minetools',
-    url: `https://api.minetools.eu/profile/${encodeURIComponent(uuidHex)}`,
-    convertBody: buildMojangProfileFromMinetoolsBody,
-  });
-  const minetoolsProfile = resolveAcceptedFallbackCandidate(minetools, acceptFallbackProfile);
-  if (minetoolsProfile) return minetoolsProfile;
-
-  const ashcon = await fetchMojangFallbackCandidate({
-    uuidHex,
-    provider: 'ashcon',
-    url: `https://api.ashcon.app/mojang/v2/user/${encodeURIComponent(uuidHex)}`,
-    convertBody: buildMojangProfileFromAshconBody,
-  });
-  const ashconProfile = resolveAcceptedFallbackCandidate(ashcon, acceptFallbackProfile);
-  if (ashconProfile) return ashconProfile;
-
-  if (ashcon) {
+    );
+    const fallbackBody = await fallbackResponse.text();
+    if (fallbackResponse.status === 200) {
+      const convertedBody = buildMojangProfileFromAshconBody(uuidHex, fallbackBody);
+      if (convertedBody) {
+        return { status: 200, body: convertedBody };
+      }
+    }
+    if (fallbackResponse.status === 204 || fallbackResponse.status === 404) {
+      return { status: fallbackResponse.status, body: fallbackBody };
+    }
     return {
-      status: session.status || ashcon.status,
-      body: session.status ? '' : ashcon.body,
+      status: sessionStatus || fallbackResponse.status,
+      body: sessionStatus ? '' : fallbackBody,
     };
+  } catch {
+    return { status: sessionStatus, body: '' };
   }
-
-  return { status: session.status, body: '' };
 }
 
 async function fetchMojangProfileCached(
   context: APIContext,
   uuidHex: string,
-  options: MojangCacheOptions = {},
 ): Promise<MojangCachedResult> {
   const now = Date.now();
-  const cacheKeyPrefix = options.cacheKeyPrefix ?? PROFILE_CACHE_KEY_PREFIX;
   cleanupMojangMemoryCache(now);
-  const cached = await readMojangCache(uuidHex, cacheKeyPrefix);
+  const cached = await readMojangCache(uuidHex);
 
   if (cached) {
     const ageSeconds = Math.max(0, Math.floor((now - cached.mtime) / 1000));
-    if (
-      cached.type === 'positive' &&
-      ageSeconds < resolvePositiveProfileMaxAgeSeconds(cached.body, options)
-    ) {
-      const maxAgeSeconds = resolvePositiveProfileMaxAgeSeconds(cached.body, options);
+    if (cached.type === 'positive' && ageSeconds < PROFILE_CACHE_FRESH_SECONDS) {
       return {
         ok: true,
         type: 'positive',
         body: cached.body,
         mtime: cached.mtime,
-        maxAgeSeconds: Math.max(1, maxAgeSeconds - ageSeconds),
+        maxAgeSeconds: Math.max(1, PROFILE_CACHE_FRESH_SECONDS - ageSeconds),
       };
     }
     if (cached.type === 'negative' && ageSeconds < PROFILE_CACHE_NEGATIVE_SECONDS) {
@@ -1163,7 +999,7 @@ async function fetchMojangProfileCached(
 
   let upstreamStatus = 0;
   try {
-    const upstream = await fetchMojangProfile(uuidHex, options);
+    const upstream = await fetchMojangProfile(uuidHex);
     upstreamStatus = upstream.status;
 
     if (upstream.status === 200 && upstream.body) {
@@ -1178,14 +1014,13 @@ async function fetchMojangProfileCached(
         body: upstream.body,
         mtime: Date.now(),
       };
-      writeMojangCache(uuidHex, entry, asExecutionContext(context), cacheKeyPrefix);
-      const maxAgeSeconds = resolvePositiveProfileMaxAgeSeconds(entry.body, options);
+      writeMojangCache(uuidHex, entry, asExecutionContext(context));
       return {
         ok: true,
         type: 'positive',
         body: entry.body,
         mtime: entry.mtime,
-        maxAgeSeconds,
+        maxAgeSeconds: PROFILE_CACHE_FRESH_SECONDS,
       };
     }
 
@@ -1195,7 +1030,7 @@ async function fetchMojangProfileCached(
         body: '{}',
         mtime: Date.now(),
       };
-      writeMojangCache(uuidHex, entry, asExecutionContext(context), cacheKeyPrefix);
+      writeMojangCache(uuidHex, entry, asExecutionContext(context));
       return {
         ok: true,
         type: 'negative',
@@ -1342,16 +1177,6 @@ function mojangErrorResponse(errorResult: Extract<MojangCachedResult, { ok: fals
   );
 }
 
-function resolveCapeProfileMaxAgeSeconds(profileJson: string): number {
-  return extractCapeFromProfile(profileJson)
-    ? PROFILE_CACHE_FRESH_SECONDS
-    : CAPE_EMPTY_PROFILE_CACHE_FRESH_SECONDS;
-}
-
-function acceptCapeFallbackProfile(body: string, provider: MojangFallbackProvider): boolean {
-  return provider === 'minetools' || extractCapeFromProfile(body) !== null;
-}
-
 function parseRequestedMetrics(rawMetrics: string): string[] {
   return Array.from(
     new Set(
@@ -1390,12 +1215,7 @@ async function handleCapeEndpoint(context: APIContext, requestUrl: URL): Promise
   const { uuidHex } = readEndpointUuidParams(requestUrl, 'uuid', 'cape');
   if (!uuidHex) return jsonError(400, 'invalid uuid');
 
-  const cached = await fetchMojangProfileCached(context, uuidHex, {
-    allowFallback: true,
-    acceptFallbackProfile: acceptCapeFallbackProfile,
-    cacheKeyPrefix: PROFILE_SESSION_CACHE_KEY_PREFIX,
-    positiveMaxAgeSeconds: resolveCapeProfileMaxAgeSeconds,
-  });
+  const cached = await fetchMojangProfileCached(context, uuidHex);
   if (!cached.ok) return mojangErrorResponse(cached);
 
   const uuidDash = uuidHexToDashed(uuidHex);

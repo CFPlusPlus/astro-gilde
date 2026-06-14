@@ -148,7 +148,7 @@ export async function fetchCapeFromServerCache(
     return parseCapeApiResponse(payload);
   } catch (e) {
     if (signal.aborted) return undefined;
-    console.warn('Server-Cape-Cache konnte nicht gelesen werden:', e);
-    throw e;
+    console.warn('Server-Cape-Cache nicht verfuegbar, fallback aktiv:', e);
+    return undefined;
   }
 }
