@@ -70,20 +70,24 @@
         "html": "Halte dich an die offiziellen Discord-<a href=\"https://discord.com/terms\" rel=\"noopener\" target=\"_blank\">Nutzungsbedingungen</a> und <a href=\"https://discord.com/guidelines\" rel=\"noopener\" target=\"_blank\">Richtlinien</a>."
       },
       {
+        "title": "Regelkonforme Benutzernamen und Avatare",
+        "html": "Benutzernamen, Nicknamen und Avatare müssen regelkonform sein (siehe dazu auch Regel 3). Leere Namen, ungewöhnliche Unicode-Zeichen oder übermäßig lange Namen sind nicht erlaubt."
+      },
+      {
         "title": "Verbot von unangemessenen Inhalten",
-        "html": "Pornografische, rassistische, gewaltverherrlichende oder gewaltzeigende Inhalte sind streng verboten."
+        "html": "Politische, pornografische, rassistische, gewaltverherrlichende oder gewaltzeigende Inhalte, einschließlich Diskriminierung zu Herkunft, Geschlecht, Sexualität, Nationalität, ethnischer Zugehörigkeit und Religion sind strengstens verboten."
       },
       {
         "title": "Kein grundloses Taggen",
-        "html": "Grundloses Taggen, Pingen oder Markieren von Nutzern ist untersagt, um Störungen zu vermeiden."
+        "html": "Das grundlose Taggen, Pingen oder Markieren von Nutzern ist untersagt, um Störungen zu vermeiden."
+      },
+      {
+        "title": "Keine Werbung",
+        "html": "Jegliche Art von Fremdwerbung, Eigenwerbung, Spammen, Caps Lock, Affiliate- oder Partnerlinks sind verboten."
       },
       {
         "title": "Verwendung der richtigen Kanäle",
         "html": "Achte darauf, die Kanäle entsprechend ihrer Beschreibung und Funktion zu nutzen."
-      },
-      {
-        "title": "Regelkonforme Benutzernamen und Avatare",
-        "html": "Benutzernamen, Nicknamen und Avatare müssen regelkonform sein. Leere Namen, ungewöhnliche Unicode-Zeichen oder übermäßig lange Namen sind nicht erlaubt."
       },
       {
         "title": "Verhalten im Voice-Chat",
