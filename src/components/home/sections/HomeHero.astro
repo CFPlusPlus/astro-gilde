@@ -15,6 +15,8 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const ORGANIZATION_NAME = minecraftGilde.organization.name;
+const ORGANIZATION_URL = minecraftGilde.organization.url;
 
 const HERO_BACKGROUND_WIDTH = 1920;
 const HERO_BACKGROUND_HEIGHT = Math.round(
@@ -103,9 +105,17 @@ const HERO_BACKGROUND_SIZES = '100vw';
           data-motion-delay="260"
         >
           <Badge variant="accent">Vanilla+</Badge>
-          <Badge>Langzeitwelt</Badge>
           <Badge>Kein P2W</Badge>
           <Badge>Java {MC_VERSION}</Badge>
+          <a
+            href={ORGANIZATION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="bg-surface border-border text-muted hover:text-fg hover:border-accent/45 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium backdrop-blur-md transition-colors"
+          >
+            Ein Server der {ORGANIZATION_NAME}
+            <span class="sr-only"> (extern)</span>
+          </a>
         </div>
       </div>
 

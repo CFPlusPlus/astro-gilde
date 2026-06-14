@@ -15,6 +15,8 @@ import {
 } from '@lucide/astro';
 
 const DYNMAP_URL = minecraftGilde.mapUrl;
+const ORGANIZATION_NAME = minecraftGilde.organization.name;
+const ORGANIZATION_URL = minecraftGilde.organization.url;
 ---
 
 <HomeSection id="links" size="normal">
@@ -172,7 +174,7 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
         data-motion-delay="160"
       >
         <h3 class="text-base font-semibold">Community</h3>
-        <p class="text-muted mt-2 text-sm">Team, Votes und Partner auf einen Blick.</p>
+        <p class="text-muted mt-2 text-sm">Team, Votes und Gilde-Organisation auf einen Blick.</p>
 
         <ul class="mg-list divide-border/75 mt-4 divide-y">
           <li>
@@ -203,11 +205,15 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
           </li>
           <li>
             <a
-              href="/partner/"
+              href={ORGANIZATION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               class="focus-visible:ring-offset-bg group hover:bg-surface/35 flex items-center justify-between gap-3 rounded-md px-1 py-3 transition-colors focus-visible:ring-2 focus-visible:ring-[color:var(--ring)] focus-visible:outline-none"
             >
               <span class="inline-flex items-center gap-2 text-sm font-medium">
-                <Handshake size={15} /> Partner
+                <Handshake size={15} />
+                {ORGANIZATION_NAME}
+                <span class="sr-only"> (extern)</span>
               </span>
               <ArrowRight
                 class="text-muted group-hover:text-fg h-4 w-4 shrink-0 transition-colors"
