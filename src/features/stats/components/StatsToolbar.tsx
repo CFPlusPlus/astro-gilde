@@ -305,7 +305,7 @@ export function StatsToolbar({
                     role="status"
                     aria-live="polite"
                   >
-                    L\u00e4dt...
+                    {'L\u00e4dt...'}
                   </span>
                 ) : null}
                 <LiveBadgeSlot
