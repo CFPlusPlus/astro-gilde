@@ -15,7 +15,7 @@
   "hyperdrive": [
     {
       "binding": "HYPERDRIVE",
-      "id": "1957f1427ada4516aab63e6664f0ef0c",
+      "id": "a3d449533ea94a41b307eef65a199162",
       // Platzhalter nur fuer lokale Hyperdrive-Emulation (z. B. Build/Dev mit workerd).
       // Keine produktiven Zugangsdaten hinterlegen; Deploy nutzt weiterhin die echte Hyperdrive-ID.
       "localConnectionString": "postgres://postgres:postgres@127.0.0.1:5432/postgres",
