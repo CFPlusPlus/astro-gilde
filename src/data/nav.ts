@@ -7,6 +7,12 @@ export type NavLink = {
   external?: boolean;
 };
 
+export type NavSocialIcon = 'discord';
+
+export type NavSocialLink = NavLink & {
+  icon: NavSocialIcon;
+};
+
 export type NavMenuIcon =
   | 'home'
   | 'tutorial'
@@ -57,6 +63,8 @@ export const NAV_DISCORD_LINK: NavLink = {
   label: 'Discord',
   external: true,
 };
+
+export const NAV_SOCIAL_LINKS: NavSocialLink[] = [{ ...NAV_DISCORD_LINK, icon: 'discord' }];
 
 export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
   {
