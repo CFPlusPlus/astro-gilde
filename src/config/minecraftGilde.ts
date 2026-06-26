@@ -7,6 +7,7 @@ import logoImage from '../assets/images/branding/logo.webp';
 
 const externalLinks = {
   discord: 'https://discord.minecraft-gilde.de',
+  gamingGilde: 'https://gaming-gilde.org',
   map: 'https://map.minecraft-gilde.de',
   status: 'https://stats.uptimerobot.com/OnyzM9GmG2',
 } as const;
@@ -41,6 +42,7 @@ const brandConfig = {
     alt: 'Minecraft Gilde',
   },
   sameAs: [
+    externalLinks.gamingGilde,
     externalLinks.discord,
     externalLinks.map,
     communityListings.minecraftServerEu.profileUrl,
@@ -77,6 +79,11 @@ export const minecraftGilde = {
   serverIp: 'minecraft-gilde.de',
   mcVersion: '1.21.x',
   apiOrigin,
+
+  organization: {
+    name: 'Gaming Gilde',
+    url: externalLinks.gamingGilde,
+  },
 
   // Optional: Link zum GitHub-Repository (wird im Footer angezeigt)
   // Beispiel: 'https://github.com/<user>/<repo>'

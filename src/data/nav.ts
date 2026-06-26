@@ -21,7 +21,7 @@ export type NavMenuIcon =
   | 'status'
   | 'map'
   | 'ban'
-  | 'partner'
+  | 'organization'
   | 'privacy'
   | 'imprint';
 
@@ -85,7 +85,12 @@ export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
   {
     title: 'Mehr aus der Gilde',
     items: [
-      navMenuItemForRoute('partner', 'partner'),
+      {
+        href: minecraftGilde.organization.url,
+        label: minecraftGilde.organization.name,
+        external: true,
+        icon: 'organization',
+      },
       navMenuItemForRoute('privacy', 'privacy'),
       navMenuItemForRoute('imprint', 'imprint'),
     ],

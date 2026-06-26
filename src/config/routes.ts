@@ -16,7 +16,6 @@ const appRouteMeta = {
   faq: { path: '/faq/', navLabel: 'FAQ' },
   history: { path: '/geschichte/', navLabel: 'Geschichte' },
   team: { path: '/team/', navLabel: 'Team' },
-  partner: { path: '/partner/', navLabel: 'Partner' },
   privacy: { path: '/datenschutz/', navLabel: 'Datenschutz' },
   imprint: { path: '/impressum/', navLabel: 'Impressum' },
 } as const satisfies Record<string, AppRouteMeta>;

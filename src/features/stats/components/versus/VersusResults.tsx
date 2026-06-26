@@ -264,7 +264,7 @@ function VersusTable({
       {loading ? (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/15 backdrop-blur-md">
           <span className="mg-app-chip inline-flex items-center px-4 py-2 text-sm font-semibold shadow-sm">
-            Lädt...
+            L&auml;dt...
           </span>
         </div>
       ) : null}
