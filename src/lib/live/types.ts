@@ -1,12 +1,7 @@
 export type LiveDataStatus = 'loading' | 'ok' | 'empty' | 'error' | 'stale';
 
 export type LiveDataErrorKind =
-  | 'network'
-  | 'timeout'
-  | 'rate_limit'
-  | 'invalid'
-  | 'offline'
-  | 'unknown';
+  'network' | 'timeout' | 'rate_limit' | 'invalid' | 'offline' | 'unknown';
 
 export type LiveIndicatorState = 'ok' | 'loading' | 'error';
 
@@ -30,10 +25,7 @@ export interface LiveDataThresholds {
 }
 
 export type LiveWidgetThresholdKey =
-  | 'mc-online'
-  | 'discord-online'
-  | 'discord-members'
-  | 'stats-kpi';
+  'mc-online' | 'discord-online' | 'discord-members' | 'stats-kpi';
 
 export const LIVE_WIDGET_THRESHOLDS: Record<LiveWidgetThresholdKey, LiveDataThresholds> = {
   'mc-online': {
