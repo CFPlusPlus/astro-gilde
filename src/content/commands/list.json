@@ -36,6 +36,10 @@
           "description": "Zeigt dir den Link zur Dynmap an."
         },
         {
+          "command": "/mall",
+          "description": "Teleportiert dich zur Shopping-Mall, wo du Items kaufen und den Super-Ofen nutzen kannst."
+        },
+        {
           "command": "/motd",
           "description": "Zeigt dir die Willkommensnachricht an."
         },
