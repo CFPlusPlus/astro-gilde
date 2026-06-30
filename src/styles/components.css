@@ -375,6 +375,16 @@
     background: transparent;
   }
 
+  .site-nav-separator--desktop {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .site-nav-separator--desktop {
+      display: block;
+    }
+  }
+
   html[data-theme='light'] .site-nav-social-link,
   html[data-theme='light'] .site-nav-controls .site-nav-control-button {
     --site-nav-icon-color: color-mix(in oklab, var(--fg) 76%, transparent);
