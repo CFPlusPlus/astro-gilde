@@ -1,11 +1,5 @@
 export type ItemSectionKey =
-  | 'mined'
-  | 'broken'
-  | 'crafted'
-  | 'used'
-  | 'picked_up'
-  | 'dropped'
-  | 'placed';
+  'mined' | 'broken' | 'crafted' | 'used' | 'picked_up' | 'dropped' | 'placed';
 
 export type MobSectionKey = 'killed' | 'killed_by';
 

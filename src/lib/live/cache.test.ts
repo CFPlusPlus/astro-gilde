@@ -81,14 +81,12 @@ describe('live/cache', () => {
       }),
     );
 
-    const fetcher = vi.fn(
-      async (): Promise<LiveDataState<string>> => ({
-        status: 'ok',
-        data: '13',
-        updatedAt: 5_000,
-        fetchedAt: 5_000,
-      }),
-    );
+    const fetcher = vi.fn(async (): Promise<LiveDataState<string>> => ({
+      status: 'ok',
+      data: '13',
+      updatedAt: 5_000,
+      fetchedAt: 5_000,
+    }));
 
     const resource = getLiveResource('counter', fetcher, {
       ...BASE_OPTIONS,
@@ -259,14 +257,12 @@ describe('live/cache', () => {
 
   it('dedupes revalidation requests for the same key', async () => {
     const storage = new MemoryStorage();
-    const fetcher = vi.fn(
-      async (): Promise<LiveDataState<string>> => ({
-        status: 'ok',
-        data: '7',
-        updatedAt: 8_000,
-        fetchedAt: 8_000,
-      }),
-    );
+    const fetcher = vi.fn(async (): Promise<LiveDataState<string>> => ({
+      status: 'ok',
+      data: '7',
+      updatedAt: 8_000,
+      fetchedAt: 8_000,
+    }));
 
     const first = getLiveResource('shared', fetcher, {
       ...BASE_OPTIONS,
@@ -293,14 +289,12 @@ describe('live/cache', () => {
     vi.stubGlobal('document', visibilityDocument as unknown as Document);
 
     let now = 2_000;
-    const fetcher = vi.fn(
-      async (): Promise<LiveDataState<string>> => ({
-        status: 'ok',
-        data: '13',
-        updatedAt: now,
-        fetchedAt: now,
-      }),
-    );
+    const fetcher = vi.fn(async (): Promise<LiveDataState<string>> => ({
+      status: 'ok',
+      data: '13',
+      updatedAt: now,
+      fetchedAt: now,
+    }));
 
     const resource = getLiveResource('counter', fetcher, {
       ...BASE_OPTIONS,
@@ -344,14 +338,12 @@ describe('live/cache', () => {
     vi.stubGlobal('document', visibilityDocument as unknown as Document);
 
     let now = 2_500;
-    const fetcher = vi.fn(
-      async (): Promise<LiveDataState<string>> => ({
-        status: 'ok',
-        data: '13',
-        updatedAt: now,
-        fetchedAt: now,
-      }),
-    );
+    const fetcher = vi.fn(async (): Promise<LiveDataState<string>> => ({
+      status: 'ok',
+      data: '13',
+      updatedAt: now,
+      fetchedAt: now,
+    }));
 
     const first = getLiveResource('counter', fetcher, {
       ...BASE_OPTIONS,
@@ -385,14 +377,12 @@ describe('live/cache', () => {
   it('throttles revalidation by minRevalidateIntervalMs per key', async () => {
     const storage = new MemoryStorage();
     let now = 7_000;
-    const fetcher = vi.fn(
-      async (): Promise<LiveDataState<string>> => ({
-        status: 'ok',
-        data: '7',
-        updatedAt: now,
-        fetchedAt: now,
-      }),
-    );
+    const fetcher = vi.fn(async (): Promise<LiveDataState<string>> => ({
+      status: 'ok',
+      data: '7',
+      updatedAt: now,
+      fetchedAt: now,
+    }));
 
     const first = getLiveResource('shared', fetcher, {
       ...BASE_OPTIONS,
