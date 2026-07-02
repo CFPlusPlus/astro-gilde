@@ -3,12 +3,21 @@ import Button from '../../ui/Button.astro';
 import IconButton from '../../ui/IconButton.astro';
 import Badge from '../../ui/Badge.astro';
 import HomeSection from '../HomeSection.astro';
+import HomeAlertBanner from '../HomeAlertBanner.astro';
 import { Image } from 'astro:assets';
 
 import { minecraftGilde } from '../../../config/minecraftGilde';
 import { Activity, ArrowRight, Check, Download, Map, Users } from '@lucide/astro';
 import headerBackgroundImage from '../../../assets/images/home/header-background.webp';
 import logoBigImage from '../../../assets/images/branding/logo-big.webp';
+import type { HomeAlert } from '../../../data/homeAlert';
+
+export interface Props {
+  alert?: HomeAlert;
+}
+
+const { alert } = Astro.props as Props;
+const hasAlert = alert?.enabled === true;
 
 const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
@@ -24,15 +33,17 @@ const HERO_BACKGROUND_HEIGHT = Math.round(
 );
 const HERO_BACKGROUND_WIDTHS = [640, 960, 1280, 1600, HERO_BACKGROUND_WIDTH];
 const HERO_BACKGROUND_SIZES = '100vw';
+
+const heroSpacingClass = hasAlert
+  ? 'pt-5 pb-24 sm:pt-7 sm:pb-36 lg:pt-8 lg:pb-44 xl:pt-10 xl:pb-48'
+  : 'pt-24 pb-24 sm:pt-36 sm:pb-36 lg:pt-44 lg:pb-44 xl:pt-48 xl:pb-48';
 ---
 
 <!--
   Der Hero-Hintergrund wird nach oben verlängert, damit er unter der Navbar sauber abschließt,
   ohne das Layout nach oben zu ziehen oder JavaScript zu benötigen.
 -->
-<section
-  class="home-hero relative pt-24 pb-24 sm:pt-36 sm:pb-36 lg:pt-44 lg:pb-44 xl:pt-48 xl:pb-48"
->
+<section class={`home-hero relative ${heroSpacingClass}`}>
   <div class="home-hero-bg mg-mesh-bg pointer-events-none absolute inset-x-0 bottom-0 z-0">
     <Image
       src={headerBackgroundImage}
@@ -50,6 +61,8 @@ const HERO_BACKGROUND_SIZES = '100vw';
   </div>
 
   <div class="mg-container relative z-10">
+    {alert && <HomeAlertBanner alert={alert} class="mb-12 sm:mb-14 lg:mb-16" />}
+
     <div class="grid items-center gap-10 sm:gap-14 lg:grid-cols-[1.12fr_0.88fr] lg:gap-24">
       <div>
         <h1 class="text-4xl font-semibold tracking-tight sm:text-5xl" data-motion="reveal">

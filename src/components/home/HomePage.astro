@@ -11,6 +11,7 @@ import HomeSupport from './sections/HomeSupport.astro';
 import HomeQuickLinks from './sections/HomeQuickLinks.astro';
 import HomeJoinCta from './sections/HomeJoinCta.astro';
 
+import { homeAlert } from '../../data/homeAlert';
 import type { ImageMetadata } from 'astro';
 import type { AnchorItem } from './HomeQuickNav.astro';
 
@@ -24,7 +25,7 @@ const { anchorItems, galleryUrls, galleryInitialImage } = Astro.props as Props;
 ---
 
 <div data-home>
-  <HomeHero />
+  <HomeHero alert={homeAlert} />
 
   <div class="mt-3 mb-2" data-motion="reveal" data-motion-delay="60">
     <HomeQuickNav items={anchorItems} />
