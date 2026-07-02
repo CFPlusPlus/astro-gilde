@@ -29,7 +29,7 @@ export const homeAlert: HomeAlert = {
   variant: 'warning',
 
   // Kurze Kategorie in Grossbuchstabenoptik, z. B. "Wartung", "Update" oder "Hinweis".
-  eyebrow: 'Wichtige Meldung',
+  eyebrow: 'Eilmeldung',
 
   // Klare Hauptmeldung. Kurz halten, damit sie auf Mobile sofort erfassbar bleibt.
   title: 'Minecraft-Server aktuell offline',
