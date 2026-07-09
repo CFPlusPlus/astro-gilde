@@ -23,7 +23,7 @@ export interface HomeAlert {
 
 export const homeAlert: HomeAlert = {
   // Schnellschalter: false blendet die Meldung komplett aus.
-  enabled: true,
+  enabled: false,
 
   // Siehe HomeAlertVariant oben. Fuer Ausfaelle normalerweise 'warning' nutzen.
   variant: 'warning',
