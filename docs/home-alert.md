@@ -9,7 +9,7 @@ Die Meldung wird in `src/data/homeAlert.ts` gepflegt.
 Zum Aktivieren oder Deaktivieren:
 
 ```ts
-enabled: true,
+enabled: false,
 ```
 
 - `true`: Meldung wird angezeigt.
