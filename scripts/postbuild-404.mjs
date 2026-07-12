@@ -3,9 +3,10 @@ import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 const distDir = path.resolve('dist');
-const legacySrc = path.join(distDir, '404', 'index.html');
-const directSrc = path.join(distDir, '404.html');
-const assetsIgnorePath = path.join(distDir, '.assetsignore');
+const clientDir = path.join(distDir, 'client');
+const legacySrc = path.join(clientDir, '404', 'index.html');
+const directSrc = path.join(clientDir, '404.html');
+const assetsIgnorePath = path.join(clientDir, '.assetsignore');
 
 if (existsSync(legacySrc)) {
   await copyFile(legacySrc, directSrc);
