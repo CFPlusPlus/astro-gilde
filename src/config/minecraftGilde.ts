@@ -77,7 +77,7 @@ export const minecraftGilde = {
   brand: brandConfig,
   legal: legalConfig,
   serverIp: 'minecraft-gilde.de',
-  mcVersion: '1.21.x',
+  mcVersion: '26.1.2',
   apiOrigin,
 
   organization: {
