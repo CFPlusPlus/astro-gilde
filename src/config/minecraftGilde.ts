@@ -53,6 +53,7 @@ const brandConfig = {
 
 const legalConfig: {
   name: string;
+  addressSupplement: string;
   street: string;
   postalCode: string;
   city: string;
@@ -61,9 +62,10 @@ const legalConfig: {
   phone?: string;
 } = {
   name: 'Christian Falkner',
-  street: 'Frauenholzstr. 8',
-  postalCode: '85307',
-  city: 'Paunzhausen',
+  addressSupplement: 'c/o flexdienst – #21677',
+  street: 'Kurt-Schumacher-Straße 76',
+  postalCode: '67663',
+  city: 'Kaiserslautern',
   country: 'Deutschland',
   email: 'info@minecraft-gilde.de',
   phone: undefined,

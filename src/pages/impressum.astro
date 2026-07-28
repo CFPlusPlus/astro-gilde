@@ -32,6 +32,7 @@ const legalPhoneHref = legal.phone ? `tel:${legal.phone.replace(/[^+\d]/g, '')}`
 
             <address class="text-muted mt-4 space-y-1 text-sm not-italic">
               <p class="text-fg font-semibold">{legal.name}</p>
+              {legal.addressSupplement ? <p>{legal.addressSupplement}</p> : null}
               {legal.street ? <p>{legal.street}</p> : null}
               {
                 legal.postalCode || legal.city ? (

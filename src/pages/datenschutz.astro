@@ -11,6 +11,7 @@ const { legal } = minecraftGilde;
 
 const datenschutzContent = datenschutzHtml
   .replaceAll('{{ legal.name }}', legal.name)
+  .replaceAll('{{ legal.addressSupplement }}', legal.addressSupplement)
   .replaceAll('{{ legal.street }}', legal.street)
   .replaceAll('{{ legal.postalCode }}', legal.postalCode)
   .replaceAll('{{ legal.city }}', legal.city)
