@@ -28,10 +28,6 @@ const rules = defineCollection({
       title: z.string(),
       items: z.array(z.object({ title: z.string(), html: z.string() })),
     }),
-    discord: z.object({
-      title: z.string(),
-      items: z.array(z.object({ title: z.string(), html: z.string() })),
-    }),
   }),
 });
 
