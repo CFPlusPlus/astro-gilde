@@ -57,4 +57,16 @@ export const TEAM_MEMBERS: TeamMember[] = [
     role: 'Moderator',
     group: 'moderator',
   },
+  {
+    uuid: '302f9fc42ed94f4db3fc036a389403fd',
+    inGameName: 'Snooc85',
+    role: 'Moderator',
+    group: 'moderator',
+  },
+  {
+    uuid: 'b34cdff5d7394c568e51c5077206a6df',
+    inGameName: 'MissMoFi',
+    role: 'Moderator',
+    group: 'moderator',
+  },
 ];
