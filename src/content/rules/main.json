@@ -2,7 +2,7 @@
   "serverIp": "Minecraft-Gilde.de",
   "warning": "Unwissenheit über die Regeln schützt nicht vor Konsequenzen und kann zum Bann führen.",
   "minecraft": {
-    "title": "Server Regeln",
+    "title": "Serverregeln",
     "items": [
       {
         "title": "Respekt und Fairness",
@@ -10,11 +10,11 @@
       },
       {
         "title": "Keine Beeinträchtigung anderer Spieler",
-        "html": "Du darfst frei spielen, solange du andere nicht direkt oder indirekt beeinträchtigst. Dazu zählen z. B. Zerstörung, Diebstahl, Umweltzerstörung in der Hauptwelt, Fallen, absichtliches Töten, Portal-Traps oder andere Handlungen, die Spielern ohne deren Zustimmung schaden."
+        "html": "Du darfst frei spielen, solange du andere nicht direkt oder indirekt beeinträchtigst. Dass PvP außerhalb deines eigenen Claims und in den Farmwelten technisch möglich ist, bedeutet nicht, dass du andere grundlos oder gezielt belästigen darfst. Zu Beeinträchtigungen zählen z. B. Zerstörung, Diebstahl, Umweltzerstörung in der Hauptwelt, Fallen, absichtliches Töten, Portal-Traps oder andere Handlungen, die Spielern ohne deren Zustimmung schaden."
       },
       {
         "title": "Verbot von Griefing",
-        "html": "Griefing ist strikt verboten. Dazu gehört die Zerstörung oder Veränderung von Bauwerken anderer Spieler sowie die Sabotage von Eigentum wie Haustieren oder Farmen."
+        "html": "Griefing ist verboten. Dazu gehört die Zerstörung oder Veränderung von Bauwerken anderer Spieler sowie die Sabotage von Eigentum wie Haustieren oder Farmen."
       },
       {
         "title": "Ressourcenabbau in Farmwelten",
@@ -33,12 +33,12 @@
         "html": "Anstößige, provozierende, diskriminierende, extremistische, sexuell unangemessene oder gewaltverherrlichende Inhalte sind auf dem Server nicht erlaubt. Das gilt für Bauwerke, Schilder, Bücher, Kartenbilder, Banner, Itemnamen, Haustiernamen, Skins, Benutzernamen, Nicknames und Chatnachrichten.<br/><br/>Verboten sind insbesondere Inhalte mit Bezug zu realen Katastrophen, Anschlägen, Terrorismus, Nationalsozialismus, Extremismus, Rassismus, sexuellen Darstellungen, Tierquälerei oder gezielter Provokation."
       },
       {
-        "title": "Verbot von Hacks, unfairen Mods und Auto-Klickern",
-        "html": "Die Nutzung von Hacks, unfairen Modifikationen sowie externen Automatisierungshilfen (z. B. Auto-Klicker, Makro-Skripte oder Rapid-Fire-Tasten) ist untersagt. Erlaubt bleiben ausschließlich Mods, die die Performance oder das Aussehen des Spiels verbessern (z. B. OptiFine, Breakneck) oder Minimaps, die keinen spielerischen Vorteil geben."
+        "title": "Mods, Hacks und externe Automatisierung",
+        "html": "Performance-, Darstellungs- und Komfort-Mods sind erlaubt, solange sie dir keinen unfairen Gameplay-Vorteil verschaffen. Hacks und unfaire Mods wie X-Ray, Auto-Aim oder Scaffold sind verboten. Das gilt auch für externe Automatisierungshilfen wie Auto-Klicker, Makro-Skripte oder Rapid-Fire-Tasten."
       },
       {
         "title": "AFK-Farmen",
-        "html": "AFK-Farmen sind erlaubt, solange sie die Server-Performance nicht merklich beeinträchtigen. Der Einsatz von Auto-Klickern oder anderen externen Automatisierungen innerhalb solcher Farmen ist verboten. Du bist dafür verantwortlich, dass deine Farmen keine Server-Lags verursachen und keinen unfairen Vorteil gegenüber aktiv spielenden Personen bieten."
+        "html": "AFK-Farmen sind grundsätzlich erlaubt, solange sie den Server nicht merklich beeinträchtigen. Auto-Klicker, Makros und andere externe Automatisierungen bleiben auch innerhalb solcher Farmen verboten. Wenn eine Farm den Server merklich belastet, kann das Serverteam eingreifen und verlangen, dass sie deaktiviert oder angepasst wird."
       },
       {
         "title": "Faires Handeln",
@@ -54,7 +54,7 @@
       },
       {
         "title": "Redstone-Maschinen",
-        "html": "Redstone-Maschinen sind grundsätzlich erlaubt. Du bist dafür verantwortlich, dass deine Anlagen die Server-Performance nicht merklich beeinträchtigen und bei Bedarf vollständig abgeschaltet werden können. Verboten sind Lag-Maschinen sowie Konstruktionen, die absichtlich Server-Lags oder andere Störungen verursachen. Anlagen, die z. B. durch viele Entities, Hopper, Minecarts, Boote oder ähnliche Mechaniken die Server-Performance erheblich beeinträchtigen, müssen auf Anweisung des Serverteams deaktiviert oder angepasst werden."
+        "html": "Redstone-Maschinen sind grundsätzlich erlaubt. Du bist dafür verantwortlich, dass deine Anlagen den Server nicht merklich beeinträchtigen und bei Bedarf vollständig abgeschaltet werden können. Lag-Maschinen sowie Konstruktionen, die absichtlich Server-Lags oder andere Störungen verursachen, sind verboten. Wenn eine Anlage den Server z. B. durch viele Entities, Hopper, Minecarts, Boote oder ähnliche Mechaniken merklich belastet, kann das Serverteam verlangen, dass sie deaktiviert oder angepasst wird."
       },
       {
         "title": "Konsequenzen bei Regelverstößen",

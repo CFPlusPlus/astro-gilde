@@ -87,7 +87,7 @@ export const NAV_MEGA_MENU_SECTIONS: NavMenuSection[] = [
       navMenuItemForRoute('faq', 'faq'),
       navMenuItemForRoute('history', 'history'),
       { href: minecraftGilde.statusUrl, label: 'Status', external: true, icon: 'status' },
-      { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true, icon: 'map' },
+      { href: minecraftGilde.mapUrl, label: 'Live-Karte', external: true, icon: 'map' },
     ],
   },
   {

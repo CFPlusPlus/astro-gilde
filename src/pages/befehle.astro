@@ -13,10 +13,13 @@ if (!commandsEntry) throw new Error('Missing commands content: src/content/comma
 const categories = commandsEntry.data.categories;
 ---
 
-<BaseLayout title="Minecraft Gilde - Server-Befehle">
+<BaseLayout
+  title="Minecraft Gilde – Serverbefehle"
+  description="Die wichtigsten Befehle der Minecraft Gilde für Homes, Teleports, Claims, Farmwelten, Voting und weitere Serverfunktionen – mit kurzer Erklärung."
+>
   <PageHeader
     title="Befehle"
-    subtitle="Hier findest du alle Befehle, die auf unserem Server verfügbar sind."
+    subtitle="Hier findest du die wichtigsten Befehle der Minecraft Gilde mit kurzer Erklärung. Über die Suche kannst du direkt nach /rtp, /home oder /trust suchen."
   >
     <Fragment slot="actions">
       <Button variant="primary" class="gap-2" data-copy-ip>

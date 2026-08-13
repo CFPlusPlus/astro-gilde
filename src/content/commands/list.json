@@ -9,7 +9,7 @@
         },
         {
           "command": "/help",
-          "description": "Mit diesem Befehl kannst du dir alle Befehle anzeigen lassen."
+          "description": "Zeigt dir die verfügbaren Befehle an."
         },
         {
           "command": "/helpop <nachricht>",
@@ -17,7 +17,7 @@
         },
         {
           "command": "/afk",
-          "description": "Mit diesem Befehl setzt du dich abwesend (Achtung: Monster können dich immer noch angreifen!)."
+          "description": "Markiert dich als abwesend. Monster können dich weiterhin angreifen."
         },
         {
           "command": "/back",
@@ -33,7 +33,7 @@
         },
         {
           "command": "/map",
-          "description": "Zeigt dir den Link zur Dynmap an."
+          "description": "Zeigt dir den Link zur Live-Karte an."
         },
         {
           "command": "/mall",
@@ -61,14 +61,14 @@
         },
         {
           "command": "/rtp",
-          "description": "Teleportiert dich an eine zufällige Stelle auf der Karte."
+          "description": "Teleportiert dich zufällig in die Wildnis der Hauptwelt, damit du einen Bauplatz finden kannst."
         },
         {
           "command": "/rules",
           "description": "Zeigt die Serverregeln an."
         },
         {
-          "command": "/seen",
+          "command": "/seen <spieler>",
           "description": "Zeigt die letzte Logout-Zeit eines Spielers an."
         },
         {
@@ -129,8 +129,8 @@
           "description": "Zeigt deine gesetzten Homes an."
         },
         {
-          "command": "/renamehome",
-          "description": "Benennt ein Home um."
+          "command": "/renamehome <alter-name> <neuer-name>",
+          "description": "Benennt ein vorhandenes Home um."
         }
       ]
     },
@@ -151,7 +151,7 @@
         },
         {
           "command": "/trust <spieler>",
-          "description": "Gibt einem anderen Spieler die Erlaubnis, deinen Claim zu bearbeiten."
+          "description": "Gibt einem Spieler Baurechte in deinem Claim."
         },
         {
           "command": "/untrust <spieler>",
@@ -163,11 +163,11 @@
         },
         {
           "command": "/accesstrust <spieler>",
-          "description": "Gibt einem Spieler Zugriff auf Türen, Schalter und Buttons in deinem Claim."
+          "description": "Erlaubt einem Spieler, Türen, Schalter und Buttons in deinem Claim zu benutzen."
         },
         {
           "command": "/containertrust <spieler>",
-          "description": "Gibt einem Spieler die Erlaubnis, deine Knöpfe, Hebel, Betten, Handwerksgeräte, Container und Tiere zu benutzen."
+          "description": "Erlaubt einem Spieler zusätzlich, Container, Tiere und weitere interaktive Blöcke in deinem Claim zu benutzen."
         },
         {
           "command": "/trustlist",
@@ -186,8 +186,8 @@
           "description": "Befreit dich aus einem Claim, in dem du gefangen bist."
         },
         {
-          "command": "/expandclaim <+/- Wert>",
-          "description": "Erweitert den Claim um die angegebene Distanz (der Befehl ist nur möglich, wenn eine Holz-Schaufel in der Hand gehalten wird)."
+          "command": "/expandclaim <+/- wert>",
+          "description": "Erweitert oder verkleinert den Claim um die angegebene Distanz. Dafür musst du eine Holzschaufel in der Hand halten."
         },
         {
           "command": "/subdivideclaims",
@@ -212,7 +212,7 @@
       "commands": [
         {
           "command": "/farmwelt",
-          "description": "Bringt dich in die Farmwelten."
+          "description": "Bringt dich zu den separaten Farmwelten für Rohstoffe und Erkundung."
         }
       ]
     },

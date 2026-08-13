@@ -15,10 +15,13 @@ const { warning, minecraft } = rules.data;
 ---
 
 <BaseLayout
-  title="Minecraft Gilde - Unser Regelwerk"
-  description="Alle Regeln für den Minecraft Vanilla-Server der Gilde - klar, fair und verständlich. Griefing, Hacks, Spam und Werbung sind verboten."
+  title="Minecraft Gilde – Serverregeln"
+  description="Serverregeln der Minecraft Gilde zu Griefing, Farmwelten, Mods, AFK-Farmen, Redstone, Handel, Exploits und Community-Verhalten."
 >
-  <PageHeader title="Regeln" subtitle="Fair play, klarer Rahmen und ein respektvolles Miteinander.">
+  <PageHeader
+    title="Regeln"
+    subtitle="Damit alle entspannt miteinander spielen können, findest du hier die wichtigsten Regeln für Server, Builds, Farmen und Community."
+  >
     <Callout variant="warning" title="Wichtiger Hinweis" class="mt-6" slot="beforeActions">
       <p>{warning}</p>
     </Callout>
@@ -30,8 +33,8 @@ const { warning, minecraft } = rules.data;
       <Button href="/tutorial" variant="secondary" class="gap-2">
         <ArrowRight size={18} /> Tutorial
       </Button>
-      <Button href="/statistiken" variant="ghost" class="gap-2">
-        <ArrowRight size={18} /> Statistiken
+      <Button href="/faq" variant="ghost" class="gap-2">
+        <ArrowRight size={18} /> FAQ
       </Button>
     </Fragment>
   </PageHeader>
