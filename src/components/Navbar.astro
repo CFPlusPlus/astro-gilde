@@ -54,7 +54,7 @@ const MENU_ICONS: Record<NavMenuIcon, typeof House> = {
   privacy: ShieldCheck,
   imprint: FileText,
 };
-const NAV_MC_VERSION = minecraftGilde.mcVersion;
+const NAV_MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
 
 const normalize = (p: string) => {
   if (!p) return '/';
@@ -99,7 +99,7 @@ const linkClassMega = (active: boolean) =>
         />
         <div class="site-brand-copy hidden leading-tight md:block">
           <span class="text-sm font-semibold">Minecraft Gilde</span>
-          <div class="text-muted text-xs">Vanilla SMP - {NAV_MC_VERSION}</div>
+          <div class="text-muted text-xs">Vanilla SMP - {NAV_MINECRAFT_VERSION}</div>
         </div>
       </a>
 

@@ -5,7 +5,7 @@ import Button from '../ui/Button.astro';
 import IconButton from '../ui/IconButton.astro';
 
 const SERVER_IP = minecraftGilde.serverIp;
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
 const SERVER_EDITION = minecraftGilde.server.edition;
 const SERVER_PORT = minecraftGilde.server.port;
 ---
@@ -102,7 +102,7 @@ const SERVER_PORT = minecraftGilde.server.port;
                   Edition: <span class="text-fg font-semibold">{SERVER_EDITION}</span>
                 </p>
                 <p class="text-muted">
-                  Minecraft-Version: <span class="text-fg font-semibold">{MC_VERSION}</span>
+                  Minecraft-Version: <span class="text-fg font-semibold">{MINECRAFT_VERSION}</span>
                 </p>
                 <p class="text-muted">
                   Port: <span class="text-fg font-semibold">{SERVER_PORT}</span>

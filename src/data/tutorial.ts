@@ -112,7 +112,7 @@ export const tutorialHowTo: {
   steps: [
     {
       name: 'Mit dem Server verbinden',
-      text: `Starte Minecraft Java (${minecraftGilde.mcVersion}) und verbinde dich mit ${minecraftGilde.serverIp} (Port 25565).`,
+      text: `Starte Minecraft Java (${minecraftGilde.minecraftVersion}) und verbinde dich mit ${minecraftGilde.serverIp} (Port 25565).`,
     },
     {
       name: 'Startpunkt wählen',

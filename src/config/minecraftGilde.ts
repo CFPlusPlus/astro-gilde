@@ -2,7 +2,7 @@ import { siteUrl } from './site';
 import logoImage from '../assets/images/branding/logo.webp';
 
 // Zentrale Projekt-Konfiguration für minecraft-gilde.de
-// Ziel: Strings (URLs, IP, Version) nicht über das Projekt verteilen,
+// Ziel: Strings (URLs, IP, Minecraft-Version) nicht über das Projekt verteilen,
 // sondern an einer Stelle pflegen.
 
 const externalLinks = {
@@ -77,18 +77,20 @@ export const minecraftGilde = {
   brand: brandConfig,
   legal: legalConfig,
   serverIp: 'minecraft-gilde.de',
-  mcVersion: '26.1.2',
+  minecraftVersion: '26.1.2',
   server: {
     description:
       'Deutschsprachiger Minecraft-Java-Server auf Folia mit Vanilla SMP, Survival und Freebuild. Langzeitwelt ohne Hauptwelt-Reset und ohne Pay2Win, mit Grundstücksschutz und separaten Farmwelten.',
     edition: 'Java Edition',
     software: 'Folia',
-    gameMode: 'Vanilla SMP / Survival / Freebuild',
+    gameMode: 'Vanilla-SMP, Survival & Freebuild',
     payToWin: false,
     mainWorldReset: false,
+    mainWorldSince: 'Februar 2024',
     longTermWorld: true,
     claims: true,
     resourceWorlds: true,
+    resourceWorldResets: true,
     whitelist: false,
     port: 25565,
   },

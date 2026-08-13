@@ -17,7 +17,7 @@ In `src/config/minecraftGilde.ts` werden zentrale Projektwerte gepflegt:
 
 - Brand-Informationen (`name`, `alternateName`, `defaultMetaDescription`, `logo`, `sameAs`)
 - Server-/Community-Links (`discord`, `map`, `status`, Voting-Links)
-- Serverdaten (`serverIp`, `mcVersion`)
+- Serverdaten (`serverIp`, `minecraftVersion`)
 - API-Ursprung (`apiOrigin`)
 - optionales Repository (`repoUrl`)
 

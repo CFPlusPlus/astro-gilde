@@ -12,14 +12,14 @@ import '../styles/home.css';
 // Build-Time: Galerie-URLs einsammeln (wird im Build aufgerufen).
 const { urls: galleryUrls, initialImage: galleryInitialImage } = getHomeGallery();
 // Version/IP zentral aus der Konfiguration holen, damit Metadaten konsistent bleiben.
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
 const SERVER_IP = minecraftGilde.serverIp;
 ---
 
 <BaseLayout
   title="Minecraft Gilde - Deutscher Minecraft-Java-Server für Vanilla-SMP"
   description={`Die Minecraft Gilde ist ein deutschsprachiger Minecraft-Java-Server für Vanilla-SMP, Survival und Freebuild – mit dauerhafter Langzeitwelt ohne Reset und ohne Pay2Win. IP: ${SERVER_IP}`}
-  keywords={`Minecraft Gilde, Minecraft Java Edition, Vanilla-SMP, Survival, Freebuild, Langzeitwelt, kein Pay2Win, Minecraft ${MC_VERSION}, ${SERVER_IP}`}
+  keywords={`Minecraft Gilde, Minecraft Java Edition, Vanilla-SMP, Survival, Freebuild, Langzeitwelt, kein Pay2Win, Minecraft ${MINECRAFT_VERSION}, ${SERVER_IP}`}
   bodyClass="is-home"
 >
   <HomePage

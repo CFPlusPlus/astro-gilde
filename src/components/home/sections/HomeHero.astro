@@ -23,7 +23,7 @@ const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
 const SERVER_EDITION = minecraftGilde.server.edition;
 const ORGANIZATION_NAME = minecraftGilde.organization.name;
 const ORGANIZATION_URL = minecraftGilde.organization.url;
@@ -122,7 +122,7 @@ const heroSpacingClass = hasAlert
           <Badge variant="accent">Vanilla+</Badge>
           <Badge>Kein Pay2Win</Badge>
           <Badge>{SERVER_EDITION}</Badge>
-          <Badge>Minecraft {MC_VERSION}</Badge>
+          <Badge>Minecraft {MINECRAFT_VERSION}</Badge>
           <a
             href={ORGANIZATION_URL}
             target="_blank"
@@ -216,7 +216,7 @@ const heroSpacingClass = hasAlert
           <div class="text-muted mt-3 text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
             Minecraft-Version
           </div>
-          <div class="mt-1 text-base font-semibold tracking-tight">{MC_VERSION}</div>
+          <div class="mt-1 text-base font-semibold tracking-tight">{MINECRAFT_VERSION}</div>
         </div>
 
         <div class="px-3 py-2 sm:px-5">
