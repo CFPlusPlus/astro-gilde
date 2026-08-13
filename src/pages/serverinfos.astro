@@ -24,9 +24,6 @@ const canonicalUrl = canonicalFor(Astro.url.pathname);
 const gameServerLd = buildGameServer({
   site,
   canonicalUrl,
-  ip: SERVER_IP,
-  port: 25565,
-  version: MC_VERSION,
   maxPlayers: 100,
 });
 

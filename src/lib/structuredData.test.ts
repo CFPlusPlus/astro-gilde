@@ -14,6 +14,7 @@ type JsonLdNode = Record<string, unknown>;
 const site = new URL('https://minecraft-gilde.de/');
 const canonicalUrl = 'https://minecraft-gilde.de/serverinfos/';
 const organizationId = 'https://minecraft-gilde.de/#organization';
+const gameId = 'https://minecraft-gilde.de/#game';
 const gameServerId = 'https://minecraft-gilde.de/#gameserver';
 
 const graphNodes = (data: JsonLdNode): JsonLdNode[] => data['@graph'] as JsonLdNode[];
@@ -23,6 +24,14 @@ const nodeByType = (data: JsonLdNode, type: string): JsonLdNode => {
   expect(node).toBeDefined();
   return node as JsonLdNode;
 };
+
+const additionalProperties = (gameServer: JsonLdNode): Map<string, string> =>
+  new Map(
+    (gameServer.additionalProperty as JsonLdNode[]).map((property) => [
+      property.name as string,
+      property.value as string,
+    ]),
+  );
 
 describe('buildBaseGraph', () => {
   const baseGraph = buildBaseGraph({
@@ -52,7 +61,7 @@ describe('buildBaseGraph', () => {
     expect(gameServer).toMatchObject({
       '@id': gameServerId,
       provider: { '@id': organizationId },
-      game: { '@id': 'https://minecraft-gilde.de/#game' },
+      game: { '@id': gameId },
     });
     expect(webPage).toMatchObject({
       about: { '@id': gameServerId },
@@ -66,22 +75,86 @@ describe('buildGameServer', () => {
   const gameServerGraph = buildGameServer({
     site,
     canonicalUrl,
-    ip: minecraftGilde.serverIp,
-    version: minecraftGilde.mcVersion,
   });
 
-  it('modelliert Provider, sameAs und Standort semantisch korrekt', () => {
+  it('modelliert Identität, Verknüpfungen und sameAs semantisch korrekt', () => {
     const gameServer = nodeByType(gameServerGraph, 'GameServer');
     const sameAs = gameServer.sameAs as string[];
 
     expect(gameServer).toMatchObject({
       '@id': gameServerId,
+      name: minecraftGilde.brand.name,
+      alternateName: minecraftGilde.brand.alternateName,
+      url: 'https://minecraft-gilde.de/',
       provider: { '@id': organizationId },
+      game: { '@id': gameId },
+      availableLanguage: ['de'],
     });
     expect(gameServer).not.toHaveProperty('serverLocation');
     expect(sameAs).not.toContain(minecraftGilde.organization.url);
     expect(sameAs).not.toContain(minecraftGilde.mapUrl);
     expect(sameAs).toContain(minecraftGilde.discord.url);
+  });
+
+  it('enthält die stabilen Servereigenschaften aus der zentralen Konfiguration', () => {
+    const properties = additionalProperties(nodeByType(gameServerGraph, 'GameServer'));
+
+    expect(properties).toEqual(
+      new Map([
+        ['Edition', minecraftGilde.server.edition],
+        ['Server-Software', minecraftGilde.server.software],
+        ['Version', minecraftGilde.mcVersion],
+        ['Spielmodus', minecraftGilde.server.gameMode],
+        ['Pay2Win', 'nein'],
+        ['Hauptwelt-Reset', 'nein'],
+        ['Langzeitwelt', 'ja'],
+        ['Claims / Grundstücksschutz', 'ja'],
+        ['Separate Farmwelten', 'ja'],
+        ['Whitelist', 'nein'],
+        ['Serveradresse', minecraftGilde.serverIp],
+        ['Port', String(minecraftGilde.server.port)],
+      ]),
+    );
+  });
+
+  it('ergänzt Max. Spieler nur bei einem übergebenen Wert', () => {
+    const withoutMaxPlayers = additionalProperties(nodeByType(gameServerGraph, 'GameServer'));
+    const withMaxPlayers = additionalProperties(
+      nodeByType(buildGameServer({ site, canonicalUrl, maxPlayers: 100 }), 'GameServer'),
+    );
+
+    expect(withoutMaxPlayers.has('Max. Spieler')).toBe(false);
+    expect(withMaxPlayers.get('Max. Spieler')).toBe('100');
+  });
+
+  it('verwendet dieselben zentralen Basiswerte wie buildBaseGraph', () => {
+    const baseGraph = buildBaseGraph({
+      site,
+      canonicalUrl,
+      pathname: '/serverinfos/',
+      title: 'Minecraft Gilde - Serverinfos',
+      description: 'Technische Details zur Minecraft Gilde.',
+    });
+    const baseGameServer = nodeByType(baseGraph, 'GameServer');
+    const detailedGameServer = nodeByType(gameServerGraph, 'GameServer');
+
+    expect(detailedGameServer).toMatchObject(baseGameServer);
+  });
+
+  it('hält server-spezifische Aussagen vom VideoGame-Knoten fern', () => {
+    const videoGame = nodeByType(gameServerGraph, 'VideoGame');
+
+    expect(videoGame).toEqual({
+      '@type': 'VideoGame',
+      '@id': gameId,
+      name: 'Minecraft',
+      gameServer: { '@id': gameServerId },
+    });
+    expect(videoGame).not.toHaveProperty('inLanguage');
+    expect(videoGame).not.toHaveProperty('keywords');
+    expect(videoGame).not.toHaveProperty('image');
+    expect(videoGame).not.toHaveProperty('genre');
+    expect(videoGame).not.toHaveProperty('gamePlatform');
   });
 });
 

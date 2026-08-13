@@ -15,8 +15,62 @@ const siteBaseFromSiteUrl = (siteUrl: string): URL => new URL(`${trimTrailingSla
 const resolveSiteBase = (fallbackSite: URL): URL =>
   siteBaseFromSiteUrl(siteUrlFromConfigOrFallback(fallbackSite));
 
-const absoluteUrlFromConfigSite = (pathOrUrl: string, fallbackSite: URL): string =>
-  new URL(pathOrUrl, resolveSiteBase(fallbackSite)).toString();
+const booleanLabel = (value: boolean): 'ja' | 'nein' => (value ? 'ja' : 'nein');
+
+const propertyValue = (name: string, value: string | number): JsonLd => ({
+  '@type': 'PropertyValue',
+  name,
+  value: String(value),
+});
+
+const buildMinecraftGildeGameServer = (args: {
+  site: URL;
+  canonicalUrl?: string;
+  maxPlayers?: number;
+}): JsonLd => {
+  const { site, canonicalUrl, maxPlayers } = args;
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+  const server = minecraftGilde.server;
+
+  return {
+    '@type': 'GameServer',
+    '@id': `${siteUrl}/#gameserver`,
+    name: minecraftGilde.brand.name,
+    alternateName: minecraftGilde.brand.alternateName,
+    url: siteBaseFromSiteUrl(siteUrl).toString(),
+    game: { '@id': `${siteUrl}/#game` },
+    availableLanguage: ['de'],
+    provider: { '@id': `${siteUrl}/#organization` },
+    sameAs: [...minecraftGilde.brand.sameAs],
+    additionalProperty: [
+      propertyValue('Edition', server.edition),
+      propertyValue('Server-Software', server.software),
+      propertyValue('Version', minecraftGilde.mcVersion),
+      propertyValue('Spielmodus', server.gameMode),
+      propertyValue('Pay2Win', booleanLabel(server.payToWin)),
+      propertyValue('Hauptwelt-Reset', booleanLabel(server.mainWorldReset)),
+      propertyValue('Langzeitwelt', booleanLabel(server.longTermWorld)),
+      propertyValue('Claims / Grundstücksschutz', booleanLabel(server.claims)),
+      propertyValue('Separate Farmwelten', booleanLabel(server.resourceWorlds)),
+      propertyValue('Whitelist', booleanLabel(server.whitelist)),
+      propertyValue('Serveradresse', minecraftGilde.serverIp),
+      propertyValue('Port', server.port),
+      ...(typeof maxPlayers === 'number' ? [propertyValue('Max. Spieler', maxPlayers)] : []),
+    ],
+    ...(canonicalUrl ? { mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` } } : null),
+  };
+};
+
+const buildMinecraftVideoGame = (site: URL): JsonLd => {
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+
+  return {
+    '@type': 'VideoGame',
+    '@id': `${siteUrl}/#game`,
+    name: 'Minecraft',
+    gameServer: { '@id': `${siteUrl}/#gameserver` },
+  };
+};
 
 const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -94,7 +148,6 @@ export const buildBaseGraph = (args: {
   // Stabile IDs, damit Knoten im Graph sauber referenziert werden koennen.
   const websiteId = `${siteUrl}/#website`;
   const organizationId = `${siteUrl}/#organization`;
-  const gameId = `${siteUrl}/#game`;
   const gameServerId = `${siteUrl}/#gameserver`;
 
   const breadcrumb = buildBreadcrumbList({ site, pathname, pageTitle: title });
@@ -119,22 +172,8 @@ export const buildBaseGraph = (args: {
       name: minecraftGilde.organization.name,
       url: minecraftGilde.organization.url,
     },
-    {
-      '@type': 'VideoGame',
-      '@id': gameId,
-      name: 'Minecraft',
-    },
-    {
-      '@type': 'GameServer',
-      '@id': gameServerId,
-      name: minecraftGilde.brand.name,
-      alternateName: minecraftGilde.brand.alternateName,
-      url: siteBase.toString(),
-      game: { '@id': gameId },
-      availableLanguage: ['de'],
-      provider: { '@id': organizationId },
-      sameAs: [...minecraftGilde.brand.sameAs],
-    },
+    buildMinecraftVideoGame(site),
+    buildMinecraftGildeGameServer({ site }),
     {
       '@type': 'WebPage',
       '@id': webPageId,
@@ -299,66 +338,16 @@ export const buildArticle = (args: {
 export const buildGameServer = (args: {
   site: URL;
   canonicalUrl: string;
-  ip: string;
-  port?: number;
-  version: string;
-  name?: string;
   maxPlayers?: number;
 }): JsonLd => {
-  const {
-    site,
-    canonicalUrl,
-    ip,
-    port = 25565,
-    version,
-    name = minecraftGilde.brand.name,
-    maxPlayers,
-  } = args;
-  const siteUrl = siteUrlFromConfigOrFallback(site);
-  const siteBase = siteBaseFromSiteUrl(siteUrl);
-  const organizationId = `${siteUrl}/#organization`;
-  const gameId = `${siteUrl}/#game`;
-  const serverId = `${siteUrl}/#gameserver`;
-  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
+  const { site, canonicalUrl, maxPlayers } = args;
 
   // Zwei Knoten im Graph: Game + GameServer.
   return {
     '@context': 'https://schema.org',
     '@graph': [
-      {
-        '@type': 'VideoGame',
-        '@id': gameId,
-        name: 'Minecraft',
-        genre: ['Sandbox', 'Multiplayer', 'Survival'],
-        gamePlatform: ['PC', 'macOS', 'Linux'],
-        inLanguage: 'de',
-        image: logoUrl,
-        keywords:
-          'Minecraft, Vanilla SMP, Survival, Freebuild, Folia, deutsch, Community, ohne Reset, ohne Pay2Win',
-        gameServer: { '@id': serverId },
-      },
-      {
-        '@type': 'GameServer',
-        '@id': serverId,
-        name,
-        alternateName: minecraftGilde.brand.alternateName,
-        url: siteBase.toString(),
-        game: { '@id': gameId },
-        availableLanguage: ['de'],
-        sameAs: [...minecraftGilde.brand.sameAs],
-        additionalProperty: [
-          { '@type': 'PropertyValue', name: 'IP/Host', value: ip },
-          { '@type': 'PropertyValue', name: 'Port', value: String(port) },
-          { '@type': 'PropertyValue', name: 'Version', value: version },
-          { '@type': 'PropertyValue', name: 'Modus', value: 'Vanilla SMP / Survival / Freebuild' },
-          { '@type': 'PropertyValue', name: 'Whitelist', value: 'nein' },
-          ...(typeof maxPlayers === 'number'
-            ? [{ '@type': 'PropertyValue', name: 'Max. Spieler', value: String(maxPlayers) }]
-            : []),
-        ],
-        provider: { '@id': organizationId },
-        mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
-      },
+      buildMinecraftVideoGame(site),
+      buildMinecraftGildeGameServer({ site, canonicalUrl, maxPlayers }),
     ],
   };
 };

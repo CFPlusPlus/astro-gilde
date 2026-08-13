@@ -78,6 +78,18 @@ export const minecraftGilde = {
   legal: legalConfig,
   serverIp: 'minecraft-gilde.de',
   mcVersion: '26.1.2',
+  server: {
+    edition: 'Java Edition',
+    software: 'Folia',
+    gameMode: 'Vanilla SMP / Survival / Freebuild',
+    payToWin: false,
+    mainWorldReset: false,
+    longTermWorld: true,
+    claims: true,
+    resourceWorlds: true,
+    whitelist: false,
+    port: 25565,
+  },
   apiOrigin,
 
   organization: {
