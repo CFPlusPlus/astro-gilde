@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { minecraftGilde } from '../config/minecraftGilde';
+import faqGroups from '../content/faq/main.json';
 import {
   buildArticle,
   buildBaseGraph,
@@ -16,6 +17,7 @@ const canonicalUrl = 'https://minecraft-gilde.de/serverinfos/';
 const organizationId = 'https://minecraft-gilde.de/#organization';
 const gameId = 'https://minecraft-gilde.de/#game';
 const gameServerId = 'https://minecraft-gilde.de/#gameserver';
+const visibleFaqItems = faqGroups.flatMap((group) => group.items);
 
 const graphNodes = (data: JsonLdNode): JsonLdNode[] => data['@graph'] as JsonLdNode[];
 
@@ -159,6 +161,44 @@ describe('bestehende Content-Builder', () => {
         },
       ],
     });
+  });
+
+  it('übernimmt alle sichtbaren FAQ-Einträge in das FAQPage-Markup', () => {
+    const faq = buildFaqPage({
+      site,
+      canonicalUrl: 'https://minecraft-gilde.de/faq/',
+      items: visibleFaqItems,
+    });
+    const mainEntity = faq.mainEntity as JsonLdNode[];
+
+    expect(mainEntity).toHaveLength(visibleFaqItems.length);
+    expect(mainEntity.map((entry) => entry.name)).toEqual(visibleFaqItems.map((item) => item.q));
+  });
+
+  it('enthält die zentralen Entscheidungsfragen', () => {
+    const questions = visibleFaqItems.map((item) => item.q);
+
+    expect(questions).toEqual(
+      expect.arrayContaining([
+        'Welche Spielweise bietet die Minecraft Gilde?',
+        'Ist die Minecraft Gilde ein Java- oder Bedrock-Server?',
+        'Ist die Minecraft Gilde kostenlos?',
+        'Ist die Minecraft Gilde ein Pay2Win-Server?',
+        'Brauche ich eine Whitelist-Freischaltung?',
+        'Brauche ich Mods, um auf der Minecraft Gilde zu spielen?',
+        'Wird die Hauptwelt der Minecraft Gilde zurückgesetzt?',
+        'Gibt es separate Farmwelten – und werden sie zurückgesetzt?',
+      ]),
+    );
+  });
+
+  it('enthält nur eindeutige, ausgefüllte Fragen und Antworten', () => {
+    const questions = visibleFaqItems.map((item) => item.q.trim());
+    const answers = visibleFaqItems.map((item) => item.a.trim());
+
+    expect(new Set(questions).size).toBe(questions.length);
+    expect(questions.every(Boolean)).toBe(true);
+    expect(answers.every(Boolean)).toBe(true);
   });
 
   it('erstellt HowTo-Markup weiterhin in der vorgegebenen Reihenfolge', () => {
