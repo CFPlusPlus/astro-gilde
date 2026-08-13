@@ -60,7 +60,7 @@ const articleLd = buildArticle({
         Discord <ArrowRight size={18} />
       </Button>
       <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
-        ><Map size={18} /> Dynmap</Button
+        ><Map size={18} /> Live-Karte</Button
       >
     </Fragment>
 
@@ -122,24 +122,29 @@ const articleLd = buildArticle({
             <h2 class="text-base font-semibold">Technisches Setup</h2>
           </div>
           <DividerList as="ul" class="mt-3 list-none pl-0 text-sm">
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">CPU:</span> 2x Intel Xeon E5-2680 v2 (20 Kerne / 40
-              Threads)
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">CPU:</span>
+              <span class="text-right">2x Intel Xeon E5-2680 v2 (20 Kerne / 40 Threads)</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Arbeitsspeicher:</span> 128 GB DDR3 ECC
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Arbeitsspeicher:</span>
+              <span class="text-right">128 GB DDR3 ECC</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Speicher:</span> 480 GB SSD
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Speicher:</span>
+              <span class="text-right">480 GB SSD</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Betriebssystem:</span> Ubuntu 24.04
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Betriebssystem:</span>
+              <span class="text-right">Ubuntu 24.04</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Datenbank:</span> MariaDB (unter anderem für Statistiken)
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Datenbank:</span>
+              <span class="text-right">MariaDB (unter anderem für Statistiken)</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Garbage Collector:</span> G1GC
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Garbage Collector:</span>
+              <span class="text-right">G1GC</span>
             </li>
           </DividerList>
         </section>

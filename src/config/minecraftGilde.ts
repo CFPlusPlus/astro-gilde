@@ -32,9 +32,9 @@ const brandConfig = {
   name: 'Minecraft Gilde',
   alternateName: 'Minecraft Gilde - Vanilla SMP (DE)',
   defaultMetaDescription:
-    'Minecraft Gilde - Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort.',
+    'Minecraft Gilde - Langzeitwelt ohne Hauptwelt-Reset. Fair ohne Pay-to-Win. Vanilla+ Komfort.',
   websiteDescription:
-    'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - ohne Resets, ohne Pay2Win, Community-first.',
+    'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - dauerhafte Hauptwelt ohne Reset, ohne Pay2Win, Community-first.',
   logo: {
     path: logoImage.src,
     width: logoImage.width,
