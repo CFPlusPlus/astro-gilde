@@ -24,6 +24,7 @@ const DYNMAP_URL = minecraftGilde.mapUrl;
 const STATUS_URL = minecraftGilde.statusUrl;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const SERVER_EDITION = minecraftGilde.server.edition;
 const ORGANIZATION_NAME = minecraftGilde.organization.name;
 const ORGANIZATION_URL = minecraftGilde.organization.url;
 
@@ -73,9 +74,10 @@ const heroSpacingClass = hasAlert
           data-motion="reveal"
           data-motion-delay="80"
         >
-          Dein deutschsprachiger Minecraft Vanilla SMP Server für Survival und Freebuild auf einer
-          Langzeitwelt ohne Reset. Fair, ohne Pay2Win und mit Vanilla+ in genau dem Maß, das dir im
-          Alltag wirklich hilft.
+          Bei der Minecraft Gilde spielst du auf einem deutschsprachigen Minecraft-Java-Server mit
+          Vanilla-SMP, Survival und Freebuild. Deine Projekte entstehen auf einer dauerhaften
+          Langzeitwelt ohne Weltreset – ohne Pay2Win und mit praktischen Komfort- und
+          Schutzfunktionen, die dir den Alltag erleichtern.
         </p>
 
         <div
@@ -108,8 +110,8 @@ const heroSpacingClass = hasAlert
         </div>
 
         <p class="text-muted mt-8 text-sm" data-motion="reveal" data-motion-delay="200">
-          Kein Minigame-Loop, kein Citybuild-Zwang - stattdessen Survival, Freebuild und eine
-          Community, in der man gerne bleibt.
+          Bei uns stehen Survival, Freebuild und langfristige Bauprojekte im Mittelpunkt – statt
+          Minigames oder Citybuild.
         </p>
 
         <div
@@ -118,8 +120,9 @@ const heroSpacingClass = hasAlert
           data-motion-delay="260"
         >
           <Badge variant="accent">Vanilla+</Badge>
-          <Badge>Kein P2W</Badge>
-          <Badge>Java {MC_VERSION}</Badge>
+          <Badge>Kein Pay2Win</Badge>
+          <Badge>{SERVER_EDITION}</Badge>
+          <Badge>Minecraft {MC_VERSION}</Badge>
           <a
             href={ORGANIZATION_URL}
             target="_blank"
@@ -207,9 +210,13 @@ const heroSpacingClass = hasAlert
 
         <div class="sm:border-border/60 px-3 py-2 sm:border-x sm:px-5">
           <div class="text-muted text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
-            Version
+            Edition
           </div>
-          <div class="mt-1 text-base font-semibold tracking-tight">Java {MC_VERSION}</div>
+          <div class="mt-1 text-base font-semibold tracking-tight">{SERVER_EDITION}</div>
+          <div class="text-muted mt-3 text-[0.68rem] font-semibold tracking-[0.14em] uppercase">
+            Minecraft-Version
+          </div>
+          <div class="mt-1 text-base font-semibold tracking-tight">{MC_VERSION}</div>
         </div>
 
         <div class="px-3 py-2 sm:px-5">

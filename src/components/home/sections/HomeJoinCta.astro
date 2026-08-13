@@ -7,6 +7,7 @@ import { ArrowRight, Download } from '@lucide/astro';
 const DISCORD_URL = minecraftGilde.discord.url;
 const SERVER_IP = minecraftGilde.serverIp;
 const MC_VERSION = minecraftGilde.mcVersion;
+const SERVER_EDITION = minecraftGilde.server.edition;
 ---
 
 <HomeSection id="join" size="normal">
@@ -14,8 +15,9 @@ const MC_VERSION = minecraftGilde.mcVersion;
     <div data-motion="reveal">
       <h2 class="text-3xl font-semibold tracking-tight">Bereit für dein nächstes Projekt?</h2>
       <p class="text-muted mt-4 max-w-2xl">
-        Join auf <strong>{SERVER_IP}</strong> und bau dir in Ruhe dein eigenes Zuhause auf - fair, stabil
-        und ohne Reset-Stress.
+        Wenn du Lust auf ein langfristiges Survival-Projekt hast, verbinde dich über <strong
+          >{SERVER_IP}</strong
+        > und such dir deinen Platz auf unserer dauerhaften Hauptwelt – ohne Weltreset und ohne Pay2Win.
       </p>
       <div class="mt-7 flex flex-wrap gap-3">
         <Button variant="primary" class="gap-2" data-copy-ip>
@@ -32,10 +34,10 @@ const MC_VERSION = minecraftGilde.mcVersion;
       <dl class="mt-4 grid gap-3 text-sm">
         <div class="flex items-center justify-between">
           <dt class="text-muted">Edition</dt>
-          <dd class="font-semibold">Java</dd>
+          <dd class="font-semibold">{SERVER_EDITION}</dd>
         </div>
         <div class="flex items-center justify-between">
-          <dt class="text-muted">Version</dt>
+          <dt class="text-muted">Minecraft-Version</dt>
           <dd class="font-semibold">{MC_VERSION}</dd>
         </div>
         <div class="flex items-center justify-between">
