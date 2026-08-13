@@ -15,22 +15,9 @@ const siteBaseFromSiteUrl = (siteUrl: string): URL => new URL(`${trimTrailingSla
 const resolveSiteBase = (fallbackSite: URL): URL =>
   siteBaseFromSiteUrl(siteUrlFromConfigOrFallback(fallbackSite));
 
-const booleanLabel = (value: boolean): 'ja' | 'nein' => (value ? 'ja' : 'nein');
-
-const propertyValue = (name: string, value: string | number): JsonLd => ({
-  '@type': 'PropertyValue',
-  name,
-  value: String(value),
-});
-
-const buildMinecraftGildeGameServer = (args: {
-  site: URL;
-  canonicalUrl?: string;
-  maxPlayers?: number;
-}): JsonLd => {
-  const { site, canonicalUrl, maxPlayers } = args;
+const buildMinecraftGildeGameServer = (args: { site: URL; canonicalUrl?: string }): JsonLd => {
+  const { site, canonicalUrl } = args;
   const siteUrl = siteUrlFromConfigOrFallback(site);
-  const server = minecraftGilde.server;
 
   return {
     '@type': 'GameServer',
@@ -38,25 +25,9 @@ const buildMinecraftGildeGameServer = (args: {
     name: minecraftGilde.brand.name,
     alternateName: minecraftGilde.brand.alternateName,
     url: siteBaseFromSiteUrl(siteUrl).toString(),
+    description: minecraftGilde.server.description,
     game: { '@id': `${siteUrl}/#game` },
-    availableLanguage: ['de'],
-    provider: { '@id': `${siteUrl}/#organization` },
     sameAs: [...minecraftGilde.brand.sameAs],
-    additionalProperty: [
-      propertyValue('Edition', server.edition),
-      propertyValue('Server-Software', server.software),
-      propertyValue('Version', minecraftGilde.mcVersion),
-      propertyValue('Spielmodus', server.gameMode),
-      propertyValue('Pay2Win', booleanLabel(server.payToWin)),
-      propertyValue('Hauptwelt-Reset', booleanLabel(server.mainWorldReset)),
-      propertyValue('Langzeitwelt', booleanLabel(server.longTermWorld)),
-      propertyValue('Claims / Grundstücksschutz', booleanLabel(server.claims)),
-      propertyValue('Separate Farmwelten', booleanLabel(server.resourceWorlds)),
-      propertyValue('Whitelist', booleanLabel(server.whitelist)),
-      propertyValue('Serveradresse', minecraftGilde.serverIp),
-      propertyValue('Port', server.port),
-      ...(typeof maxPlayers === 'number' ? [propertyValue('Max. Spieler', maxPlayers)] : []),
-    ],
     ...(canonicalUrl ? { mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` } } : null),
   };
 };
@@ -335,19 +306,15 @@ export const buildArticle = (args: {
   };
 };
 
-export const buildGameServer = (args: {
-  site: URL;
-  canonicalUrl: string;
-  maxPlayers?: number;
-}): JsonLd => {
-  const { site, canonicalUrl, maxPlayers } = args;
+export const buildGameServer = (args: { site: URL; canonicalUrl: string }): JsonLd => {
+  const { site, canonicalUrl } = args;
 
   // Zwei Knoten im Graph: Game + GameServer.
   return {
     '@context': 'https://schema.org',
     '@graph': [
       buildMinecraftVideoGame(site),
-      buildMinecraftGildeGameServer({ site, canonicalUrl, maxPlayers }),
+      buildMinecraftGildeGameServer({ site, canonicalUrl }),
     ],
   };
 };

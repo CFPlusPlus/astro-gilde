@@ -25,14 +25,6 @@ const nodeByType = (data: JsonLdNode, type: string): JsonLdNode => {
   return node as JsonLdNode;
 };
 
-const additionalProperties = (gameServer: JsonLdNode): Map<string, string> =>
-  new Map(
-    (gameServer.additionalProperty as JsonLdNode[]).map((property) => [
-      property.name as string,
-      property.value as string,
-    ]),
-  );
-
 describe('buildBaseGraph', () => {
   const baseGraph = buildBaseGraph({
     site,
@@ -58,9 +50,11 @@ describe('buildBaseGraph', () => {
     const gameServer = nodeByType(baseGraph, 'GameServer');
 
     expect(website).not.toHaveProperty('potentialAction');
+    expect(website).toMatchObject({
+      publisher: { '@id': organizationId },
+    });
     expect(gameServer).toMatchObject({
       '@id': gameServerId,
-      provider: { '@id': organizationId },
       game: { '@id': gameId },
     });
     expect(webPage).toMatchObject({
@@ -86,45 +80,31 @@ describe('buildGameServer', () => {
       name: minecraftGilde.brand.name,
       alternateName: minecraftGilde.brand.alternateName,
       url: 'https://minecraft-gilde.de/',
-      provider: { '@id': organizationId },
+      description: minecraftGilde.server.description,
       game: { '@id': gameId },
-      availableLanguage: ['de'],
     });
+    expect(gameServer).not.toHaveProperty('additionalProperty');
+    expect(gameServer).not.toHaveProperty('availableLanguage');
+    expect(gameServer).not.toHaveProperty('provider');
+    expect(gameServer).not.toHaveProperty('owner');
     expect(gameServer).not.toHaveProperty('serverLocation');
     expect(sameAs).not.toContain(minecraftGilde.organization.url);
     expect(sameAs).not.toContain(minecraftGilde.mapUrl);
     expect(sameAs).toContain(minecraftGilde.discord.url);
   });
 
-  it('enthält die stabilen Servereigenschaften aus der zentralen Konfiguration', () => {
-    const properties = additionalProperties(nodeByType(gameServerGraph, 'GameServer'));
+  it('transportiert die stabilen Servermerkmale in der zentralen Beschreibung', () => {
+    const gameServer = nodeByType(gameServerGraph, 'GameServer');
+    const description = gameServer.description as string;
 
-    expect(properties).toEqual(
-      new Map([
-        ['Edition', minecraftGilde.server.edition],
-        ['Server-Software', minecraftGilde.server.software],
-        ['Version', minecraftGilde.mcVersion],
-        ['Spielmodus', minecraftGilde.server.gameMode],
-        ['Pay2Win', 'nein'],
-        ['Hauptwelt-Reset', 'nein'],
-        ['Langzeitwelt', 'ja'],
-        ['Claims / Grundstücksschutz', 'ja'],
-        ['Separate Farmwelten', 'ja'],
-        ['Whitelist', 'nein'],
-        ['Serveradresse', minecraftGilde.serverIp],
-        ['Port', String(minecraftGilde.server.port)],
-      ]),
-    );
-  });
-
-  it('ergänzt Max. Spieler nur bei einem übergebenen Wert', () => {
-    const withoutMaxPlayers = additionalProperties(nodeByType(gameServerGraph, 'GameServer'));
-    const withMaxPlayers = additionalProperties(
-      nodeByType(buildGameServer({ site, canonicalUrl, maxPlayers: 100 }), 'GameServer'),
-    );
-
-    expect(withoutMaxPlayers.has('Max. Spieler')).toBe(false);
-    expect(withMaxPlayers.get('Max. Spieler')).toBe('100');
+    expect(description).toBe(minecraftGilde.server.description);
+    expect(description).toContain('Java');
+    expect(description).toContain('Folia');
+    expect(description).toContain('ohne Pay2Win');
+    expect(description).toContain('ohne Hauptwelt-Reset');
+    expect(description).toContain('Langzeitwelt');
+    expect(description).toContain('Grundstücksschutz');
+    expect(description).toContain('separaten Farmwelten');
   });
 
   it('verwendet dieselben zentralen Basiswerte wie buildBaseGraph', () => {

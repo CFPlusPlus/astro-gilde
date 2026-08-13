@@ -79,6 +79,8 @@ export const minecraftGilde = {
   serverIp: 'minecraft-gilde.de',
   mcVersion: '26.1.2',
   server: {
+    description:
+      'Deutschsprachiger Minecraft-Java-Server auf Folia mit Vanilla SMP, Survival und Freebuild. Langzeitwelt ohne Hauptwelt-Reset und ohne Pay2Win, mit Grundstücksschutz und separaten Farmwelten.',
     edition: 'Java Edition',
     software: 'Folia',
     gameMode: 'Vanilla SMP / Survival / Freebuild',

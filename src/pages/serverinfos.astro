@@ -24,7 +24,6 @@ const canonicalUrl = canonicalFor(Astro.url.pathname);
 const gameServerLd = buildGameServer({
   site,
   canonicalUrl,
-  maxPlayers: 100,
 });
 
 const articleLd = buildArticle({
