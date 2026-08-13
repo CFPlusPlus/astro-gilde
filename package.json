@@ -5,7 +5,7 @@
   "description": "Offizielle Website von Minecraft-Gilde.de, gebaut mit Astro.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CFPlusPlus/minecraft-gilde-web.git"
+    "url": "git+https://github.com/GAMINGGILDE/minecraft-website.git"
   },
   "author": "Christian Falkner",
   "license": "MIT",
