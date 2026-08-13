@@ -93,13 +93,14 @@ export const buildBaseGraph = (args: {
 
   // Stabile IDs, damit Knoten im Graph sauber referenziert werden koennen.
   const websiteId = `${siteUrl}/#website`;
-  const orgId = `${siteUrl}/#org`;
+  const organizationId = `${siteUrl}/#organization`;
+  const gameId = `${siteUrl}/#game`;
+  const gameServerId = `${siteUrl}/#gameserver`;
 
   const breadcrumb = buildBreadcrumbList({ site, pathname, pageTitle: title });
   const webPageId = `${canonicalUrl}#webpage`;
-  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
 
-  // Kern-Graph: Website, Organisation und die konkrete Seite.
+  // Kern-Graph: Website, Betreiber, Spiel, Server und die konkrete Seite.
   const graph: JsonLd[] = [
     {
       '@type': 'WebSite',
@@ -110,33 +111,29 @@ export const buildBaseGraph = (args: {
       description: minecraftGilde.brand.websiteDescription,
       inLanguage: 'de',
       isAccessibleForFree: true,
-      publisher: { '@id': orgId },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${siteBase.toString()}?s={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
+      publisher: { '@id': organizationId },
     },
     {
       '@type': 'Organization',
-      '@id': orgId,
+      '@id': organizationId,
+      name: minecraftGilde.organization.name,
+      url: minecraftGilde.organization.url,
+    },
+    {
+      '@type': 'VideoGame',
+      '@id': gameId,
+      name: 'Minecraft',
+    },
+    {
+      '@type': 'GameServer',
+      '@id': gameServerId,
       name: minecraftGilde.brand.name,
+      alternateName: minecraftGilde.brand.alternateName,
       url: siteBase.toString(),
-      logo: {
-        '@type': 'ImageObject',
-        url: logoUrl,
-        width: minecraftGilde.brand.logo.width,
-        height: minecraftGilde.brand.logo.height,
-      },
+      game: { '@id': gameId },
+      availableLanguage: ['de'],
+      provider: { '@id': organizationId },
       sameAs: [...minecraftGilde.brand.sameAs],
-      contactPoint: [
-        {
-          '@type': 'ContactPoint',
-          contactType: 'Community / Support',
-          url: minecraftGilde.discord.url,
-          availableLanguage: ['de'],
-        },
-      ],
     },
     {
       '@type': 'WebPage',
@@ -146,8 +143,8 @@ export const buildBaseGraph = (args: {
       description,
       inLanguage: 'de',
       isPartOf: { '@id': websiteId },
-      about: { '@id': orgId },
-      publisher: { '@id': orgId },
+      about: { '@id': gameServerId },
+      publisher: { '@id': organizationId },
       ...(ogImage
         ? {
             primaryImageOfPage: {
@@ -275,7 +272,7 @@ export const buildArticle = (args: {
   } = args;
 
   const siteUrl = siteUrlFromConfigOrFallback(site);
-  const orgId = `${siteUrl}/#org`;
+  const organizationId = `${siteUrl}/#organization`;
 
   // Optionalfelder nur setzen, wenn vorhanden, um JSON-LD schlank zu halten.
   return {
@@ -292,7 +289,7 @@ export const buildArticle = (args: {
       name: authorName,
       ...(authorUrl ? { url: authorUrl } : null),
     },
-    publisher: { '@id': orgId },
+    publisher: { '@id': organizationId },
     ...(datePublished ? { datePublished } : null),
     ...(dateModified ? { dateModified } : null),
     mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
@@ -314,12 +311,12 @@ export const buildGameServer = (args: {
     ip,
     port = 25565,
     version,
-    name = minecraftGilde.brand.alternateName,
+    name = minecraftGilde.brand.name,
     maxPlayers,
   } = args;
   const siteUrl = siteUrlFromConfigOrFallback(site);
   const siteBase = siteBaseFromSiteUrl(siteUrl);
-  const orgId = `${siteUrl}/#org`;
+  const organizationId = `${siteUrl}/#organization`;
   const gameId = `${siteUrl}/#game`;
   const serverId = `${siteUrl}/#gameserver`;
   const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
@@ -344,13 +341,11 @@ export const buildGameServer = (args: {
         '@type': 'GameServer',
         '@id': serverId,
         name,
+        alternateName: minecraftGilde.brand.alternateName,
         url: siteBase.toString(),
         game: { '@id': gameId },
         availableLanguage: ['de'],
-        serverLocation: {
-          '@type': 'Place',
-          address: { '@type': 'PostalAddress', addressCountry: 'DE' },
-        },
+        sameAs: [...minecraftGilde.brand.sameAs],
         additionalProperty: [
           { '@type': 'PropertyValue', name: 'IP/Host', value: ip },
           { '@type': 'PropertyValue', name: 'Port', value: String(port) },
@@ -361,7 +356,7 @@ export const buildGameServer = (args: {
             ? [{ '@type': 'PropertyValue', name: 'Max. Spieler', value: String(maxPlayers) }]
             : []),
         ],
-        provider: { '@id': orgId },
+        provider: { '@id': organizationId },
         mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
       },
     ],

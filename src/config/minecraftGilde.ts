@@ -42,9 +42,7 @@ const brandConfig = {
     alt: 'Minecraft Gilde',
   },
   sameAs: [
-    externalLinks.gamingGilde,
     externalLinks.discord,
-    externalLinks.map,
     communityListings.minecraftServerEu.profileUrl,
     communityListings.minecraftServerlistNet.profileUrl,
     communityListings.serverlisteNet.profileUrl,
