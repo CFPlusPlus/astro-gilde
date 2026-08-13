@@ -12,7 +12,18 @@ in die Wildnis der Hauptwelt teleportiert, damit du einen passenden Bauplatz fin
 Wenn du dich verläufst, bringt dich `/spawn` jederzeit zurück. Sobald du einen Platz gefunden hast,
 setze mit `/sethome <name>` dein Home. Mit `/home <name>` kommst du später direkt wieder dorthin.
 
-> **Performance-Hinweis (Folia):** Baue deine Basis nicht direkt neben andere große Farmen.
-> Ein paar hundert Blöcke Abstand helfen, die Server-Performance stabil zu halten.
+<aside
+  class="mg-callout my-4"
+  data-variant="info"
+  role="note"
+  aria-label="Performance-Hinweis zu Folia"
+>
+  <p class="mg-callout__title !m-0 text-sm font-semibold">Performance-Hinweis (Folia)</p>
+  <p class="mg-callout__content !mt-1 !mb-0 text-sm">
+    Wenn möglich, halte etwas Abstand zu sehr großen Farmanlagen oder stark ausgelasteten Bereichen
+    anderer Spieler. So verteilen sich aktive Bereiche besser auf unterschiedliche Regionen und
+    belasten sich weniger gegenseitig.
+  </p>
+</aside>
 
 Wenn du vorab Regionen prüfen willst, nutze die Live-Karte für die Bauplatzsuche.
