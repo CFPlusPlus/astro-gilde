@@ -6,8 +6,9 @@ meta: GriefPrevention
 open: false
 ---
 
-Damit Kisten, Tiere und Bauten geschützt sind, nutzt die Minecraft Gilde **GriefPrevention**.
-Ein Claim verhindert, dass andere in deinem Bereich bauen, abbauen oder Container öffnen.
+Mit **Claims** schützt du dein Baugebiet vor unerlaubten Änderungen. Die Minecraft Gilde nutzt dafür
+den Grundstücksschutz **GriefPrevention**. In deinem Claim können andere nicht ohne deine Freigabe
+bauen, abbauen oder Container öffnen.
 
 ### So erstellst du einen Claim
 
@@ -40,10 +41,10 @@ Du bekommst automatisch **1.000 Claim-Blöcke pro Stunde** (bis maximal **120.00
 
 ### Freunde hinzufügen / Rechte vergeben
 
-- `/trust <Spieler>`: volle Rechte.
-- `/accesstrust <Spieler>`: Türen, Schalter, Buttons.
-- `/containertrust <Spieler>`: Kisten und Container.
-- `/permissiontrust <Spieler>`: darf Trust-Rechte weitergeben.
+- `/trust <spieler>`: Baurechte vergeben.
+- `/accesstrust <spieler>`: Türen, Schalter und Buttons freigeben.
+- `/containertrust <spieler>`: Container und weitere interaktive Blöcke freigeben.
+- `/permissiontrust <spieler>`: das Weitergeben von Trust-Rechten erlauben.
 
 > **Wichtig:** Vergib Rechte nur an Spieler, denen du vertraust.
 

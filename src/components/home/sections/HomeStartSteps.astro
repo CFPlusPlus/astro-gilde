@@ -5,7 +5,9 @@ import { minecraftGilde } from '../../../config/minecraftGilde';
 import { ArrowRight, Download } from '@lucide/astro';
 
 const DISCORD_URL = minecraftGilde.discord.url;
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
+const SERVER_IP = minecraftGilde.serverIp;
+const SERVER_EDITION = minecraftGilde.server.edition;
 ---
 
 <HomeSection id="start" size="normal" divider>
@@ -29,7 +31,8 @@ const MC_VERSION = minecraftGilde.mcVersion;
         <div class="flex h-full flex-col">
           <h3 class="text-base font-semibold">Jetzt spielen & joinen</h3>
           <p class="text-muted mt-2 text-sm">
-            Server hinzufügen, verbinden und loslegen - <strong>Java {MC_VERSION}</strong>.
+            Öffne Minecraft {SERVER_EDITION}, füge <strong>{SERVER_IP}</strong> als Server hinzu und verbinde
+            dich mit Minecraft-Version <strong>{MINECRAFT_VERSION}</strong>.
           </p>
           <div class="mt-5 lg:mt-auto lg:pt-3">
             <Button variant="primary" size="sm" class="gap-2" data-copy-ip>

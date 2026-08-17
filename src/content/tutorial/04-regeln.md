@@ -10,8 +10,9 @@ actions:
     variant: secondary
 ---
 
-Bitte lies die Regeln einmal kurz durch. Sie sind bewusst kompakt gehalten und schnell gelesen.
-Griefing, Cheating und toxisches Verhalten haben bei uns keinen Platz.
+Bitte lies die Regeln einmal kurz durch. Dort erfährst du verbindlich, was erlaubt, verboten oder
+eingeschränkt ist. Griefing, Cheating und toxisches Verhalten haben bei uns keinen Platz.
 
-> **Wichtig am Anfang:** Ressourcenabbau ist nur in den Farmwelten erlaubt.
-> Die Hauptwelt bleibt als Langzeitwelt erhalten.
+> **Wichtig am Anfang:** Größerer oder gezielter Ressourcenabbau gehört in die Farmwelten.
+> Kleinere Anpassungen für Bauprojekte bleiben in der Hauptwelt erlaubt, solange sie die Umgebung
+> nicht beeinträchtigen.

@@ -1,18 +1,18 @@
 ---
 order: 7
-title: Unsere Dynmap
+title: Unsere Live-Karte
 icon: Map
 meta: Karte
 open: false
 actions:
-  - label: Dynmap öffnen
+  - label: Live-Karte öffnen
     target: dynmap
     variant: secondary
     icon: Map
 ---
 
-Die Dynmap ist unsere interaktive Online-Karte.
-Dort kannst du die Welten erkunden und Marker ein- oder ausblenden.
+Die Live-Karte hilft dir bei der Orientierung. Dort kannst du die Welten erkunden und Marker ein-
+oder ausblenden.
 
 Typische Nutzung:
 

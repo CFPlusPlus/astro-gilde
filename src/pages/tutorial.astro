@@ -60,7 +60,7 @@ const ACTION_ICONS = {
 type SectionIconName = keyof typeof SECTION_ICONS;
 type ActionIconName = keyof typeof ACTION_ICONS;
 
-const QUICKSTART_COMMANDS = ['/sethome <Name>', '/home <Name>', '/farmwelt', '/rtp'] as const;
+const QUICKSTART_COMMANDS = ['/sethome <name>', '/home <name>', '/farmwelt', '/rtp'] as const;
 const QUICKSTART_COMMAND_PATTERN = new RegExp(
   `(${QUICKSTART_COMMANDS.map((command) => command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
 );
@@ -84,7 +84,11 @@ const sections = await Promise.all(
 );
 ---
 
-<BaseLayout title="Minecraft Gilde - Tutorial" canonical={canonicalUrl}>
+<BaseLayout
+  title="Minecraft Gilde - Tutorial & Einstieg"
+  description="Starte auf der Minecraft Gilde: Mit Minecraft Java Edition beitreten, einen Bauplatz per /rtp finden, Homes setzen, Claims erstellen und Farmwelten nutzen."
+  canonical={canonicalUrl}
+>
   <JsonLd slot="head" data={howToLd} />
 
   <PageHeader title={tutorialHeaderIntro.title} subtitle={tutorialHeaderIntro.subtitle}>

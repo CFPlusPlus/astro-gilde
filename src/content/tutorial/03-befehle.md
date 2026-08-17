@@ -10,10 +10,11 @@ actions:
     variant: secondary
 ---
 
-Eine vollständige Liste findest du auf der Befehle-Seite. Für den Einstieg reichen meistens diese:
+Auf der Befehle-Seite findest du eine übersichtliche Referenz. Für deinen Start reichen meistens
+diese Befehle:
 
-- `/spawn` - zurück zum Spawn.
-- `/sethome <Name>` und `/home <Name>` - Home setzen und teleportieren.
-- `/rtp` - zufälliger Teleport in die Hauptwelt.
-- `/msg <Spieler> <Nachricht>` - private Nachricht.
-- `/helpop <Nachricht>` - Hilfe vom Team bei dringenden Themen.
+- `/spawn` – zurück zum Spawn.
+- `/sethome <name>` und `/home <name>` – ein Home setzen und dorthin zurückkehren.
+- `/rtp` – zufällig in die Wildnis der Hauptwelt teleportieren und einen Bauplatz finden.
+- `/msg <spieler> <nachricht>` – eine private Nachricht senden.
+- `/helpop <nachricht>` – das Team bei dringenden Themen kontaktieren.

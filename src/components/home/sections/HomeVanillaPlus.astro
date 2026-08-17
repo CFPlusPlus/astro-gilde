@@ -1,7 +1,10 @@
 ---
 import Button from '../../ui/Button.astro';
 import HomeSection from '../HomeSection.astro';
+import { minecraftGilde } from '../../../config/minecraftGilde';
 import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/astro';
+
+const SERVER_SOFTWARE = minecraftGilde.server.software;
 ---
 
 <HomeSection id="vanilla" size="normal" tone="muted">
@@ -19,8 +22,8 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
       <div>
         <h2 class="text-3xl font-semibold tracking-tight">Mehr Komfort, weiterhin Vanilla</h2>
         <p class="text-muted mt-3 max-w-2xl">
-          Du bekommst ein paar praktische Hilfen an die Hand, damit der Einstieg leicht fällt und
-          Survival trotzdem Survival bleibt.
+          Vanilla+ ergänzt dein Survival-Erlebnis um praktische Komfort- und Schutzfunktionen, ohne
+          daraus Citybuild oder einen stark veränderten Spielmodus zu machen.
         </p>
       </div>
       <Button href="/tutorial" variant="secondary" class="gap-2">
@@ -37,9 +40,9 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
             <Shield size={18} />
           </div>
           <div>
-            <h3 class="text-base font-semibold">Claims / Grief-Schutz</h3>
+            <h3 class="text-base font-semibold">Claims / Grundstücksschutz</h3>
             <p class="text-muted mt-1 text-sm">
-              Deine Gebiete bleiben geschützt und in deiner Hand.
+              Mit Claims schützt du dein eigenes Gebiet, damit deine Bauprojekte sicher bleiben.
             </p>
           </div>
         </div>
@@ -68,7 +71,8 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
           <div>
             <h3 class="text-base font-semibold">Bis zu 15 Homes</h3>
             <p class="text-muted mt-1 text-sm">
-              Komme schnell zu deinen Projekten zurück - ohne Umwege.
+              Mit bis zu 15 Homes kommst du schnell zu deinen Projekten zurück und bleibst auch bei
+              mehreren Bauorten flexibel.
             </p>
           </div>
         </div>
@@ -80,8 +84,11 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
             <Wand size={18} />
           </div>
           <div>
-            <h3 class="text-base font-semibold">/RTP</h3>
-            <p class="text-muted mt-1 text-sm">Finde in wenigen Sekunden einen guten Startpunkt.</p>
+            <h3 class="text-base font-semibold">/rtp</h3>
+            <p class="text-muted mt-1 text-sm">
+              Mit <code>/rtp</code> teleportierst du dich zufällig in die Wildnis und findest einen Platz
+              für dein nächstes Projekt.
+            </p>
           </div>
         </div>
 
@@ -92,9 +99,10 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
             <Sparkles size={18} />
           </div>
           <div>
-            <h3 class="text-base font-semibold">Quality-of-Life</h3>
+            <h3 class="text-base font-semibold">Vanilla-nahe Spielweise</h3>
             <p class="text-muted mt-1 text-sm">
-              Spürbar angenehmer spielen - ohne modded Overkill.
+              Homes, <code>/rtp</code> und Claims ergänzen dein Survival-Spiel, ohne grundlegende Minecraft-Mechaniken
+              zu ersetzen.
             </p>
           </div>
         </div>
@@ -106,9 +114,10 @@ import { ArrowRight, Cpu, House, Map, Shield, Sparkles, Wand } from '@lucide/ast
             <Cpu size={18} />
           </div>
           <div>
-            <h3 class="text-base font-semibold">Stabil & performant</h3>
+            <h3 class="text-base font-semibold">Technik mit {SERVER_SOFTWARE}</h3>
             <p class="text-muted mt-1 text-sm">
-              Flüssiges Spielen, auch wenn auf dem Server viel los ist.
+              Im Hintergrund läuft der Server auf {SERVER_SOFTWARE}. Das technische Setup erklären
+              wir dir ausführlicher in unseren Serverinfos.
             </p>
           </div>
         </div>

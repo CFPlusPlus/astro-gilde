@@ -5,7 +5,9 @@ import Button from '../ui/Button.astro';
 import IconButton from '../ui/IconButton.astro';
 
 const SERVER_IP = minecraftGilde.serverIp;
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
+const SERVER_EDITION = minecraftGilde.server.edition;
+const SERVER_PORT = minecraftGilde.server.port;
 ---
 
 <div
@@ -42,10 +44,12 @@ const MC_VERSION = minecraftGilde.mcVersion;
 
       <div class="mg-modal-body space-y-4">
         <article class="mg-card mg-card--soft p-4 sm:p-5">
-          <h3 class="text-base font-semibold sm:text-xl">Schritt 1: Minecraft Java installieren</h3>
+          <h3 class="text-base font-semibold sm:text-xl">
+            Schritt 1: Minecraft {SERVER_EDITION} installieren
+          </h3>
           <p class="text-muted mt-3 text-sm leading-relaxed sm:text-base">
-            Starte den Minecraft Launcher und wähle die Java-Edition. Für unseren Server brauchst du
-            keine Bedrock-Version.
+            Starte den Minecraft Launcher und wähle die {SERVER_EDITION}. Für unseren Server
+            brauchst du keine Bedrock-Version.
           </p>
         </article>
 
@@ -95,10 +99,13 @@ const MC_VERSION = minecraftGilde.mcVersion;
 
               <div class="text-sm">
                 <p class="text-muted">
-                  Version: <span class="text-fg font-semibold">Java {MC_VERSION}</span>
+                  Edition: <span class="text-fg font-semibold">{SERVER_EDITION}</span>
                 </p>
                 <p class="text-muted">
-                  Port: <span class="text-fg font-semibold">25565</span>
+                  Minecraft-Version: <span class="text-fg font-semibold">{MINECRAFT_VERSION}</span>
+                </p>
+                <p class="text-muted">
+                  Port: <span class="text-fg font-semibold">{SERVER_PORT}</span>
                 </p>
                 <div
                   class="border-border/70 bg-surface mt-2 flex items-start gap-2 rounded-lg border p-2"
@@ -106,7 +113,7 @@ const MC_VERSION = minecraftGilde.mcVersion;
                   <Info size={14} class="text-accent mt-0.5 shrink-0" />
                   <p class="text-muted text-xs">
                     Meist reicht die Server-Adresse aus. Port <span class="text-fg font-medium"
-                      >25565</span
+                      >{SERVER_PORT}</span
                     > nur angeben, wenn dein Client es ausdrücklich verlangt.
                   </p>
                 </div>

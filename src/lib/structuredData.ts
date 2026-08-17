@@ -15,8 +15,33 @@ const siteBaseFromSiteUrl = (siteUrl: string): URL => new URL(`${trimTrailingSla
 const resolveSiteBase = (fallbackSite: URL): URL =>
   siteBaseFromSiteUrl(siteUrlFromConfigOrFallback(fallbackSite));
 
-const absoluteUrlFromConfigSite = (pathOrUrl: string, fallbackSite: URL): string =>
-  new URL(pathOrUrl, resolveSiteBase(fallbackSite)).toString();
+const buildMinecraftGildeGameServer = (args: { site: URL; canonicalUrl?: string }): JsonLd => {
+  const { site, canonicalUrl } = args;
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+
+  return {
+    '@type': 'GameServer',
+    '@id': `${siteUrl}/#gameserver`,
+    name: minecraftGilde.brand.name,
+    alternateName: minecraftGilde.brand.alternateName,
+    url: siteBaseFromSiteUrl(siteUrl).toString(),
+    description: minecraftGilde.server.description,
+    game: { '@id': `${siteUrl}/#game` },
+    sameAs: [...minecraftGilde.brand.sameAs],
+    ...(canonicalUrl ? { mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` } } : null),
+  };
+};
+
+const buildMinecraftVideoGame = (site: URL): JsonLd => {
+  const siteUrl = siteUrlFromConfigOrFallback(site);
+
+  return {
+    '@type': 'VideoGame',
+    '@id': `${siteUrl}/#game`,
+    name: 'Minecraft',
+    gameServer: { '@id': `${siteUrl}/#gameserver` },
+  };
+};
 
 const escapeRegex = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -93,13 +118,13 @@ export const buildBaseGraph = (args: {
 
   // Stabile IDs, damit Knoten im Graph sauber referenziert werden koennen.
   const websiteId = `${siteUrl}/#website`;
-  const orgId = `${siteUrl}/#org`;
+  const organizationId = `${siteUrl}/#organization`;
+  const gameServerId = `${siteUrl}/#gameserver`;
 
   const breadcrumb = buildBreadcrumbList({ site, pathname, pageTitle: title });
   const webPageId = `${canonicalUrl}#webpage`;
-  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
 
-  // Kern-Graph: Website, Organisation und die konkrete Seite.
+  // Kern-Graph: Website, Betreiber, Spiel, Server und die konkrete Seite.
   const graph: JsonLd[] = [
     {
       '@type': 'WebSite',
@@ -110,34 +135,16 @@ export const buildBaseGraph = (args: {
       description: minecraftGilde.brand.websiteDescription,
       inLanguage: 'de',
       isAccessibleForFree: true,
-      publisher: { '@id': orgId },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: `${siteBase.toString()}?s={search_term_string}`,
-        'query-input': 'required name=search_term_string',
-      },
+      publisher: { '@id': organizationId },
     },
     {
       '@type': 'Organization',
-      '@id': orgId,
-      name: minecraftGilde.brand.name,
-      url: siteBase.toString(),
-      logo: {
-        '@type': 'ImageObject',
-        url: logoUrl,
-        width: minecraftGilde.brand.logo.width,
-        height: minecraftGilde.brand.logo.height,
-      },
-      sameAs: [...minecraftGilde.brand.sameAs],
-      contactPoint: [
-        {
-          '@type': 'ContactPoint',
-          contactType: 'Community / Support',
-          url: minecraftGilde.discord.url,
-          availableLanguage: ['de'],
-        },
-      ],
+      '@id': organizationId,
+      name: minecraftGilde.organization.name,
+      url: minecraftGilde.organization.url,
     },
+    buildMinecraftVideoGame(site),
+    buildMinecraftGildeGameServer({ site }),
     {
       '@type': 'WebPage',
       '@id': webPageId,
@@ -146,8 +153,8 @@ export const buildBaseGraph = (args: {
       description,
       inLanguage: 'de',
       isPartOf: { '@id': websiteId },
-      about: { '@id': orgId },
-      publisher: { '@id': orgId },
+      about: { '@id': gameServerId },
+      publisher: { '@id': organizationId },
       ...(ogImage
         ? {
             primaryImageOfPage: {
@@ -275,7 +282,7 @@ export const buildArticle = (args: {
   } = args;
 
   const siteUrl = siteUrlFromConfigOrFallback(site);
-  const orgId = `${siteUrl}/#org`;
+  const organizationId = `${siteUrl}/#organization`;
 
   // Optionalfelder nur setzen, wenn vorhanden, um JSON-LD schlank zu halten.
   return {
@@ -292,78 +299,22 @@ export const buildArticle = (args: {
       name: authorName,
       ...(authorUrl ? { url: authorUrl } : null),
     },
-    publisher: { '@id': orgId },
+    publisher: { '@id': organizationId },
     ...(datePublished ? { datePublished } : null),
     ...(dateModified ? { dateModified } : null),
     mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
   };
 };
 
-export const buildGameServer = (args: {
-  site: URL;
-  canonicalUrl: string;
-  ip: string;
-  port?: number;
-  version: string;
-  name?: string;
-  maxPlayers?: number;
-}): JsonLd => {
-  const {
-    site,
-    canonicalUrl,
-    ip,
-    port = 25565,
-    version,
-    name = minecraftGilde.brand.alternateName,
-    maxPlayers,
-  } = args;
-  const siteUrl = siteUrlFromConfigOrFallback(site);
-  const siteBase = siteBaseFromSiteUrl(siteUrl);
-  const orgId = `${siteUrl}/#org`;
-  const gameId = `${siteUrl}/#game`;
-  const serverId = `${siteUrl}/#gameserver`;
-  const logoUrl = absoluteUrlFromConfigSite(minecraftGilde.brand.logo.path, site);
+export const buildGameServer = (args: { site: URL; canonicalUrl: string }): JsonLd => {
+  const { site, canonicalUrl } = args;
 
   // Zwei Knoten im Graph: Game + GameServer.
   return {
     '@context': 'https://schema.org',
     '@graph': [
-      {
-        '@type': 'VideoGame',
-        '@id': gameId,
-        name: 'Minecraft',
-        genre: ['Sandbox', 'Multiplayer', 'Survival'],
-        gamePlatform: ['PC', 'macOS', 'Linux'],
-        inLanguage: 'de',
-        image: logoUrl,
-        keywords:
-          'Minecraft, Vanilla SMP, Survival, Freebuild, Folia, deutsch, Community, ohne Reset, ohne Pay2Win',
-        gameServer: { '@id': serverId },
-      },
-      {
-        '@type': 'GameServer',
-        '@id': serverId,
-        name,
-        url: siteBase.toString(),
-        game: { '@id': gameId },
-        availableLanguage: ['de'],
-        serverLocation: {
-          '@type': 'Place',
-          address: { '@type': 'PostalAddress', addressCountry: 'DE' },
-        },
-        additionalProperty: [
-          { '@type': 'PropertyValue', name: 'IP/Host', value: ip },
-          { '@type': 'PropertyValue', name: 'Port', value: String(port) },
-          { '@type': 'PropertyValue', name: 'Version', value: version },
-          { '@type': 'PropertyValue', name: 'Modus', value: 'Vanilla SMP / Survival / Freebuild' },
-          { '@type': 'PropertyValue', name: 'Whitelist', value: 'nein' },
-          ...(typeof maxPlayers === 'number'
-            ? [{ '@type': 'PropertyValue', name: 'Max. Spieler', value: String(maxPlayers) }]
-            : []),
-        ],
-        provider: { '@id': orgId },
-        mainEntityOfPage: { '@id': `${canonicalUrl}#webpage` },
-      },
+      buildMinecraftVideoGame(site),
+      buildMinecraftGildeGameServer({ site, canonicalUrl }),
     ],
   };
 };

@@ -2,7 +2,7 @@ import { siteUrl } from './site';
 import logoImage from '../assets/images/branding/logo.webp';
 
 // Zentrale Projekt-Konfiguration für minecraft-gilde.de
-// Ziel: Strings (URLs, IP, Version) nicht über das Projekt verteilen,
+// Ziel: Strings (URLs, IP, Minecraft-Version) nicht über das Projekt verteilen,
 // sondern an einer Stelle pflegen.
 
 const externalLinks = {
@@ -32,9 +32,9 @@ const brandConfig = {
   name: 'Minecraft Gilde',
   alternateName: 'Minecraft Gilde - Vanilla SMP (DE)',
   defaultMetaDescription:
-    'Minecraft Gilde - Langzeitwelt ohne Resets. Fair ohne Pay-to-Win. Vanilla+ Komfort.',
+    'Minecraft Gilde - Langzeitwelt ohne Hauptwelt-Reset. Fair ohne Pay-to-Win. Vanilla+ Komfort.',
   websiteDescription:
-    'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - ohne Resets, ohne Pay2Win, Community-first.',
+    'Deutscher Minecraft Vanilla SMP Server (Folia) mit Survival & Freebuild - dauerhafte Hauptwelt ohne Reset, ohne Pay2Win, Community-first.',
   logo: {
     path: logoImage.src,
     width: logoImage.width,
@@ -42,9 +42,7 @@ const brandConfig = {
     alt: 'Minecraft Gilde',
   },
   sameAs: [
-    externalLinks.gamingGilde,
     externalLinks.discord,
-    externalLinks.map,
     communityListings.minecraftServerEu.profileUrl,
     communityListings.minecraftServerlistNet.profileUrl,
     communityListings.serverlisteNet.profileUrl,
@@ -79,7 +77,23 @@ export const minecraftGilde = {
   brand: brandConfig,
   legal: legalConfig,
   serverIp: 'minecraft-gilde.de',
-  mcVersion: '26.1.2',
+  minecraftVersion: '26.1.2',
+  server: {
+    description:
+      'Deutschsprachiger Minecraft-Java-Server auf Folia mit Vanilla SMP, Survival und Freebuild. Langzeitwelt ohne Hauptwelt-Reset und ohne Pay2Win, mit Grundstücksschutz und separaten Farmwelten.',
+    edition: 'Java Edition',
+    software: 'Folia',
+    gameMode: 'Vanilla-SMP, Survival & Freebuild',
+    payToWin: false,
+    mainWorldReset: false,
+    mainWorldSince: 'Februar 2024',
+    longTermWorld: true,
+    claims: true,
+    resourceWorlds: true,
+    resourceWorldResets: true,
+    whitelist: false,
+    port: 25565,
+  },
   apiOrigin,
 
   organization: {

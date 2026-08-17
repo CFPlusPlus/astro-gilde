@@ -16,26 +16,25 @@ import foliaImage from '../assets/images/tech/folia.webp';
 const DISCORD_URL = minecraftGilde.discord.url;
 const DYNMAP_URL = minecraftGilde.mapUrl;
 const SERVER_IP = minecraftGilde.serverIp;
-const MC_VERSION = minecraftGilde.mcVersion;
+const MINECRAFT_VERSION = minecraftGilde.minecraftVersion;
+const SERVER = minecraftGilde.server;
 const FOLIA_IMAGE_WIDTH = 704;
 const FOLIA_IMAGE_HEIGHT = Math.round((foliaImage.height / foliaImage.width) * FOLIA_IMAGE_WIDTH);
 
 const canonicalUrl = canonicalFor(Astro.url.pathname);
+const pageTitle = 'Minecraft Gilde - Serverinfos, Spielweise & Technik';
+const pageDescription = `Minecraft Gilde: Java Edition ${MINECRAFT_VERSION} mit Vanilla-SMP, Survival & Freebuild auf Folia – Langzeitwelt ohne Hauptwelt-Reset, Claims als Grundstücksschutz und kein Pay2Win.`;
 const gameServerLd = buildGameServer({
   site,
   canonicalUrl,
-  ip: SERVER_IP,
-  port: 25565,
-  version: MC_VERSION,
-  maxPlayers: 100,
 });
 
 const articleLd = buildArticle({
   site,
   canonicalUrl,
   type: 'TechArticle',
-  headline: `Serverinfos & Folia-Setup - Minecraft Gilde (Vanilla SMP ${MC_VERSION})`,
-  description: `Technische Details zum Setup der Minecraft Gilde: Folia ${MC_VERSION}, Hardware und Kernfeatures - optimiert für Vanilla Survival & Freebuild ohne Pay2Win.`,
+  headline: pageTitle,
+  description: pageDescription,
   image: new URL(minecraftGilde.brand.logo.path, site).toString(),
   authorName: minecraftGilde.legal.name,
   authorUrl: 'https://www.falkner.info',
@@ -43,16 +42,12 @@ const articleLd = buildArticle({
 });
 ---
 
-<BaseLayout
-  title="Minecraft Gilde - Serverinfos"
-  canonical={canonicalUrl}
-  description={`Serverinfos der Minecraft Gilde – Folia ${MC_VERSION}, Einstellungen, Plugins und Hardware. Vanilla SMP (DE) für Freebuild und Survival ohne Minigames.`}
->
+<BaseLayout title={pageTitle} canonical={canonicalUrl} description={pageDescription}>
   <JsonLd slot="head" data={gameServerLd} />
   <JsonLd slot="head" data={articleLd} />
   <PageHeader
     title="Serverinfos"
-    subtitle="Deutschsprachiger Vanilla SMP Server für Survival & Freebuild - stabil, fair und ohne Reset."
+    subtitle="Hier findest du alle wichtigen Details zu unserer Spielweise und Technik – von Java Edition und Folia bis zu Langzeitwelt, Claims, Farmwelten und Hardware."
     actionsInline
     headerClass="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
     actionsClass="flex flex-wrap gap-2"
@@ -65,37 +60,58 @@ const articleLd = buildArticle({
         Discord <ArrowRight size={18} />
       </Button>
       <Button href={DYNMAP_URL} external variant="ghost" class="gap-2"
-        ><Map size={18} /> Dynmap</Button
+        ><Map size={18} /> Live-Karte</Button
       >
     </Fragment>
 
     <div class="mt-6 flex flex-wrap gap-2">
-      <Badge variant="accent">{MC_VERSION}</Badge>
-      <Badge>Folia (Paper Fork)</Badge>
-      <Badge>Ohne Resets</Badge>
+      <Badge variant="accent">{SERVER.edition}</Badge>
+      <Badge>{SERVER.software}</Badge>
+      <Badge>Hauptwelt ohne Reset</Badge>
+      <Badge>Kein Pay2Win</Badge>
     </div>
   </PageHeader>
 
   <section class="mg-container pb-16">
+    <p class="text-muted mb-6 max-w-3xl text-sm leading-relaxed" data-motion="reveal">
+      Die Minecraft Gilde ist ein deutschsprachiger Minecraft-Java-Server für Vanilla-SMP, Survival
+      und Freebuild. Auf unserer dauerhaften Hauptwelt kannst du langfristig bauen, während separate
+      Farmwelten der Rohstoffbeschaffung dienen. Wir verzichten auf Pay2Win und setzen technisch auf
+      Folia. Der Server ist ausschließlich für die Java Edition ausgelegt; eine Bedrock-Anbindung
+      bieten wir nicht an.
+    </p>
+
     <div class="mg-card mg-card--soft p-6 sm:p-7" data-motion="reveal">
       <div class="grid gap-8 lg:grid-cols-3">
         <section>
           <div class="flex items-start gap-3">
             <Gamepad2 size={20} />
-            <h2 class="text-base font-semibold">Kurzprofil</h2>
+            <h2 class="text-base font-semibold">Server auf einen Blick</h2>
           </div>
           <dl class="mg-list mt-3 text-sm">
             <div class="mg-row items-center">
-              <dt class="text-muted">IP</dt><dd class="font-semibold">{SERVER_IP}</dd>
+              <dt class="text-muted">Server-IP</dt><dd class="font-semibold">{SERVER_IP}</dd>
             </div>
             <div class="mg-row items-center">
-              <dt class="text-muted">Version</dt><dd>Folia {MC_VERSION}</dd>
+              <dt class="text-muted">Edition</dt><dd>{SERVER.edition}</dd>
             </div>
             <div class="mg-row items-center">
-              <dt class="text-muted">Typ</dt><dd>Vanilla SMP (DE)</dd>
+              <dt class="text-muted">Minecraft-Version</dt><dd>{MINECRAFT_VERSION}</dd>
             </div>
             <div class="mg-row items-center">
-              <dt class="text-muted">Welt</dt><dd>seit Feb 2024</dd>
+              <dt class="text-muted">Server-Software</dt><dd>{SERVER.software}</dd>
+            </div>
+            <div class="mg-row items-center">
+              <dt class="text-muted">Spielweise</dt><dd>{SERVER.gameMode}</dd>
+            </div>
+            <div class="mg-row items-center">
+              <dt class="text-muted">Hauptwelt</dt><dd>dauerhaft, seit {SERVER.mainWorldSince}</dd>
+            </div>
+            <div class="mg-row items-center">
+              <dt class="text-muted">Whitelist</dt><dd>{SERVER.whitelist ? 'Ja' : 'Nein'}</dd>
+            </div>
+            <div class="mg-row items-center">
+              <dt class="text-muted">Pay2Win</dt><dd>{SERVER.payToWin ? 'Ja' : 'Nein'}</dd>
             </div>
           </dl>
         </section>
@@ -103,27 +119,32 @@ const articleLd = buildArticle({
         <section>
           <div class="flex items-start gap-3">
             <Cpu size={20} />
-            <h2 class="text-base font-semibold">Technik</h2>
+            <h2 class="text-base font-semibold">Technisches Setup</h2>
           </div>
           <DividerList as="ul" class="mt-3 list-none pl-0 text-sm">
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">CPU:</span> 2x Intel Xeon E5-2680 v2 (20 Kerne / 40
-              Threads)
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">CPU:</span>
+              <span class="text-right">2x Intel Xeon E5-2680 v2 (20 Kerne / 40 Threads)</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">RAM:</span> 128 GB DDR3 ECC
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Arbeitsspeicher:</span>
+              <span class="text-right">128 GB DDR3 ECC</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">Storage:</span> 480 GB SSD
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Speicher:</span>
+              <span class="text-right">480 GB SSD</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">OS:</span> Ubuntu 24.04
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Betriebssystem:</span>
+              <span class="text-right">Ubuntu 24.04</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">DB:</span> MariaDB (für Statistiken)
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Datenbank:</span>
+              <span class="text-right">MariaDB (unter anderem für Statistiken)</span>
             </li>
-            <li class="mg-row !justify-start">
-              <span class="text-fg/90 font-medium">GC:</span> G1GC
+            <li class="mg-row">
+              <span class="text-fg/90 font-medium">Garbage Collector:</span>
+              <span class="text-right">G1GC</span>
             </li>
           </DividerList>
         </section>
@@ -131,18 +152,30 @@ const articleLd = buildArticle({
         <section>
           <div class="flex items-start gap-3">
             <Shield size={20} />
-            <h2 class="text-base font-semibold">Gameplay &amp; Schutz</h2>
+            <h2 class="text-base font-semibold">Gameplay &amp; Grundstücksschutz</h2>
           </div>
           <DividerList as="ul" class="text-muted mt-3 list-none pl-0 text-sm">
-            <li class="mg-row !justify-start">16 Chunks Sichtweite</li>
-            <li class="mg-row !justify-start">Vanilla-nahe Spawnraten</li>
-            <li class="mg-row !justify-start">
-              Keine künstlichen Einschränkungen bei Mobs, Villagern oder Farmen
+            <li class="mg-row !block">
+              <span class="text-fg/90 font-medium">Sichtweite:</span> Die serverseitige Sichtweite beträgt
+              16 Chunks.
             </li>
-            <li class="mg-row !justify-start">
-              Grundstücke lassen sich selbst schützen (GriefPrevention)
+            <li class="mg-row !block">
+              <span class="text-fg/90 font-medium">Spawnraten:</span> Wir halten die Spawnraten möglichst
+              vanilla-nah.
             </li>
-            <li class="mg-row !justify-start">Keine kaufbaren Ränge oder Items</li>
+            <li class="mg-row !block">
+              <span class="text-fg/90 font-medium">Mobs, Villager &amp; Farmen:</span> Auch große Survival-Farmen
+              sind grundsätzlich erlaubt, solange sie keine merklichen Server-Lags verursachen. Für Mobs,
+              Villager und normale Survival-Farmen gibt es keine pauschalen künstlichen Limits.
+            </li>
+            <li class="mg-row !block">
+              <span class="text-fg/90 font-medium">Grundstücksschutz:</span> Mit Claims über GriefPrevention
+              schützt du deine Baugebiete vor unerlaubten Änderungen.
+            </li>
+            <li class="mg-row !block">
+              <span class="text-fg/90 font-medium">Pay2Win:</span> Die Minecraft Gilde ist kein Pay2Win-Server.
+              Es gibt keine kaufbaren Ränge, Items oder Gameplay-Vorteile.
+            </li>
           </DividerList>
           <div class="mt-4 flex flex-wrap gap-2">
             <Button href="/tutorial" variant="secondary">Tutorial</Button>
@@ -150,6 +183,27 @@ const articleLd = buildArticle({
           </div>
         </section>
       </div>
+
+      <section class="border-border/60 mt-6 border-t pt-6">
+        <h2 class="text-xl font-semibold tracking-tight">Spielweise &amp; Welten</h2>
+        <div class="text-muted mt-3 grid gap-3 text-sm leading-relaxed lg:grid-cols-3">
+          <p>
+            Der Fokus liegt auf Survival und Freebuild. Minigames oder Citybuild sind nicht das
+            Spielkonzept der Minecraft Gilde.
+          </p>
+          <p>
+            Die heutige Hauptwelt besteht seit {SERVER.mainWorldSince} und ist für langfristige Bauprojekte
+            gedacht. Sie wird nicht regelmäßig zurückgesetzt.
+          </p>
+          <p>
+            Separate Farmwelten dienen der Rohstoffbeschaffung. {
+              SERVER.resourceWorldResets
+                ? 'Anders als die Hauptwelt werden sie zurückgesetzt; Informationen dazu teilen wir rechtzeitig.'
+                : 'Auch diese Welten bleiben bestehen und werden nicht regelmäßig zurückgesetzt.'
+            }
+          </p>
+        </div>
+      </section>
     </div>
 
     <Section
@@ -160,15 +214,19 @@ const articleLd = buildArticle({
     >
       <div class="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start" data-motion-stagger="90">
         <article data-motion="reveal">
-          <h2 class="text-xl font-semibold tracking-tight">Warum Folia?</h2>
+          <h2 class="text-xl font-semibold tracking-tight">Warum wir Folia einsetzen</h2>
           <p class="text-muted mt-3 text-sm leading-relaxed">
-            Seit Mai 2025 läuft der Server auf Folia - einem Paper-Fork, der die Welt in Regionen
-            aufteilt und parallel verarbeitet. Das sorgt vor allem dann für mehr Stabilität, wenn
-            viele Spieler gleichzeitig online sind.
+            Seit Mai 2025 läuft die Minecraft Gilde auf Folia. Folia basiert auf Paper und verteilt
+            die Verarbeitung der Welt auf voneinander unabhängige Regionen, die parallel bearbeitet
+            werden können. Für unsere weitläufige Survival-Welt ist dieser Ansatz interessant, weil
+            Aktivitäten in unterschiedlichen Regionen voneinander getrennt verarbeitet werden
+            können.
           </p>
           <p class="text-muted mt-3 text-sm leading-relaxed">
-            Im Alltag funktioniert das Setup inzwischen sehr zuverlässig. Einzelne Plugins machen
-            selten noch Probleme, insgesamt läuft Folia aber stabil und praxisnah.
+            Folia stellt besondere Anforderungen an Plugins, weil nicht jede Aufgabe wie auf einem
+            klassischen Paper-Server über einen einzigen Hauptthread läuft. Deshalb achten wir bei
+            eingesetzten Plugins gezielt auf Folia-Kompatibilität. Für dich ändert sich dadurch beim
+            normalen Spielen kaum etwas – wichtig ist die Technik vor allem im Hintergrund.
           </p>
         </article>
 
@@ -182,15 +240,15 @@ const articleLd = buildArticle({
             class="mx-auto w-full max-w-[18rem] sm:max-w-[20rem] md:max-w-[22rem]"
           />
           <figcaption class="text-muted mt-4 text-center text-sm">
-            Folia ist ein Fork von PaperMC und setzt auf einen Multithreaded-Ansatz.
+            Folia basiert auf Paper und verarbeitet voneinander unabhängige Weltregionen parallel.
           </figcaption>
         </figure>
       </div>
 
       <div class="border-border/60 mt-6 border-t pt-6" data-motion="reveal">
         <p class="text-sm leading-relaxed">
-          Du willst direkt loslegen? Dann schau kurz ins Tutorial - dort findest du Claim, RTP,
-          Rollen und alles Wichtige.
+          Wie Claims funktionieren, erklären wir dir Schritt für Schritt im Tutorial. Dort findest
+          du auch RTP, Rollen und alles Wichtige für deinen Start.
         </p>
         <div class="mt-3">
           <Button href="/tutorial" variant="primary">Zum Tutorial</Button>

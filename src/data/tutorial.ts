@@ -36,7 +36,7 @@ export const isTutorialExternalTarget = (target: TutorialLinkTarget): boolean =>
 export const tutorialHeaderIntro = {
   title: 'Tutorial',
   subtitle:
-    'Neu auf dem Server? Hier findest du einfach erklärt, was du für deinen Start brauchst.',
+    'Neu auf der Minecraft Gilde? Hier zeigen wir dir Schritt für Schritt, wie du beitrittst, einen Bauplatz findest, dein Gebiet schützt und dein erstes Zuhause einrichtest.',
 } as const;
 
 export const tutorialHeaderActions: readonly TutorialAction[] = [
@@ -59,19 +59,23 @@ export const tutorialQuickstart = {
   steps: [
     {
       title: 'Verbinden',
-      text: `Verbinde dich mit ${minecraftGilde.serverIp}, schau kurz am Spawn vorbei und nutze dann /rtp.`,
+      text: `Starte Minecraft Java Edition, wähle die Minecraft-Version ${minecraftGilde.minecraftVersion} und verbinde dich mit ${minecraftGilde.serverIp}.`,
+    },
+    {
+      title: 'Bauplatz finden',
+      text: 'Nutze /rtp, um dich zufällig in die Wildnis der Hauptwelt teleportieren zu lassen und einen Bauplatz zu suchen.',
     },
     {
       title: 'Zuhause setzen',
-      text: 'Mit /sethome <Name> speicherst du deinen Startpunkt, mit /home <Name> kommst du jederzeit zurück.',
+      text: 'Mit /sethome <name> speicherst du dein Home, mit /home <name> kommst du jederzeit zurück.',
     },
     {
       title: 'Claim erstellen',
-      text: 'Nimm eine Holzschaufel und markiere zwei Ecken per Rechtsklick.',
+      text: 'Schütze dein Baugebiet mit einem Claim, indem du mit einer Holzschaufel zwei gegenüberliegende Ecken per Rechtsklick markierst.',
     },
     {
       title: 'Farmwelt nutzen',
-      text: 'Mit /farmwelt kommst du in eine separate Welt zum Abbauen, Sammeln und Erkunden.',
+      text: 'Nutze /farmwelt für die Rohstoffbeschaffung in den Farmwelten; die Hauptwelt ist für langfristige Bauprojekte gedacht.',
     },
   ],
 } as const;
@@ -84,7 +88,7 @@ export const tutorialQuickstartCallout = {
 
 export const tutorialQuickstartActions: readonly TutorialAction[] = [
   {
-    label: 'Dynmap',
+    label: 'Live-Karte',
     target: 'dynmap',
     variant: 'ghost',
     icon: 'Map',
@@ -106,25 +110,29 @@ export const tutorialHowTo: {
   description: string;
   steps: readonly TutorialHowToStep[];
 } = {
-  name: 'Minecraft Gilde beitreten - Erststart in 2 Minuten',
+  name: 'Minecraft Gilde beitreten – dein Serverstart',
   description:
-    'Kompakter Einstieg: verbinden, /rtp nutzen, Zuhause setzen, Grundstück sichern und wichtige Regeln kennen.',
+    'Starte mit Minecraft Java Edition auf der Minecraft Gilde: verbinden, mit /rtp einen Bauplatz finden, ein Home setzen, einen Claim erstellen und Farmwelten nutzen.',
   steps: [
     {
-      name: 'Mit dem Server verbinden',
-      text: `Starte Minecraft Java (${minecraftGilde.mcVersion}) und verbinde dich mit ${minecraftGilde.serverIp} (Port 25565).`,
+      name: 'Mit Minecraft Java Edition verbinden',
+      text: `Starte Minecraft Java Edition, wähle die Minecraft-Version ${minecraftGilde.minecraftVersion} und verbinde dich mit ${minecraftGilde.serverIp} (Port 25565).`,
     },
     {
-      name: 'Startpunkt wählen',
-      text: 'Nutze /rtp, um dich in die Hauptwelt zu teleportieren und direkt einen Bauplatz zu suchen.',
+      name: 'Bauplatz mit /rtp finden',
+      text: 'Nutze /rtp, um dich zufällig in die Wildnis der Hauptwelt teleportieren zu lassen und einen Bauplatz zu suchen.',
     },
     {
-      name: 'Zuhause setzen',
-      text: 'Setze mit /sethome <Name> ein Home, damit du mit /home <Name> jederzeit zurückkommst.',
+      name: 'Home setzen',
+      text: 'Setze mit /sethome <name> ein Home, damit du mit /home <name> jederzeit zurückkommst.',
     },
     {
-      name: 'Grundstück sichern',
-      text: 'Halte eine Holzschaufel und markiere zwei Ecken per Rechtsklick, um deinen Claim zu erstellen.',
+      name: 'Claim als Grundstücksschutz erstellen',
+      text: 'Markiere mit einer Holzschaufel zwei gegenüberliegende Ecken per Rechtsklick, um deinen Claim zu erstellen.',
+    },
+    {
+      name: 'Farmwelten für Rohstoffe nutzen',
+      text: 'Nutze /farmwelt für die Rohstoffbeschaffung in den Farmwelten und die Hauptwelt für langfristige Bauprojekte.',
     },
     {
       name: 'Regeln prüfen',
@@ -136,6 +144,6 @@ export const tutorialHowTo: {
 
 export const tutorialFinalCallout = {
   title: 'Noch Fragen?',
-  text: 'Wenn noch etwas offen ist, frag im Spiel oder auf Discord - wir helfen dir gerne weiter.',
+  text: 'Wenn noch etwas offen ist, frag im Spiel oder auf Discord – wir helfen dir gerne weiter.',
   variant: 'info' as const,
 } as const;

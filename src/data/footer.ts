@@ -11,7 +11,7 @@ export const FOOTER_LINKS: FooterLink[] = [
   { href: '/impressum/', label: 'Impressum' },
   { href: '/team/', label: 'Team' },
   { href: minecraftGilde.discord.url, label: 'Discord', external: true },
-  { href: minecraftGilde.mapUrl, label: 'Dynmap', external: true },
+  { href: minecraftGilde.mapUrl, label: 'Live-Karte', external: true },
 ];
 
 export const FOOTER_COPY = {
