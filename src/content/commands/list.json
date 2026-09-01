@@ -150,6 +150,10 @@
           "description": "Schaltet um, ob Explosionen im Claim erlaubt sind."
         },
         {
+          "command": "/pvptrust <spieler>",
+          "description": "Erlaubt einem Spieler, in deinem Claim zu kämpfen."
+        },
+        {
           "command": "/trust <spieler>",
           "description": "Gibt einem Spieler Baurechte in deinem Claim."
         },
