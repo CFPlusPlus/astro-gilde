@@ -61,7 +61,7 @@ const legalConfig: {
 } = {
   name: 'Christian Falkner',
   addressSupplement: 'c/o flexdienst – #21677',
-  street: 'Kurt-Schumacher-Straße 76',
+  street: 'Kurt-Schumacher-Straße 74',
   postalCode: '67663',
   city: 'Kaiserslautern',
   country: 'Deutschland',
