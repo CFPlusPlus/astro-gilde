@@ -4,18 +4,6 @@
       "name": "Basisbefehle",
       "commands": [
         {
-          "command": "/getpos",
-          "description": "Zeigt dir deine aktuelle Position (Koordinaten) und die Welt, in der du gerade bist."
-        },
-        {
-          "command": "/help",
-          "description": "Zeigt dir die verfügbaren Befehle an."
-        },
-        {
-          "command": "/helpop <nachricht>",
-          "description": "Schickt dem Team eine Nachricht bei dringenden Themen."
-        },
-        {
           "command": "/afk",
           "description": "Markiert dich als abwesend. Monster können dich weiterhin angreifen."
         },
@@ -28,16 +16,32 @@
           "description": "Zeigt dir den Discord-Einladungslink an."
         },
         {
+          "command": "/getpos",
+          "description": "Zeigt dir deine aktuelle Position (Koordinaten) und die Welt, in der du gerade bist."
+        },
+        {
+          "command": "/help",
+          "description": "Zeigt dir die verfügbaren Befehle an."
+        },
+        {
+          "command": "/helpop <nachricht>",
+          "description": "Schickt dem Team eine Nachricht bei dringenden Themen."
+        },
+        {
+          "command": "/ignore [spieler]",
+          "description": "Zeigt ohne Spieler deine Ignore-Liste an oder ignoriert einen angegebenen Spieler."
+        },
+        {
           "command": "/list",
           "description": "Zeigt dir alle Spieler, die aktuell online sind."
         },
         {
-          "command": "/map",
-          "description": "Zeigt dir den Link zur Live-Karte an."
-        },
-        {
           "command": "/mall",
           "description": "Teleportiert dich zur Shopping-Mall, wo du Items kaufen und den Super-Ofen nutzen kannst."
+        },
+        {
+          "command": "/map",
+          "description": "Zeigt dir den Link zur Live-Karte an."
         },
         {
           "command": "/motd",
@@ -46,14 +50,6 @@
         {
           "command": "/msg <spieler> <nachricht>",
           "description": "Sendet eine private Nachricht an einen Spieler."
-        },
-        {
-          "command": "/ignore [spieler]",
-          "description": "Zeigt ohne Spieler deine Ignore-Liste an oder ignoriert einen angegebenen Spieler."
-        },
-        {
-          "command": "/unignore <spieler>",
-          "description": "Hebt das Ignorieren der Chat-Nachrichten eines angegebenen Spielers wieder auf."
         },
         {
           "command": "/r",
@@ -84,12 +80,12 @@
           "description": "Stellt eine Anfrage, um dich zu einem Spieler zu teleportieren."
         },
         {
-          "command": "/tpahere <spieler>",
-          "description": "Bittet den angegebenen Spieler, sich zu dir zu teleportieren."
-        },
-        {
           "command": "/tpaccept",
           "description": "Nimmt eine Teleportanfrage an."
+        },
+        {
+          "command": "/tpahere <spieler>",
+          "description": "Bittet den angegebenen Spieler, sich zu dir zu teleportieren."
         },
         {
           "command": "/tpauto",
@@ -106,16 +102,16 @@
         {
           "command": "/tutorial",
           "description": "Mit diesem Befehl öffnest du unser Tutorial."
+        },
+        {
+          "command": "/unignore <spieler>",
+          "description": "Hebt das Ignorieren der Chat-Nachrichten eines angegebenen Spielers wieder auf."
         }
       ]
     },
     {
       "name": "Homes",
       "commands": [
-        {
-          "command": "/sethome <name>",
-          "description": "Setzt ein Home auf deiner aktuellen Position."
-        },
         {
           "command": "/delhome <name>",
           "description": "Löscht ein Home."
@@ -131,6 +127,10 @@
         {
           "command": "/renamehome <alter-name> <neuer-name>",
           "description": "Benennt ein vorhandenes Home um."
+        },
+        {
+          "command": "/sethome <name>",
+          "description": "Setzt ein Home auf deiner aktuellen Position."
         }
       ]
     },
@@ -138,24 +138,68 @@
       "name": "Grundstücke",
       "commands": [
         {
-          "command": "/abandonclaim",
-          "description": "Löscht den Claim, in dem du stehst."
+          "command": "/3dsubdivideclaims",
+          "description": "Erstellt Unterteilungen mit exakten H\u00f6henbegrenzungen (Y-Ebene)."
         },
         {
           "command": "/abandonallclaims",
           "description": "Löscht alle deine Grundstücke (muss bestätigt werden)."
         },
         {
+          "command": "/abandonclaim",
+          "description": "Löscht den Claim, in dem du stehst."
+        },
+        {
+          "command": "/accesstrust <spieler>",
+          "description": "Erlaubt einem Spieler, Türen, Schalter und Buttons in deinem Claim zu benutzen."
+        },
+        {
+          "command": "/basicclaims",
+          "description": "Schaltet deine Holzschaufel wieder in den normalen Claim-Modus."
+        },
+        {
           "command": "/claimexplosions",
           "description": "Schaltet um, ob Explosionen im Claim erlaubt sind."
+        },
+        {
+          "command": "/claimslist",
+          "description": "Listet deine Claims und Claim-Block-Details auf."
+        },
+        {
+          "command": "/containertrust <spieler>",
+          "description": "Erlaubt einem Spieler zusätzlich, Container, Tiere und weitere interaktive Blöcke in deinem Claim zu benutzen."
+        },
+        {
+          "command": "/expandclaim <+/- wert>",
+          "description": "Erweitert oder verkleinert den Claim um die angegebene Distanz. Dafür musst du eine Holzschaufel in der Hand halten."
+        },
+        {
+          "command": "/permissiontrust <spieler>",
+          "description": "Erlaubt einem Spieler, seine Berechtigungsstufe in deinem Claim weiterzugeben."
         },
         {
           "command": "/pvptrust <spieler>",
           "description": "Erlaubt einem Spieler, in deinem Claim zu kämpfen."
         },
         {
+          "command": "/restrictsubclaim",
+          "description": "Beschr\u00e4nkt einen Unterclaim, damit er keine Berechtigungen vom Hauptclaim \u00fcbernimmt."
+        },
+        {
+          "command": "/subdivideclaims",
+          "description": "Schaltet deine Holzschaufel in den Unterteilungsmodus, damit du Claims unterteilen kannst."
+        },
+        {
+          "command": "/trapped",
+          "description": "Befreit dich aus einem Claim, in dem du gefangen bist."
+        },
+        {
           "command": "/trust <spieler>",
           "description": "Gibt einem Spieler Baurechte in deinem Claim."
+        },
+        {
+          "command": "/trustlist",
+          "description": "Listet die Berechtigungen für den Claim auf, in dem du dich befindest."
         },
         {
           "command": "/untrust <spieler>",
@@ -164,50 +208,6 @@
         {
           "command": "/untrust all",
           "description": "Entfernt alle Berechtigungen für alle Spieler in deinem Claim."
-        },
-        {
-          "command": "/accesstrust <spieler>",
-          "description": "Erlaubt einem Spieler, Türen, Schalter und Buttons in deinem Claim zu benutzen."
-        },
-        {
-          "command": "/containertrust <spieler>",
-          "description": "Erlaubt einem Spieler zusätzlich, Container, Tiere und weitere interaktive Blöcke in deinem Claim zu benutzen."
-        },
-        {
-          "command": "/trustlist",
-          "description": "Listet die Berechtigungen für den Claim auf, in dem du dich befindest."
-        },
-        {
-          "command": "/permissiontrust <spieler>",
-          "description": "Erlaubt einem Spieler, seine Berechtigungsstufe in deinem Claim weiterzugeben."
-        },
-        {
-          "command": "/claimslist",
-          "description": "Listet deine Claims und Claim-Block-Details auf."
-        },
-        {
-          "command": "/trapped",
-          "description": "Befreit dich aus einem Claim, in dem du gefangen bist."
-        },
-        {
-          "command": "/expandclaim <+/- wert>",
-          "description": "Erweitert oder verkleinert den Claim um die angegebene Distanz. Dafür musst du eine Holzschaufel in der Hand halten."
-        },
-        {
-          "command": "/subdivideclaims",
-          "description": "Schaltet deine Holzschaufel in den Unterteilungsmodus, damit du Claims unterteilen kannst."
-        },
-        {
-          "command": "/basicclaims",
-          "description": "Schaltet deine Holzschaufel wieder in den normalen Claim-Modus."
-        },
-        {
-          "command": "/3dsubdivideclaims",
-          "description": "Erstellt Unterteilungen mit exakten H\u00f6henbegrenzungen (Y-Ebene)."
-        },
-        {
-          "command": "/restrictsubclaim",
-          "description": "Beschr\u00e4nkt einen Unterclaim, damit er keine Berechtigungen vom Hauptclaim \u00fcbernimmt."
         }
       ]
     },
@@ -224,48 +224,52 @@
       "name": "Voting",
       "commands": [
         {
+          "command": "/gildenmarkt",
+          "description": "Öffnet den Gildenmarkt, in dem du verschiedene Items gegen Vote-Punkte einlösen kannst."
+        },
+        {
           "command": "/vote",
           "description": "Zeigt dir alle Vote-Links an."
-        },
-        {
-          "command": "/votegui",
-          "description": "Öffnet die Vote-Oberfläche."
-        },
-        {
-          "command": "/voteshop",
-          "description": "Öffnet den Vote-Shop."
-        },
-        {
-          "command": "/votepoints",
-          "description": "Zeigt dir deinen aktuellen Punktestand an."
-        },
-        {
-          "command": "/votenext",
-          "description": "Zeigt dir die nächsten möglichen Vote-Seiten an."
-        },
-        {
-          "command": "/votetop",
-          "description": "Zeigt dir deinen Platz in der Bestenliste an."
-        },
-        {
-          "command": "/votetoday",
-          "description": "Zeigt an, wer heute alles gevotet hat."
-        },
-        {
-          "command": "/votetotal",
-          "description": "Zeigt an, wie oft du gevotet hast."
         },
         {
           "command": "/votebest",
           "description": "Zeigt dir deine Voting-Bestwerte an."
         },
         {
+          "command": "/votegui",
+          "description": "Öffnet die Vote-Oberfläche."
+        },
+        {
           "command": "/votehelp <seite>",
           "description": "Zeigt dir die Hilfeseiten des Vote-Plugins an."
         },
         {
+          "command": "/votenext",
+          "description": "Zeigt dir die nächsten möglichen Vote-Seiten an."
+        },
+        {
+          "command": "/votepoints",
+          "description": "Zeigt dir deinen aktuellen Punktestand an."
+        },
+        {
+          "command": "/voteshop",
+          "description": "Öffnet ebenfalls den Gildenmarkt."
+        },
+        {
+          "command": "/votetoday",
+          "description": "Zeigt an, wer heute alles gevotet hat."
+        },
+        {
           "command": "/votetogglereminders",
           "description": "Aktiviert oder deaktiviert Vote-Erinnerungen."
+        },
+        {
+          "command": "/votetop",
+          "description": "Zeigt dir deinen Platz in der Bestenliste an."
+        },
+        {
+          "command": "/votetotal",
+          "description": "Zeigt an, wie oft du gevotet hast."
         }
       ]
     }
